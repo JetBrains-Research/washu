@@ -4,7 +4,7 @@ echo "Pipeline script1"
 echo "Working directory: `pwd`"
 
 echo "Downloading files"
-exec ~/work/washu/scripts/download.sh
+~/work/washu/scripts/download.sh
 
 echo "Submitting sra to fastq.gz tasks"
 find . -type f -name "*.sra" | xargs -n1 ~/work/washu/scripts/sra2fastq.sh
