@@ -4,11 +4,11 @@ echo "Pipeline script1"
 echo "Working directory: `pwd`"
 
 echo "Submitting sra to fastq.gz tasks"
-find . -type f -name "*.sra" -print0 | xargs -r0 -n1 ~/work/washu/scripts/sra2fastq.sh
+find . -type f -name "*.sra" | xargs -n1 ~/work/washu/scripts/sra2fastq.sh
 
 # See sra2fastq script for tasks naming convention
 echo "Collecting tasks: sra2fastq"
-SRA_FILES=$(find . -type f -name "*.sra" -print0)
+SRA_FILES=$(find . -type f -name "*.sra")
 SRA_TASKS=""
 for FILE in ${SRA_FILES}
 do :
