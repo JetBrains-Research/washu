@@ -14,7 +14,6 @@ echo "Collecting tasks: sra2fastq"
 SRA_TASKS=""
 for FILE in $(find . -type f -name "*.sra")
 do :
-    echo ${SRA_TASKS}
     if [ ! -n "$SRA_TASKS" ]; then
         SRA_TASKS="sra2fastq_$FILE"
     else
