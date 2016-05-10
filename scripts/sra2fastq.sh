@@ -1,6 +1,8 @@
 #!/bin/bash
 # author oleg.shpynov@jetbrains.com
 # required modules: sratoolkit
+# Submit multiple tasks with xargs:
+# find . -name "*.sra" -print0 | xargs -r0 -n1 sra2fastq.sh
 
 WORK_DIR=`pwd`
 SRA_FILE=$1
@@ -9,7 +11,7 @@ echo "Converting sra to fastq-dump $SRA_FILE"
 
 qsub << ENDINPUT
 #!/bin/sh
-#PBS -N sra2fastq$SRA_FILE
+#PBS -N sra2fastq_$SRA_FILE
 #PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=6gb
 #PBS -j oe
 #PBS -q dque
