@@ -36,6 +36,15 @@ do :
 done
 wait_complete $SRA2FASTQ_JOBS
 
+echo "Submitting fastqc tasks"
+FASTQC_TASKS=""
+for FILE in $(find . -type f -name "*.fastq")
+do :
+    QSUB_ID=`~/work/washu/scripts/fastqc.sh $FILE`
+    FASTQC_TASKS="$FASTQC_TASKS $QSUB_ID"
+done
+wait_complete $FASTQC_TASKS
+
 echo "Submitting bowtie tasks"
 BOWTIE_TASKS=""
 for FILE in $(find . -type f -name "*.fastq")
@@ -43,7 +52,7 @@ do :
     QSUB_ID=`~/work/washu/scripts/bowtie.sh hg19 $FILE`
     BOWTIE_TASKS="$BOWTIE_TASKS $QSUB_ID"
 done
-wait_complete $BAM2BED_TASKS
+wait_complete $BOWTIE_TASKS
 
 echo "Submitting bam2bed tasks"
 BAM2BED_TASKS=""
