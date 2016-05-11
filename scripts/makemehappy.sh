@@ -76,9 +76,10 @@ if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
 #PBS -q dque
 #PBS -o $WORK_DIR/qsub/bowtie_indexes_${GENOME}.log
 
-cd $WORK_DIR/$GENOME
 # Load module
 module load bowtie
+
+cd $WORK_DIR/$GENOME
 bowtie-build $(find . -type f -name "*.fa" -printf '%P\n' | paste -sd "," -) $GENOME
 ENDINPUT
 )
