@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "Pipeline script1"
+echo "Pipeline script"
 echo "Working directory: `pwd`"
 
 echo "Downloading files"
@@ -9,18 +9,15 @@ echo "Downloading files"
 echo "Submitting sra to fastq.gz tasks"
 find . -type f -name "*.sra" | xargs -n1 ~/work/washu/scripts/sra2fastq.sh
 
-# See sra2fastq script for tasks naming convention
-echo "Collecting tasks: sra2fastq"
-SRA_TASKS=""
+echo "Waiting for sra2fastq tasks to finish"
 for FILE in $(find . -type f -name "*.sra")
 do :
     NAME=${FILE%%.sra} # file name without extension
-    if [ ! -n "$SRA_TASKS" ]; then
-        SRA_TASKS="sra2fastq_$NAME"
-    else
-        SRA_TASKS="$SRA_TASKS,sra2fastq_$NAME"
-    fi
+    JOB_ID=$(qsub "sra2fastq_$NAME") # See sra2fastq script for tasks naming convention
+    while qstat $JOB_ID &> /dev/null; do
+        echo -n "."
+        sleep 5
+    done;
+    echo
 done
-
-echo "Waiting for tasks $SRA_TASKS to finish"
-qsub -hold_jid $SRA_TASKS -cwd ~/work/washu/scripts/makemehappy2.sh
+echo "All sra2fastq tasks are finished"
