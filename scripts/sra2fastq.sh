@@ -5,9 +5,8 @@ WORK_DIR=`pwd`
 SRA_FILE=$1
 NAME=${SRA_FILE%%.sra} # file name without sra extension
 
-echo "Converting $SRA_FILE to fastq"
 if [ ! -f "$NAME.fastq" ]; then
-    qsub << ENDINPUT
+    echo $(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N sra2fastq_$NAME
 #PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=6gb
@@ -20,4 +19,5 @@ module load sratoolkit
 cd $WORK_DIR
 fastq-dump --split-3 --outdir $WORK_DIR $SRA_FILE
 ENDINPUT
+)
 fi
