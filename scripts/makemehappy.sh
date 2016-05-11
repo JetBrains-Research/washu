@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 echo "Pipeline script"
-echo "Working directory: `pwd`"
+WORK_DIR=`pwd`
+echo "Working directory: $WORK_DIR"
 
 echo "Load util stuff"
 # Small routing to wait until all the tasks are finished on the qsub cluster
@@ -29,6 +30,19 @@ if [ ! -d "logs" ]; then
     mkdir logs
 fi
 
+GENOME=hg38
+echo "Processing genome sequence $GENOME"
+if [ ! -d "$WORK_DIR/$GENOME" ]; then
+    mkdir $WORK_DIR/$GENOME
+fi
+if [ ! -f "$WORK_DIR/$GENOME/chr1.fa" ]; then
+    cd $WORK_DIR/$GENOME
+    # Download only chromosomes sequences
+    rsync -avzP --exclude="chr*_*" --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/$GENOME/chromosomes/ .
+    gunzip *.fa.gz
+    cd $WORK_DIR
+fi
+
 echo "Downloading files"
 ~/work/washu/scripts/download.sh
 
@@ -54,7 +68,7 @@ echo "Submitting bowtie tasks"
 BOWTIE_TASKS=""
 for FILE in $(find . -type f -name "*.fastq")
 do :
-    QSUB_ID=`~/work/washu/scripts/bowtie.sh hg19 $FILE`
+    QSUB_ID=`~/work/washu/scripts/bowtie.sh $GENOME $FILE`
     BOWTIE_TASKS="$BOWTIE_TASKS $QSUB_ID"
 done
 wait_complete $BOWTIE_TASKS
