@@ -51,6 +51,7 @@ SRA2FASTQ_JOBS=""
 for FILE in $(find . -type f -name "*.sra" -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/sra2fastq.sh $FILE`
+    echo "$FILE: $QSUB_ID"
     SRA2FASTQ_JOBS="$SRA2FASTQ_JOBS $QSUB_ID"
 done
 wait_complete $SRA2FASTQ_JOBS
@@ -60,6 +61,7 @@ FASTQC_TASKS=""
 for FILE in $(find . -type f -name "*.fastq" -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/fastqc.sh $FILE`
+    echo "$FILE: $QSUB_ID"
     FASTQC_TASKS="$FASTQC_TASKS $QSUB_ID"
 done
 wait_complete $FASTQC_TASKS
@@ -78,6 +80,7 @@ BOWTIE_TASKS=""
 for FILE in $(find . -type f -name "*.fastq" -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/bowtie.sh $GENOME $FILE`
+    echo "$FILE: $QSUB_ID"
     BOWTIE_TASKS="$BOWTIE_TASKS $QSUB_ID"
 done
 wait_complete $BOWTIE_TASKS
@@ -87,6 +90,7 @@ MACS2_TASKS=""
 for FILE in $(find . -type f -name "*.bam" -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/macs2.sh $GENOME 0.01 $FILE`
+    echo "$FILE: $QSUB_ID"
     MACS2_TASKS="$MACS2_TASKS $QSUB_ID"
 done
 wait_complete $MACS2_TASKS
