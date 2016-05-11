@@ -9,7 +9,7 @@ NAME=${FASTQ_FILE%%.f*q} # file name without extension
 if [ ! -f "${NAME}_fastqc.html" ]; then
     echo $(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N fastq_$NAME
+#PBS -N fastqc_$NAME
 #PBS -l nodes=1:ppn=8,walltime=2:00:00,vmem=6gb
 #PBS -j oe
 #PBS -q dque
@@ -19,7 +19,7 @@ if [ ! -f "${NAME}_fastqc.html" ]; then
 module load fastqc
 
 cd $WORK_DIR
-fastqc $NAME
+fastqc $FASTQ_FILE
 ENDINPUT
 )
 fi
