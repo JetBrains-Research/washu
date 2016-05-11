@@ -20,6 +20,7 @@ module load bowtie
 module load samtools
 
 cd $WORK_DIR
+BOWTIE_INDEXES=$WORK_DIR/$GENOME
 bowtie -p 8 -St -m 1 -v 3 --best --strata $GENOME $FASTQ_FILE $NAME.sam
 samtools view -bS -o $NAME.bam $NAME.sam
 samtools sort $NAME.bam $NAME.sorted

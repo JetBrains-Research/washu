@@ -64,6 +64,15 @@ do :
 done
 wait_complete $FASTQC_TASKS
 
+echo "Check bowtie indexes"
+if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
+    cd $WORK_DIR/$GENOME
+    # Load module
+    module load bowtie
+    bowtie-build $(find . -name "*.fa" | paste -sd "," -) $GENOME
+    cd $WORK_DIR
+fi
+
 echo "Submitting bowtie tasks"
 BOWTIE_TASKS=""
 for FILE in $(find . -type f -name "*.fastq")
