@@ -24,6 +24,11 @@ wait_complete()
     echo "Done."
 }
 
+echo "Log folder"
+if [ ! -f "logs" ]; then
+    mkdir logs
+fi
+
 echo "Downloading files"
 ~/work/washu/scripts/download.sh
 
