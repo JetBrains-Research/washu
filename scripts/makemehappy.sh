@@ -68,11 +68,21 @@ wait_complete $FASTQC_TASKS
 
 echo "Check bowtie indexes"
 if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
-    cd $WORK_DIR/$GENOME
-    # Load module
-    module load bowtie
-    bowtie-build $(find . -type f -name "*.fa" -printf '%P\n' | paste -sd "," -) $GENOME
-    cd $WORK_DIR
+    QSUB_ID=$(qsub << ENDINPUT
+#!/bin/sh
+#PBS -N bowtie_indexes_${GENOME}
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=48gb
+#PBS -j oe
+#PBS -q dque
+#PBS -o $WORK_DIR/qsub/bowtie_indexes_${GENOME}.log
+
+cd $WORK_DIR/$GENOME
+# Load module
+module load bowtie
+bowtie-build $(find . -type f -name "*.fa" -printf '%P\n' | paste -sd "," -) $GENOME
+ENDINPUT
+)
+    wait_complete $QSUB_ID
 fi
 
 echo "Submitting bowtie tasks"
