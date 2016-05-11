@@ -43,4 +43,13 @@ do :
     QSUB_ID=`~/work/washu/scripts/bowtie.sh hg19 $FILE`
     BOWTIE_TASKS="$BOWTIE_TASKS $QSUB_ID"
 done
-wait_complete $BOWTIE_TASKS
+wait_complete $BAM2BED_TASKS
+
+echo "Submitting bam2bed tasks"
+BAM2BED_TASKS=""
+for FILE in $(find . -type f -name "*.bam")
+do :
+    QSUB_ID=`~/work/washu/scripts/bam2bed.sh $FILE`
+    BAM2BED_TASKS="$BAM2BED_TASKS $QSUB_ID"
+done
+wait_complete $BAM2BED_TASKS
