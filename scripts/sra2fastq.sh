@@ -1,6 +1,5 @@
 #!/bin/bash
 # author oleg.shpynov@jetbrains.com
-# required modules: sratoolkit
 # Submit multiple tasks with xargs:
 # find . -name "*.sra" -print0 | xargs -r0 -n1 sra2fastq.sh
 
@@ -20,5 +19,5 @@ qsub << ENDINPUT
 module load sratoolkit
 
 cd $WORK_DIR
-fastq-dump --log-level err --dumpbase --gzip --outdir $WORK_DIR $SRA_FILE
+fastq-dump --split-3 --outdir $WORK_DIR $SRA_FILE
 ENDINPUT
