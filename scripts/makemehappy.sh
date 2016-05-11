@@ -25,11 +25,6 @@ wait_complete()
     echo "Done."
 }
 
-echo "Log folder"
-if [ ! -d "logs" ]; then
-    mkdir logs
-fi
-
 GENOME=hg38
 echo "Processing genome sequence $GENOME"
 if [ ! -d "$WORK_DIR/$GENOME" ]; then
