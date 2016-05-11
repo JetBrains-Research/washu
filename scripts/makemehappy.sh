@@ -25,6 +25,11 @@ wait_complete()
     echo "Done."
 }
 
+echo "Log folder $WORK_DIR/qsub"
+if [ ! -d "$WORK_DIR/qsub" ]; then
+    mkdir $WORK_DIR/qsub
+fi
+
 GENOME=hg38
 echo "Processing genome sequence $GENOME"
 if [ ! -d "$WORK_DIR/$GENOME" ]; then
@@ -43,7 +48,7 @@ echo "Downloading files"
 
 echo "Submitting sra2fastq tasks"
 SRA2FASTQ_JOBS=""
-for FILE in $(find . -type f -printf '%P\n' -name "*.sra" )
+for FILE in $(find . -type f -name "*.sra" -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/sra2fastq.sh $FILE`
     SRA2FASTQ_JOBS="$SRA2FASTQ_JOBS $QSUB_ID"
@@ -52,7 +57,7 @@ wait_complete $SRA2FASTQ_JOBS
 
 echo "Submitting fastqc tasks"
 FASTQC_TASKS=""
-for FILE in $(find . -type f -printf '%P\n' -name "*.fastq")
+for FILE in $(find . -type f -name "*.fastq" -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/fastqc.sh $FILE`
     FASTQC_TASKS="$FASTQC_TASKS $QSUB_ID"
@@ -64,13 +69,13 @@ if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
     cd $WORK_DIR/$GENOME
     # Load module
     module load bowtie
-    bowtie-build $(find . -type f -printf '%P\n' -name "*.fa" | paste -sd "," -) $GENOME
+    bowtie-build $(find . -type f -name "*.fa" -printf '%P\n' | paste -sd "," -) $GENOME
     cd $WORK_DIR
 fi
 
 echo "Submitting bowtie tasks"
 BOWTIE_TASKS=""
-for FILE in $(find . -type f -printf '%P\n' -name "*.fastq")
+for FILE in $(find . -type f -name "*.fastq" -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/bowtie.sh $GENOME $FILE`
     BOWTIE_TASKS="$BOWTIE_TASKS $QSUB_ID"
@@ -79,7 +84,7 @@ wait_complete $BOWTIE_TASKS
 
 echo "Submitting macs2 tasks"
 MACS2_TASKS=""
-for FILE in $(find . -type f -printf '%P\n' -name "*.bam")
+for FILE in $(find . -type f -name "*.bam" -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/macs2.sh $GENOME 0.01 $FILE`
     MACS2_TASKS="$MACS2_TASKS $QSUB_ID"
