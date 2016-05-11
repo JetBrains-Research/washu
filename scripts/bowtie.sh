@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
 WORK_DIR=`pwd`

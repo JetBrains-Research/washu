@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Download H3K4me3 data for Monocytes CD14+ from ENCODE and roadmapepigenomics
 # author oleg.shpynov@jetbrains.com
 
