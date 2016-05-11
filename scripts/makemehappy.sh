@@ -25,7 +25,7 @@ wait_complete()
 }
 
 echo "Log folder"
-if [ ! -f "logs" ]; then
+if [ ! -d "logs" ]; then
     mkdir logs
 fi
 
