@@ -82,11 +82,11 @@ do :
 done
 wait_complete $BOWTIE_TASKS
 
-echo "Submitting bam2bed tasks"
-BAM2BED_TASKS=""
+echo "Submitting macs2 tasks"
+MACS2_TASKS=""
 for FILE in $(find . -type f -name "*.bam")
 do :
-    QSUB_ID=`~/work/washu/scripts/bam2bed.sh $FILE`
-    BAM2BED_TASKS="$BAM2BED_TASKS $QSUB_ID"
+    QSUB_ID=`~/work/washu/scripts/macs2.sh $GENOME 0.01 $FILE`
+    MACS2_TASKS="$MACS2_TASKS $QSUB_ID"
 done
-wait_complete $BAM2BED_TASKS
+wait_complete $MACS2_TASKS
