@@ -10,7 +10,7 @@ echo "Bowtie align $FASTQ_FILE on $GENOME"
 if [ ! -f "$NAME.bam" ]; then
     qsub << ENDINPUT
 #!/bin/sh
-#PBS -N bowtie_$GENOME_$NAME
+#PBS -N bowtie_${GENOME}_$NAME
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=48gb
 #PBS -j oe
 #PBS -q dque
