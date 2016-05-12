@@ -24,7 +24,8 @@ if [ ! -f "${ID}_peaks.bed" ]; then
 # Loading modules. TODO: install macs2 on washu cluster
 # module load macs2
 
-echo "Folder: `pwd`"
+# This is necessary because qsub default working dir is user home
+cd $WORK_DIR
 /home/oshpynov/miniconda2/bin/macs2 callpeak -t $BAM_FILE -f BAM -g $SPECIES -n $ID -B -q $Q
 mv ${ID}_peaks.narrowPeak ${ID}_peaks.bed
 ENDINPUT

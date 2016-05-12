@@ -19,7 +19,8 @@ module load bowtie
 module load samtools
 
 export BOWTIE_INDEXES="$WORK_DIR/$GENOME"
-echo "Folder: `pwd`"
+# This is necessary because qsub default working dir is user home
+cd $WORK_DIR
 bowtie -p 8 -St -m 1 -v 3 --best --strata $GENOME $FASTQ_FILE $NAME.sam
 samtools view -bS -o $NAME.bam $NAME.sam
 samtools sort $NAME.bam $NAME.sorted

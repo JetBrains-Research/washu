@@ -16,7 +16,8 @@ if [ ! -f "$NAME.bed" ]; then
 # Loading modules
 module load bedtools
 
-echo "Folder: `pwd`"
+# This is necessary because qsub default working dir is user home
+cd $WORK_DIR
 bedtools bamtobed -i $BAM_FILE > $NAME.bed
 ENDINPUT
 )

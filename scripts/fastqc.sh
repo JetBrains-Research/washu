@@ -17,7 +17,8 @@ if [ ! -f "${NAME}_fastqc.html" ]; then
 # Loading modules
 module load fastqc
 
-echo "Folder: `pwd`"
+# This is necessary because qsub default working dir is user home
+cd $WORK_DIR
 fastqc $FASTQ_FILE
 ENDINPUT
 )
