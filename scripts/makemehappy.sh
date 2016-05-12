@@ -79,7 +79,7 @@ if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
 # Load module
 module load bowtie
 
-bowtie-build $(find . -type f -name "*.fa" -printf '%P\n' | paste -sd "," -) $GENOME
+bowtie-build $(find $WORK_DIR/$GENOME -type f -name "*.fa" -printf '%P\n' | paste -sd "," -) $GENOME
 ENDINPUT
 )
     wait_complete $QSUB_ID
