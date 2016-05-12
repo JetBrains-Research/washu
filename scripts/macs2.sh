@@ -14,7 +14,7 @@ ID=${GENOME}_${Q}_$NAME
 [[ -z "$SPECIES" ]] && echo "Unknown species for macs: $GENOME" && exit 1
 
 if [ ! -f "${ID}_peaks.bed" ]; then
-    echo $(qsub << ENDINPUT
+    echo $(qsub -d $WORK_DIR << ENDINPUT
 #!/bin/sh
 #PBS -N macs2_$ID
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=8gb
@@ -25,7 +25,6 @@ if [ ! -f "${ID}_peaks.bed" ]; then
 # Loading modules. TODO: install macs2 on washu cluster
 # module load macs2
 
-cd $WORK_DIR
 /home/oshpynov/miniconda2/bin/macs2 callpeak -t $BAM_FILE -f BAM -g $SPECIES -n $ID -B -q $Q
 mv ${ID}_peaks.narrowPeak ${ID}_peaks.bed
 ENDINPUT

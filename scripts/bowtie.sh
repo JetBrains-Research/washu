@@ -7,7 +7,7 @@ FASTQ_FILE=$2
 NAME=${FASTQ_FILE%%.f*q} # file name without extension
 
 if [ ! -f "$NAME.bam" ]; then
-    echo $(qsub << ENDINPUT
+    echo $(qsub -d $WORK_DIR << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie_${GENOME}_$NAME
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=48gb
@@ -19,7 +19,6 @@ if [ ! -f "$NAME.bam" ]; then
 module load bowtie
 module load samtools
 
-cd $WORK_DIR
 export BOWTIE_INDEXES="$WORK_DIR/$GENOME"
 bowtie -p 8 -St -m 1 -v 3 --best --strata $GENOME $FASTQ_FILE $NAME.sam
 samtools view -bS -o $NAME.bam $NAME.sam
