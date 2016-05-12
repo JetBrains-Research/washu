@@ -9,7 +9,7 @@ if [ ! -f "$NAME.fastq" ]; then
     echo $(qsub -d $WORK_DIR << ENDINPUT
 #!/bin/sh
 #PBS -N sra2fastq_$NAME
-#PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=6gb
+#PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=8gb
 #PBS -j oe
 #PBS -o $WORK_DIR/qsub/sra2fastq_$NAME.log
 

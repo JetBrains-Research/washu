@@ -10,7 +10,7 @@ if [ ! -f "${NAME}_fastqc.html" ]; then
     echo $(qsub -d $WORK_DIR << ENDINPUT
 #!/bin/sh
 #PBS -N fastqc_$NAME
-#PBS -l nodes=1:ppn=8,walltime=2:00:00,vmem=6gb
+#PBS -l nodes=1:ppn=8,walltime=2:00:00,vmem=8gb
 #PBS -j oe
 #PBS -o $WORK_DIR/qsub/fastqc_$NAME.log
 

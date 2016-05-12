@@ -17,7 +17,7 @@ if [ ! -f "${ID}_peaks.bed" ]; then
     echo $(qsub -d $WORK_DIR << ENDINPUT
 #!/bin/sh
 #PBS -N macs2_$ID
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=8gb
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o $WORK_DIR/qsub/macs2_${GENOME}_${Q}_$NAME.log
 
