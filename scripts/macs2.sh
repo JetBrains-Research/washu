@@ -6,7 +6,7 @@ GENOME=$1
 Q=$2
 BAM_FILE=$3
 NAME=${BAM_FILE%%.bam} # file name without extension
-ID=${GENOME}_${Q}_$NAME
+ID=${NAME}_${GENOME}_${Q}
 
 # Convert Genome build to macs2 species
 [[ $GENOME =~ ^hg[0-9]+$ ]] && SPECIES="hs"
@@ -27,7 +27,11 @@ if [ ! -f "${ID}_peaks.bed" ]; then
 # This is necessary because qsub default working dir is user home
 cd $WORK_DIR
 /home/oshpynov/miniconda2/bin/macs2 callpeak -t $BAM_FILE -f BAM -g $SPECIES -n $ID -B -q $Q
-mv ${ID}_peaks.narrowPeak ${ID}_peaks.bed
+
+# Remove all the produced files except
+mv ${ID}_peaks.narrowPeak do_not_remove_${ID}_peaks.bed
+rm ${ID}*
+mv do_not_remove_${ID}_peaks.bed ${ID}_peaks.bed
 ENDINPUT
 )
 fi
