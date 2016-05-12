@@ -5,7 +5,8 @@ WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
 
 echo "Load util stuff"
-# Small routing to wait until all the tasks are finished on the qsub cluster
+
+# Small procedure to wait until all the tasks are finished on the qsub cluster
 wait_complete()
 {
     echo "Waiting for tasks."
@@ -81,6 +82,7 @@ if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
 module load bowtie
 
 echo "Folder: `pwd`"
+echo "LS: `ls -la *`"
 bowtie-build $(find $WORK_DIR/$GENOME -type f -name "*.fa" -printf '%P\n' | paste -sd "," -) $GENOME
 ENDINPUT
 )
