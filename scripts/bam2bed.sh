@@ -6,7 +6,7 @@ BAM_FILE=$1
 NAME=${BAM_FILE%%.bam} # file name without extension
 
 if [ ! -f "$NAME.bed" ]; then
-    echo $(qsub -d $WORK_DIR << ENDINPUT
+    echo $(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bam2bed_$NAME
 #PBS -l nodes=1:ppn=8,walltime=2:00:00,vmem=8gb

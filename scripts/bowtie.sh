@@ -7,7 +7,7 @@ FASTQ_FILE=$2
 NAME=${FASTQ_FILE%%.f*q} # file name without extension
 
 if [ ! -f "$NAME.bam" ]; then
-    echo $(qsub -d $WORK_DIR << ENDINPUT
+    echo $(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie_${GENOME}_$NAME
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb

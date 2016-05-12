@@ -14,7 +14,7 @@ ID=${GENOME}_${Q}_$NAME
 [[ -z "$SPECIES" ]] && echo "Unknown species for macs: $GENOME" && exit 1
 
 if [ ! -f "${ID}_peaks.bed" ]; then
-    echo $(qsub -d $WORK_DIR << ENDINPUT
+    echo $(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N macs2_$ID
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb

@@ -6,7 +6,7 @@ SRA_FILE=$1
 NAME=${SRA_FILE%%.sra} # file name without sra extension
 
 if [ ! -f "$NAME.fastq" ]; then
-    echo $(qsub -d $WORK_DIR << ENDINPUT
+    echo $(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N sra2fastq_$NAME
 #PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=8gb

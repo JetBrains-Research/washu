@@ -7,7 +7,7 @@ NAME=${FASTQ_FILE%%.f*q} # file name without extension
 
 # Fastq produce 2 files: _fastqc.html and _fastq.zip
 if [ ! -f "${NAME}_fastqc.html" ]; then
-    echo $(qsub -d $WORK_DIR << ENDINPUT
+    echo $(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N fastqc_$NAME
 #PBS -l nodes=1:ppn=8,walltime=2:00:00,vmem=8gb

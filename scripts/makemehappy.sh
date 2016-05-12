@@ -69,7 +69,8 @@ wait_complete $FASTQC_TASKS
 
 echo "Check bowtie indexes"
 if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
-    QSUB_ID=$(qsub -d $WORK_DIR/$GENOME << ENDINPUT
+    cd $WORK_DIR/$GENOME
+    QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie_indexes_${GENOME}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -83,6 +84,7 @@ echo "Folder: `pwd`"
 bowtie-build $(find $WORK_DIR/$GENOME -type f -name "*.fa" -printf '%P\n' | paste -sd "," -) $GENOME
 ENDINPUT
 )
+    cd $WORK_DIR
     wait_complete $QSUB_ID
 fi
 
