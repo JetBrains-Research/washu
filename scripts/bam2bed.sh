@@ -11,7 +11,6 @@ if [ ! -f "$NAME.bed" ]; then
 #PBS -N bam2bed_$NAME
 #PBS -l nodes=1:ppn=8,walltime=2:00:00,vmem=6gb
 #PBS -j oe
-#PBS -q dque
 #PBS -o $WORK_DIR/qsub/bam2bed_$NAME.log
 
 # Loading modules

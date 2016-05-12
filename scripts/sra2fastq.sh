@@ -11,7 +11,6 @@ if [ ! -f "$NAME.fastq" ]; then
 #PBS -N sra2fastq_$NAME
 #PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=6gb
 #PBS -j oe
-#PBS -q dque
 #PBS -o $WORK_DIR/qsub/sra2fastq_$NAME.log
 
 # Loading sratoolkit module

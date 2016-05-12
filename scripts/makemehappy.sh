@@ -74,7 +74,6 @@ if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
 #PBS -N bowtie_indexes_${GENOME}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=48gb
 #PBS -j oe
-#PBS -q dque
 #PBS -o $WORK_DIR/qsub/bowtie_indexes_${GENOME}.log
 
 # Load module
