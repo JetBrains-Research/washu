@@ -23,9 +23,9 @@ export BOWTIE_INDEXES="$WORK_DIR/$GENOME"
 cd $WORK_DIR
 bowtie -p 8 -St -m 1 -v 3 --best --strata $GENOME $FASTQ_FILE $NAME.sam
 samtools view -bS -o $NAME.bam $NAME.sam
-samtools sort $NAME.bam $NAME.sorted
-mv $NAME.sorted.bam $NAME.bam
 rm $NAME.sam
+samtools sort $NAME.bam -o $NAME.sorted
+mv -f $NAME.sorted.bam $NAME.bam
 ENDINPUT
 )
 fi
