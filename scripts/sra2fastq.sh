@@ -16,6 +16,7 @@ if [ ! -f "$NAME.fastq" ]; then
 # Loading sratoolkit module
 module load sratoolkit
 
+echo "Folder: `pwd`"
 fastq-dump --split-3 --outdir $WORK_DIR $SRA_FILE
 ENDINPUT
 )

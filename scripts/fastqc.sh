@@ -17,6 +17,7 @@ if [ ! -f "${NAME}_fastqc.html" ]; then
 # Loading modules
 module load fastqc
 
+echo "Folder: `pwd`"
 fastqc $FASTQ_FILE
 ENDINPUT
 )

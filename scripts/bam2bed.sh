@@ -16,6 +16,7 @@ if [ ! -f "$NAME.bed" ]; then
 # Loading modules
 module load bedtools
 
+echo "Folder: `pwd`"
 bedtools bamtobed -i $BAM_FILE > $NAME.bed
 ENDINPUT
 )

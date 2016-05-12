@@ -40,6 +40,7 @@ if [ ! -f "$WORK_DIR/$GENOME/chr1.fa" ]; then
     # Download only chromosomes sequences
     rsync -avzP --exclude="chr*_*" --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/$GENOME/chromosomes/ .
     gunzip *.fa.gz
+    chmod a+r *
     cd $WORK_DIR
 fi
 
@@ -68,7 +69,6 @@ wait_complete $FASTQC_TASKS
 
 echo "Check bowtie indexes"
 if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
-    cd $WORK_DIR/$GENOME
     QSUB_ID=$(qsub -d $WORK_DIR/$GENOME << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie_indexes_${GENOME}
@@ -79,10 +79,10 @@ if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
 # Load module
 module load bowtie
 
+echo "Folder: `pwd`"
 bowtie-build $(find $WORK_DIR/$GENOME -type f -name "*.fa" -printf '%P\n' | paste -sd "," -) $GENOME
 ENDINPUT
 )
-    cd $WORK_DIR
     wait_complete $QSUB_ID
 fi
 
