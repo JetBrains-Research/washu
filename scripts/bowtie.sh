@@ -25,7 +25,7 @@ bowtie -p 8 -St -m 1 -v 3 --best --strata $GENOME $FASTQ_FILE $NAME.sam
 samtools view -bS -o $NAME.bam $NAME.sam
 rm $NAME.sam
 samtools sort $NAME.bam -o $NAME.sorted.bam
-mv -f $NAME.sorted $NAME.bam
+mv -f $NAME.sorted.bam $NAME.bam
 ENDINPUT
 )
 fi
