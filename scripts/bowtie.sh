@@ -22,10 +22,10 @@ export BOWTIE_INDEXES="$WORK_DIR/$GENOME"
 # This is necessary because qsub default working dir is user home
 cd $WORK_DIR
 bowtie -p 8 -St -m 1 -v 3 --best --strata $GENOME $FASTQ_FILE $NAME.sam
-samtools view -bS -o $NAME.bam $NAME.sam
-rm $NAME.sam
-samtools sort $NAME.bam -o $NAME.sorted.bam
-mv -f $NAME.sorted.bam $NAME.bam
+samtools view -bS -o ${NAME}_not_sorted.bam $NAME.sam
+samtools sort ${NAME}_not_sorted.bam -o $NAME.bam
+# Remove intermediate files
+rm $NAME.sam ${NAME}_not_sorted.bam
 ENDINPUT
 )
 fi
