@@ -19,5 +19,5 @@ fi
 
 # Remove empty folder
 if [ -d ftp-trace.ncbi.nlm.nih.gov ]; then
-    rm ftp-trace.ncbi.nlm.nih.gov
+    rm -rf ftp-trace.ncbi.nlm.nih.gov
 fi
