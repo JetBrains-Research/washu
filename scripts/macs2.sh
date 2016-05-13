@@ -19,7 +19,7 @@ if [ ! -f "${ID}_peaks.bed" ]; then
 #PBS -N macs2_$ID
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o $WORK_DIR/qsub/macs2_${GENOME}_${Q}_$NAME.log
+#PBS -o $WORK_DIR/qsub/${NAME}_macs2_${GENOME}.log
 
 # Loading modules. TODO: install macs2 on washu cluster
 # module load macs2

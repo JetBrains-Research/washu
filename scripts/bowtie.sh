@@ -12,7 +12,7 @@ if [ ! -f "$NAME.bam" ]; then
 #PBS -N bowtie_${GENOME}_$NAME
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o $WORK_DIR/qsub/bowtie_${GENOME}_$NAME.log
+#PBS -o $WORK_DIR/qsub/${NAME}_bowtie_${GENOME}.log
 
 # Loading modules
 module load bowtie
