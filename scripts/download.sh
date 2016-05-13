@@ -16,3 +16,8 @@ fi
 if [ ! -f SRR787516.sra ]; then
     wget -r ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR787/SRR787516/SRR787516.sra -O SRR787516.sra
 fi
+
+# Remove empty folder
+if [ -d ftp-trace.ncbi.nlm.nih.gov ]; then
+    rm ftp-trace.ncbi.nlm.nih.gov
+fi
