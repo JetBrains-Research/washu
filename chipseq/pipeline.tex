@@ -126,7 +126,7 @@ One of five criteria:
 \item affinity enrichment followed by mass spectrometry
 \item binding-site motif analysis
 \end{itemize}
-20\% (44 of 227) of the tested commercially available antibodies against transcription factors meet these characterization guidelines and also function in ChIP-seq assays.
+20\% (44 of 227) of the tested commercially available antibodies against \textbf{transcription factors} meet these characterization guidelines and also function in ChIP-seq assays.
 \end{frame}
 
 \begin{frame}{Replication, sequencing depth, library complexity}
@@ -181,10 +181,10 @@ A \textbf{major advantage} of IDR is that it can be used to establish a stable t
 \begin{itemize}
 \item Read depth $\geq$ 10 mln reads
 \item 2 biological replicates
-\item NFR
+\item NFR\footnote{This will fail ENCODE guideline, because of new protocol}
 \item FRiP
 \item Strand cross-correlation
-\item NSC
+\item NSC for sharp histone modifications 
 \item IDR
 \end{itemize}
 \end{frame}
@@ -211,7 +211,7 @@ A \textbf{major advantage} of IDR is that it can be used to establish a stable t
 \begin{itemize}
 \item The percentage varies between organisms, and for human, mouse, etc, above 70\% uniquely mapped reads is normal, whereas less than 50\% may be cause for concern.
 \item SNR - signal-to-noise ratio. SNR can be estimated by strand cross-correlation or IP enrichment estimation using the software package CHANCE. Strand cross-correlation analysis is built into some peak callers (e.g., SPP or MACS2).
-\item The reproducibility of the reads can be measured by computing the Pearson correlation coefficient (PCC) of the (mapped) read counts at each genomic position. High quality experiments: PCC $\geq$ 0.9. (0.3 for unrelated samples).
+\item The reproducibility of the reads can be measured by computing the Pearson correlation coefficient (PCC) of the (mapped) read counts at each genomic position\footnote{Only position with reads are taken into account}. High quality experiments: PCC $\geq$ 0.9. (0.3 for unrelated samples).
 \end{itemize}
 \end{frame}
 
@@ -274,6 +274,13 @@ Consensus of 2 papers:
 \end{itemize}
 TODO: test ZINBRA\footnote{\url{https://github.com/JetBrains-Research/zinbra}} in terms of IDR
 \end{frame}
+
+\begin{frame}{Mappability}
+
+
+\end{frame}
+
+
 
 \begin{frame}{Differential peak calling}
 Two alternatives have been proposed.\footnote{Practical Guidelines for the Comprehensive Analysis of ChIP-seq Data}
