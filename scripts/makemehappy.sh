@@ -26,6 +26,12 @@ wait_complete()
     echo "Done."
 }
 
+# Checks for logs
+check_logs()
+{
+    find . -name "*.log" | xargs grep -i -e "err|warn"
+}
+
 echo "Log folder $WORK_DIR/qsub"
 if [ ! -d "$WORK_DIR/qsub" ]; then
     mkdir $WORK_DIR/qsub
@@ -54,6 +60,7 @@ do :
     SRA2FASTQ_JOBS="$SRA2FASTQ_JOBS $QSUB_ID"
 done
 wait_complete $SRA2FASTQ_JOBS
+check_logs
 
 echo "Submitting fastqc tasks"
 FASTQC_TASKS=""
@@ -64,6 +71,7 @@ do :
     FASTQC_TASKS="$FASTQC_TASKS $QSUB_ID"
 done
 wait_complete $FASTQC_TASKS
+check_logs
 
 echo "Check bowtie indexes"
 if [ ! -f "$WORK_DIR/$GENOME/$GENOME.1.ebwt" ]; then
@@ -85,6 +93,7 @@ ENDINPUT
 )
     cd $WORK_DIR
     wait_complete $QSUB_ID
+    check_logs
 fi
 
 echo "Submitting bowtie tasks"
@@ -96,6 +105,7 @@ do :
     BOWTIE_TASKS="$BOWTIE_TASKS $QSUB_ID"
 done
 wait_complete $BOWTIE_TASKS
+check_logs
 
 echo "Submitting macs2 tasks"
 MACS2_TASKS=""
@@ -106,3 +116,4 @@ do :
     MACS2_TASKS="$MACS2_TASKS $QSUB_ID"
 done
 wait_complete $MACS2_TASKS
+check_logs
