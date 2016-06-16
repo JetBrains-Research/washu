@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "Pipeline script"
+echo "ChIP-Seq pipeline script"
 WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
 
@@ -44,9 +44,6 @@ if [ ! -f "$WORK_DIR/$GENOME/chr1.fa" ]; then
     chmod a+r *
     cd $WORK_DIR
 fi
-
-echo "Downloading files"
-~/work/washu/scripts/download.sh
 
 echo "Submitting sra2fastq if tasks if necessary"
 SRA2FASTQ_JOBS=""
