@@ -48,7 +48,7 @@ fi
 echo "Downloading files"
 ~/work/washu/scripts/download.sh
 
-echo "Submitting sra2fastq tasks"
+echo "Submitting sra2fastq if tasks if necessary"
 SRA2FASTQ_JOBS=""
 for FILE in $(find . -type f -name "*.sra" -printf '%P\n')
 do :
@@ -60,7 +60,7 @@ wait_complete $SRA2FASTQ_JOBS
 
 echo "Submitting fastqc tasks"
 FASTQC_TASKS=""
-for FILE in $(find . -type f -name "*.fastq" -printf '%P\n')
+for FILE in $(find . -type f -regextype posix-egrep -regex '.*(fastq|fq)(\.gz)?' -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/fastqc.sh $FILE`
     echo "$FILE: $QSUB_ID"
@@ -92,7 +92,7 @@ fi
 
 echo "Submitting bowtie tasks"
 BOWTIE_TASKS=""
-for FILE in $(find . -type f -name "*.fastq" -printf '%P\n')
+for FILE in $(find . -type f -regextype posix-egrep -regex '.*(fastq|fq)(\.gz)?' -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/bowtie.sh $GENOME $FILE`
     echo "$FILE: $QSUB_ID"

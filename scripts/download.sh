@@ -1,23 +1,8 @@
 #!/usr/bin/env bash
-# Download H3K4me3 data for Monocytes CD14+ from ENCODE and roadmapepigenomics
+Download data from GTAC facility
 # author oleg.shpynov@jetbrains.com
 
-echo "Downloading ENCODE data"
-if [ ! -f SRR568364.sra ]; then
-    wget -r ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR568/SRR568364/SRR568364.sra -O SRR568364.sra
-fi
-if [ ! -f SRR568365.sra ]; then
-    wget -r ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR568/SRR568365/SRR568365.sra -O SRR568365.sra
-fi
-echo "Downloading Roadmapepigenomics data"
-if [ ! -f SRR787515.sra ]; then
-    wget -r ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR787/SRR787515/SRR787515.sra -O SRR787515.sra
-fi
-if [ ! -f SRR787516.sra ]; then
-    wget -r ftp://ftp-trace.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByRun/sra/SRR/SRR787/SRR787516/SRR787516.sra -O SRR787516.sra
-fi
-
-# Remove empty folder
-if [ -d ftp-trace.ncbi.nlm.nih.gov ]; then
-    rm -rf ftp-trace.ncbi.nlm.nih.gov
-fi
+echo "Downloading 1901_6 and 1901_7 data"
+wget -r https://htcf.wustl.edu/files/G3ex3Bdw/Oltz_1901_6/
+wget -r https://htcf.wustl.edu/files/G3ex3Bdw/Oltz_1901_7/
+find . -name *.fq.gz | xargs -i cp {} .
