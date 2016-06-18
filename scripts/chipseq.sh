@@ -57,17 +57,6 @@ if [ ! -f "$WORK_DIR/$GENOME/chr1.fa" ]; then
     cd $WORK_DIR
 fi
 
-echo "Submitting sra2fastq if tasks if necessary"
-SRA2FASTQ_JOBS=""
-for FILE in $(find . -type f -name "*.sra" -printf '%P\n')
-do :
-    QSUB_ID=`~/work/washu/scripts/sra2fastq.sh $FILE`
-    echo "$FILE: $QSUB_ID"
-    SRA2FASTQ_JOBS="$SRA2FASTQ_JOBS $QSUB_ID"
-done
-wait_complete $SRA2FASTQ_JOBS
-check_logs
-
 echo "Submitting fastqc tasks"
 FASTQC_TASKS=""
 for FILE in $(find . -type f -regextype posix-egrep -regex '.*(fastq|fq)(\.gz)?' -printf '%P\n')
