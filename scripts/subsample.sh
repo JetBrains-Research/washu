@@ -11,7 +11,7 @@ if [ ! -f "${ID}.bam" ]; then
     echo $(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N subsample_$ID
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -l nodes=1:ppn=8,walltime=4:00:00,vmem=8gb
 #PBS -j oe
 #PBS -o $WORK_DIR/qsub/${NAME}_subsample_${SUBSAMPLE_READS}.log
 
