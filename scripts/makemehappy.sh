@@ -29,7 +29,13 @@ wait_complete()
 # Checks for logs
 check_logs()
 {
-    find . -name "*.log" | xargs grep -i -e "err|warn"
+
+    ERRORS=`find . -name "*.log" | xargs grep -i -e "err|warn"`
+    if [ ! -z "$ERRORS" ]; then
+        echo "ERRORS found"
+        echo "$ERRORS"
+        exit 1
+    fi
 }
 
 echo "Log folder $WORK_DIR/qsub"
