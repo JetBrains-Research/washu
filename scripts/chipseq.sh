@@ -104,7 +104,7 @@ fi
 
 echo "Submitting bowtie tasks"
 BOWTIE_TASKS=""
-for FILE in $(find . -type f -regextype posix-egrep -regex '.*(fastq|fq)(\.gz)?' -printf '%P\n')
+for FILE in $(find . -type f -regextype posix-egrep -regex '.*(fastq|fq)' -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/bowtie.sh $GENOME $FILE`
     echo "$FILE: $QSUB_ID"
