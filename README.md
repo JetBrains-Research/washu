@@ -22,4 +22,3 @@ NOTE: this is the very first sketch, tools used are subject to discuss.
 
 # Data
 Please ensure that you have all the data downloaded.
-Use `/scripts/download.sh` to obtain necessary data.
