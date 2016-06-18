@@ -113,9 +113,21 @@ done
 wait_complete $BOWTIE_TASKS
 check_logs
 
+READS=15000000
+echo "Subsampling to $READS reads"
+SUBSAMPLE_TASKS=""
+for FILE in $(find . -type f -name "*.bam" -printf '%P\n')
+do :
+    QSUB_ID=`~/work/washu/scripts/subsample.sh $FILE $READS`
+    echo "$FILE: $QSUB_ID"
+    SUBSAMPLE_TASKS="$SUBSAMPLE_TASKS $QSUB_ID"
+done
+wait_complete $SUBSAMPLE_TASKS
+check_logs
+
 echo "Submitting macs2 tasks"
 MACS2_TASKS=""
-for FILE in $(find . -type f -name "*.bam" -printf '%P\n')
+for FILE in $(find . -type f -name "*$READS*.bam" -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/macs2.sh $GENOME 0.01 $FILE`
     echo "$FILE: $QSUB_ID"

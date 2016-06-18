@@ -28,7 +28,7 @@ if [ ! -f "${ID}_peaks.bed" ]; then
 cd $WORK_DIR
 /home/oshpynov/miniconda2/bin/macs2 callpeak -t $BAM_FILE -f BAM -g $SPECIES -n $ID -B -q $Q
 
-# Remove all the produced files except
+# Cleanup
 mv ${ID}_peaks.narrowPeak do_not_remove_${ID}_peaks.bed
 rm ${ID}*
 mv do_not_remove_${ID}_peaks.bed ${ID}_peaks.bed

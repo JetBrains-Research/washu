@@ -24,7 +24,7 @@ cd $WORK_DIR
 bowtie -p 8 -St -m 1 -v 3 --best --strata $GENOME $FASTQ_FILE $NAME.sam
 samtools view -bS -o ${NAME}_not_sorted.bam $NAME.sam
 samtools sort ${NAME}_not_sorted.bam -o $NAME.bam
-# Remove intermediate files
+# Cleanup
 rm $NAME.sam ${NAME}_not_sorted.bam
 ENDINPUT
 )
