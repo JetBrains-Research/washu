@@ -6,7 +6,7 @@ GENOME=$1
 WORK_DIR=$2
 
 # Load technical stuff
-source util.sh
+source ~/work/washu/scripts/util.sh
 
 echo "Processing genome $GENOME"
 if [ ! -d "$WORK_DIR/$GENOME" ]; then

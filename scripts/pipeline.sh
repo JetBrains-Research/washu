@@ -5,7 +5,7 @@ WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
 
 # Load technical stuff
-source util.sh
+source ~/work/washu/scripts/util.sh
 
 echo "Log folder $WORK_DIR/qsub"
 if [ ! -d "$WORK_DIR/qsub" ]; then
