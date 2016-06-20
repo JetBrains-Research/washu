@@ -31,6 +31,7 @@ wait_complete $FASTQC_TASKS
 check_logs
 mkdir ${WORK_DIR}/fastqc
 mv *_fastqc.* ${WORK_DIR}/fastqc
+multiqc ${WORK_DIR}/fastqc
 
 
 
@@ -64,6 +65,7 @@ wait_complete $FASTQC_TASKS
 check_logs
 mkdir ${WORK_DIR}/fastqc
 mv *_fastqc.* ${WORK_DIR}/fastqc
+multiqc ${WORK_DIR}/fastqc
 
 
 
