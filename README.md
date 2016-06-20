@@ -18,7 +18,7 @@ NOTE: this is the very first sketch, tools used are subject to discuss.
 
 ### Usage
 * Navigate to directory shared among the greed
-* Execute `/scripts/chipseq.sh` script
+* Execute `/scripts/pipeline.sh` script
 
 # Data
 Please ensure that you have all the data downloaded.

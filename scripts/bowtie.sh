@@ -4,6 +4,7 @@
 WORK_DIR=`pwd`
 GENOME=$1
 FASTQ_FILE=$2
+INDICES=$3
 NAME=${FASTQ_FILE%%.f*q} # file name without extension
 
 if [ ! -f "$NAME.bam" ]; then
@@ -18,7 +19,7 @@ if [ ! -f "$NAME.bam" ]; then
 module load bowtie
 module load samtools
 
-export BOWTIE_INDEXES="$WORK_DIR/$GENOME"
+export BOWTIE_INDEXES="$INDICES"
 # This is necessary because qsub default working dir is user home
 cd $WORK_DIR
 bowtie -p 8 -St -m 1 -v 3 --best --strata $GENOME $FASTQ_FILE $NAME.sam

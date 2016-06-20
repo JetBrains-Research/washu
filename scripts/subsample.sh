@@ -24,10 +24,13 @@ samtools view -H ${BAM_FILE} > head_${NAME}.sam
 samtools view ${BAM_FILE} > nohead_${NAME}.sam
 shuf -n ${SUBSAMPLE_READS} nohead_${NAME}.sam > nohead_${ID}.sam
 cat head_${NAME}.sam nohead_${ID}.sam > ${ID}.sam
-samtools view -bS ${ID}.sam -o ${ID}.bam
+samtools view -bS ${ID}.sam -o not_sorted_${ID}.bam
+samtools sort not_sorted_${ID}.bam -o ${ID}.bam
 
 # Cleanup
-rm *head*_$NAME*; rm ${ID}.sam;
+rm *head*_${NAME}*
+rm ${ID}.sam
+rm not_sorted_${ID}.bam
 ENDINPUT
 )
 fi
