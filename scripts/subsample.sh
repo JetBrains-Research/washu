@@ -20,15 +20,14 @@ module load samtools
 # This is necessary because qsub default working dir is user home
 cd $WORK_DIR
 
-samtools view -h -o ${NAME}.sam ${BAM_FILE}
-grep -v '^@' ${NAME}.sam > nohead_${NAME}.sam
-sample --sample-size ${SUBSAMPLE_READS} --sample-without-replacement --preserve-order nohead_${NAME}.sam > nohead_${ID}.sam
-samtools reheader nohead_${ID}.sam ${BAM_FILE}
-samtools view -bS nohead_${ID}.sam -o ${ID}.bam
+samtools view -H ${BAM_FILE} > head_${NAME}.sam
+samtools view ${BAM_FILE} > nohead_${NAME}.sam
+shuf -n ${SUBSAMPLE_READS} nohead_${NAME}.sam > nohead_${ID}.sam
+cat head_${NAME}.sam nohead_${ID}.sam > ${ID}.sam
+samtools view -bS ${ID}.sam -o ${ID}.bam
 
 # Cleanup
-rm nohead_$NAME*
-rm ${NAME}.sam
+rm *head*_$NAME*; rm ${ID}.sam;
 ENDINPUT
 )
 fi
