@@ -9,17 +9,17 @@ NAME=${FASTQ_FILE%%.f*q} # file name without extension
 if [ ! -f "${NAME}_fastqc.html" ]; then
     echo $(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N fastqc_$NAME
+#PBS -N fastqc_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=2:00:00,vmem=8gb
 #PBS -j oe
-#PBS -o $WORK_DIR/qsub/${NAME}_fastqc.log
+#PBS -o ${WORK_DIR}/qsub/${NAME}_fastqc.log
 
 # Loading modules
 module load fastqc
 
 # This is necessary because qsub default working dir is user home
-cd $WORK_DIR
-fastqc $FASTQ_FILE
+cd ${WORK_DIR}
+fastqc ${FASTQ_FILE}
 ENDINPUT
 )
 fi

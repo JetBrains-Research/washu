@@ -9,12 +9,12 @@ ID=${NAME}_${TRIM_START}
 if [ ! -f "${ID}.fq" ]; then
     echo $(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N bowtie_${GENOME}_$NAME
+#PBS -N bowtie_${GENOME}_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=4:00:00,vmem=4gb
 #PBS -j oe
-#PBS -o $WORK_DIR/qsub/${NAME}_trim_${TRIM_START}.log
+#PBS -o ${WORK_DIR}/qsub/${NAME}_trim_${TRIM_START}.log
 
-/home/oshpynov/seqtk/seqtk trimfq -b 5 $FASTQ_FILE > ${ID}.fq
+/home/oshpynov/seqtk/seqtk trimfq -b 5 ${FASTQ_FILE} > ${ID}.fq
 ENDINPUT
 )
 fi
