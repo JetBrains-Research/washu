@@ -42,9 +42,10 @@ do :
 done
 wait_complete ${TRIM_TASKS}
 check_logs
-mkdir ${WORK_DIR}/../trim
-mv *_5.* ${WORK_DIR}/../trim
-cd ${WORK_DIR}/../trim
+TRIMMED=${WORK_DIR}/../trim
+mkdir ${TRIMMED}
+mv *_5.* ${TRIMMED}
+cd ${TRIMMED}
 WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
 
@@ -76,8 +77,27 @@ do :
 done
 wait_complete ${BOWTIE_TASKS}
 check_logs
+BAMS=${WORK_DIR}/../bams
+mkdir ${BAMS}
+mv *.bam ${BAMS}
+mv *bowtie*.log ${BAMS}
+cd ${BAMS}
+WORK_DIR=`pwd`
+echo "Working directory: $WORK_DIR"
 
 
+echo "Create TDF tracks for $GENOME"
+TDF_TASKS=""
+for FILE in $(find . -type f -name '*.bam' -printf '%P\n')
+do :
+QSUB_ID=`~/work/washu/scripts/tdf.sh ${FILE} ${GENOME}`
+    echo "$FILE: $QSUB_ID"
+    SUBSAMPLE_TASKS="$TDF_TASKS $QSUB_ID"
+done
+wait_complete ${TDF_TASKS}
+check_logs
+mkdir ${WORK_DIR}/../tdfs
+mv *tdf* ${WORK_DIR}/../tdfs
 
 
 READS=15000000
@@ -91,9 +111,10 @@ do :
 done
 wait_complete ${SUBSAMPLE_TASKS}
 check_logs
-mkdir ${WORK_DIR}/../subsampled
-mv *${READS}* ${WORK_DIR}/../subsampled
-cd ${WORK_DIR}/../subsampled
+SUBSAMPLED=${WORK_DIR}/../subsampled
+mkdir ${SUBSAMPLED}
+mv *${READS}* ${SUBSAMPLED}
+cd ${SUBSAMPLED}
 WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
 
@@ -109,3 +130,10 @@ do :
 done
 wait_complete ${MACS2_TASKS}
 check_logs
+PEAKS=${WORK_DIR}/../peaks
+mkdir ${PEAKS}
+mv *.bed ${PEAKS}
+mv *macs* ${PEAKS}
+cd ${PEAKS}
+WORK_DIR=`pwd`
+echo "Working directory: $WORK_DIR"
