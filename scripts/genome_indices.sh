@@ -16,7 +16,7 @@ cd ${FOLDER}
 
 if [ ! -f "chr1.fa" ]; then
     # Download only chromosomes sequences
-    rsync -avzP --exclude="chr*_*" --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/chromosomes/ .
+    rsync -avzP --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/chromosomes/ .
     gunzip *.fa.gz
     chmod a+r *
 fi
