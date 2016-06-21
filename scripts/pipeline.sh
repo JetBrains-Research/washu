@@ -7,8 +7,9 @@ echo "Working directory: $WORK_DIR"
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
-# Check indices
-GENOME=hg38
+# Nothing to compare with aligned on hg38, so stick with hg19 for now
+GENOME=hg19
+
 INDEXES=${WORK_DIR}/../${GENOME}
 ~/work/washu/scripts/genome_indices.sh ${GENOME} ${INDEXES}
 cd ${WORK_DIR}
