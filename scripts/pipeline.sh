@@ -14,7 +14,7 @@ fi
 
 # Check indices
 GENOME=hg38
-INDEXES=${WORK_DIR}/${GENOME}
+INDEXES=${WORK_DIR}/../${GENOME}
 ./genome_indices.sh ${GENOME} ${INDEXES}
 cd ${WORK_DIR}
 
