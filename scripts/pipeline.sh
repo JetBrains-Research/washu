@@ -11,6 +11,7 @@ source ~/work/washu/scripts/util.sh
 GENOME=hg19
 
 INDEXES=${WORK_DIR}/../${GENOME}
+echo "Genomes and indices folder: ${INDEXES}"
 ~/work/washu/scripts/genome_indices.sh ${GENOME} ${INDEXES}
 cd ${WORK_DIR}
 
@@ -51,7 +52,7 @@ do :
 done
 wait_complete ${TRIM_TASKS}
 check_logs
-TRIMMED=${WORK_DIR}/../trim
+TRIMMED=${WORK_DIR}_trim
 mkdir ${TRIMMED}
 mv *_5.* ${TRIMMED}
 cd ${TRIMMED}
@@ -86,7 +87,7 @@ do :
 done
 wait_complete ${BOWTIE_TASKS}
 check_logs
-BAMS=${WORK_DIR}/../bams
+BAMS=${WORK_DIR}_bams
 mkdir ${BAMS}
 mv *.bam ${BAMS}
 mv *bowtie*.log ${BAMS}
@@ -120,7 +121,7 @@ do :
 done
 wait_complete ${SUBSAMPLE_TASKS}
 check_logs
-SUBSAMPLED=${WORK_DIR}/../subsampled
+SUBSAMPLED=${WORK_DIR}_subsampled
 mkdir ${SUBSAMPLED}
 mv *${READS}* ${SUBSAMPLED}
 cd ${SUBSAMPLED}
@@ -139,7 +140,7 @@ do :
 done
 wait_complete ${MACS2_TASKS}
 check_logs
-PEAKS=${WORK_DIR}/../peaks
+PEAKS=${WORK_DIR}_peaks
 mkdir ${PEAKS}
 mv *.bed ${PEAKS}
 mv *macs* ${PEAKS}
