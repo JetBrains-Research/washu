@@ -12,7 +12,10 @@ if [ ! -f "${ID}.fq" ]; then
 #PBS -N bowtie_${GENOME}_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=4:00:00,vmem=4gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/qsub/${NAME}_trim_${TRIM_START}.log
+#PBS -o ${WORK_DIR}/${NAME}_trim_${TRIM_START}.log
+
+# This is necessary because qsub default working dir is user home
+cd ${WORK_DIR}
 
 /home/oshpynov/seqtk/seqtk trimfq -b 5 ${FASTQ_FILE} > ${ID}.fq
 ENDINPUT

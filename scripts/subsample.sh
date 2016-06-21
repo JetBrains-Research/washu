@@ -13,7 +13,7 @@ if [ ! -f "${ID}.bam" ]; then
 #PBS -N subsample_${ID}
 #PBS -l nodes=1:ppn=8,walltime=4:00:00,vmem=8gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/qsub/${NAME}_subsample_${SUBSAMPLE_READS}.log
+#PBS -o ${WORK_DIR}/${NAME}_subsample_${SUBSAMPLE_READS}.log
 
 module load samtools
 

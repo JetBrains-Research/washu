@@ -12,7 +12,7 @@ if [ ! -f "${NAME}_fastqc.html" ]; then
 #PBS -N fastqc_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=2:00:00,vmem=8gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/qsub/${NAME}_fastqc.log
+#PBS -o ${WORK_DIR}/${NAME}_fastqc.log
 
 # Loading modules
 module load fastqc

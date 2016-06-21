@@ -14,8 +14,9 @@ fi
 
 # Check indices
 GENOME=hg38
-./genome_indices.sh ${GENOME} ${WORK_DIR}
-BOWTIE_INDEXES=${WORK_DIR}/${GENOME}
+INDEXES=${WORK_DIR}/${GENOME}
+./genome_indices.sh ${GENOME} ${INDEXES}
+cd ${WORK_DIR}
 
 
 
@@ -73,7 +74,7 @@ echo "Submitting bowtie tasks"
 BOWTIE_TASKS=""
 for FILE in $(find . -type f -name '.f*q' -printf '%P\n')
 do :
-    QSUB_ID=`~/work/washu/scripts/bowtie.sh ${GENOME} ${FILE} ${BOWTIE_INDEXES}`
+    QSUB_ID=`~/work/washu/scripts/bowtie.sh ${GENOME} ${FILE} ${INDEXES}`
     echo "$FILE: $QSUB_ID"
     BOWTIE_TASKS="$BOWTIE_TASKS $QSUB_ID"
 done
