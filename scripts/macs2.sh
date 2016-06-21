@@ -21,9 +21,6 @@ if [ ! -f "${ID}_peaks.bed" ]; then
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_macs2_${GENOME}.log
 
-# Loading modules. TODO: install macs2 on washu cluster
-# module load macs2
-
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 /home/oshpynov/miniconda2/bin/macs2 callpeak -t ${BAM_FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}

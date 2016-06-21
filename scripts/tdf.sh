@@ -14,9 +14,6 @@ if [ ! -f ${NAME}.tdf ]; then
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_tdf.log
 
-# Loading modules. TODO: install macs2 on washu cluster
-# module load macs2
-
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 /home/oshpynov/IGVTools/igvtools count -z 5 -w 50 -e 0 ${BAM_FILE} ${NAME}.tdf ${GENOME}
