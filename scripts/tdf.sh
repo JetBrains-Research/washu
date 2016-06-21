@@ -6,7 +6,7 @@ BAM_FILE=$1
 GENOME=$2
 NAME=${BAM_FILE%%.bam} # file name without extension
 
-if [ ! -f ${NAME}.tdf ]; then
+if [ ! -f "${NAME}.tdf" ]; then
     echo $(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N tdf_${ID}

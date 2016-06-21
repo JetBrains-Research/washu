@@ -8,7 +8,7 @@ INDICES=$3
 NAME=${FASTQ_FILE%%.f*q} # file name without extension
 ID=${NAME}_${GENOME}
 
-if [ ! -f ${ID}.bam ]; then
+if [ ! -f "${ID}.bam" ]; then
     echo $(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie_${GENOME}_${NAME}
