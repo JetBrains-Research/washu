@@ -14,7 +14,16 @@ INDEXES=${WORK_DIR}/../${GENOME}
 ~/work/washu/scripts/genome_indices.sh ${GENOME} ${INDEXES}
 cd ${WORK_DIR}
 
-
+echo "Submitting sra2fastq if tasks if necessary"
+SRA2FASTQ_JOBS=""
+for FILE in $(find . -type f -name "*.sra" -printf '%P\n')
+do :
+    QSUB_ID=`~/work/washu/scripts/sra2fastq.sh $FILE`
+    echo "$FILE: $QSUB_ID"
+    SRA2FASTQ_JOBS="$SRA2FASTQ_JOBS $QSUB_ID"
+done
+wait_complete $SRA2FASTQ_JOBS
+check_logs
 
 echo "Submitting fastqc tasks"
 FASTQC_TASKS=""
