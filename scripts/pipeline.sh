@@ -69,7 +69,7 @@ multiqc ${WORK_DIR}/fastqc
 
 echo "Submitting bowtie tasks"
 BOWTIE_TASKS=""
-for FILE in $(find . -type f -name '.f*q' -printf '%P\n')
+for FILE in $(find . -type f -name '*.f*q' -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/bowtie.sh ${GENOME} ${FILE} ${INDEXES}`
     echo "$FILE: $QSUB_ID"
@@ -122,7 +122,7 @@ echo "Working directory: $WORK_DIR"
 
 echo "Submitting macs2 tasks"
 MACS2_TASKS=""
-for FILE in $(find . -type f -name "*$READS*.bam" -printf '%P\n')
+for FILE in $(find . -type f -name "*.bam" -printf '%P\n')
 do :
     QSUB_ID=`~/work/washu/scripts/macs2.sh ${GENOME} 0.01 ${FILE}`
     echo "$FILE: $QSUB_ID"
