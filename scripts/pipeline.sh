@@ -42,7 +42,7 @@ done
 wait_complete ${TRIM_TASKS}
 check_logs
 mkdir ${WORK_DIR}/../trim
-mv *_5.fq ${WORK_DIR}/../trim
+mv *_5.* ${WORK_DIR}/../trim
 cd ${WORK_DIR}/../trim
 WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
