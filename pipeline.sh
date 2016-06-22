@@ -54,7 +54,9 @@ mv *.tdf ${WORK_DIR}_tdfs
 mv *tdf.log ${WORK_DIR}_tdfs
 
 
-# Batch subsampling
+#####################
+# Batch subsampling #
+#####################
 READS=15000000
 bash ~/work/washu/scripts/subsample.sh ${WORK_DIR} ${READS}
 
@@ -67,21 +69,28 @@ WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
 
 
-# Batch macs2
-bash ~/work/washu/scripts/macs2.sh ${WORK_DIR} ${GENOME} 0.01
+# Batch macs with different peak calling procedures settings
+QS=( 0.01 0.1 0.5 )
+for Q in "${QS[@]}"
+do
+    bash ~/work/washu/scripts/macs2.sh ${WORK_DIR} ${GENOME} ${Q}
+    # Move results
+    PEAKS=${WORK_DIR}_macs_${Q}
+    mkdir ${PEAKS}
+    mv *.bed ${PEAKS}
+    mv *macs* ${PEAKS}
+done
 
-# Move results
-PEAKS=${WORK_DIR}_peaks
-mkdir ${PEAKS}
-mv *.bed ${PEAKS}
-mv *macs* ${PEAKS}
-
-# Batch zinbra
-bash ~/work/washu/scripts/zinbra.sh ${WORK_DIR} ${GENOME} ${INDEXES} 0.01
-
-# Move results
-ZINBRA_PEAKS=${WORK_DIR}_zinbra_peaks
-mkdir ${ZINBRA_PEAKS}
-mv *.bed ${ZINBRA_PEAKS}
+# Batch zinbra peak calling
+QS=( 0.001 0.01 0.1 )
+for Q in "${QS[@]}"
+do
+    bash ~/work/washu/scripts/zinbra.sh ${WORK_DIR} ${GENOME} ${INDEXES} ${Q}
+    # Move results
+    PEAKS=${WORK_DIR}_zinbra_${Q}
+    mkdir ${PEAKS}
+    mv *.bed ${PEAKS}
+    mv *zinbra* ${PEAKS}
+done
 
 echo "Done"
