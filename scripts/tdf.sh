@@ -9,7 +9,7 @@ NAME=${BAM_FILE%%.bam} # file name without extension
 if [ ! -f "${NAME}.tdf" ]; then
     echo $(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N tdf_${ID}
+#PBS -N tdf_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_tdf.log
