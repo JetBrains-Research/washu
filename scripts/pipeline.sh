@@ -145,6 +145,19 @@ PEAKS=${WORK_DIR}_peaks
 mkdir ${PEAKS}
 mv *.bed ${PEAKS}
 mv *macs* ${PEAKS}
-cd ${PEAKS}
-WORK_DIR=`pwd`
-echo "Working directory: $WORK_DIR"
+
+echo "Submitting zinbra tasks"
+ZINBRA_TASKS=""
+for FILE in $(find . -type f -name "*.bam" -printf '%P\n')
+do :
+    QSUB_ID=`~/work/washu/scripts/zinbra.sh ${GENOME} ${INDEXES} 0.01 ${FILE}`
+    echo "$FILE: $QSUB_ID"
+    ZINBRA_TASKS="$ZINBRA_TASKS $QSUB_ID"
+done
+wait_complete ${ZINBRA_TASKS}
+check_logs
+ZINBRA_PEAKS=${WORK_DIR}_zinbra_peaks
+mkdir ${ZINBRA_PEAKS}
+mv *.bed ${ZINBRA_PEAKS}
+
+echo "Done"
