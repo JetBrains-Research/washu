@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# author oleg.shpynov@jetbrains.com
 
 # Small procedure to wait until all the tasks are finished on the qsub cluster
 # Example of usage: wait_complete $TASKS, where $TASKS is a task ids returned by qsub.

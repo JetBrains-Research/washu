@@ -21,6 +21,13 @@ if [ ! -f "chr1.fa" ]; then
     chmod a+r *
 fi
 
+echo "Check 2bit reference"
+if [ ! -f "${GENOME}.2bit" ]; then
+    echo "Downloading 2bit reference"
+    wget http://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/bigZips/${GENOME}.2bit
+    chmod a+r *
+fi
+
 echo "Check bowtie indexes ${GENOME}"
 if [ ! -f "$GENOME.1.ebwt" ]; then
     QSUB_ID=$(qsub << ENDINPUT

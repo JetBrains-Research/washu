@@ -1,23 +1,39 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-WORK_DIR=`pwd`
-FASTQ_FILE=$1
-TRIM_START=$2
-NAME=${FASTQ_FILE%%.f*q} # file name without extension
-ID=${NAME}_${TRIM_START}
-if [ ! -f "${ID}.fq" ]; then
-    echo $(qsub << ENDINPUT
+# Load technical stuff
+source ~/work/washu/scripts/util.sh
+
+WORK_DIR=$1
+TRIM=$2
+
+echo "Batch Trim ${TRIM}: ${WORK_DIR}"
+cd ${WORK_DIR}
+
+echo "Submitting trim ${TRIM} nucleotides tasks"
+TASKS=""
+for FILE in $(find . -type f -name '*.f*q' -printf '%P\n')
+do :
+    NAME=${FILE%%.f*q} # file name without extension
+
+    # Submit task
+    QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N bowtie_${GENOME}_${NAME}
+#PBS -N trim_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=4:00:00,vmem=4gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${NAME}_trim_${TRIM_START}.log
+#PBS -o ${WORK_DIR}/${NAME}_trim_${TRIM}.log
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 
-/home/oshpynov/seqtk/seqtk trimfq -b 5 ${FASTQ_FILE} > ${ID}.fq
+/home/oshpynov/seqtk/seqtk trimfq -b 5 ${FILE} > ${NAME}_${TRIM}.fq
 ENDINPUT
 )
-fi
+    echo "$FILE: $QSUB_ID"
+    TASKS="$TASKS $QSUB_ID"
+done
+
+wait_complete ${TASKS}
+check_logs
+echo "Done. Batch Trim ${TRIM}: ${WORK_DIR}"

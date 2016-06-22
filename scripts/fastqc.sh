@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-WORK_DIR=`pwd`
-FASTQ_FILE=$1
-NAME=${FASTQ_FILE%%.f*q} # file name without extension
+# Load technical stuff
+source ~/work/washu/scripts/util.sh
 
-# Fastq produce 2 files: _fastqc.html and _fastq.zip
-if [ ! -f "${NAME}_fastqc.html" ]; then
-    echo $(qsub << ENDINPUT
+WORK_DIR=$1
+echo "Batch Fastqc: ${WORK_DIR}"
+cd ${WORK_DIR}
+
+TASKS=""
+for FILE in $(find . -type f -name '*.f*q' -printf '%P\n')
+do :
+    NAME=${FILE%%.f*q} # file name without extension
+
+    # Submit task
+    QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N fastqc_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=2:00:00,vmem=8gb
@@ -19,7 +26,18 @@ module load fastqc
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
-fastqc ${FASTQ_FILE}
+fastqc ${FILE}
 ENDINPUT
 )
-fi
+    echo "$FILE: $QSUB_ID"
+    TASKS="$TASKS $QSUB_ID"
+done
+
+wait_complete ${TASKS}
+check_logs
+
+echo "Processing multiqc"
+mkdir ${WORK_DIR}/fastqc
+mv *_fastqc.* ${WORK_DIR}/fastqc
+multiqc ${WORK_DIR}/fastqc
+echo "Done. Batch Fastqc: $WORK_DIR"
