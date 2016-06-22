@@ -102,7 +102,7 @@ for FILE in $(find . -type f -name '*.bam' -printf '%P\n')
 do :
 QSUB_ID=`~/work/washu/scripts/tdf.sh ${FILE} ${GENOME}`
     echo "$FILE: $QSUB_ID"
-    SUBSAMPLE_TASKS="$TDF_TASKS $QSUB_ID"
+    TDF_TASKS="$TDF_TASKS $QSUB_ID"
 done
 wait_complete ${TDF_TASKS}
 check_logs
