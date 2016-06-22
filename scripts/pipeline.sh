@@ -147,6 +147,13 @@ mv *.bed ${PEAKS}
 mv *macs* ${PEAKS}
 
 echo "Submitting zinbra tasks"
+if [ ! -f "${INDEXES}/${GENOME}.2bit" ]; then
+    echo "Downloading 2bit reference"
+    cd ${INDEXES}
+    wget http://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/bigZips/${GENOME}.2bit
+    chmod a+r *
+    cd ${WORK_DIR}
+fi
 ZINBRA_TASKS=""
 for FILE in $(find . -type f -name "*.bam" -printf '%P\n')
 do :
