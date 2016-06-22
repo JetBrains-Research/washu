@@ -1,16 +1,13 @@
 #!/usr/bin/env bash
 
-echo "ChIP-Seq pipeline script"
+# Configuration
 WORK_DIR=`pwd`
-echo "Working directory: $WORK_DIR"
+GENOME=hg19 # Nothing to compare with aligned on hg38
+INDEXES=${WORK_DIR}/../${GENOME}
 
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
-# Nothing to compare with aligned on hg38, so stick with hg19 for now
-GENOME=hg19
-
-INDEXES=${WORK_DIR}/../${GENOME}
 echo "Genomes and indices folder: ${INDEXES}"
 bash ~/work/washu/scripts/genome_indices.sh ${GENOME} ${INDEXES}
 cd ${WORK_DIR}
