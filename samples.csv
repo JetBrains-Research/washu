@@ -1,0 +1,72 @@
+ID,Sample,Type
+1,Fresh Donor1,ATAC
+2,Frozen Donor1,ATAC
+3,Fresh K27ac,ULI-ChIP
+4,Frozen K27ac,ULI-ChIP
+5,Donor1 K27ac Input,ULI-ChIP
+6,Fresh K27me3,ULI-ChIP
+7,Frozen K27me3,ULI-ChIP
+8,Donor1 K27me3 Input,ULI-ChIP
+9,Fresh K4me3,ULI-ChIP
+10,Frozen K4me3,ULI-ChIP
+11,Donor1 K4me3 Input,ULI-ChIP
+12,Donor1 Snap1,ATAC
+13,Donor1 Snap2,ATAC
+14,Donor1 Snap3,ATAC
+15,Donor1 Cryo1,ATAC
+16,Donor1 Cryo2,ATAC
+17,Donor1 Cryo3,ATAC
+18,Fresh Donor2,ATAC
+19,Snap Donor2,ATAC
+20,Cryo Donor2,ATAC
+21,Fresh K27ac,ULI-ChIP
+22,Frozen K27ac,ULI-ChIP
+23,Donor2 K27ac Input,ULI-ChIP
+24,Fresh K27me3,ULI-ChIP
+25,Frozen K27me3,ULI-ChIP
+26,Fresh K4me3,ULI-ChIP
+27,Frozen K4me3,ULI-ChIP
+28,Donor2 K4me3 Input,ULI-ChIP
+29,Donor1 K4me3,ULI-ChIP
+30,Donor2 K4me3,ULI-ChIP
+31,Donor1 Input,ULI-ChIP
+32,Donor2 Input,ULI-ChIP
+33,Donor6 Input Kit,ULI-ChIP
+34,Donor6 K27ac Kit,ULI-ChIP
+35,Donor6 Input No Kit,ULI-ChIP
+36,Donor6 K27ac No Kit,ULI-ChIP
+37,Donor6 K27ac,ULI-ChIP
+38,Donor6 K27me3,ULI-ChIP
+39,Donor6 K4me3,ULI-ChIP
+40,Donor6 Input,ULI-ChIP
+41,Donor7 K27ac,ULI-ChIP
+42,Donor7 K27me3,ULI-ChIP
+43,Donor7 K4me3,ULI-ChIP
+44,Donor7 Input,ULI-ChIP
+45,Donor8 K27ac,ULI-ChIP
+46,Donor8 K4me3,ULI-ChIP
+47,Donor8 K27me3,ULI-ChIP
+48,Donor8 Input,ULI-ChIP
+49,Donor2 K27ac,xChIP
+50,Donor8 K27ac,xChIP
+51,Donor8 K4me3,xChIP
+52,Donor8 K27ac,nChIP
+53,Donor8 Input,nChIP
+54,Donor6 Cryo,ATAC
+55,Donor7 Cryo,ATAC
+56,Donor8 Cryo,ATAC
+57,Donor7 K4me1,ULI-ChIP
+58,Donor7 K36me3,ULI-ChIP
+59,Donor7 K9me3 (AbCam),ULI-ChIP
+60,Donor7 Input,ULI-ChIP
+61,Donor8 K4me1,ULI-ChIP
+62,Donor8 K36me3,ULI-ChIP
+63,Donor8 K9me3 (AbCam),ULI-ChIP
+64,Donor8 K9me3 (ActiveMotif),ULI-ChIP
+65,Donor8 Input,ULI-ChIP
+66,Donor6 K4me1,ULI-ChIP
+67,Donor6 K9me3 (AbCam),ULI-ChIP
+68,Donor6 K9me3 (ActiveMotif),ULI-ChIP
+69,Donor6 K36me3,ULI-ChIP
+70,Donor6 Input,ULI-ChIP
+71,Donor7 K9me3 (ActiveMotif),ULI-ChIP
