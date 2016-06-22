@@ -107,7 +107,8 @@ done
 wait_complete ${TDF_TASKS}
 check_logs
 mkdir ${WORK_DIR}_tdfs
-mv *tdf* ${WORK_DIR}_tdfs
+mv *.tdf ${WORK_DIR}_tdfs
+mv *tdf.log ${WORK_DIR}_tdfs
 
 
 READS=15000000
