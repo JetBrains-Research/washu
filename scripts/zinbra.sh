@@ -9,7 +9,7 @@ BAM_FILE=$4
 NAME=${BAM_FILE%%.bam} # file name without extension
 ID=${NAME}_${GENOME}_${Q}
 
-if [! -f "${INDEX_DIR}/${GENOME}.2bit"]; then
+if [ ! -f "${INDEX_DIR}/${GENOME}.2bit" ]; then
     echo "Downloading sequence 2bit required for zinbra"
     cd ${INDEX_DIR}
     wget http://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/bigZips/${GENOME}.2bit
