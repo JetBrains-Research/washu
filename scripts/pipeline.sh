@@ -106,8 +106,8 @@ QSUB_ID=`~/work/washu/scripts/tdf.sh ${FILE} ${GENOME}`
 done
 wait_complete ${TDF_TASKS}
 check_logs
-mkdir ${WORK_DIR}/../tdfs
-mv *tdf* ${WORK_DIR}/../tdfs
+mkdir ${WORK_DIR}_tdfs
+mv *tdf* ${WORK_DIR}_tdfs
 
 
 READS=15000000
