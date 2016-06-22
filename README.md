@@ -18,7 +18,9 @@ NOTE: this is the very first sketch, tools used are subject to discuss.
 
 ### Usage
 * Navigate to directory shared among the greed
-* Execute `/scripts/pipeline.sh` script
+* Execute `pipeline.sh` script
+
+`pipeline.sh` script consists of several batch processing steps with moving files here and there.
 
 # Data
 Please ensure that you have all the data downloaded.
