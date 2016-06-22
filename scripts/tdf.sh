@@ -10,7 +10,6 @@ GENOME=$2
 echo "Batch TDF: ${WORK_DIR} ${GENOME}"
 cd ${WORK_DIR}
 
-echo "Submitting TDF tasks"
 TASKS=""
 for FILE in $(find . -type f -name '*.bam' -printf '%P\n')
 do :

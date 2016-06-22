@@ -10,7 +10,6 @@ TRIM=$2
 echo "Batch Trim ${TRIM}: ${WORK_DIR}"
 cd ${WORK_DIR}
 
-echo "Submitting trim ${TRIM} nucleotides tasks"
 TASKS=""
 for FILE in $(find . -type f -name '*.f*q' -printf '%P\n')
 do :
