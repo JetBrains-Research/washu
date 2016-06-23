@@ -30,7 +30,7 @@ do :
 cd ${WORK_DIR}
 
 module load java
-export _JAVA_OPTIONS="-Xms512m -Xmx20g"
+export _JAVA_OPTIONS="-Xms512m -Xmx14g"
 java -jar /home/oshpynov/zinbra/zinbra-0.2.4.jar analyze --input ${FILE} --reference ${FOLDER}/${GENOME}.2bit --fdr ${Q} --bed ${ID}_peaks.bed
 
 # Cleanup
