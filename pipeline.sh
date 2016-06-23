@@ -67,7 +67,7 @@ echo "Working directory: $WORK_DIR"
 
 
 # Batch macs with different peak calling procedures settings
-QS=( 0.01 0.1 0.5 )
+QS=( 0.01 0.1)
 for Q in "${QS[@]}"
 do
     bash ~/work/washu/scripts/macs2.sh ${WORK_DIR} ${GENOME} ${Q}
@@ -79,7 +79,7 @@ do
 done
 
 # Batch zinbra peak calling
-QS=( 0.001 0.01 0.1 )
+QS=( 0.001 0.01)
 for Q in "${QS[@]}"
 do
     bash ~/work/washu/scripts/zinbra.sh ${WORK_DIR} ${GENOME} ${INDEXES} ${Q}
