@@ -22,15 +22,23 @@ do :
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N zinbra_${ID}
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=64gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_zinbra_${GENOME}.log
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 
+module load samtools
+if [ ! -f "${FILE}.bai" ] then;
+    echo "Creating index for ${FILE}"
+    samtools index ${FILE}
+fi
+
 module load java
-export _JAVA_OPTIONS="-Xms512m -Xmx12g"
+# PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
+# There is insufficient memory for the Java Runtime Environment to continue.
+export _JAVA_OPTIONS="-Xmx30g"
 java -jar /home/oshpynov/zinbra/zinbra-0.2.4.jar analyze --input ${FILE} --reference ${FOLDER}/${GENOME}.2bit --fdr ${Q} --bed ${ID}_peaks.bed
 ENDINPUT
 )
