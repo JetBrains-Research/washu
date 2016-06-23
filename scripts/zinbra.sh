@@ -32,11 +32,6 @@ cd ${WORK_DIR}
 module load java
 export _JAVA_OPTIONS="-Xms512m -Xmx12g"
 java -jar /home/oshpynov/zinbra/zinbra-0.2.4.jar analyze --input ${FILE} --reference ${FOLDER}/${GENOME}.2bit --fdr ${Q} --bed ${ID}_peaks.bed
-
-# Cleanup
-mv ${ID}_peaks.narrowPeak do_not_remove_${ID}_peaks.bed
-rm ${ID}*
-mv do_not_remove_${ID}_peaks.bed ${ID}_peaks.bed
 ENDINPUT
 )
     echo "$FILE: $QSUB_ID"
