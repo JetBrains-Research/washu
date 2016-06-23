@@ -30,7 +30,7 @@ do :
 cd ${WORK_DIR}
 
 module load samtools
-if [ ! -f "${FILE}.bai" ] then;
+if [ ! -f "${FILE}.bai" ]; then
     echo "Creating index for ${FILE}"
     samtools index ${FILE}
 fi
