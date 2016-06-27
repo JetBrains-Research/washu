@@ -38,6 +38,8 @@ mkdir ${BAMS}
 mv *.bam ${BAMS}
 mv *bowtie*.log ${BAMS}
 cd ${BAMS}
+# Create summary
+python ~/work/washu/bowtie_logs.py ${BAMS}
 WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
 
@@ -76,6 +78,8 @@ do
     mkdir ${PEAKS}
     mv *.bed ${PEAKS}
     mv *macs* ${PEAKS}
+    # Create summary
+    python ~/work/washu/macs2_logs.py ${PEAKS}
 done
 
 # Batch zinbra peak calling
