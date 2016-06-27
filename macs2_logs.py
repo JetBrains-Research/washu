@@ -55,14 +55,15 @@ def macs2_logs(folder):
             wcs.append(subprocess.Popen(['wc', '-l', folder + '/' + f], stdout=subprocess.PIPE).communicate()[0].decode(
                 'utf-8').strip())
     df['peaks'] = df['sample'].map(lambda x: [wc.rpartition(' ')[0] for wc in wcs if x.rpartition('_macs')[0] in wc][0])
-    print(df)
     return df
 
 
 def process(folder):
     """Process macs2 logs and create summary report"""
     report = folder + '/macs2_report.csv'
-    macs2_logs(folder).to_csv(report, index=False)
+    report_df = macs2_logs(folder)
+    print(report_df)
+    report_df.to_csv(report, index=False)
     print("Saved report", report)
 
 

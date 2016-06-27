@@ -47,7 +47,9 @@ def bowtie_logs(folder):
 def process(folder):
     """Process bowtie logs and create summary report"""
     report = folder + '/bowtie_report.csv'
-    bowtie_logs(folder).to_csv(report, index=False)
+    report_df = bowtie_logs(folder)
+    print(report_df)
+    report_df.to_csv(report, index=False)
     print("Saved report", report)
 
 
