@@ -21,7 +21,7 @@ TASKS=""
 for FILE in $(find . -type f -name '*.bam' -printf '%P\n')
 do :
     NAME=${FILE%%.bam} # file name without extension
-    ID=${NAME}_${GENOME}_${Q}
+    ID=${NAME}_${Q}
 
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
