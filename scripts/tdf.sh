@@ -26,6 +26,8 @@ do :
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 /home/oshpynov/IGVTools/igvtools count -z 5 -w 50 -e 0 ${FILE} ${NAME}.tdf ${GENOME}
+/home/oshpynov/IGVTools/igvtools count -z 5 -w 50 -e 100 ${FILE} ${NAME}_100.tdf ${GENOME}
+/home/oshpynov/IGVTools/igvtools count -z 5 -w 50 -e 150 ${FILE} ${NAME}_150.tdf ${GENOME}
 ENDINPUT
 )
     echo "$FILE: $QSUB_ID"
