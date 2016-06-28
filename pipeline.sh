@@ -67,6 +67,13 @@ cd ${SUBSAMPLED}
 WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
 
+# Batch TDF for subsampled reads
+bash ~/work/washu/scripts/tdf.sh ${WORK_DIR} ${GENOME}
+
+# Move results
+mkdir ${WORK_DIR}_tdfs
+mv *.tdf ${WORK_DIR}_tdfs
+mv *tdf.log ${WORK_DIR}_tdfs
 
 # Batch macs with different peak calling procedures settings
 QS=( 0.001 0.01 0.1)
