@@ -20,6 +20,14 @@ cd ${WORK_DIR}
 TASKS=""
 for FILE in $(find . -type f -name '*.bam' -printf '%P\n')
 do :
+    # Convention over configuration: we assume that input has the same naming scheme as chromatin marks
+    if [[ ! ${FILE} =~ ^.*input.*$ ]]; then
+        INPUT=$(echo ${FILE} | sed -e 's/k27me3/input/g' -e 's/k27ac/input/g' -e 's/k4me3/input/g')
+    else
+        INPUT="" # No input for itself
+    fi
+    echo "${FILE} input: ${INPUT}"
+
     NAME=${FILE%%.bam} # file name without extension
     ID=${NAME}_${Q}
 
@@ -33,8 +41,13 @@ do :
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
-/home/oshpynov/miniconda2/bin/macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
-
+if [ -f "${INPUT}" ]; then
+    echo "Input file found: ${INPUT}"
+    /home/oshpynov/miniconda2/bin/macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
+else
+    echo "No input file"
+    /home/oshpynov/miniconda2/bin/macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
+fi
 # Cleanup
 mv ${ID}_peaks.narrowPeak do_not_remove_${ID}_peaks.bed
 rm ${ID}*
