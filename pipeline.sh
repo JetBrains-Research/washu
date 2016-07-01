@@ -94,7 +94,7 @@ for Q in "${QS[@]}"
 do
     bash ~/work/washu/scripts/macs2_broad.sh ${WORK_DIR} ${GENOME} ${Q}
     # Move results
-    PEAKS=${WORK_DIR}_broad_macs_${Q}
+    PEAKS=${WORK_DIR}_macs_broad_${Q}
     mkdir ${PEAKS}
     mv *${Q}* ${PEAKS}
     # Create summary
