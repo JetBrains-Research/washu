@@ -83,8 +83,20 @@ do
     # Move results
     PEAKS=${WORK_DIR}_macs_${Q}
     mkdir ${PEAKS}
-    mv *.bed ${PEAKS}
-    mv *macs* ${PEAKS}
+    mv *${Q}* ${PEAKS}
+    # Create summary
+    python ~/work/washu/macs2_logs.py ${PEAKS}
+done
+
+# Batch macs with different peak calling procedures settings
+QS=( 0.001 0.01 0.1)
+for Q in "${QS[@]}"
+do
+    bash ~/work/washu/scripts/macs2_broad.sh ${WORK_DIR} ${GENOME} ${Q}
+    # Move results
+    PEAKS=${WORK_DIR}_broad_macs_${Q}
+    mkdir ${PEAKS}
+    mv *${Q}* ${PEAKS}
     # Create summary
     python ~/work/washu/macs2_logs.py ${PEAKS}
 done

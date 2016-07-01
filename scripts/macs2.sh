@@ -37,7 +37,7 @@ do :
 #PBS -N macs2_${ID}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${NAME}_macs2_${GENOME}.log
+#PBS -o ${WORK_DIR}/${ID}_macs2_${GENOME}.log
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
@@ -48,10 +48,6 @@ else
     echo "No input file"
     /home/oshpynov/miniconda2/bin/macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
 fi
-# Cleanup
-mv ${ID}_peaks.narrowPeak do_not_remove_${ID}_peaks.bed
-rm ${ID}*
-mv do_not_remove_${ID}_peaks.bed ${ID}_peaks.bed
 ENDINPUT
 )
     echo "$FILE: $QSUB_ID"
