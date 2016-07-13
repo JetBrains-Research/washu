@@ -1,6 +1,7 @@
 #!/bin/bash
+# author Konstantin Zaytsev
 
-# Might be unnecessary
+# FILTERED data on chromosomes only, i.e. no contig
 CHRFILES=()
 PEAKS=()
 for i in $@;
