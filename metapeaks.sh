@@ -17,11 +17,11 @@ echo "CHRFILES: ${CHRFILES[@]}"
 echo "PEAKS: ${PEAKS[@]}"
 
 
-keys=`for i in $(seq 4 $(($# + 3)));
+keys=$(for i in $(seq 4 $(($# + 3)));
 do
-echo "-k$i,$i"
+    echo "-k$i,$i"
 done
-`
+)
 range=`seq -s, 6 1 $(($# + 5))`
 
 multiIntersectBed -i "${CHRFILES[@]}" |\
