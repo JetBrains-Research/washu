@@ -28,6 +28,13 @@ if [ ! -f "${GENOME}.2bit" ]; then
     chmod a+r *
 fi
 
+echo "Check chrom.sizes file"
+if [ ! -f "${GENOME}.chrom.sizes" ]; then
+    echo "Downloading chrom.sizes file"
+    wget http://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/bigZips/${GENOME}.chrom.sizes
+    chmod a+r *
+fi
+
 echo "Check fa reference"
 if [ ! -f "${GENOME}.fa" ]; then
     echo "Convert 2bit to fa reference"
