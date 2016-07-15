@@ -48,6 +48,7 @@ bash ~/work/washu/scripts/bigwig.sh ${WORK_DIR} ${INDEXES}/${GENOME}.chrom.sizes
 # Move results
 mkdir ${WORK_DIR}_bws
 mv *.bw ${WORK_DIR}_bws
+mv *.bdg ${WORK_DIR}_bws
 mv *bw.log ${WORK_DIR}_bws
 
 # Batch TDF
