@@ -43,10 +43,15 @@ python ~/work/washu/bowtie_logs.py ${BAMS}
 WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
 
+# Batch BigWig visualization
+bash ~/work/washu/scripts/bigwig.sh ${WORK_DIR} ${INDEXES}/${GENOME}.chrom.sizes
+# Move results
+mkdir ${WORK_DIR}_bws
+mv *.bw ${WORK_DIR}_bws
+mv *bw.log ${WORK_DIR}_bws
 
 # Batch TDF
 bash ~/work/washu/scripts/tdf.sh ${WORK_DIR} ${GENOME}
-
 # Move results
 mkdir ${WORK_DIR}_tdfs
 mv *.tdf ${WORK_DIR}_tdfs
