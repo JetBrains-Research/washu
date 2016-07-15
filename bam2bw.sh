@@ -6,16 +6,15 @@
 # Check tool.
 which genomeCoverageBed &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 
-if [ $# -lt 2 ];then
+if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <BAM> <chrom.sizes>"
-    exit
+    exit 1
 fi
 
 BAM=$1
 CHROM_SIZES=$2
 
-if [ ! -f "${CHROM_SIZES}" ];
-then
+if [ ! -f "${CHROM_SIZES}" ]; then
   echo "File not found: ${CHROM_SIZES}"
   exit 1
 fi
