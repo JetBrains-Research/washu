@@ -22,5 +22,5 @@ fi
 
 NAME=${BAM%%.bam}
 genomeCoverageBed -ibam $BAM -bg -g ${CHROM_SIZES} > ${NAME}.bdg
-bash ~/work/washu/bdg2bw ${NAME}.bdg ${CHROM_SIZES}
+bash ~/work/washu/bdg2bw.sh ${NAME}.bdg ${CHROM_SIZES}
 
