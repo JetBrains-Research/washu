@@ -26,7 +26,7 @@ do :
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 
-/home/oshpynov/seqtk/seqtk trimfq -b 5 ${FILE} > ${NAME}_${TRIM}.fq
+seqtk trimfq -b 5 ${FILE} > ${NAME}_${TRIM}.fq
 ENDINPUT
 )
     echo "$FILE: $QSUB_ID"
