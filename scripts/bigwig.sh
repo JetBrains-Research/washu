@@ -28,7 +28,7 @@ cd ${WORK_DIR}
 
 module load bedtools2
 
-bash /home/oshpynov/washu/bam2bw.sh ${FILE} ${CHROM_SIZES}
+bash ~/work/washu/bam2bw.sh ${FILE} ${CHROM_SIZES}
 ENDINPUT
 )
     echo "$FILE: $QSUB_ID"
