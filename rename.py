@@ -9,15 +9,20 @@ import numpy as np
 import re
 from subprocess import call
 
-help_message = 'Script to rename samples to human readable names.'
+help_message = """
+Script to rename samples to human readable names.
+Usage: rename <folder> <go>?
+"""
 
 
 def usage():
     print(help_message)
 
 
-def process(folder):
+def process(folder, go):
     """Process folder and renames files according to reads and samples tables."""
+    if not go:
+        print("Dry run, use `rename <folder> go` to rename.")
     reads = pd.read_csv('reads.csv')
     samples = pd.read_csv('samples.csv')
     for dirpath, dirs, files in os.walk(folder):
@@ -31,19 +36,22 @@ def process(folder):
             if len(records) != 1:
                 print('Cannot rename', f)
             else:
-                sample = samples.iloc[records.iloc[0]['ID'] - 1]['Sample']
-                new_f = (sample + '.fq').replace(' ', '_').replace('(', '').replace(')', '').lower()
-                print(f, new_f)
-                call(['mv', dirpath + '/' + f, dirpath + '/' + new_f])
+                id = records.iloc[0]['ID']
+                sample = samples.iloc[id - 1]['Sample']
+                new_file = (str(id) + '_' + sample + '.fq')\
+                    .replace(' ', '_').replace('(', '').replace(')', '').lower()
+                print(f, new_file)
+                if go:
+                    call(['mv', dirpath + '/' + f, dirpath + '/' + new_file])
 
 
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
-    if len(args) != 1:
+    if len(args) == 0:
         usage()
         sys.exit(1)
-    process(args[0])
+    process(args[0], len(args) >= 2 and args[1] == 'go')
 
 
 if __name__ == "__main__":
