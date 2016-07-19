@@ -26,14 +26,17 @@ def process(folder):
             n = f.replace('_s_', '_')
             records = reads[np.logical_and(
                 reads['Run'].map(lambda x: x in n),
-                np.logical_or(reads['ID'].map(lambda x: x in n),
-                              reads['TAG'].map(lambda x: len(x) > 0 and x in n)))]
+                np.logical_or(reads['ID'].map(lambda x: str(x) in n),
+                              reads['TAG'].map(lambda x: len(str(x)) > 0 and str(x) in n)))]
+            r = records.iloc[0]
+            sample = samples.iloc[r['ID'] - 1]['Sample']
+            new_f = re.sub('^.*' + r['TAG'], sample, f).replace(' ', '_').lower()
+            print(f, new_f)
             if len(records) != 1:
                 print('Cannot rename', f)
             else:
-                r = records.iloc[0]
-                sample = samples.iloc[r['ID'] - 1]['Sample']
-                new_f = re.sub('^.*' + r['TAG'], sample, f).replace(' ', '_').lower()
+                sample = samples.iloc[records.iloc[0]['ID'] - 1]['Sample']
+                new_f = (sample + '.fq').replace(' ', '_').lower()
                 print(f, new_f)
                 call(['mv', dirpath + '/' + f, dirpath + '/' + new_f])
 
