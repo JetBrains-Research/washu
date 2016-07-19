@@ -26,7 +26,8 @@ def process(folder):
             n = f.replace('_s_', '_')
             records = reads[np.logical_and(
                 reads['Run'].map(lambda x: x in n),
-                reads['TAG'].map(lambda x: x in n))]
+                np.logical_or(reads['ID'].map(lambda x: x in n),
+                              reads['TAG'].map(lambda x: len(x) > 0 and x in n)))]
             if len(records) != 1:
                 print('Cannot rename', f)
             else:
