@@ -32,7 +32,7 @@ def process(folder):
                 print('Cannot rename', f)
             else:
                 sample = samples.iloc[records.iloc[0]['ID'] - 1]['Sample']
-                new_f = (sample + '.fq').replace(' ', '_').lower()
+                new_f = (sample + '.fq').replace(' ', '_').replace('(', '').replace(')', '').lower()
                 print(f, new_f)
                 call(['mv', dirpath + '/' + f, dirpath + '/' + new_f])
 
