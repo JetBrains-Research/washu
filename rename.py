@@ -28,10 +28,6 @@ def process(folder):
                 reads['Run'].map(lambda x: x in n),
                 np.logical_or(reads['ID'].map(lambda x: str(x) in n),
                               reads['TAG'].map(lambda x: len(str(x)) > 0 and str(x) in n)))]
-            r = records.iloc[0]
-            sample = samples.iloc[r['ID'] - 1]['Sample']
-            new_f = re.sub('^.*' + r['TAG'], sample, f).replace(' ', '_').lower()
-            print(f, new_f)
             if len(records) != 1:
                 print('Cannot rename', f)
             else:
