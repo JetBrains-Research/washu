@@ -39,7 +39,7 @@ samtools sort ${ID}_not_sorted.bam -o ${ID}.bam
 rm ${ID}.sam ${ID}_not_sorted.bam
 ENDINPUT
 )
-    echo "$FILE: $QSUB_ID"
+    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 wait_complete ${TASKS}

@@ -42,7 +42,7 @@ rm ${ID}.sam
 rm not_sorted_${ID}.bam
 ENDINPUT
 )
-    echo "$FILE: $QSUB_ID"
+    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 wait_complete ${TASKS}

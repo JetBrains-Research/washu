@@ -30,7 +30,7 @@ cd ${WORK_DIR}
 /home/oshpynov/IGVTools/igvtools count -z 5 -w 50 -e 150 ${FILE} ${NAME}_150.tdf ${GENOME}
 ENDINPUT
 )
-    echo "$FILE: $QSUB_ID"
+    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 wait_complete ${TASKS}

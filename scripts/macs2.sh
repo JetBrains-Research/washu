@@ -53,7 +53,7 @@ else
 fi
 ENDINPUT
 )
-    echo "$FILE: $QSUB_ID"
+    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 wait_complete ${TASKS}

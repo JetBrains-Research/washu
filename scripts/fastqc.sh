@@ -29,7 +29,7 @@ cd ${WORK_DIR}
 fastqc ${FILE}
 ENDINPUT
 )
-    echo "$FILE: $QSUB_ID"
+    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 

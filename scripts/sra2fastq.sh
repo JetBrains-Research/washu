@@ -30,7 +30,7 @@ cd ${WORK_DIR}
 fastq-dump --split-3 --outdir ${WORK_DIR} ${FILE}
 ENDINPUT
 )
-    echo "$FILE: $QSUB_ID"
+    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 
