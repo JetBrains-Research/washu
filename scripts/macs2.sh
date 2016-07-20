@@ -40,7 +40,7 @@ do :
 #PBS -N macs2_${ID}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${ID}_macs2_${GENOME}.log
+#PBS -o ${WORK_DIR}/${ID}_macs2.log
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
