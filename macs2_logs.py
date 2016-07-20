@@ -50,7 +50,7 @@ def macs2_logs(folder):
     wcs = []
     for dirpath, dirs, files in os.walk(folder):
         for f in files:
-            if not re.search('.bed$', f):
+            if not re.search('.(bed|broadPeak|narrowPeak)$', f):
                 continue
             wcs.append(subprocess.Popen(['wc', '-l', folder + '/' + f], stdout=subprocess.PIPE).communicate()[0].decode(
                 'utf-8').strip())
