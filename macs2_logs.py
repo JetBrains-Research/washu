@@ -54,7 +54,12 @@ def macs2_logs(folder):
                 continue
             wcs.append(subprocess.Popen(['wc', '-l', folder + '/' + f], stdout=subprocess.PIPE).communicate()[0].decode(
                 'utf-8').strip())
-    df['peaks'] = df['sample'].map(lambda x: [wc.rpartition(' ')[0] for wc in wcs if x.rpartition('_macs')[0] in wc][0])
+
+    def wc_find(x):
+        rec = [wc.rpartition(' ')[0] for wc in wcs if x.rpartition('_macs')[0] in wc]
+        return 'NaN' if len(rec) == 0 else rec[0]
+
+    df['peaks'] = df['sample'].map(lambda x: wc_find(x))
     return df
 
 
