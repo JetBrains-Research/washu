@@ -1,12 +1,39 @@
 #!/usr/bin/env bash
+# This is a chip-seq technical pipeline scratch.
+#
+# Contains the following steps:
+#   * FastQC
+#   * Trim 5
+#   * FastQC
+#   * Alignment with BWA, summary for alignment
+#   * Subsampling to 15mln reads
+#   * BigWigs and TDFs for visualization
+#   * Peak calling MACS2 narrow peaks, summary
+#   * Peak calling MACS2 broad peaks, summary
+#
+# Usage:
+#   * Launch FastQC on the whole bunch of fq files.
+#   * Decide whether trim or subsampling is required
+#   * Modify inplace copy of this pipeline. (cp ~/work/washu/pipeline.sh <working_folder_with_fq>)
+#   * Launch pipeline, and wait for "Done" message.
+#
+# Conventions:
+# This pipeline uses folder naming as a steps. I.e. next step appends _suffix for the working folder,
+# stores results in new folder and change working folder if necessary.
+# All the indices are stored in <working_folder>/../<genome>.
+#
+# Example:
+# run_6_7 -> run_6_7_trim -> run_6_7_trim_bams -> run_6_7_trim_bams_bws
+#                                              -> run_6_7_trim_bams_macs_0.01
+#                                              -> run_6_7_trim_bams_macs_broad_0.01
+#
+# author oleg.shpynov@jetbrains.com
+
 
 # Configuration
 WORK_DIR=`pwd`
 GENOME=hg19 # Nothing to compare with aligned on hg38
 INDEXES=${WORK_DIR}/../${GENOME}
-
-# Load technical stuff
-source ~/work/washu/scripts/util.sh
 
 echo "Genomes and indices folder: ${INDEXES}"
 bash ~/work/washu/scripts/genome_indices.sh ${GENOME} ${INDEXES}
