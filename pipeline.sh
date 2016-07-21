@@ -86,9 +86,7 @@ mv *.tdf ${WORK_DIR}_tdfs
 mv *tdf.log ${WORK_DIR}_tdfs
 
 
-#####################
-# Batch subsampling #
-#####################
+# Batch subsampling
 READS=15000000
 bash ~/work/washu/scripts/subsample.sh ${WORK_DIR} ${READS}
 
