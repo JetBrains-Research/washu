@@ -46,10 +46,10 @@ do :
 cd ${WORK_DIR}
 if [ -f "${INPUT}" ]; then
     echo "Input file found: ${INPUT}"
-    /home/oshpynov/miniconda2/bin/macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
+    macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
 else
     echo "No input file"
-    /home/oshpynov/miniconda2/bin/macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
+    macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
 fi
 ENDINPUT
 )
