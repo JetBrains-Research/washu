@@ -60,7 +60,7 @@ if [ ! -f "${NAME}_pileup.bed" ]; then
     bedtools bamtobed -i ${FILE} > ${NAME}_pileup.bed
 fi
 intersectBed -a ${NAME}_pileup.bed -b ${ID}*.broadPeak -c -f 0.20 > ${ID}.intersectBed
-perl getCnt.pl ${ID}.intersectBed | tee ${ID}_frip.txt
+perl ~/work/washu/getCnt.pl ${ID}.intersectBed | tee ${ID}_frip.txt
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
