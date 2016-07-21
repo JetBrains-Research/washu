@@ -8,8 +8,8 @@
 #   * Alignment with BWA, summary for alignment
 #   * Subsampling to 15mln reads
 #   * BigWigs and TDFs for visualization
-#   * Peak calling MACS2 narrow peaks, summary
-#   * Peak calling MACS2 broad peaks, summary
+#   * Peak calling MACS2 narrow peaks, fraction of reads in peaks, summary
+#   * Peak calling MACS2 broad peaks, fraction of reads in peaks, summary
 #
 # Usage:
 #   * Launch FastQC on the whole bunch of fq files.
