@@ -51,6 +51,15 @@ else
     echo "No input file"
     macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
 fi
+
+# Compute Fraction of reads in peaks
+module load bedtools2
+if [ ! -f "${NAME}_pileup.bed" ]; then
+    # To pileup bed
+    bedtools bamtobed -i ${FILE} > ${NAME}_pileup.bed
+fi
+intersectBed -a ${NAME}_pileup.bed -b ${ID}*.narrowPeak -c -f 0.20 > ${ID}.intersectBed
+perl getCnt.pl ${ID}.intersectBed | tee ${ID}_frip.txt
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"

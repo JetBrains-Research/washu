@@ -28,7 +28,6 @@ do :
 # Loading modules
 module load bowtie
 module load samtools
-module load bedtools2
 
 export BOWTIE_INDEXES=${INDEXES}
 # This is necessary because qsub default working dir is user home
@@ -36,9 +35,6 @@ cd ${WORK_DIR}
 bowtie -p 8 -St -m 1 -v 3 --best --strata ${GENOME} ${FILE} ${ID}.sam
 samtools view -bS ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort ${ID}_not_sorted.bam -o ${ID}.bam
-
-# To pileup bed
-bedtools bamtobed -i ${ID}.bam > ${ID}_pileup.bed
 
 # Cleanup
 rm ${ID}.sam ${ID}_not_sorted.bam
