@@ -10,7 +10,7 @@ wait_complete()
     do :
         echo -n "JOB: $JOB"
         # The job id is actually the first numbers in the string
-        JOB_ID=`echo ${JOB} | awk 'match($0,/[0-9]+/){print substr($0, RSTART, RLENGTH)}'`
+        JOB_ID=$(echo ${JOB} | sed -e "s/\([0-9]*\).*/\1/")
         if [ ! -z "$JOB_ID" ]; then
             while qstat ${JOB_ID} &> /dev/null; do
                 echo -n "."

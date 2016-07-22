@@ -22,7 +22,7 @@ for FILE in $(find . -type f -name '*.bam' -printf '%P\n')
 do :
     # Convention over configuration: we assume that input has the same naming scheme as chromatin marks
     if [[ ! ${FILE} =~ ^.*input.*$ ]]; then
-        DONOR=$(echo ${FILE} | sed -e "s/^.*\(donor[0-9]\).*$/\1/")
+        DONOR=$(echo ${FILE} | sed -e "s/.*\(donor[0-9]\).*/\1/")
         echo "${FILE} donor: ${DONOR}"
         INPUTS=$(find . -name "*${DONOR}_input*.bam" -printf '%P\n')
         INPUT=${INPUTS[0]}
