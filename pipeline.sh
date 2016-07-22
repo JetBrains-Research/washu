@@ -69,6 +69,9 @@ cd ${BAMS}
 python ~/work/washu/bowtie_logs.py ${BAMS}
 WORK_DIR=`pwd`
 echo "Working directory: $WORK_DIR"
+# MultiQC is able to process Bowtie report
+echo "Processing multiqc"
+multiqc ${WORK_DIR}
 
 # Batch BigWig visualization
 bash ~/work/washu/scripts/bigwig.sh ${WORK_DIR} ${INDEXES}/${GENOME}.chrom.sizes
