@@ -7,7 +7,7 @@ source ~/work/washu/scripts/util.sh
 WORK_DIR=$1
 READS=$2
 
-echo "Batch subsampling: ${WORK_DIR} ${READS}mln"
+echo "Batch subsampling: ${WORK_DIR} ${READS}"
 cd ${WORK_DIR}
 
 TASKS=""
@@ -48,4 +48,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch subsampling: ${WORK_DIR} ${READS}mln"
+echo "Done. Batch subsampling: ${WORK_DIR} ${READS}"
