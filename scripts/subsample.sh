@@ -7,22 +7,22 @@ source ~/work/washu/scripts/util.sh
 WORK_DIR=$1
 READS=$2
 
-echo "Batch subsampling: ${WORK_DIR} ${READS}"
+echo "Batch subsampling: ${WORK_DIR} ${READS}mln"
 cd ${WORK_DIR}
 
 TASKS=""
 for FILE in $(find . -type f -name '*.bam' -printf '%P\n')
 do :
     NAME=${FILE%%.bam} # file name without extension
-    ID=${NAME}_${READS}
+    ID=${NAME}_${READS}mln
 
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N subsample_${ID}
-#PBS -l nodes=1:ppn=8,walltime=4:00:00,vmem=8gb
+#PBS -l nodes=1:ppn=8,walltime=4:00:00,vmem=24gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${NAME}_subsample_${READS}.log
+#PBS -o ${WORK_DIR}/${ID}.log
 
 module load samtools
 
@@ -31,7 +31,7 @@ cd ${WORK_DIR}
 
 samtools view -H ${FILE} > head_${NAME}.sam
 samtools view ${FILE} > nohead_${NAME}.sam
-shuf -n ${READS} nohead_${NAME}.sam > nohead_${ID}.sam
+shuf -n ${READS}000000 nohead_${NAME}.sam > nohead_${ID}.sam
 cat head_${NAME}.sam nohead_${ID}.sam > ${ID}.sam
 samtools view -bS ${ID}.sam -o not_sorted_${ID}.bam
 samtools sort not_sorted_${ID}.bam -o ${ID}.bam
@@ -48,4 +48,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch subsampling: ${WORK_DIR} ${READS}"
+echo "Done. Batch subsampling: ${WORK_DIR} ${READS}mln"

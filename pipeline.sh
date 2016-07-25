@@ -90,11 +90,12 @@ mv *tdf.log ${WORK_DIR}_tdfs
 
 
 # Batch subsampling
-READS=15000000
+READS=15
+echo "Subsampling to ${READS}mln"
 bash ~/work/washu/scripts/subsample.sh ${WORK_DIR} ${READS}
 
 # Move results and CD
-SUBSAMPLED=${WORK_DIR}_subsampled
+SUBSAMPLED=${WORK_DIR}_${READS}mln
 mkdir ${SUBSAMPLED}
 mv *${READS}* ${SUBSAMPLED}
 cd ${SUBSAMPLED}
