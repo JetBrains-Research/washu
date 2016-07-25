@@ -32,15 +32,15 @@ do :
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
-    ID=${NAME}_broad_${Q}
+    ID=${NAME}_${Q}
 
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N macs2_${ID}
+#PBS -N macs2_broad_${ID}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${ID}_macs2.log
+#PBS -o ${WORK_DIR}/${ID}_macs2_broad.log
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
