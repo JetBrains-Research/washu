@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Original code: https://github.com/ENCODE-DCC/chip-seq-pipeline/blob/master/dnanexus/macs2/src/macs2.py#L143
+# See MACS2 docs for signal track: https://github.com/taoliu/MACS/wiki/Build-Signal-Track
 # author oleg.shpynov@jetbrains.com
 
 which macs2 &>/dev/null || { echo "macs2 not found!"; exit 1; }
