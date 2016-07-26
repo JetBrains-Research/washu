@@ -22,7 +22,7 @@ if [ ! -f "${CHROM_SIZES}" ]; then
 fi
 
 echo "Create fold enrichment signal track"
-macs2 bdgcmp -t ${TREAT} -c ${CONTROL} --outdir ${ID} -o ${ID}_FE.bdg -m FE
+macs2 bdgcmp -t ${TREAT} -c ${CONTROL} -o ${ID}_FE.bdg -m FE
 
 # Remove coordinates outside chromosome sizes (stupid MACS2 bug)
 slopBed -i ${ID}_FE.bdg -g ${ID} -b 0 | bedClip stdin ${ID} ${ID}_signal.bedgraph
