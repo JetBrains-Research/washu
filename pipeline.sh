@@ -121,7 +121,7 @@ mv *tdf.log ${WORK_DIR}_tdfs
 QS=( 0.001 0.01 0.1)
 for Q in "${QS[@]}"
 do
-    bash ~/work/washu/scripts/macs2.sh ${WORK_DIR} ${GENOME} ${Q}
+    bash ~/work/washu/scripts/macs2.sh ${WORK_DIR} ${GENOME} ${Q} ${INDEXES}/${GENOME}.chrom.sizes
     # Move results
     PEAKS=${WORK_DIR}_macs_${Q}
     mkdir ${PEAKS}
@@ -134,7 +134,7 @@ done
 QS=( 0.001 0.01 0.1)
 for Q in "${QS[@]}"
 do
-    bash ~/work/washu/scripts/macs2_broad.sh ${WORK_DIR} ${GENOME} ${Q}
+    bash ~/work/washu/scripts/macs2_broad.sh ${WORK_DIR} ${GENOME} ${Q} ${INDEXES}/${GENOME}.chrom.sizes
     # Move results
     PEAKS=${WORK_DIR}_macs_broad_${Q}
     mkdir ${PEAKS}

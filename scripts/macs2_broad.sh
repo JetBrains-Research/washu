@@ -4,11 +4,17 @@
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
+if [ $# -lt 4 ]; then
+    echo "Need 4 parameters! <work_dir> <genome> <q> <chrom.sizes>"
+    exit 1
+fi
+
 WORK_DIR=$1
 GENOME=$2
 Q=$3
+CHROM_SIZES=$4
 
-echo "Batch macs2 broad: ${WORK_DIR} ${GENOME} ${Q}"
+echo "Batch macs2 broad: ${WORK_DIR} ${GENOME} ${Q} ${CHROM_SIZES}"
 
 # Convert Genome build to macs2 species
 [[ ${GENOME} =~ ^hg[0-9]+$ ]] && SPECIES="hs"
@@ -44,23 +50,21 @@ do :
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
+module load bedtools2
+
 if [ -f "${INPUT}" ]; then
-    echo "Input file found: ${INPUT}"
+    echo "${FILE}: control file found: ${INPUT}"
     /home/oshpynov/miniconda2/bin/macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -B --broad --broad-cutoff ${Q}
 
+    # Create signal track
+    bash ~/work/washu/signal.sh ${ID} ${ID}_treat_pileup.bdg ${ID}_control_lambda.bdg ${CHROM_SIZES}
 else
-    echo "No input file"
+    echo "${FILE}: no control file"
     /home/oshpynov/miniconda2/bin/macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B --broad --broad-cutoff ${Q}
 fi
 
-# Compute Fraction of reads in peaks
-module load bedtools2
-if [ ! -f "${NAME}_pileup.bed" ]; then
-    # To pileup bed
-    bedtools bamtobed -i ${FILE} > ${NAME}_pileup.bed
-fi
-intersectBed -a ${NAME}_pileup.bed -b ${ID}*.broadPeak -c -f 0.20 > ${ID}.intersectBed
-perl ~/work/washu/getCnt.pl ${ID}.intersectBed | tee ${ID}_frip.txt
+# Compute Reads in Peaks
+bash ~/work/washu/rip.sh ${FILE} ${ID}*.broadPeak
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
@@ -69,4 +73,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Batch macs2 broad: ${WORK_DIR} ${GENOME} ${Q}"
+echo "Batch macs2 broad: ${WORK_DIR} ${GENOME} ${Q} ${CHROM_SIZES}"
