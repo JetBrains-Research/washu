@@ -1,0 +1,2 @@
+sample,reads,aligned,not_aligned,supressed
+A_bowtie.log,70901032,64102564 (90.41%),971802 (1.37%),5826666 (8.22%)
