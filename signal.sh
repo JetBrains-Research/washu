@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# Original code: https://github.com/ENCODE-DCC/chip-seq-pipeline/blob/master/dnanexus/macs2/src/macs2.py#L143
 # See MACS2 docs for signal track: https://github.com/taoliu/MACS/wiki/Build-Signal-Track
 # author oleg.shpynov@jetbrains.com
 
@@ -24,8 +23,4 @@ fi
 
 echo "Create fold enrichment signal track"
 macs2 bdgcmp -t ${TREAT} -c ${CONTROL} -o ${ID}_FE.bdg -m FE
-
-# Remove coordinates outside chromosome sizes (stupid MACS2 bug)
-slopBed -i ${ID}_FE.bdg -g ${ID} -b 0 | bedClip stdin ${ID} ${ID}_signal.bedgraph
-# To BigWig
-bedGraphToBigWig ${ID}_signal.bedgraph ${CHROM_SIZES} ${ID}_signal.bw
+bash ~/work/washu/bdg2bw.sh ${ID}_FE.bdg ${CHROM_SIZES}
