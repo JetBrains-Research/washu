@@ -16,25 +16,14 @@ CHROM_SIZES=$4
 
 echo "Batch macs2: ${WORK_DIR} ${GENOME} ${Q} ${CHROM_SIZES}"
 
-# Convert Genome build to macs2 species
-[[ ${GENOME} =~ ^hg[0-9]+$ ]] && SPECIES="hs"
-[[ ${GENOME} =~ ^mm[0-9]+$ ]] && SPECIES="mm"
-[[ -z "$SPECIES" ]] && echo "Unknown species for macs: $GENOME" && exit 1
+SPECIES=$(macs2_species $GENOME)
 
 cd ${WORK_DIR}
 
 TASKS=""
 for FILE in $(find . -type f -name '*.bam' -printf '%P\n')
 do :
-    # Convention over configuration: we assume that input has the same naming scheme as chromatin marks
-    if [[ ! ${FILE} =~ ^.*input.*$ ]]; then
-        DONOR=$(echo ${FILE} | sed -e "s/.*\(donor[0-9]\).*/\1/")
-        echo "${FILE} donor: ${DONOR}"
-        INPUTS=$(find . -name "*${DONOR}_input*.bam" -printf '%P\n')
-        INPUT=${INPUTS[0]}
-    else
-        INPUT="" # No input for itself
-    fi
+    INPUT=$(macs2_find_control ${FILE})
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
@@ -56,8 +45,11 @@ if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
     macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
 
-    # Create signal track
-    bash ~/work/washu/signal.sh ${ID} ${ID}_treat_pileup.bdg ${ID}_control_lambda.bdg ${CHROM_SIZES}
+    if [ -f "${NAME}_signal.bw" ]; then
+        echo "Create fold enrichment signal track for ${FILE} and ${INPUT}"
+        macs2 bdgcmp -t ${ID}_treat_pileup.bdg -c ${ID}_control_lambda.bdg -o ${NAME}_signal.bdg -m FE
+        bash ~/work/washu/bdg2bw.sh ${NAME}_signal.bdg ${CHROM_SIZES}
+    fi
 else
     echo "${FILE}: no control file"
     macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}

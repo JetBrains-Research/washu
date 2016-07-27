@@ -32,3 +32,30 @@ check_logs()
         exit 1
     fi
 }
+
+# Find control/input for given file
+macs2_find_control()
+{
+    FILE=$1
+    # Convention over configuration: we assume that input has the same naming scheme as chromatin marks
+    if [[ ! ${FILE} =~ ^.*input.*$ ]]; then
+        DONOR=$(echo ${FILE} | sed -e "s/.*\(donor[0-9]\).*/\1/")
+        echo "${FILE} donor: ${DONOR}"
+        INPUTS=$(find . -name "*${DONOR}_input*.bam" -printf '%P\n')
+        INPUT=${INPUTS[0]}
+    else
+        INPUT="" # No input for itself
+    fi
+    echo "${INPUT}"
+}
+
+# Convert genome to macs2 species encoding
+macs2_species()
+{
+    GENOME=$1
+    # Convert Genome build to macs2 species
+    [[ ${GENOME} =~ ^hg[0-9]+$ ]] && SPECIES="hs"
+    [[ ${GENOME} =~ ^mm[0-9]+$ ]] && SPECIES="mm"
+    [[ -z "${SPECIES}" ]] && echo "Unknown species for macs: ${GENOME}" && exit 1
+    echo "${SPECIES}"
+}
