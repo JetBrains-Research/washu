@@ -37,11 +37,27 @@ check_logs()
 macs2_find_control()
 {
     FILE=$1
-    # Convention over configuration: we assume that input has the same naming scheme as chromatin marks
     if [[ ! ${FILE} =~ ^.*input.*$ ]]; then
+        # WashU data naming convention
         DONOR=$(echo ${FILE} | sed -e "s/.*\(donor[0-9]\).*/\1/")
-        INPUTS=$(find . -name "*${DONOR}_input*.bam" -printf '%P\n')
-        INPUT=${INPUTS[0]}
+        if [[ -z ${DONOR} ]]; then
+            INPUTS=$(find . -name "*${DONOR}_input*.bam" -printf '%P\n')
+            INPUT=${INPUTS[0]}
+        fi
+
+        # ENCODE UW or Broad
+        if [[ ${FILE} =~ ^Broad.*_1_.*$ ]]; then
+            INPUTS=$(find . -name "Broad*_input_1*.bam" -printf '%P\n')
+            INPUT=${INPUTS[0]}
+        fi
+        if [[ ${FILE} =~ ^Broad.*_2_.*$ ]]; then
+            INPUTS=$(find . -name "Broad*_input_2*.bam" -printf '%P\n')
+            INPUT=${INPUTS[0]}
+        fi
+        if [[ ${FILE} =~ ^UW.+$ ]]; then
+            INPUTS=$(find . -name "UW*_input*.bam" -printf '%P\n')
+            INPUT=${INPUTS[0]}
+        fi
     else
         INPUT="" # No input for itself
     fi
