@@ -1,6 +1,8 @@
 #!/bin/bash
 # author Konstantin Zaytsev
 
+which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
+
 # FILTERED data on chromosomes only, i.e. no contig
 CHRFILES=()
 PEAKS=()
