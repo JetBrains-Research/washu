@@ -11,10 +11,33 @@ INDEXES=$3
 echo "Batch Bowtie: ${WORK_DIR} ${GENOME} ${INDEXES}"
 cd ${WORK_DIR}
 
+PROCESSED=""
 TASKS=""
-for FILE in $(find . -type f -name '*.f*q' -printf '%P\n')
+for FILE in $(find . -type f -name '*.f*q' -printf '%P\n' | sort)
 do :
-    NAME=${FILE%%.f*q} # file name without extension
+    if $(echo "${PROCESSED[@]}"  | fgrep -q "${FILE}");
+    then
+        echo "$FILE was already processed"
+        continue
+    fi
+
+    FILE_PAIRED=""
+    if $(echo "${FILE_PAIRED[@]}"  | fgrep -q "_1");
+    then
+        PREFIX=${FILE%%_1.*}
+        SUFFIX=${FILE##*_1}
+        FILE_PAIRED="${PREFIX}_2${SUFFIX}"
+    fi
+
+    # Setup correct name
+    if [ -f "${FILE_PAIRED}" ]; then
+        echo "PAIRED END reads detected: $FILE and $FILE_PAIRED"
+        # Mark it as already processed
+        PROCESSED="${PROCESSED} ${FILE_PAIRED}"
+        NAME="${PREFIX}${SUFFIX}"
+    else
+        NAME=${FILE%%.f*q}
+    fi
     ID=${NAME}_${GENOME}
 
     # Submit task
@@ -32,7 +55,11 @@ module load samtools
 export BOWTIE_INDEXES=${INDEXES}
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
-bowtie -p 8 -St -m 1 -v 3 --best --strata ${GENOME} ${FILE} ${ID}.sam
+if [ -f "${FILE_PAIRED}" ]; then
+    bowtie -p 8 -St -m 1 -v 3 --best --strata ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
+else
+    bowtie -p 8 -St -m 1 -v 3 --best --strata ${GENOME} ${FILE} ${ID}.sam
+fi
 samtools view -bS ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort ${ID}_not_sorted.bam -o ${ID}.bam
 
@@ -41,7 +68,11 @@ rm ${ID}.sam ${ID}_not_sorted.bam
 
 ENDINPUT
 )
-    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
+    if [ -f "${FILE_PAIRED}" ]; then
+        echo "FILE: ${FILE} PAIRED ${FILE_PAIRED}; JOB: ${QSUB_ID}"
+    else
+        echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
+    fi
     TASKS="$TASKS $QSUB_ID"
 done
 wait_complete ${TASKS}
