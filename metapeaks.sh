@@ -1,5 +1,6 @@
 #!/bin/bash
 # author Konstantin Zaytsev
+# author Oleg Shpynov
 
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 
@@ -15,7 +16,6 @@ do
     PEAKS+=("$peak")
 done
 
-#module load bedtools2
 echo "CHRFILES: ${CHRFILES[@]}"
 echo "PEAKS: ${PEAKS[@]}"
 
@@ -31,6 +31,9 @@ multiIntersectBed -i "${CHRFILES[@]}" |\
 bedtools merge -c $range -o max |\
 awk -v OFS="\t" '{for (i=4; i<= NF; i++) $i = int($i); print $0}' |\
 sort $keys |\
-bedtools groupby -g 4-$(($# + 3)) -c 1 -o count
+# Extract columns 4 up to the end
+awk '{for (i=4; i<=NF; i++) printf("%s%s", $i, (i==NF) ? "\n" : OFS)}' |\
+# Compute all the different lines and log it
+awk '{ tot[$0]++ } END { for (i in tot) print i"\t"tot[i] }'
 
 rm ${CHRFILES[@]}
