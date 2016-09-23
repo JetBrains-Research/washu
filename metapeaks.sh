@@ -34,6 +34,7 @@ sort $keys |\
 # Extract columns 4 up to the end
 awk '{for (i=4; i<=NF; i++) printf("%s%s", $i, (i==NF) ? "\n" : OFS)}' |\
 # Compute all the different lines and log it
-awk '{ tot[$0]++ } END { for (i in tot) print i"\t"tot[i] }'
+awk '{ tot[$0]++ } END { for (i in tot) print i"\t"tot[i] }' |\
+sort
 
 rm ${CHRFILES[@]}
