@@ -12,7 +12,7 @@ do
     tmpfile=${i}.chr_only.tmp
     grep -E "chr[0-9]+|chrX" $i > $tmpfile
     CHRFILES+=("$tmpfile")
-    peak=`cat $tmpfile | wc -l`
+    peak=$(cat $tmpfile | wc -l)
     PEAKS+=("$peak")
 done
 
@@ -25,7 +25,7 @@ do
     echo "-k$i,$i"
 done
 )
-range=`seq -s, 6 1 $(($# + 5))`
+range=$(seq -s, 6 1 $(($# + 5)))
 
 multiIntersectBed -i "${CHRFILES[@]}" |\
 bedtools merge -c $range -o max |\
