@@ -1,4 +1,17 @@
 #!/bin/bash
+# This script is used to compute overlap of peaks for given list of files.
+#
+# What happens:
+# - Filter out unknown contigs and Y chromosome peaks
+# - Two peaks aver overlapping if they share at least one nucleotide
+# - For each of the combination of input files, number of overlap peaks are computed
+# Example:
+# > bash metapeaks.sh A.bed B.bed
+# Output:
+# PEAKS:       10       10
+# 0 1	1
+# 1 0	1
+# 1 1	9
 # author Konstantin Zaytsev
 # author Oleg Shpynov
 
@@ -16,9 +29,7 @@ do
     PEAKS+=("$peak")
 done
 
-echo "CHRFILES: ${CHRFILES[@]}"
 echo "PEAKS: ${PEAKS[@]}"
-
 
 keys=$(for i in $(seq 4 $(($# + 3)));
 do
@@ -37,4 +48,5 @@ awk '{for (i=4; i<=NF; i++) printf("%s%s", $i, (i==NF) ? "\n" : OFS)}' |\
 awk '{ tot[$0]++ } END { for (i in tot) print i"\t"tot[i] }' |\
 sort
 
-rm ${CHRFILES[@]}
+# Cleanup
+rm $CHRFILES
