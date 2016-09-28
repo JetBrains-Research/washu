@@ -22,17 +22,10 @@ do
     PEAKS+=("$peak")
 done
 
-keys=$(for i in $(seq 4 $(($# + 3)));
-do
-    echo "-k$i,$i"
-done
-)
 range=$(seq -s, 6 1 $(($# + 5)))
 
 multiIntersectBed -i "${CHRFILES[@]}" |\
 bedtools merge -c $range -o max |\
-awk -v OFS="\t" '{for (i=4; i<= NF; i++) $i = int($i); print $0}' |\
-sort $keys |\
 grep -e "\t1\t1" |\
 awk -v OFS="\t" '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : OFS)}'
 

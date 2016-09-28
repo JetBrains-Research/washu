@@ -31,17 +31,10 @@ done
 
 echo "PEAKS: ${PEAKS[@]}"
 
-keys=$(for i in $(seq 4 $(($# + 3)));
-do
-    echo "-k$i,$i"
-done
-)
 range=$(seq -s, 6 1 $(($# + 5)))
 
 multiIntersectBed -i "${CHRFILES[@]}" |\
 bedtools merge -c $range -o max |\
-awk -v OFS="\t" '{for (i=4; i<= NF; i++) $i = int($i); print $0}' |\
-sort $keys |\
 # Extract columns 4 up to the end
 awk '{for (i=4; i<=NF; i++) printf("%s%s", $i, (i==NF) ? "\n" : OFS)}' |\
 # Compute all the different lines and log it
