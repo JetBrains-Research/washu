@@ -43,7 +43,7 @@ macs2_find_control()
         DONOR=$(echo ${FILE} | sed -e "s/.*\(donor[^_\.]*\).*/\1/")
         if [[ ! -z ${DONOR} ]]; then
             >&2 echo "DONOR ${DONOR}"
-            INPUTS=$(find . -name "*${DONOR}.*input*.bam" -printf '%P\n')
+            INPUTS=$(find . -name "*${DONOR}*input*.bam" -printf '%P\n')
             INPUT=${INPUTS[0]}
         fi
 
