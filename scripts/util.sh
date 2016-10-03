@@ -40,10 +40,10 @@ macs2_find_control()
     if [[ ! ${FILE} =~ ^.*input.*$ ]]; then
         # WashU data naming convention
         >&2 echo "NOT INPUT ${FILE}"
-        DONOR=$(echo ${FILE} | sed -e "s/.*\(donor[0-9]\).*/\1/")
+        DONOR=$(echo ${FILE} | sed -e "s/.*\(donor[^_\.]*\).*/\1/")
         if [[ ! -z ${DONOR} ]]; then
             >&2 echo "DONOR ${DONOR}"
-            INPUTS=$(find . -name "*${DONOR}_input*.bam" -printf '%P\n')
+            INPUTS=$(find . -name "*${DONOR}.*input*.bam" -printf '%P\n')
             INPUT=${INPUTS[0]}
         fi
 
