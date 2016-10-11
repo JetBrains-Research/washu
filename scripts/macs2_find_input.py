@@ -7,7 +7,7 @@ import os
 
 help_message = '''
     Script to find input given the file name.
-    Heuristics: among all the files within folder find file with "_input_" substring and
+    Heuristics: among all the files within folder find file with "input" substring and
     most common subsequence with initial file.
 '''
 
@@ -42,7 +42,7 @@ def process(file):
     def sort_function(x):
         return lcs(file, x)
     extension = os.path.splitext(file)[1]
-    inputs = [x for x in f if '_input_' in x and extension in x]
+    inputs = [x for x in f if 'input' in x and extension in x]
     if len(inputs) > 0:
         print(max(inputs, key=sort_function))
     else:
