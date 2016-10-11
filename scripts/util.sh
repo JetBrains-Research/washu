@@ -33,43 +33,6 @@ check_logs()
     fi
 }
 
-# Find control/input for given file
-macs2_find_control()
-{
-    FILE=$1
-    if [[ ! ${FILE} =~ ^.*input.*$ ]]; then
-        # WashU data naming convention
-        >&2 echo "NOT INPUT ${FILE}"
-        DONOR=$(echo ${FILE} | sed -e "s/.*\(donor[^_\.]*\).*/\1/")
-        if [[ ! -z ${DONOR} ]]; then
-            >&2 echo "DONOR ${DONOR}"
-            INPUTS=$(find . -name "*${DONOR}*input*.bam" -printf '%P\n')
-            INPUT=${INPUTS[0]}
-        fi
-
-        # ENCODE UW or Broad
-        if [[ ${FILE} =~ ^Broad.*_1_.*$ ]]; then
-            >&2 echo "Broad file _1"
-            INPUTS=$(find . -name "Broad*_input_1*.bam" -printf '%P\n')
-            INPUT=${INPUTS[0]}
-        fi
-        if [[ ${FILE} =~ ^Broad.*_2_.*$ ]]; then
-            >&2 echo "Broad file _1"
-            INPUTS=$(find . -name "Broad*_input_2*.bam" -printf '%P\n')
-            INPUT=${INPUTS[0]}
-        fi
-        if [[ ${FILE} =~ ^UW.+$ ]]; then
-            >&2 echo "UW file"
-            INPUTS=$(find . -name "UW*_input*.bam" -printf '%P\n')
-            INPUT=${INPUTS[0]}
-        fi
-        >&2 echo "FILE ${FILE} INPUT ${INPUT}"
-    else
-        INPUT="" # No input for itself
-    fi
-    echo "${INPUT}"
-}
-
 # Convert genome to macs2 species encoding
 macs2_species()
 {
