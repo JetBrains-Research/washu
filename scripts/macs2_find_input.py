@@ -42,7 +42,11 @@ def process(file):
     def sort_function(x):
         return lcs(file, x)
     extension = os.path.splitext(file)[1]
-    print(max([x for x in f if '_input_' in x and extension in x], key=sort_function))
+    inputs = [x for x in f if '_input_' in x and extension in x]
+    if len(inputs) > 0:
+        print(max(inputs, key=sort_function))
+    else:
+        print('')
 
 
 def main():
