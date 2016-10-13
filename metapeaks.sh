@@ -42,4 +42,4 @@ awk '{ tot[$0]++ } END { for (i in tot) print i"\t"tot[i] }' |\
 sort
 
 # Cleanup
-rm $CHRFILES
+rm ${CHRFILES[@]}
