@@ -1,22 +1,6 @@
 #!/usr/bin/env python
-import os
-import os.path
-import subprocess
-import shutil
-import itertools
-from glob import glob
-
+from pipeline_utils import *
 import argparse
-
-
-class WritableDirectory(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        if not os.path.isdir(values):
-            raise argparse.ArgumentTypeError("{0} is not a valid path".format(values))
-        if os.access(values, os.R_OK + os.W_OK):
-            setattr(namespace, self.dest, values)
-        else:
-            raise argparse.ArgumentTypeError("{0} is not a writable directory".format(values))
 
 parser = argparse.ArgumentParser(description='RNA-seq data pipeline for WashU cluster')
 parser.add_argument('path_to_directory', action=WritableDirectory, type=str,
@@ -25,29 +9,6 @@ parser.add_argument('read_files', metavar='name read1 read2', type=str, nargs='+
                     help='reads files to be processed in format: name read1 read2 [name read1 read2 ...]\n'
                          'read files must be absolute paths to read files')
 args = parser.parse_args()
-
-SCRIPTS_PATH = "~/work/washu/scripts/"
-
-
-def run_bash(script_file, *args):
-    command = " ".join(["bash",
-                        os.path.join(SCRIPTS_PATH, script_file),
-                        *args])
-    print(command)
-    subprocess.run(command, shell=True)
-
-
-def move_forward(folder, suffix, what_to_move, copy_only=False):
-    new_folder = folder + suffix
-    os.mkdir(new_folder)
-    for pattern in itertools.chain.from_iterable(map(glob, what_to_move)):
-        shutil.move(pattern, new_folder)
-    if not copy_only:
-        os.chdir(new_folder)
-        return new_folder
-    else:
-        return folder
-
 
 # Configuration
 WORK_DIR = args.path_to_directory
