@@ -12,9 +12,13 @@ wait_complete()
         # The job id is actually the first numbers in the string
         JOB_ID=$(echo ${JOB} | sed -e "s/\([0-9]*\).*/\1/")
         if [ ! -z "$JOB_ID" ]; then
-            while qstat ${JOB_ID} &> /dev/null; do
+            stats=($(qstat "$JOB_ID" | awk '{print $5}'))
+            stats=${stats[2]}
+            while [ "$stats" != "C" ] ; do
                 echo -n "."
                 sleep 5
+                stats=($(qstat "$JOB_ID" | awk '{print $5}'))
+                stats=${stats[2]}
             done;
         fi
         echo

@@ -11,7 +11,7 @@ echo "Batch BigWig: ${WORK_DIR} ${CHROM_SIZES}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -type f -name '*.bam' -printf '%P\n')
+for FILE in $(find . -type f -name '*.bam' -printf '%P\n' | grep -vE ".tr")
 do :
     NAME=${FILE%%.bam} # file name without extension
 
@@ -19,7 +19,7 @@ do :
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bw_${NAME}
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_bw.log
 

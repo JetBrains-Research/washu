@@ -9,7 +9,7 @@ echo "Batch Fastqc: ${WORK_DIR}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -type f -name '*.f*q' -printf '%P\n')
+for FILE in $(find . -name '*.fq.gz' -printf '%P\n')
 do :
     NAME=${FILE%%.f*q} # file name without extension
 
@@ -17,7 +17,7 @@ do :
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N fastqc_${NAME}
-#PBS -l nodes=1:ppn=8,walltime=2:00:00,vmem=8gb
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=8gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_fastqc.log
 

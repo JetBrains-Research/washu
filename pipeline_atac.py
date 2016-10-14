@@ -12,7 +12,7 @@ class WritableDirectory(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         if not os.path.isdir(values):
             raise argparse.ArgumentTypeError("{0} is not a valid path".format(values))
-        if os.access(values, os.W_OK):
+        if os.access(values, os.R_OK + os.W_OK):
             setattr(namespace, self.dest ,values)
         else:
             raise argparse.ArgumentTypeError("{0} is not a writable directory".format(values))
