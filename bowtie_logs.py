@@ -33,15 +33,16 @@ def bowtie_logs(folder):
             aligned = ''
             failed_to_align = ''
             supressed = ''
-            for line in open(dirpath + '/' + f, 'r'):
-                if re.search(BOWTIE_READS, line):
-                    reads = re.sub(BOWTIE_READS, '', line).strip()
-                if re.search(BOWTIE_REPORTED_ALIGNMENT, line):
-                    aligned = re.sub(BOWTIE_REPORTED_ALIGNMENT, '', line).strip()
-                if re.search(BOWTIE_FAILED_TO_ALIGN, line):
-                    failed_to_align = re.sub(BOWTIE_FAILED_TO_ALIGN, '', line).strip()
-                if re.search(BOWTIE_SUPRESSED, line):
-                    supressed = re.sub(BOWTIE_SUPRESSED, '', line).strip()
+            with open(dirpath + '/' + f, 'r') as report:
+                for line in report:
+                    if re.search(BOWTIE_READS, line):
+                        reads = re.sub(BOWTIE_READS, '', line).strip()
+                    if re.search(BOWTIE_REPORTED_ALIGNMENT, line):
+                        aligned = re.sub(BOWTIE_REPORTED_ALIGNMENT, '', line).strip()
+                    if re.search(BOWTIE_FAILED_TO_ALIGN, line):
+                        failed_to_align = re.sub(BOWTIE_FAILED_TO_ALIGN, '', line).strip()
+                    if re.search(BOWTIE_SUPRESSED, line):
+                        supressed = re.sub(BOWTIE_SUPRESSED, '', line).strip()
             df.loc[len(df)] = (f, reads, aligned, failed_to_align, supressed)
     return df
 

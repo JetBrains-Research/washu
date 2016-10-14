@@ -36,17 +36,18 @@ def macs2_logs(folder):
             paired_peaks = ''
             fragment = ''
             alt_fragments = ''
-            for line in open(dirpath + '/' + f, 'r'):
-                if re.search(MACS2_TAGS, line):
-                    tags = int(re.sub(MACS2_TAGS, '', line).strip())
-                if re.search(MACS2_REDUNDANT_RATE, line):
-                    rr = float(re.sub(MACS2_REDUNDANT_RATE, '', line).strip())
-                if re.search(MACS2_PAIRED_PEAKS, line):
-                    paired_peaks = int(re.sub(MACS2_PAIRED_PEAKS, '', line).strip())
-                if re.search(MACS2_PREDICTED_FRAGMENT, line):
-                    fragment = int(re.sub(MACS2_PREDICTED_FRAGMENT, '', line).replace('bps', '').strip())
-                if re.search(MACS2_ALTERNATIVE_FRAGMENTS, line):
-                    alt_fragments = re.sub(MACS2_ALTERNATIVE_FRAGMENTS, '', line).replace('bps', '').strip()
+            with open(dirpath + '/' + f, 'r') as report:
+                for line in report:
+                    if re.search(MACS2_TAGS, line):
+                        tags = int(re.sub(MACS2_TAGS, '', line).strip())
+                    if re.search(MACS2_REDUNDANT_RATE, line):
+                        rr = float(re.sub(MACS2_REDUNDANT_RATE, '', line).strip())
+                    if re.search(MACS2_PAIRED_PEAKS, line):
+                        paired_peaks = int(re.sub(MACS2_PAIRED_PEAKS, '', line).strip())
+                    if re.search(MACS2_PREDICTED_FRAGMENT, line):
+                        fragment = int(re.sub(MACS2_PREDICTED_FRAGMENT, '', line).replace('bps', '').strip())
+                    if re.search(MACS2_ALTERNATIVE_FRAGMENTS, line):
+                        alt_fragments = re.sub(MACS2_ALTERNATIVE_FRAGMENTS, '', line).replace('bps', '').strip()
             df.loc[len(df)] = (f, tags, rr, paired_peaks, fragment, alt_fragments)
 
     # Lines count data
@@ -58,13 +59,15 @@ def macs2_logs(folder):
         for f in files:
             # Peaks file
             if re.search('.(bed|broadPeak|narrowPeak)$', f):
-                ps = subprocess.Popen(('cat', folder + '/' + f), stdout=subprocess.PIPE)
-                output = subprocess.check_output(('wc', '-l'), stdin=ps.stdout)
-                ps.wait()
-                lcs.append((f, output.decode('utf-8').strip()))
+                with subprocess.Popen(('cat', folder + '/' + f), stdout=subprocess.PIPE) as ps:
+                    output = subprocess.check_output(('wc', '-l'), stdin=ps.stdout)
+                    ps.wait()
+                    lcs.append((f, output.decode('utf-8').strip()))
+
             # _rip.txt file processing, see rip.sh
             if re.search('.txt$', f):
-                rips.append((f, [line.rstrip('\n') for line in open(folder + '/' + f)][0]))
+                with open(folder + '/' + f) as rip_file:
+                    rips.append((f, [line.rstrip('\n') for line in rip_file][0]))
 
     def lc_find(x):
         """Lines count"""
@@ -78,7 +81,7 @@ def macs2_logs(folder):
 
     df['peaks'] = df['sample'].map(lambda x: lc_find(x))
     df['rip'] = df['sample'].map(lambda x: rip_find(x))
-    df['frip'] = 100 * df['rip'] / df['tags']
+    df['frip'] = list(map(lambda x: int(x), 100 * df['rip'] / df['tags']))
     return df
 
 
