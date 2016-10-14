@@ -9,7 +9,7 @@ echo "Batch Fastqc: ${WORK_DIR}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -type f -name '*.f*q' -printf '%P\n')
+for FILE in $(find . -name '*.fq.gz' -printf '%P\n')
 do :
     NAME=${FILE%%.f*q} # file name without extension
 
