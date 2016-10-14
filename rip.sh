@@ -20,3 +20,6 @@ if [ ! -f "${NAME}_pileup.bed" ]; then
 fi
 intersectBed -a ${NAME}_pileup.bed -b ${PEAKS} -c -f 0.20 > ${PEAKS}.intersectBed
 awk '{sum += $7} END {print sum}' ${PEAKS}.intersectBed | tee ${PEAKS}_rip.txt
+
+# Cleanup
+rm ${NAME}_pileup.bed ${PEAKS}.intersectBed
