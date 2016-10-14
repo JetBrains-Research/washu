@@ -15,14 +15,16 @@ def usage():
     print(help_message)
 
 
+# Here we rely on macs2 output
+MACS2_TAGS = '.*total tags in treatment:'
+MACS2_REDUNDANT_RATE = '.*Redundant rate of treatment:'
+MACS2_PAIRED_PEAKS = '.*paired peaks:'
+MACS2_PREDICTED_FRAGMENT = '.*predicted fragment length is'
+MACS2_ALTERNATIVE_FRAGMENTS = '.*alternative fragment length\(s\) may be'
+
+
 def macs2_logs(folder):
     """Process macs2 logs processed by batch task"""
-    # Here we rely on macs2 output
-    TAGS = '.*total tags in treatment:'
-    REDUNDANT_RATE = '.*Redundant rate of treatment:'
-    PAIRED_PEAKS = '.*paired peaks:'
-    PREDICTED_FRAGMENT = '.*predicted fragment length is'
-    ALTERNATIVE_FRAGMENTS = '.*alternative fragment length\(s\) may be'
     print('Processing macs2 logs', folder)
     df = pd.DataFrame(columns=['sample', 'tags', 'redundant_rate', 'paired_peaks', 'fragment', 'alternatives'])
     for dirpath, dirs, files in os.walk(folder):
@@ -35,38 +37,43 @@ def macs2_logs(folder):
             fragment = ''
             alt_fragments = ''
             for line in open(dirpath + '/' + f, 'r'):
-                if re.search(TAGS, line):
-                    tags = int(re.sub(TAGS, '', line).strip())
-                if re.search(REDUNDANT_RATE, line):
-                    rr = float(re.sub(REDUNDANT_RATE, '', line).strip())
-                if re.search(PAIRED_PEAKS, line):
-                    paired_peaks = int(re.sub(PAIRED_PEAKS, '', line).strip())
-                if re.search(PREDICTED_FRAGMENT, line):
-                    fragment = int(re.sub(PREDICTED_FRAGMENT, '', line).replace('bps', '').strip())
-                if re.search(ALTERNATIVE_FRAGMENTS, line):
-                    alt_fragments = re.sub(ALTERNATIVE_FRAGMENTS, '', line).replace('bps', '').strip()
+                if re.search(MACS2_TAGS, line):
+                    tags = int(re.sub(MACS2_TAGS, '', line).strip())
+                if re.search(MACS2_REDUNDANT_RATE, line):
+                    rr = float(re.sub(MACS2_REDUNDANT_RATE, '', line).strip())
+                if re.search(MACS2_PAIRED_PEAKS, line):
+                    paired_peaks = int(re.sub(MACS2_PAIRED_PEAKS, '', line).strip())
+                if re.search(MACS2_PREDICTED_FRAGMENT, line):
+                    fragment = int(re.sub(MACS2_PREDICTED_FRAGMENT, '', line).replace('bps', '').strip())
+                if re.search(MACS2_ALTERNATIVE_FRAGMENTS, line):
+                    alt_fragments = re.sub(MACS2_ALTERNATIVE_FRAGMENTS, '', line).replace('bps', '').strip()
             df.loc[len(df)] = (f, tags, rr, paired_peaks, fragment, alt_fragments)
 
     # Lines count data
     lcs = []
-    # FRiP data
+    # RiP data
     rips = []
+
     for dirpath, dirs, files in os.walk(folder):
         for f in files:
+            # Peaks file
             if re.search('.(bed|broadPeak|narrowPeak)$', f):
-                lcs.append(
-                    subprocess.Popen(['wc', '-l', folder + '/' + f], stdout=subprocess.PIPE).communicate()[0].decode('utf-8').strip())
+                ps = subprocess.Popen(('cat', folder + '/' + f), stdout=subprocess.PIPE)
+                output = subprocess.check_output(('wc', '-l'), stdin=ps.stdout)
+                ps.wait()
+                lcs.append((f, output.decode('utf-8').strip()))
+            # _rip.txt file processing, see rip.sh
             if re.search('.txt$', f):
-                rips.append([line.rstrip('\n') for line in open(folder + '/' + f)][0])
+                rips.append((f, [line.rstrip('\n') for line in open(folder + '/' + f)][0]))
 
     def lc_find(x):
         """Lines count"""
-        rec = [lc.rpartition(' ')[0] for lc in lcs if x.rpartition('_macs')[0] in lc]
+        rec = [lc[1] for lc in lcs if x.rpartition('_macs')[0] in lc[0]]
         return 0 if len(rec) == 0 else int(rec[0])
 
     def rip_find(x):
         """Read in Peaks"""
-        rec = [rip.rpartition('\t')[2] for rip in rips if x.rpartition('_macs')[0] in rip]
+        rec = [rip[1] for rip in rips if x.rpartition('_macs')[0] in rip[0]]
         return 0 if len(rec) == 0 else int(rec[0])
 
     df['peaks'] = df['sample'].map(lambda x: lc_find(x))
