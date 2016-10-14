@@ -14,7 +14,7 @@
 # Usage:
 #   * Launch FastQC on the whole bunch of fq files.
 #   * Decide whether trim or subsampling is required
-#   * Modify inplace copy of this pipeline. (cp ~/work/washu/pipeline.sh <working_folder_with_fq>)
+#   * Modify inplace copy of this pipeline.
 #   * Launch pipeline, and wait for "Done" message.
 #
 # Conventions:
