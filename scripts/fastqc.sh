@@ -17,7 +17,7 @@ do :
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N fastqc_${NAME}
-#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=8gb
+#PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=4gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_fastqc.log
 

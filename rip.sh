@@ -19,6 +19,4 @@ if [ ! -f "${NAME}_pileup.bed" ]; then
     bedtools bamtobed -i ${FILE} > ${NAME}_pileup.bed
 fi
 intersectBed -a ${NAME}_pileup.bed -b ${PEAKS} -c -f 0.20 > ${PEAKS}.intersectBed
-perl ~/work/washu/getCnt.pl ${PEAKS}.intersectBed | tee ${PEAKS}_frip.txt
-# As a result we get file with content:
-# ${PEAKS}.intersectBed\tRIP
+awk '{sum += $7} END {print sum}' ${PEAKS}.intersectBed | tee ${PEAKS}_rip.txt

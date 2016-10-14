@@ -30,4 +30,4 @@ grep -e "\t1\t1" |\
 awk -v OFS="\t" '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : OFS)}'
 
 # Cleanup
-rm $CHRFILES
+rm ${CHRFILES[@]}
