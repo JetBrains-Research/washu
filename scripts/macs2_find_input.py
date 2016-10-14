@@ -66,12 +66,6 @@ def process(file):
 
 
 def main():
-    # TODO[oleg] test me!
-    if (lcs('UW_CD14_RO01746_k4me3_1_1_ENCFF001FYS.fastq', 'UW_CD14_input_ENCFF001HUV.fastq') <
-            lcs('UW_CD14_RO01746_k4me3_1_1_ENCFF001FYS.fastq', 'Broad_CD14_2_input_ENCFF000CCW.fastq')):
-        print("Regression found, add properly testing")
-        sys.exit(1)
-
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
 
