@@ -12,11 +12,9 @@ args = parser.parse_args()
 
 # Configuration
 WORK_DIR = args.path_to_directory
-GENOME = "hg19" # Nothing to compare with aligned on hg38
+GENOME = "hg19"  # Nothing to compare with aligned on hg38
 INDEXES = "/scratch/artyomov_lab_aging/indexes/" + GENOME
 CHROMSIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
-
-
 
 # Making soft links to raw data
 os.chdir(WORK_DIR)
@@ -50,4 +48,3 @@ WORK_DIR = move_forward(WORK_DIR, "_bws",
 run_bash("rsem.sh", WORK_DIR, INDEXES)
 WORK_DIR = move_forward(WORK_DIR, "_rsem",
                         ["*.results", "*.stat", "rsem_exp_*", "*.tsv"])
-
