@@ -13,7 +13,7 @@ cd ${WORK_DIR}
 
 PROCESSED=""
 TASKS=""
-for FILE in $(find . -type f -name '*.f*q' -printf '%P\n' | sort)
+for FILE in $(find . -name '*.f*q' -printf '%P\n' | sort)
 do :
     if $(echo "${PROCESSED[@]}"  | fgrep -q "${FILE}");
     then

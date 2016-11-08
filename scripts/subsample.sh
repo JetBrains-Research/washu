@@ -11,7 +11,7 @@ echo "Batch subsampling: ${WORK_DIR} ${READS}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -type f -name '*.bam' -printf '%P\n')
+for FILE in $(find . -name '*.bam' -printf '%P\n')
 do :
     NAME=${FILE%%.bam} # file name without extension
     ID=${NAME}_${READS}mln
