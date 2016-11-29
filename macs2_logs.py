@@ -6,7 +6,6 @@ import sys
 import pandas as pd
 import os
 import re
-import subprocess
 
 help_message = 'Script to process macs2 logs summary.'
 
@@ -59,25 +58,23 @@ def macs2_logs(folder):
         for f in files:
             # Peaks file
             if re.search('.(bed|broadPeak|narrowPeak)$', f):
-                with subprocess.Popen(('cat', folder + '/' + f), stdout=subprocess.PIPE) as ps:
-                    output = subprocess.check_output(('wc', '-l'), stdin=ps.stdout)
-                    ps.wait()
-                    lcs.append((f, output.decode('utf-8').strip()))
+                peaks = sum(1 for _ in open(folder + '/' + f))
+                lcs.append((f, peaks))
 
             # _rip.txt file processing, see rip.sh
             if re.search('.txt$', f):
                 with open(folder + '/' + f) as rip_file:
-                    rips.append((f, [line.rstrip('\n') for line in rip_file][0]))
+                    rips.append((f, int([line.rstrip('\n') for line in rip_file][0])))
 
     def lc_find(x):
         """Lines count"""
         rec = [lc[1] for lc in lcs if x.rpartition('_macs')[0] in lc[0]]
-        return 0 if len(rec) == 0 else int(rec[0])
+        return 0 if len(rec) == 0 else rec[0]
 
     def rip_find(x):
         """Read in Peaks"""
         rec = [rip[1] for rip in rips if x.rpartition('_macs')[0] in rip[0]]
-        return 0 if len(rec) == 0 else int(rec[0])
+        return 0 if len(rec) == 0 else rec[0]
 
     df['peaks'] = df['sample'].map(lambda x: lc_find(x))
     df['rip'] = df['sample'].map(lambda x: rip_find(x))
