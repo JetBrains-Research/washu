@@ -47,6 +47,10 @@ def lcs(x, y):
 
 
 def process(file):
+    if 'input' in file:
+        print('')
+        return
+
     # Find all the files within folder
     dir_path = os.path.dirname(os.path.realpath(file))
     f = []
