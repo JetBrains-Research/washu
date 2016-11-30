@@ -39,7 +39,12 @@ bedtools merge -c $range -o max |\
 awk '{for (i=4; i<=NF; i++) printf("%s%s", $i, (i==NF) ? "\n" : OFS)}' |\
 # Compute all the different lines and log it
 awk '{ tot[$0]++ } END { for (i in tot) print i"\t"tot[i] }' |\
-sort
+sort |\
+# Short version for Venn Diagrams visualization
+tee /dev/tty |\
+# Join last column with commas
+awk 'NR > 1 { printf(", ") }{printf("%s", $NF)}'
+echo
 
 # Cleanup
 rm ${CHRFILES[@]}
