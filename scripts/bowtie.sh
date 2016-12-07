@@ -7,8 +7,9 @@ source ~/work/washu/scripts/util.sh
 WORK_DIR=$1
 GENOME=$2
 INDEXES=$3
+TRIM5=$4
 
-echo "Batch Bowtie: ${WORK_DIR} ${GENOME} ${INDEXES}"
+echo "Batch Bowtie: ${WORK_DIR} ${GENOME} ${INDEXES} ${TRIM5}"
 cd ${WORK_DIR}
 
 PROCESSED=""
@@ -57,9 +58,9 @@ export BOWTIE_INDEXES=${INDEXES}
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 if [ -f "${FILE_PAIRED}" ]; then
-    bowtie -p 8 -St -m 1 -v 3 --best --strata ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
+    bowtie -p 8 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
 else
-    bowtie -p 8 -St -m 1 -v 3 --best --strata ${GENOME} ${FILE} ${ID}.sam
+    bowtie -p 8 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${GENOME} ${FILE} ${ID}.sam
 fi
 samtools view -bS ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort ${ID}_not_sorted.bam -o ${ID}.bam
@@ -79,4 +80,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch Bowtie: ${WORK_DIR} ${GENOME} ${INDEXES}"
+echo "Done. Batch Bowtie: ${WORK_DIR} ${GENOME} ${INDEXES} ${TRIM5}"

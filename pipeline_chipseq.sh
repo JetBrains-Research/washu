@@ -3,9 +3,7 @@
 #
 # Contains the following steps:
 #   * FastQC
-#   * Trim 5
-#   * FastQC
-#   * Alignment with BWA, summary for alignment
+#   * Alignment with BWA, trimming 5 first bp, summary for alignment
 #   * Subsampling to 15mln reads
 #   * BigWigs visualization
 #   * Peak calling MACS2 narrow peaks, fraction of reads in peaks, summary
@@ -42,22 +40,8 @@ cd ${WORK_DIR}
 # Batch QC
 bash ~/work/washu/scripts/fastqc.sh ${WORK_DIR}
 
-# Batch trim
-bash ~/work/washu/scripts/trim.sh ${WORK_DIR} 5
-
-# Move trimmed out to _trim folder and CD
-TRIMMED=${WORK_DIR}_trim
-mkdir ${TRIMMED}
-mv *_5.* ${TRIMMED}
-cd ${TRIMMED}
-WORK_DIR=`pwd`
-echo "Working directory: $WORK_DIR"
-
-# Batch QC in trimmed folder
-bash ~/work/washu/scripts/fastqc.sh ${WORK_DIR}
-
-# Batch Bowtie
-bash ~/work/washu/scripts/bowtie.sh ${WORK_DIR} ${GENOME} ${INDEXES}
+# Batch Bowtie with trim 5 first base pairs
+bash ~/work/washu/scripts/bowtie.sh ${WORK_DIR} ${GENOME} ${INDEXES} 5
 
 # Move results and CD
 BAMS=${WORK_DIR}_bams
