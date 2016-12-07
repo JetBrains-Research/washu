@@ -4,6 +4,10 @@
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
+if [ $# -lt 2 ]; then
+    echo "Need 2 parameters! <WORK_DIR> <CHROM_SIZES>"
+    exit 1
+fi
 WORK_DIR=$1
 CHROM_SIZES=$2
 

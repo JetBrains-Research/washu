@@ -4,6 +4,10 @@
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
+if [ $# -lt 3 ]; then
+    echo "Need 3 parameters! <WORK_DIR> <GENOME> <INDEXES>"
+    exit 1
+fi
 WORK_DIR=$1
 GENOME=$2
 INDEXES=$3

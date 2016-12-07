@@ -4,6 +4,10 @@
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
+if [ $# -lt 4 ]; then
+    echo "Need 4 parameters! <WORK_DIR> <GENOME> <FOLDER> <Q>"
+    exit 1
+fi
 WORK_DIR=$1
 GENOME=$2
 FOLDER=$3

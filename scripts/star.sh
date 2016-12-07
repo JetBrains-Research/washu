@@ -3,7 +3,10 @@
 
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
-
+if [ $# -lt 3 ]; then
+    echo "Need 3 parameter! <WORK_DIR> <STAR_REF> <READ_FILES>"
+    exit 1
+fi
 WORK_DIR=$1
 REF="$2/human_star_100"
 READ_FILES=($3)

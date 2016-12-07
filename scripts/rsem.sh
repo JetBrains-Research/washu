@@ -4,7 +4,12 @@
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
+if [ $# -lt 1 ]; then
+    echo "Need 1 parameter! <WORK_DIR>"
+    exit 1
+fi
 WORK_DIR=$1
+
 REF="$2/human_rsem_100/human_rsem_100"
 RSEMPATH="/home/kzaytsev/rna_seq_pipeline/tools/RSEM-1.2.31"
 

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
+if [ $# -lt 1 ]; then
+    echo "Need 1 parameter! <WORK_DIR>"
+    exit 1
+fi
 WORK_DIR=$1
 
 # Load technical stuff

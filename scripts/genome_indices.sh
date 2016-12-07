@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-
+if [ $# -lt 2 ]; then
+    echo "Need 2 parameters! <GENOME> <FOLDER>"
+    exit 1
+fi
 GENOME=$1
 FOLDER=$2
 

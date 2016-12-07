@@ -5,6 +5,10 @@
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
+if [ $# -lt 1 ]; then
+    echo "Need 1 parameter! <WORK_DIR>"
+    exit 1
+fi
 WORK_DIR=$1
 
 RRNA="/scratch/artyomov_lab_aging/indexes/hg19/hg19.rRNA_merged.intervals"
