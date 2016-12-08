@@ -67,7 +67,7 @@ run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
 move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 
 # Batch subsampling
-run_bash("subsample.sh", WORK_DIR, READS)
+run_bash("subsample.sh", WORK_DIR, str(READS))
 WORK_DIR = move_forward(WORK_DIR, "_{}mln".format(READS), ["*{}*".format(READS)])
 
 # Batch BigWig visualization
@@ -76,11 +76,11 @@ move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 
 # Batch macs with different peak calling procedures settings
 for Q in [0.01, 0.001, 0.1]:
-    run_bash("macs2.sh", WORK_DIR, GENOME, Q, CHROM_SIZES)
+    run_bash("macs2.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
     move_forward(WORK_DIR, "_macs_{}".format(Q), ["*{}*".format(Q)], copy_only=True)
     macs2_logs(WORK_DIR + "_macs_{}".format(Q))
 
 for Q in [0.01, 0.001, 0.1]:
-    run_bash("macs2_broad.sh", WORK_DIR, GENOME, Q, CHROM_SIZES)
+    run_bash("macs2_broad.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
     move_forward(WORK_DIR, "_macs_{}".format(Q), ["*{}*".format(Q)], copy_only=True)
     macs2_logs(WORK_DIR + "_macs_{}".format(Q))
