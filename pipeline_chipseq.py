@@ -48,7 +48,7 @@ CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
 READS = 15  # Subsampling to 15mln reads
 
 print("Genomes and indices folder: ", INDEXES)
-run_bash("~/work/washu/scripts/genome_indices.sh", GENOME, INDEXES)
+run_bash("genome_indices.sh", GENOME, INDEXES)
 
 # Batch QC & multiqc
 run_bash("fastqc.sh", WORK_DIR)
