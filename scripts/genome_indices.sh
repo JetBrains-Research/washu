@@ -65,24 +65,3 @@ ENDINPUT
     wait_complete ${QSUB_ID}
     check_logs
 fi
-
-echo "Check bwa indexes ${GENOME}"
-if [ ! -f "$GENOME.fa.bwt" ]; then
-    QSUB_ID=$(qsub << ENDINPUT
-#!/bin/sh
-#PBS -N bwa_indexes_${GENOME}
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
-#PBS -j oe
-#PBS -o ${FOLDER}/${GENOME}_bwa_indexes.log
-
-# Load module
-module load bwa
-
-# This is necessary because qsub default working dir is user home
-cd ${FOLDER}
-bwa index -a bwtsw ${GENOME}.fa
-ENDINPUT
-)
-    wait_complete ${QSUB_ID}
-    check_logs
-fi
