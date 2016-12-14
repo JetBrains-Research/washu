@@ -29,6 +29,8 @@ def run_bash(script_file, *args):
 
 
 def move_forward(folder, suffix, what_to_move, copy_only=False):
+    # Necessary for correct copy behavior
+    os.chdir(folder)
     new_folder = folder + suffix
     os.mkdir(new_folder)
     for pattern in itertools.chain.from_iterable(map(glob, what_to_move)):
