@@ -18,6 +18,13 @@ cd ${WORK_DIR}
 
 PROCESSED=""
 TASKS=""
+
+# Fails with large indexes, create soft link to indexes in working directory as a workaround
+# export BOWTIE_INDEXES=${INDEXES}
+if [! -z "${WORK_DIR}/indexes" ]; then
+    ln -s ${INDEXES} ${WORK_DIR}/indexes
+fi
+
 for FILE in $(find . -name '*.f*q' -printf '%P\n' | sort)
 do :
     if $(echo "${PROCESSED[@]}"  | fgrep -q "${FILE}");
@@ -58,7 +65,6 @@ do :
 module load bowtie
 module load samtools
 
-export BOWTIE_INDEXES=${INDEXES}
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 if [ -f "${FILE_PAIRED}" ]; then
@@ -83,5 +89,10 @@ ENDINPUT
 done
 wait_complete ${TASKS}
 check_logs
+
+# Cleanup indexes soft link
+if [ -z "${WORK_DIR}/indexes" ]; then
+    rm ${WORK_DIR}/indexes
+fi
 
 echo "Done. Batch Bowtie: ${WORK_DIR} ${GENOME} ${INDEXES} ${TRIM5}"
