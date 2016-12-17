@@ -46,7 +46,8 @@ if [ ! -f "${GENOME}.fa" ]; then
 fi
 
 echo "Check bowtie indexes ${GENOME}"
-if [ ! -f "$GENOME.1.ebwt" ]; then
+# Check both 32 and 64 large indexes
+if ([ ! -f "$GENOME.1.ebwt" ] && [ ! -f "$GENOME.1.ebwtl" ]); then
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie_indexes_${GENOME}
