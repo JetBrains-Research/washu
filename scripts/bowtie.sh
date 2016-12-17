@@ -21,7 +21,7 @@ TASKS=""
 
 # Fails with large indexes, create soft link to indexes in working directory as a workaround
 # export BOWTIE_INDEXES=${INDEXES}
-if [! -z "${WORK_DIR}/indexes" ]; then
+if [ ! -z "${WORK_DIR}/indexes" ]; then
     ln -s ${INDEXES} ${WORK_DIR}/indexes
 fi
 
