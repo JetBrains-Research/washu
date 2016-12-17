@@ -25,6 +25,13 @@ if [ ! -z "${WORK_DIR}/indexes" ]; then
     ln -s ${INDEXES} ${WORK_DIR}/indexes
 fi
 
+# Bowtie fails with large indexes, explicitly set
+if [ -f indexes/${GENOME}.1.ebwtl ]; then
+    INDEX_ARG="--large-index"
+else
+    INDEX_ARG=""
+fi
+
 for FILE in $(find . -name '*.f*q' -printf '%P\n' | sort)
 do :
     if $(echo "${PROCESSED[@]}"  | fgrep -q "${FILE}");
@@ -68,9 +75,9 @@ module load samtools
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 if [ -f "${FILE_PAIRED}" ]; then
-    bowtie -p 8 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
+    bowtie -p 8 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
 else
-    bowtie -p 8 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${GENOME} ${FILE} ${ID}.sam
+    bowtie -p 8 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} ${FILE} ${ID}.sam
 fi
 samtools view -bS ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort ${ID}_not_sorted.bam -o ${ID}.bam
