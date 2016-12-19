@@ -66,3 +66,24 @@ ENDINPUT
     wait_complete ${QSUB_ID}
     check_logs
 fi
+
+echo "Check bowtie2 indexes ${GENOME}"
+if [ ! -f "$GENOME.1.bt2" ]; then
+    QSUB_ID=$(qsub << ENDINPUT
+#!/bin/sh
+#PBS -N bowtie2_indexes_${GENOME}
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -j oe
+#PBS -o ${FOLDER}/${GENOME}_bowtie2_indexes.log
+
+# Load module
+module load bowtie2
+
+# This is necessary because qsub default working dir is user home
+cd ${FOLDER}
+bowtie2-build $(find . -type f -name "*.fa" -printf '%P\n' | paste -sd "," -) ${GENOME}
+ENDINPUT
+)
+    wait_complete ${QSUB_ID}
+    check_logs
+fi
