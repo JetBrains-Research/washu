@@ -68,7 +68,7 @@ ENDINPUT
 fi
 
 echo "Check bowtie2 indexes ${GENOME}"
-if [ ! -f "$GENOME.1.bt2" ]; then
+if ([ ! -f "$GENOME.1.bt2" ] && [ ! -f "$GENOME.1.bt2l" ]); then
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie2_indexes_${GENOME}

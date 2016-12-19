@@ -16,9 +16,9 @@ echo "Batch Bowtie2: ${WORK_DIR} ${GENOME} ${INDEXES}"
 cd ${WORK_DIR}
 
 # Create soft link to indexes in working directory
-if [ ! -z "${WORK_DIR}/indexes" ]; then
-    ln -s ${INDEXES} ${WORK_DIR}/indexes
-fi
+INDEX_FILES=$(find ${INDEXES} -name "*.bt2*")
+for F in ${INDEX_FILES[@]}; do TAG=${F##*/}; ln -s $F $TAG; done
+
 
 PROCESSED=""
 TASKS=""
@@ -90,8 +90,6 @@ wait_complete ${TASKS}
 check_logs
 
 # Cleanup indexes soft link
-if [ -z "${WORK_DIR}/indexes" ]; then
-    rm ${WORK_DIR}/indexes
-fi
+rm *.bt2*
 
 echo "Done. Batch Bowtie2: ${WORK_DIR} ${GENOME} ${INDEXES}"
