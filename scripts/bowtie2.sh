@@ -4,15 +4,16 @@
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
-if [ $# -lt 3 ]; then
-    echo "Need 3 parameters! <WORK_DIR> <GENOME> <INDEXES>"
+if [ $# -lt 4 ]; then
+    echo "Need 4 parameters! <WORK_DIR> <GENOME> <INDEXES> <TRIM5>"
     exit 1
 fi
 WORK_DIR=$1
 GENOME=$2
 INDEXES=$3
+TRIM5=$4
 
-echo "Batch Bowtie2: ${WORK_DIR} ${GENOME} ${INDEXES}"
+echo "Batch Bowtie2: ${WORK_DIR} ${GENOME} ${INDEXES} ${TRIM5}"
 cd ${WORK_DIR}
 
 # Create soft link to indexes in working directory
@@ -65,9 +66,9 @@ module load samtools
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 if [ -f "${FILE_PAIRED}" ]; then
-    bowtie2 --sensitive -t -p 8 -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} &> ${ID}.bowtie2.log
+    bowtie2 -p 8 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} &> ${ID}.bowtie2.log
 else
-    bowtie2 --sensitive -t -p 8 -S ${ID}.sam -x ${GENOME} ${FILE} &> ${ID}.bowtie2.log
+    bowtie2 -p 8 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} ${FILE} &> ${ID}.bowtie2.log
 fi
 samtools view -bS -q 10 ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort -@ 4 ${ID}_not_sorted.bam -o ${ID}.with_dup.bam
@@ -92,4 +93,4 @@ check_logs
 # Cleanup indexes soft link
 rm *.bt2*
 
-echo "Done. Batch Bowtie2: ${WORK_DIR} ${GENOME} ${INDEXES}"
+echo "Done. Batch Bowtie2: ${WORK_DIR} ${GENOME} ${INDEXES} ${TRIM5}"
