@@ -66,9 +66,9 @@ module load samtools
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 if [ -f "${FILE_PAIRED}" ]; then
-    bowtie2 -p 8 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} &> ${ID}.bowtie2.log
+    bowtie2 -p 8 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED}
 else
-    bowtie2 -p 8 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} ${FILE} &> ${ID}.bowtie2.log
+    bowtie2 -p 8 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} ${FILE}
 fi
 samtools view -bS -q 10 ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort -@ 4 ${ID}_not_sorted.bam -o ${ID}.with_dup.bam
