@@ -1,7 +1,9 @@
-import unittest
-from macs2_logs import macs2_logs
-import pandas as pd
 import os
+import unittest
+
+import pandas as pd
+
+from logs.macs2_logs import macs2_logs
 
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata'
 

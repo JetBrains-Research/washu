@@ -30,10 +30,9 @@ run_6_7 -> run_6_7_trim -> run_6_7_trim_bams -> run_6_7_trim_bams_bws
 author oleg.shpynov@jetbrains.com
 """
 
+from logs.macs2_logs import macs2_logs
+from logs.bowtie_logs import bowtie_logs
 from pipeline_utils import *
-from bowtie_logs import bowtie_logs
-from macs2_logs import macs2_logs
-import argparse
 
 parser = argparse.ArgumentParser(description='ULI ChIP-Seq data pipeline for WashU cluster')
 parser.add_argument('path_to_directory', action=WritableDirectory, type=str,
@@ -42,7 +41,7 @@ args = parser.parse_args()
 
 # Configuration
 WORK_DIR = args.path_to_directory
-GENOME = "hg19"  # Nothing to compare with aligned on hg38
+GENOME = "hg19"
 INDEXES = os.path.join("/scratch/artyomov_lab_aging/indexes", GENOME)
 CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
 READS = 15  # Subsampling to 15mln reads

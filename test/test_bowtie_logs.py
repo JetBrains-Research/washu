@@ -1,7 +1,9 @@
-import unittest
-from bowtie_logs import bowtie_logs
-import pandas as pd
 import os
+import unittest
+
+import pandas as pd
+
+from logs.bowtie_logs import bowtie_logs
 
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata'
 
