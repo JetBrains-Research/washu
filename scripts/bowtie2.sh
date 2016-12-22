@@ -65,6 +65,12 @@ module load samtools
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
+
+# Bowtie2 command line options
+# -p/--threads <int> number of alignment threads to launch (1)
+# -5/--trim5 <int>   trim <int> bases from 5'/left end of reads (0)
+# --sensitive            -D 15 -R 2 -N 0 -L 22 -i S,1,1.15 (default)
+
 if [ -f "${FILE_PAIRED}" ]; then
     bowtie2 -p 8 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED}
 else
