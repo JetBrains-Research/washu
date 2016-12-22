@@ -74,6 +74,17 @@ module load samtools
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
+
+# Bowtie command line options used
+# -p/--threads <int> number of alignment threads to launch (default: 1)
+# -S/--sam           write hits in SAM format
+# -t/--time          print wall-clock time taken by search phases
+# -m <int>           suppress all alignments if > <int> exist (def: no limit)
+# -v <int>           report end-to-end hits w/ <=v mismatches; ignore qualities
+# -5/--trim5 <int>   trim <int> bases from 5' (left) end of reads
+# --best             hits guaranteed best stratum; ties broken by quality
+# --strata           hits in sub-optimal strata aren't reported (requires --best)
+
 if [ -f "${FILE_PAIRED}" ]; then
     bowtie -p 8 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
 else
