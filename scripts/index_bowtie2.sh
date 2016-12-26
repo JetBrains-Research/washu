@@ -12,6 +12,7 @@ FOLDER=$2
 source ~/work/washu/scripts/util.sh
 
 echo "Check bowtie2 indexes ${GENOME}"
+cd ${FOLDER}
 if ([ ! -f "$GENOME.1.bt2" ] && [ ! -f "$GENOME.1.bt2l" ]); then
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh

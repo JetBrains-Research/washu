@@ -12,6 +12,7 @@ FOLDER=$2
 source ~/work/washu/scripts/util.sh
 
 echo "Check bowtie indexes ${GENOME} ${FOLDER}"
+cd ${FOLDER}
 # Check both 32 and 64 large indexes
 if ([ ! -f "$GENOME.1.ebwt" ] && [ ! -f "$GENOME.1.ebwtl" ]); then
     QSUB_ID=$(qsub << ENDINPUT
