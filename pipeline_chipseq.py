@@ -47,13 +47,14 @@ CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
 READS = 15  # Subsampling to 15mln reads
 
 print("Genomes and indices folder: ", INDEXES)
-run_bash("genome_indices.sh", GENOME, INDEXES)
+run_bash("index_genome.sh", GENOME, INDEXES)
 
 # Batch QC & multiqc
 run_bash("fastqc.sh", WORK_DIR)
 subprocess.run("multiqc " + WORK_DIR, shell=True)
 
 # Batch Bowtie with trim 5 first base pairs
+run_bash("index_bowtie.sh", GENOME, INDEXES)
 run_bash("bowtie.sh", WORK_DIR, GENOME, INDEXES, "5")
 WORK_DIR = move_forward(WORK_DIR, "_bams", ["*.bam", "*bowtie*.log"])
 # multiqc is able to process Bowtie report
