@@ -84,5 +84,5 @@ for Q in [0.01, 0.001, 0.1]:
 
 for Q in [0.01, 0.001, 0.1]:
     run_bash("macs2_broad.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
-    move_forward(WORK_DIR, "_macs_{}".format(Q), ["*{}*".format(Q)], copy_only=True)
-    process_macs2_logs(WORK_DIR + "_macs_{}".format(Q))
+    move_forward(WORK_DIR, "_macs_broad_{}".format(Q), ["*{}*".format(Q)], copy_only=True)
+    process_macs2_logs(WORK_DIR + "_macs_broad_{}".format(Q))
