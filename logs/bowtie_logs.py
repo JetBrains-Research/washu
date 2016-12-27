@@ -50,7 +50,7 @@ def report(folder):
 def process_bowtie_logs(folder):
     """Process bowtie logs and create summary report"""
     path = folder + '/bowtie_report.csv'
-    df = path(folder)
+    df = report(folder)
     print(df)
     df.to_csv(path, index=False)
     print("Saved report", path)

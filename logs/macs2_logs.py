@@ -86,7 +86,7 @@ def report(folder):
 def process_macs2_logs(folder):
     """Process macs2 logs and create summary report"""
     path = folder + '/macs2_report.csv'
-    df = path(folder)
+    df = report(folder)
     print(df)
     df.to_csv(path, index=False)
     print("Saved report", path)
