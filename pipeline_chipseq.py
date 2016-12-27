@@ -27,11 +27,13 @@ run_6_7 -> run_6_7_trim -> run_6_7_trim_bams -> run_6_7_trim_bams_bws
                                              -> run_6_7_trim_bams_macs_0.01
                                              -> run_6_7_trim_bams_macs_broad_0.01
 
+NOTE: python3 required
+> source activate py3.5
+
 author oleg.shpynov@jetbrains.com
 """
-
-from logs.macs2_logs import macs2_logs
-from logs.bowtie_logs import bowtie_logs
+from logs.macs2_logs import process_macs2_logs
+from logs.bowtie_logs import process_bowtie_logs
 from pipeline_utils import *
 
 parser = argparse.ArgumentParser(description='ULI ChIP-Seq data pipeline for WashU cluster')
@@ -60,7 +62,7 @@ WORK_DIR = move_forward(WORK_DIR, "_bams", ["*.bam", "*bowtie*.log"])
 # multiqc is able to process Bowtie report
 subprocess.run("multiqc " + WORK_DIR, shell=True)
 # Create summary
-bowtie_logs(WORK_DIR)
+process_bowtie_logs(WORK_DIR)
 
 # Batch BigWig visualization
 run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
@@ -78,9 +80,9 @@ move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 for Q in [0.01, 0.001, 0.1]:
     run_bash("macs2.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
     move_forward(WORK_DIR, "_macs_{}".format(Q), ["*{}*".format(Q)], copy_only=True)
-    macs2_logs(WORK_DIR + "_macs_{}".format(Q))
+    process_macs2_logs(WORK_DIR + "_macs_{}".format(Q))
 
 for Q in [0.01, 0.001, 0.1]:
     run_bash("macs2_broad.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
     move_forward(WORK_DIR, "_macs_{}".format(Q), ["*{}*".format(Q)], copy_only=True)
-    macs2_logs(WORK_DIR + "_macs_{}".format(Q))
+    process_macs2_logs(WORK_DIR + "_macs_{}".format(Q))

@@ -21,7 +21,7 @@ BOWTIE2_ALIGNED = ' aligned exactly 1 time'
 BOWTIE2_ALIGNED_MULTIPLE_TIMES = ' aligned >1 times'
 
 
-def bowtie2_logs(folder):
+def report(folder):
     """Process bowtie2 logs processed by batch task"""
     print('Processing bowtie2 logs', folder)
     df = pd.DataFrame(columns=['sample', 'reads', 'aligned', 'not_aligned', 'supressed'])
@@ -33,8 +33,8 @@ def bowtie2_logs(folder):
             aligned = ''
             failed_to_align = ''
             supressed = ''
-            with open(dirpath + '/' + f, 'r') as report:
-                for line in report:
+            with open(dirpath + '/' + f, 'r') as log:
+                for line in log:
                     if re.search(BOWTIE2_READS, line):
                         reads = re.sub(BOWTIE2_READS, '', line).strip()
                     if re.search(BOWTIE2_ALIGNED, line):
@@ -44,16 +44,16 @@ def bowtie2_logs(folder):
                     if re.search(BOWTIE2_ALIGNED_MULTIPLE_TIMES, line):
                         supressed = re.sub(BOWTIE2_ALIGNED_MULTIPLE_TIMES, '', line).strip()
             df.loc[len(df)] = (f, reads, aligned, failed_to_align, supressed)
-    return df
+    return df.sort_values(by=['sample'])
 
 
-def process(folder):
+def process_bowtie2_logs(folder):
     """Process bowtie logs and create summary report"""
-    report = folder + '/bowtie2_report.csv'
-    report_df = bowtie2_logs(folder)
-    print(report_df)
-    report_df.to_csv(report, index=False)
-    print("Saved report", report)
+    path = folder + '/bowtie2_report.csv'
+    df = path(folder)
+    print(df)
+    df.to_csv(path, index=False)
+    print("Saved report", path)
 
 
 def main():
@@ -62,7 +62,7 @@ def main():
     if len(args) != 1:
         usage()
         sys.exit(1)
-    process(args[0])
+    process_bowtie2_logs(args[0])
 
 
 if __name__ == "__main__":

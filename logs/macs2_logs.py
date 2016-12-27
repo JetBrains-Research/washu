@@ -22,7 +22,7 @@ MACS2_PREDICTED_FRAGMENT = '.*predicted fragment length is'
 MACS2_ALTERNATIVE_FRAGMENTS = '.*alternative fragment length\(s\) may be'
 
 
-def macs2_logs(folder):
+def report(folder):
     """Process macs2 logs processed by batch task"""
     print('Processing macs2 logs', folder)
     df = pd.DataFrame(columns=['sample', 'tags', 'redundant_rate', 'paired_peaks', 'fragment', 'alternatives'])
@@ -35,8 +35,8 @@ def macs2_logs(folder):
             paired_peaks = ''
             fragment = ''
             alt_fragments = ''
-            with open(dirpath + '/' + f, 'r') as report:
-                for line in report:
+            with open(dirpath + '/' + f, 'r') as log:
+                for line in log:
                     if re.search(MACS2_TAGS, line):
                         tags = int(re.sub(MACS2_TAGS, '', line).strip())
                     if re.search(MACS2_REDUNDANT_RATE, line):
@@ -58,7 +58,8 @@ def macs2_logs(folder):
         for f in files:
             # Peaks file
             if re.search('.(bed|broadPeak|narrowPeak)$', f):
-                peaks = sum(1 for _ in open(folder + '/' + f))
+                with open(folder + '/' + f) as peaksFile:
+                    peaks = sum(1 for _ in peaksFile)
                 lcs.append((f, peaks))
 
             # _rip.txt file processing, see rip.sh
@@ -79,16 +80,16 @@ def macs2_logs(folder):
     df['peaks'] = df['sample'].map(lambda x: lc_find(x))
     df['rip'] = df['sample'].map(lambda x: rip_find(x))
     df['frip'] = list(map(lambda x: int(x), 100 * df['rip'] / df['tags']))
-    return df
+    return df.sort_values(by=['sample'])
 
 
-def process(folder):
+def process_macs2_logs(folder):
     """Process macs2 logs and create summary report"""
-    report = folder + '/macs2_report.csv'
-    report_df = macs2_logs(folder)
-    print(report_df)
-    report_df.to_csv(report, index=False)
-    print("Saved report", report)
+    path = folder + '/macs2_report.csv'
+    df = path(folder)
+    print(df)
+    df.to_csv(path, index=False)
+    print("Saved report", path)
 
 
 def main():
@@ -97,7 +98,7 @@ def main():
     if len(args) != 1:
         usage()
         sys.exit(1)
-    process(args[0])
+    process_macs2_logs(args[0])
 
 
 if __name__ == "__main__":
