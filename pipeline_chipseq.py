@@ -1,26 +1,17 @@
 #!/usr/bin/env python
 
 """
-This is a chip-seq technical pipeline scratch.
-
-Contains the following steps:
-  * FastQC
-  * Alignment with BWA, trimming 5 first bp, summary for alignment
-  * Subsampling to 15mln reads
-  * BigWigs visualization
-  * Peak calling MACS2 narrow peaks, fraction of reads in peaks, summary
-  * Peak calling MACS2 broad peaks, fraction of reads in peaks, summary
+This is a chip-seq technical pipeline.
 
 Usage:
-  * Launch FastQC on the whole bunch of fq files.
-  * Decide whether trim or subsampling is required
-  * Modify inplace copy of this pipeline.
-  * Launch pipeline, and wait for "Done" message.
+  * Launch FastQC
+  * Decide whether trimming or subsampling is required
+  * Modify inplace copy of this pipeline
+  * Launch pipeline, and wait for "Done" message
 
 Conventions:
-This pipeline uses folder naming as a steps. I.e. next step appends _suffix for the working folder,
+This pipeline uses folder naming as a steps, i.e. next step appends _suffix for the working folder,
 stores results in new folder and change working folder if necessary.
-All the indices are stored in <working_folder>/../<genome>.
 
 Example:
 run_6_7 -> run_6_7_trim -> run_6_7_trim_bams -> run_6_7_trim_bams_bws
