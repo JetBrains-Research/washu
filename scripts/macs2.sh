@@ -65,4 +65,7 @@ done
 wait_complete ${TASKS}
 check_logs
 
+# Create pdf reports
+MODELS=$(ls *.r); for M in ${MODELS[@]}; do Rscript $M; done
+
 echo "Batch macs2: ${WORK_DIR} ${GENOME} ${Q} ${CHROM_SIZES}"
