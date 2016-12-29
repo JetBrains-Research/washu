@@ -23,7 +23,7 @@ do
 done
 
 range=$(seq -s, 6 1 $(($# + 5)))
-pattern=$(printf '\t1%.0s' {1..$#})
+pattern=$(printf '\t1%.0s' $(seq 1 $#))
 
 multiIntersectBed -i "${CHRFILES[@]}" |\
 bedtools merge -c $range -o max |\
