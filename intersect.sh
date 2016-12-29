@@ -1,5 +1,5 @@
 #!/bin/bash
-# This script is used to compute overlap of peaks for given list of files.
+# This script is used to compute intersection of peaks for given list of files.
 #
 # What happens:
 # - Filter out unknown contigs and Y chromosome peaks
@@ -23,10 +23,12 @@ do
 done
 
 range=$(seq -s, 6 1 $(($# + 5)))
+pattern=$(printf '\t1%.0s' {1..$#})
 
 multiIntersectBed -i "${CHRFILES[@]}" |\
 bedtools merge -c $range -o max |\
-grep -e "\t1\t1" |\
+# NOTE[shpynov] use awk instead of grep, because grep has some problems with tab characters.
+awk "/$pattern/" |\
 awk -v OFS="\t" '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : OFS)}'
 
 # Cleanup
