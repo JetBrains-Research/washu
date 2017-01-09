@@ -52,7 +52,7 @@ def find_input(file):
         return ''
 
     # Find all the files within folder
-    dir_path = os.path.dirname(os.path.realpath(file))
+    dir_path = os.path.dirname(os.path.normpath(file))
     f = []
     for (_, _, name) in os.walk(dir_path):
         f.extend(name)
