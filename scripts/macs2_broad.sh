@@ -23,7 +23,7 @@ cd ${WORK_DIR}
 TASKS=""
 for FILE in $(find . -name '*.bam' -printf '%P\n')
 do :
-    INPUT=$(python ~/work/washu/scripts/find_input.py ${FILE})
+    INPUT=$(python ~/work/washu/scripts/find_input.py ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
