@@ -44,12 +44,6 @@ module load bedtools2
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
     macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
-
-    if [ ! -f "${NAME}_signal.bw" ]; then
-        echo "Create fold enrichment signal track for ${FILE} and ${INPUT}"
-        macs2 bdgcmp -t ${ID}_treat_pileup.bdg -c ${ID}_control_lambda.bdg -o ${NAME}_signal.bdg -m FE
-        bash ~/work/washu/bdg2bw.sh ${NAME}_signal.bdg ${CHROM_SIZES}
-    fi
 else
     echo "${FILE}: no control file"
     macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
