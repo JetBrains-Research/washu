@@ -46,10 +46,10 @@ def lcs(x, y):
     return len(back_track(m, n))
 
 
-def process(file):
-    if 'input' in file:
-        print('')
-        return
+def find_input(file):
+    filename = os.path.basename(file)
+    if 'input' in filename:
+        return ''
 
     # Find all the files within folder
     dir_path = os.path.dirname(os.path.realpath(file))
@@ -59,14 +59,14 @@ def process(file):
         break
 
     def sort_function(x):
-        return lcs(file, x)
+        return lcs(filename, x)
 
     extension = os.path.splitext(file)[1]
     inputs = [x for x in f if 'input' in x and extension in x]
     if len(inputs) > 0:
-        print(max(inputs, key=sort_function))
+        return max(inputs, key=sort_function)
     else:
-        print('')
+        return ''
 
 
 def main():
@@ -83,7 +83,7 @@ def main():
             usage()
             sys.exit()
 
-    process(file)
+    print(find_input(file))
 
 
 if __name__ == "__main__":
