@@ -50,7 +50,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash ~/work/washu/rip.sh ${FILE} ${ID}*.narrowPeak
+bash ~/work/washu/logs/rip.sh ${FILE} ${ID}*.narrowPeak
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
