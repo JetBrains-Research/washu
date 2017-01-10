@@ -4,17 +4,16 @@
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
-if [ $# -lt 4 ]; then
-    echo "Need 4 parameters! <work_dir> <genome> <q> <chrom.sizes>"
+if [ $# -lt 3 ]; then
+    echo "Need 3 parameters! <work_dir> <genome> <q>"
     exit 1
 fi
 
 WORK_DIR=$1
 GENOME=$2
 Q=$3
-CHROM_SIZES=$4
 
-echo "Batch macs2: ${WORK_DIR} ${GENOME} ${Q} ${CHROM_SIZES}"
+echo "Batch macs2: ${WORK_DIR} ${GENOME} ${Q}"
 
 SPECIES=$(macs2_species $GENOME)
 
@@ -62,4 +61,4 @@ check_logs
 # Create pdf reports
 MODELS=$(ls *.r); for M in ${MODELS[@]}; do Rscript $M; done
 
-echo "Batch macs2: ${WORK_DIR} ${GENOME} ${Q} ${CHROM_SIZES}"
+echo "Batch macs2: ${WORK_DIR} ${GENOME} ${Q}"
