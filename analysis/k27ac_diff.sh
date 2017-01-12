@@ -28,6 +28,7 @@ compare_peaks()
 # - Two peaks aver overlapping if they share at least one nucleotide
 # - Prints only peaks that overlap in all files (merged)
 {
+    >&2 echo "compare_peaks $@"
     PEAKS_FILE_1=$1
     NAME_1=$2
     PEAKS_FILE_2=$3
