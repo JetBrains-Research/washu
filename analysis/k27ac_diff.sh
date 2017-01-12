@@ -16,7 +16,11 @@ compare_peaks()
     NAME_2=$4
     TMP_FILE=intersection_${NAME_1}_${NAME_2}.txt
     # Compute common and exclusive peaks
-    multiIntersectBed -i ${PEAKS_FILE_1} ${PEAKS_FILE_2} | bedtools merge -c 6,7 -o max > ${TMP_FILE}
+    multiIntersectBed -i ${PEAKS_FILE_1} ${PEAKS_FILE_2} |\
+    bedtools merge -c 6,7 -o max > ${TMP_FILE} |\
+    # Reproducible with 2 args: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
+    # See https://groups.google.com/forum/#!topic/bedtools-discuss/RN2U64Y5Z6Q
+     awk -v OFS="\t" '{print $1,$2,$3,int($4),int($5)}'
 
     cat ${TMP_FILE} | awk '/\t1\t0/' |\
      awk -v OFS="\t" '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : OFS)}' | sort > ${NAME_1}_exclusive.bed
