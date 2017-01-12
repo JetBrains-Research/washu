@@ -36,6 +36,8 @@ range=$(seq -s, 6 1 $(($# + 5)))
 
 multiIntersectBed -i "${CHRFILES[@]}" |\
 bedtools merge -c $range -o max |\
+# Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
+awk '{if (NR > 1) printf("\n"); printf("%s\t%s\t%s", $1, $2, $3); for (i=4; i<=NF; i++) printf("\t%d", int($i)); }' |\
 # Extract columns 4 up to the end
 awk '{for (i=4; i<=NF; i++) printf("%s%s", $i, (i==NF) ? "\n" : OFS)}' |\
 # Compute all the different lines and log it
