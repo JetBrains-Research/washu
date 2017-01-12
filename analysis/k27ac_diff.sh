@@ -6,6 +6,24 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
+# QSUB mock replacement
+which qsub &>/dev/null || {
+    echo "QSUB system not found, using mock replacement"
+    qsub() {
+        while read -r line; do CMD+=$line; CMD+=$'\n'; done;
+        echo "$CMD" > /tmp/qsub.sh
+        LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
+        bash /tmp/qsub.sh | tee "$LOG"
+    }
+    qstat() {
+        echo ""
+    }
+    module() {
+        echo ""
+    }
+}
+module load bedtools
+
 compare_peaks()
 # - Two peaks aver overlapping if they share at least one nucleotide
 # - Prints only peaks that overlap in all files (merged)
@@ -31,21 +49,6 @@ compare_peaks()
     # Cleanup
     rm ${TMP_FILE}
 }
-
-# QSUB local replacement
-if [ ! -f `which qsub` ]
-then
-    echo "QSUB system not found, using mock replacement"
-    qsub() {
-        while read -r line; do CMD+=$line; CMD+=$'\n'; done;
-        echo "$CMD" > /tmp/qsub.sh
-        LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
-        bash /tmp/qsub.sh | tee "$LOG"
-    }
-    qstat() {
-        echo ""
-    }
-fi
 
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
