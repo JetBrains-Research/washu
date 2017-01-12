@@ -31,6 +31,7 @@ compare_peaks()
 # QSUB local replacement
 if [ ! -f `which qsub` ]
 then
+    echo "QSUB system not found, using mock replacement"
     qsub() {
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
         echo "$CMD" > /tmp/qsub.sh
