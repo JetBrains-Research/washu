@@ -37,16 +37,15 @@ compare_peaks()
     # Compute common and exclusive peaks
     multiIntersectBed -i ${PEAKS_FILE_1} ${PEAKS_FILE_2} |\
     bedtools merge -c 6,7 -o max |\
-    # Reproducible with 2 args: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
-    # See https://groups.google.com/forum/#!topic/bedtools-discuss/RN2U64Y5Z6Q
+    # Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
      awk -v OFS="\t" '{print $1,$2,$3,int($4),int($5)}' > ${TMP_FILE}
 
     cat ${TMP_FILE} | awk '/\t1\t0/' |\
-     awk -v OFS="\t" '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : OFS)}' | sort > ${NAME_1}_exclusive.bed
+     awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' | sort > ${NAME_1}_exclusive.bed
     cat ${TMP_FILE} | awk '/\t0\t1/' |\
-     awk -v OFS="\t" '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : OFS)}' | sort > ${NAME_2}_exclusive.bed
+     awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' | sort > ${NAME_2}_exclusive.bed
     cat ${TMP_FILE} | awk '/\t1\t1/' |\
-     awk -v OFS="\t" '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : OFS)}' | sort > ${NAME_1}_${NAME_2}_common.bed
+     awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' | sort > ${NAME_1}_${NAME_2}_common.bed
     # Cleanup
     rm ${TMP_FILE}
 }
