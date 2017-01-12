@@ -122,7 +122,7 @@ ENDINPUT
 )
     wait_complete "$QSUB_ID_YD $QSUB_ID_OD"
     check_logs
-    compare_peaks YD_peaks_${Q}_peaks.broadPeak YD_peaks_${Q} YD_peaks_${Q}_peaks.broadPeak OD_peaks_${Q}
+    compare_peaks YD_peaks_${Q}_peaks.broadPeak YD_peaks_${Q} OD_peaks_${Q}_peaks.broadPeak OD_peaks_${Q}
 done
 
 
