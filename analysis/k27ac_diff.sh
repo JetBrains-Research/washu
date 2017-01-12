@@ -22,7 +22,6 @@ which qsub &>/dev/null || {
         echo ""
     }
 }
-module load bedtools
 
 compare_peaks()
 # - Two peaks aver overlapping if they share at least one nucleotide
@@ -156,7 +155,7 @@ module load bedtools2
 macs2 bdgdiff\
  --t1 ${DIFF_MACS_POOLED}/YD_peaks_${Q}_treat_pileup.bdg --c1 ${DIFF_MACS_POOLED}/YD_peaks_${Q}_control_lambda.bdg\
  --t2 ${DIFF_MACS_POOLED}/OD_peaks_${Q}_treat_pileup.bdg --c2 ${DIFF_MACS_POOLED}/OD_peaks_${Q}_control_lambda.bdg\
-  --d1 ${CONTROL_YD} --d2 ${CONTROL_OD} --o-prefix diff_OD_YD_${Q}
+  --d1 ${CONTROL_YD} --d2 ${CONTROL_OD} --o-prefix diff_YD_OD_${Q}
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
