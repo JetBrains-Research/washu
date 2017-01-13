@@ -51,7 +51,7 @@ for Q in "${QS[@]}"; do
     # Get aggregated peaks k27ac OD
     bash ~/work/washu/bed/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/OD_ac*.broadPeak > OD_peaks_${Q}.bed
 
-    bash ~/work/washu/bed/compare.sh YD_peaks_${Q}.bed OD_peaks_${Q}.bed YD_OD_${Q}
+    bash ~/work/washu/bed/compare.sh YD_peaks_${Q}.bed OD_peaks_${Q}.bed diff_YD_OD_${Q}
 done
 
 
@@ -94,7 +94,7 @@ ENDINPUT
 )
     wait_complete "$QSUB_ID_YD $QSUB_ID_OD"
     check_logs
-    bash ~/work/washu/bed/compare.sh YD_peaks_${Q}_peaks.broadPeak OD_peaks_${Q}_peaks.broadPeak YD_OD_${Q}
+    bash ~/work/washu/bed/compare.sh YD_peaks_${Q}_peaks.broadPeak OD_peaks_${Q}_peaks.broadPeak diff_YD_OD_${Q}
 done
 
 
