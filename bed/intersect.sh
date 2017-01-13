@@ -9,7 +9,7 @@
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
 
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
->&2 echo "Intersect: $@"
+>&2 echo "intersect: $@"
 
 # FILTERED data on chromosomes only, i.e. no contig
 CHRFILES=()

@@ -5,9 +5,11 @@
 # - Filter out unknown contigs and Y chromosome peaks
 # - Two peaks aver overlapping if they share at least one nucleotide
 # - For each of the combination of input files, number of overlap peaks are computed
+#
 # Example:
 # > bash metapeaks.sh A.bed B.bed
 # Output:
+# Metapeaks A.bed B.bed
 # PEAKS:       10       10
 # 0 1	1
 # 1 0	1
@@ -16,7 +18,7 @@
 # author Oleg Shpynov
 
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
->&2 echo "Metapeaks: $@"
+>&2 echo "metapeaks: $@"
 
 # FILTERED data on chromosomes only, i.e. no contig
 CHRFILES=()

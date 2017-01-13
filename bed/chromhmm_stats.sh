@@ -20,6 +20,7 @@ if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <BED_FILE> <CHROMHMM_MARKUP_FILE.BED>"
     exit 1
 fi
+>&2 echo "chromhmm_stat $@"
 
 FILE=$1
 CHROMHMM=$2

@@ -23,32 +23,6 @@ which qsub &>/dev/null || {
     }
 }
 
-compare_peaks()
-# - Two peaks aver overlapping if they share at least one nucleotide
-# - Prints only peaks that overlap in all files (merged)
-{
-    >&2 echo "compare_peaks $@"
-    PEAKS_FILE_1=$1
-    NAME_1=$2
-    PEAKS_FILE_2=$3
-    NAME_2=$4
-    TMP_FILE=intersection_${NAME_1}_${NAME_2}.txt
-    # Compute common and exclusive peaks
-    multiIntersectBed -i ${PEAKS_FILE_1} ${PEAKS_FILE_2} |\
-    bedtools merge -c 6,7 -o max |\
-    # Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
-     awk -v OFS="\t" '{print $1,$2,$3,int($4),int($5)}' > ${TMP_FILE}
-
-    cat ${TMP_FILE} | awk '/\t1\t0/' |\
-     awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' | sort > ${NAME_1}_exclusive.bed
-    cat ${TMP_FILE} | awk '/\t0\t1/' |\
-     awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' | sort > ${NAME_2}_exclusive.bed
-    cat ${TMP_FILE} | awk '/\t1\t1/' |\
-     awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' | sort > ${NAME_1}_${NAME_2}_common.bed
-    # Cleanup
-    rm ${TMP_FILE}
-}
-
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
@@ -73,11 +47,11 @@ QS=( 0.01 )
 for Q in "${QS[@]}"; do
     echo "Processing HillBilly $Q";
     # Get aggregated peaks k27ac YD
-    bash ~/work/washu/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/YD_ac*.broadPeak > YD_peaks_${Q}.bed
+    bash ~/work/washu/bed/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/YD_ac*.broadPeak > YD_peaks_${Q}.bed
     # Get aggregated peaks k27ac OD
-    bash ~/work/washu/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/OD_ac*.broadPeak > OD_peaks_${Q}.bed
+    bash ~/work/washu/bed/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/OD_ac*.broadPeak > OD_peaks_${Q}.bed
 
-    compare_peaks YD_peaks_${Q}.bed YD_peaks_${Q} OD_peaks_${Q}.bed OD_peaks_${Q}
+    bash ~/work/washu/bed/compare.sh YD_peaks_${Q}.bed OD_peaks_${Q}.bed YD_OD_${Q}
 done
 
 
@@ -120,7 +94,7 @@ ENDINPUT
 )
     wait_complete "$QSUB_ID_YD $QSUB_ID_OD"
     check_logs
-    compare_peaks YD_peaks_${Q}_peaks.broadPeak YD_peaks_${Q} OD_peaks_${Q}_peaks.broadPeak OD_peaks_${Q}
+    bash ~/work/washu/bed/compare.sh YD_peaks_${Q}_peaks.broadPeak OD_peaks_${Q}_peaks.broadPeak YD_OD_${Q}
 done
 
 
