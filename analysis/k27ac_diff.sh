@@ -135,7 +135,7 @@ cd $DIFF_MACS_BDGDIFF
 WORK_DIR=$DIFF_MACS_BDGDIFF
 
 for Q in "${QS[@]}"; do
-    echo "Processing MACS2 pooled $Q";
+    echo "Processing MACS2 bdgdiff $Q";
     CONTROL_OD=$(cat ${DIFF_MACS_POOLED}/macs2_broad_k27ac_OD_${Q}.log |\
      grep "total tags in control" | sed 's/.*total tags in control: //g')
     echo "Control OD: $CONTROL_OD"
