@@ -27,12 +27,13 @@ range=$(seq -s, 6 1 $(($# + 5)))
 pattern=$(printf '\t1%.0s' $(seq 1 $#))
 
 multiIntersectBed -i "${CHRFILES[@]}" |\
-bedtools merge -c $range -o max |\
-# Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
-awk '{if (NR > 1) printf("\n"); printf("%s\t%s\t%s", $1, $2, $3); for (i=4; i<=NF; i++) printf("\t%d", int($i)); }' |\
-# NOTE[shpynov] use awk instead of grep, because grep has some problems with tab characters.
-awk "/$pattern/" |\
-awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}'
+ bedtools merge -c $range -o max |\
+ # Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
+ awk '{if (NR > 1) printf("\n"); printf("%s\t%s\t%s", $1, $2, $3); for (i=4; i<=NF; i++) printf("\t%d", int($i)); }' |\
+ # NOTE[shpynov] use awk instead of grep, because grep has some problems with tab characters.
+ awk "/$pattern/" |\
+ awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
+ sort -k1,1 -k2,2n
 
 # Cleanup
 rm ${CHRFILES[@]}

@@ -29,11 +29,16 @@ bedtools merge -c 6,7 -o max |\
  awk -v OFS="\t" '{print $1,$2,$3,int($4),int($5)}' > ${TMP_FILE}
 
 cat ${TMP_FILE} | awk '/\t1\t0/' |\
- awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' | sort > ${OUT_PREFIX}_cond1.bed
+ awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
+ sort -k1,1 -k2,2n > ${OUT_PREFIX}_cond1.bed
+
 cat ${TMP_FILE} | awk '/\t0\t1/' |\
- awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' | sort > ${OUT_PREFIX}_cond2.bed
+ awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
+ sort -k1,1 -k2,2n > ${OUT_PREFIX}_cond2.bed
+
 cat ${TMP_FILE} | awk '/\t1\t1/' |\
- awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' | sort > ${OUT_PREFIX}_common.bed
+ awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
+ sort -k1,1 -k2,2n > ${OUT_PREFIX}_common.bed
 
 # Cleanup
 rm ${TMP_FILE}
