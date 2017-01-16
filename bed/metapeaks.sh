@@ -23,10 +23,10 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 # FILTERED data on chromosomes only, i.e. no contig
 CHRFILES=()
 PEAKS=()
-for i in $@;
+for i in $@
 do
     tmpfile=${i}.chr_only.tmp
-    grep -E "chr[0-9]+|chrX" $i > $tmpfile
+    grep -E "chr[0-9]+|chrX" $i | sort -k1,1 -k2,2n > $tmpfile
     CHRFILES+=("$tmpfile")
     peak=$(cat $tmpfile | wc -l)
     PEAKS+=("$peak")

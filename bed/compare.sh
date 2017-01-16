@@ -20,10 +20,20 @@ BED_1=$1
 BED_2=$2
 OUT_PREFIX=$3
 
+# FILTERED data on chromosomes only, i.e. no contig
+FILES=( $BED_1 $BED_2 )
+CHRFILES=()
+for i in ${FILES[@]}
+do
+    tmpfile=${i}.chr_only.tmp
+    grep -E "chr[0-9]+|chrX" $i | sort -k1,1 -k2,2n > $tmpfile
+    CHRFILES+=("$tmpfile")
+done
+
 TMP_FILE=${OUT_PREFIX}_all.txt
 
 # Compute common and exclusive peaks
-multiIntersectBed -i ${BED_1} ${BED_2} |\
+multiIntersectBed -i ${CHRFILES[@]} |\
 bedtools merge -c 6,7 -o max |\
 # Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
  awk -v OFS="\t" '{print $1,$2,$3,int($4),int($5)}' > ${TMP_FILE}
@@ -42,3 +52,4 @@ cat ${TMP_FILE} | awk '/\t1\t1/' |\
 
 # Cleanup
 rm ${TMP_FILE}
+rm ${CHRFILES[@]}
