@@ -154,13 +154,13 @@ if [ ! -d $CHIPDIFF ]; then
     echo "Processing OD Tags";
     for F in $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam'); do
         echo $F
-        bedtools bamtobed -i ${F} | awk '{print $1, $2, $6}' >> OD_TAGS.bed
+        bedtools bamtobed -i ${F} | awk '{print $1, $2, $6}' >> OD_TAGS.tag
     done
 
     echo "Processing YD Tags";
     for F in $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam'); do
         echo $F
-        bedtools bamtobed -i ${F} | awk '{print $1, $2, $6}' >> YD_TAGS.bed
+        bedtools bamtobed -i ${F} | awk '{print $1, $2, $6}' >> YD_TAGS.tag
     done
 
     cat >config.txt <<CONFIG
@@ -179,7 +179,7 @@ CONFIG
 #PBS -o ${WORK_DIR}/chipdiff_k27ac_3.log
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
-ChIPDiff YD_TAGS.bed OD_TAGS.bed $CHROM_SIZES config.txt diff_YD_OD_3
+ChIPDiff YD_TAGS.tag OD_TAGS.tag $CHROM_SIZES config.txt diff_YD_OD_3
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
