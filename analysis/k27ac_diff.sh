@@ -27,45 +27,49 @@ which qsub &>/dev/null || {
 source ~/work/washu/scripts/util.sh
 
 # Configure folder
-FOLDER="/scratch/artyomov_lab_aging/Y10OD10/chipseq/processed/3vs3_2"
-if [ ! -d $FOLDER ]; then
-    FOLDER="/mnt/stripe/bio/raw-data/aging/Y10OD10/chipseq/processed/3vs3_2"
+BASE="/scratch/artyomov_lab_aging/Y10OD10"
+if [ ! -d $BASE ]; then
+    BASE="/mnt/stripe/bio/raw-data/aging/Y10OD10"
 fi
-if [ ! -d $FOLDER ]; then
-    FOLDER="/Volumes/WD/scratch/artyomov_lab_aging/Y10OD10/chipseq/processed/3vs3_2"
+if [ ! -d $BASE ]; then
+    BASE="/Volumes/WD/scratch/artyomov_lab_aging/Y10OD10"
 fi
+FOLDER="$BASE/chipseq/processed/3vs3_2"
 echo "Processing k27ac difference: $FOLDER"
+CHROM_SIZES="$BASE/../indexes/hg19/hg19.chrom.sizes"
 
 # Hillbilly strategy
 DIFF_HB="${FOLDER}/k27ac_diff_hb"
-mkdir $DIFF_HB
-cd $DIFF_HB
-# * Call peaks independently
-# * Intersect individual peaks to get common peaks
-# * Analyze OD and YD common peaks
-QS=( 0.01 )
-for Q in "${QS[@]}"; do
-    echo "Processing HillBilly $Q";
-    # Get aggregated peaks k27ac YD
-    bash ~/work/washu/bed/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/YD_ac*.broadPeak > YD_peaks_${Q}.bed
-    # Get aggregated peaks k27ac OD
-    bash ~/work/washu/bed/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/OD_ac*.broadPeak > OD_peaks_${Q}.bed
+if [ ! -d ${DIFF_HB} ]; then
+    mkdir $DIFF_HB
+    cd $DIFF_HB
+    # * Call peaks independently
+    # * Intersect individual peaks to get common peaks
+    # * Analyze OD and YD common peaks
+    QS=( 0.01 )
+    for Q in "${QS[@]}"; do
+        echo "Processing HillBilly $Q";
+        # Get aggregated peaks k27ac YD
+        bash ~/work/washu/bed/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/YD_ac*.broadPeak > YD_peaks_${Q}.bed
+        # Get aggregated peaks k27ac OD
+        bash ~/work/washu/bed/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/OD_ac*.broadPeak > OD_peaks_${Q}.bed
 
-    bash ~/work/washu/bed/compare.sh YD_peaks_${Q}.bed OD_peaks_${Q}.bed diff_YD_OD_${Q}
-done
-
+        bash ~/work/washu/bed/compare.sh YD_peaks_${Q}.bed OD_peaks_${Q}.bed diff_YD_OD_${Q}
+    done
+fi
 
 # MACS2 pooled peaks
 # * Call pooled peaks for OD and YD
 DIFF_MACS_POOLED="${FOLDER}/k27ac_diff_macs_pooled"
-mkdir $DIFF_MACS_POOLED
-cd $DIFF_MACS_POOLED
-WORK_DIR=$DIFF_MACS_POOLED
+if [ ! -d $DIFF_MACS_POOLED ]; then
+    mkdir $DIFF_MACS_POOLED
+    cd $DIFF_MACS_POOLED
+    WORK_DIR=$DIFF_MACS_POOLED
 
-for Q in "${QS[@]}"; do
-    echo "Processing MACS2 pooled $Q";
-    # Get aggregated peaks k27ac YD
-    QSUB_ID_YD=$(qsub << ENDINPUT
+    for Q in "${QS[@]}"; do
+        echo "Processing MACS2 pooled $Q";
+        # Get aggregated peaks k27ac YD
+        QSUB_ID_YD=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N macs2_broad_k27ac_YD
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -79,7 +83,7 @@ macs2 callpeak -t ${FOLDER}/k27ac_bams/YD_ac*.bam -c ${FOLDER}/k27ac_bams/YD_inp
 ENDINPUT
 )
 
-    QSUB_ID_OD=$(qsub << ENDINPUT
+        QSUB_ID_OD=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N macs2_broad_k27ac_OD
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -92,10 +96,11 @@ macs2 callpeak -t ${FOLDER}/k27ac_bams/OD_ac*.bam -c ${FOLDER}/k27ac_bams/OD_inp
  -f BAM -g hs -n OD_peaks_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
-    wait_complete "$QSUB_ID_YD $QSUB_ID_OD"
-    check_logs
-    bash ~/work/washu/bed/compare.sh YD_peaks_${Q}_peaks.broadPeak OD_peaks_${Q}_peaks.broadPeak diff_YD_OD_${Q}
-done
+        wait_complete "$QSUB_ID_YD $QSUB_ID_OD"
+        check_logs
+        bash ~/work/washu/bed/compare.sh YD_peaks_${Q}_peaks.broadPeak OD_peaks_${Q}_peaks.broadPeak diff_YD_OD_${Q}
+    done
+fi
 
 
 
@@ -104,20 +109,21 @@ done
 # * Call pooled peaks for OD and YD
 # * Use macs2 bdgdiff
 DIFF_MACS_BDGDIFF="${FOLDER}/k27ac_diff_macs_bdgdiff"
-mkdir $DIFF_MACS_BDGDIFF
-cd $DIFF_MACS_BDGDIFF
-WORK_DIR=$DIFF_MACS_BDGDIFF
+if [ ! -d $DIFF_MACS_BDGDIFF ]; then
+    mkdir $DIFF_MACS_BDGDIFF
+    cd $DIFF_MACS_BDGDIFF
+    WORK_DIR=$DIFF_MACS_BDGDIFF
 
-for Q in "${QS[@]}"; do
-    echo "Processing MACS2 bdgdiff $Q";
-    CONTROL_OD=$(cat ${DIFF_MACS_POOLED}/macs2_broad_k27ac_OD_${Q}.log |\
-     grep "total tags in control" | sed 's/.*total tags in control: //g')
-    echo "Control OD: $CONTROL_OD"
-    CONTROL_YD=$(cat ${DIFF_MACS_POOLED}/macs2_broad_k27ac_YD_${Q}.log |\
-     grep "total tags in control" | sed 's/.*total tags in control: //g')
-    echo "Control YD: $CONTROL_YD"
+    for Q in "${QS[@]}"; do
+        echo "Processing MACS2 bdgdiff $Q";
+        CONTROL_OD=$(cat ${DIFF_MACS_POOLED}/macs2_broad_k27ac_OD_${Q}.log |\
+        grep "total tags in control" | sed 's/.*total tags in control: //g')
+        echo "Control OD: $CONTROL_OD"
+        CONTROL_YD=$(cat ${DIFF_MACS_POOLED}/macs2_broad_k27ac_YD_${Q}.log |\
+        grep "total tags in control" | sed 's/.*total tags in control: //g')
+        echo "Control YD: $CONTROL_YD"
 
-    QSUB_ID=$(qsub << ENDINPUT
+        QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N macs2_broad_k27ac_bdgdiff
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -132,6 +138,50 @@ macs2 bdgdiff\
   --d1 ${CONTROL_YD} --d2 ${CONTROL_OD} --o-prefix diff_YD_OD_${Q}
 ENDINPUT
 )
+        wait_complete "$QSUB_ID"
+        check_logs
+    done
+fi
+
+
+# Pooled ChIPDiff
+CHIPDIFF="${FOLDER}/k27ac_diff_chipdiff"
+if [ ! -d $CHIPDIFF ]; then
+    mkdir $CHIPDIFF
+    cd $CHIPDIFF
+    WORK_DIR=$CHIPDIFF
+
+    echo "Processing OD Tags";
+    for F in $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam'); do
+        echo $F
+        bedtools bamtobed -i ${F} | awk '{print $1, $2, $6}' >> OD_TAGS.bed
+    done
+
+    echo "Processing YD Tags";
+    for F in $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam'); do
+        echo $F
+        bedtools bamtobed -i ${F} | awk '{print $1, $2, $6}' >> YD_TAGS.bed
+    done
+
+    cat >config.txt <<CONFIG
+maxIterationNum  500
+minP             0.95
+maxTrainingSeqNum 10000
+minFoldChange    3
+minRegionDist    1000
+CONFIG
+
+    QSUB_ID=$(qsub << ENDINPUT
+#!/bin/sh
+#PBS -N chipdiff_k27ac
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -j oe
+#PBS -o ${WORK_DIR}/chipdiff_k27ac_3.log
+# This is necessary because qsub default working dir is user home
+cd ${WORK_DIR}
+ChIPDiff YD_TAGS.bed OD_TAGS.bed $CHROM_SIZES config.txt diff_YD_OD_3
+ENDINPUT
+)
     wait_complete "$QSUB_ID"
     check_logs
-done
+fi
