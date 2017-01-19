@@ -150,10 +150,8 @@ bams_to_tags() {
     shift 1
     for F in $@; do
         >&2 echo $F
-        bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $6}' >> ${OUT}.tmp
+        bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $6}' >> $OUT
     done
-    sort -k1,1 -k2,2n -o ${OUT} ${OUT}.tmp
-    rm ${OUT}.tmp
 }
 
 # Pooled ChIPDiff
@@ -185,7 +183,10 @@ CONFIG
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 
-ChIPDiff YD_tags.tag OD_tags.tag $CHROM_SIZES config.txt diff_YD_OD_3
+sort -k1,1 -k2,2n -o YD_tags_sorted.tag YD_tags.tag
+sort -k1,1 -k2,2n -o OD_tags_sorted.tag OD_tags.tag
+
+ChIPDiff YD_tags_sorted.tag OD_tags_sorted.tag $CHROM_SIZES config.txt diff_YD_OD_3
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
@@ -199,10 +200,8 @@ bams_to_reads() {
     shift 1
     for F in $@; do
         >&2 echo $F
-        bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $3, $6}' >> ${OUT}.tmp
+        bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $3, $6}' >> $OUT
     done
-    sort -k1,1 -k2,2n -o ${OUT} ${OUT}.tmp
-    rm ${OUT}.tmp
 }
 
 macs2_shift() {
@@ -246,10 +245,12 @@ if [ ! -d $MANORM ]; then
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 
+sort -k1,1 -k2,2n -o YD_reads_sorted.bed YD_reads.bed
+sort -k1,1 -k2,2n -o OD_reads_sorted.bed OD_reads.bed
+
 # Load required R module
 module load R
-
-bash ${WORK_DIR}/MAnorm.sh YD_peaks.bed OD_peaks.bed YD_reads.bed OD_reads.bed $SHIFT_YD $SHIFT_OD
+bash ${WORK_DIR}/MAnorm.sh YD_peaks.bed OD_peaks.bed YD_reads_sorted.bed OD_reads_sorted.bed $SHIFT_YD $SHIFT_OD
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
