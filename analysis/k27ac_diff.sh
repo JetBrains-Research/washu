@@ -170,9 +170,9 @@ minRegionDist    1000
 CONFIG
 
     >&2 echo "Processing OD Tags";
-    bams_to_tags OD.tag $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam')
+    bams_to_tags OD_tags.tag $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam')
     >&2 echo "Processing YD Tags";
-    bams_to_tags YD.tag $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam')
+    bams_to_tags YD_tags.tag $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam')
 
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
