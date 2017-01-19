@@ -235,6 +235,9 @@ for F in $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam'); do
 done
 sort -k1,1 -k2,2n -o YD_reads.bed _YD_reads.bed
 
+# Load required R module
+module load R
+
 bash ${WORK_DIR}/MAnorm.sh YD_peaks.bed OD_peaks.bed YD_reads.bed OD_reads.bed $SHIFT_YD $SHIFT_OD
 
 rm _*.bed
