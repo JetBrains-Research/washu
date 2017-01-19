@@ -79,7 +79,7 @@ if [ ! -d $DIFF_MACS_POOLED ]; then
 cd ${WORK_DIR}
 module load bedtools2
 macs2 callpeak -t ${FOLDER}/k27ac_bams/YD_ac*.bam -c ${FOLDER}/k27ac_bams/YD_input.bam\
- -f BAM -g hs -n YD_peaks_${Q} -B --broad --broad-cutoff ${Q}
+ -f BAM -g hs -n YD_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
 
@@ -93,12 +93,12 @@ ENDINPUT
 cd ${WORK_DIR}
 module load bedtools2
 macs2 callpeak -t ${FOLDER}/k27ac_bams/OD_ac*.bam -c ${FOLDER}/k27ac_bams/OD_input.bam\
- -f BAM -g hs -n OD_peaks_${Q} -B --broad --broad-cutoff ${Q}
+ -f BAM -g hs -n OD_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
         wait_complete "$QSUB_ID_YD $QSUB_ID_OD"
         check_logs
-        bash ~/work/washu/bed/compare.sh YD_peaks_${Q}_peaks.broadPeak OD_peaks_${Q}_peaks.broadPeak diff_YD_OD_${Q}
+        bash ~/work/washu/bed/compare.sh YD_${Q}_peaks.broadPeak OD_${Q}_peaks.broadPeak diff_YD_OD_${Q}
     done
 fi
 
@@ -133,8 +133,8 @@ if [ ! -d $DIFF_MACS_BDGDIFF ]; then
 cd ${WORK_DIR}
 module load bedtools2
 macs2 bdgdiff\
- --t1 ${DIFF_MACS_POOLED}/YD_peaks_${Q}_treat_pileup.bdg --c1 ${DIFF_MACS_POOLED}/YD_peaks_${Q}_control_lambda.bdg\
- --t2 ${DIFF_MACS_POOLED}/OD_peaks_${Q}_treat_pileup.bdg --c2 ${DIFF_MACS_POOLED}/OD_peaks_${Q}_control_lambda.bdg\
+ --t1 ${DIFF_MACS_POOLED}/YD_${Q}_treat_pileup.bdg --c1 ${DIFF_MACS_POOLED}/YD_${Q}_control_lambda.bdg\
+ --t2 ${DIFF_MACS_POOLED}/OD_${Q}_treat_pileup.bdg --c2 ${DIFF_MACS_POOLED}/OD_${Q}_control_lambda.bdg\
   --d1 ${CONTROL_YD} --d2 ${CONTROL_OD} --o-prefix diff_YD_OD_${Q}
 ENDINPUT
 )
@@ -184,6 +184,60 @@ sort -k1,1 -k2,2n -o YD_TAGS.tag _YD_TAGS.tag
 rm _YD_TAGS.tag
 
 ChIPDiff YD_TAGS.tag OD_TAGS.tag $CHROM_SIZES config.txt diff_YD_OD_3
+ENDINPUT
+)
+    wait_complete "$QSUB_ID"
+    check_logs
+fi
+
+# MANorm
+MANORM="${FOLDER}/k27ac_diff_manorm"
+if [ ! -d $MANORM ]; then
+    mkdir $MANORM
+    cd $MANORM
+    WORK_DIR=$MANORM
+    Q=0.01
+# README.txt
+# Create a folder and place in the folder MAnorm.sh, MAnorm.r, and all 4 bed files to be analyzed.
+# run command:   ./MAnorm.sh    sample1_peakfile[BED]     sample2_peakfile[BED] \
+#                               sample1_readfile[BED]     sample2_readfile[BED]  \
+#                               sample1_readshift_lentgh[INT]      sample2_readshift_length[INT]
+
+    cp ~/MAnorm_Linux_R_Package/MAnorm.* ${WORK_DIR}
+    cp ${DIFF_MACS_POOLED}/YD_${Q}_peaks.broadPeak ${WORK_DIR}/YD_peaks.bed
+    cp ${DIFF_MACS_POOLED}/OD_${Q}_peaks.broadPeak ${WORK_DIR}/OD_peaks.bed
+
+    # Check MACS2 for shift values
+    SHIFT_OD=$(cat ${DIFF_MACS_POOLED}/OD_${Q}_peaks.xls | grep "# d =" | sed 's/.*# d = //g')
+    echo "SHIFT OD: $SHIFT_OD"
+    SHIFT_YD=$(cat ${DIFF_MACS_POOLED}/YD_${Q}_peaks.xls | grep "# d =" | sed 's/.*# d = //g')
+    echo "SHIFT YD: $SHIFT_YD"
+
+    QSUB_ID=$(qsub << ENDINPUT
+#!/bin/sh
+#PBS -N manorm_k27ac
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -j oe
+#PBS -o ${WORK_DIR}/manorm_k27ac_3.log
+# This is necessary because qsub default working dir is user home
+cd ${WORK_DIR}
+>&2 echo "Processing OD Pooled Reads";
+for F in $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam'); do
+    >&2 echo $F
+    bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $3, $6}' >> _OD_reads.bed
+done
+sort -k1,1 -k2,2n -o OD_reads.bed _OD_reads.bed
+
+>&2 echo "Processing YD Pooled Reads";
+for F in $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam'); do
+    >&2 echo $F
+    bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $3, $6}' >> _YD_reads.bed
+done
+sort -k1,1 -k2,2n -o YD_reads.bed _YD_reads.bed
+
+bash ${WORK_DIR}/MAnorm.sh YD_peaks.bed OD_peaks.bed YD_reads.bed OD_reads.bed $SHIFT_YD $SHIFT_OD
+
+rm _*.bed
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
