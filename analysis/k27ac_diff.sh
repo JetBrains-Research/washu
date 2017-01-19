@@ -102,7 +102,9 @@ ENDINPUT
     done
 fi
 
-
+macs2_total_tags_control() {
+    echo $(cat $1 | grep "total tags in control" | sed 's/.*total tags in control: //g')
+}
 
 # MACS2 bdgdiff
 # See https://github.com/taoliu/MACS/wiki/Call-differential-binding-events
@@ -116,11 +118,9 @@ if [ ! -d $DIFF_MACS_BDGDIFF ]; then
 
     for Q in "${QS[@]}"; do
         echo "Processing MACS2 bdgdiff $Q";
-        CONTROL_OD=$(cat ${DIFF_MACS_POOLED}/macs2_broad_k27ac_OD_${Q}.log |\
-        grep "total tags in control" | sed 's/.*total tags in control: //g')
+        CONTROL_OD=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/macs2_broad_k27ac_OD_${Q}.log)
         echo "Control OD: $CONTROL_OD"
-        CONTROL_YD=$(cat ${DIFF_MACS_POOLED}/macs2_broad_k27ac_YD_${Q}.log |\
-        grep "total tags in control" | sed 's/.*total tags in control: //g')
+        CONTROL_YD=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/macs2_broad_k27ac_YD_${Q}.log)
         echo "Control YD: $CONTROL_YD"
 
         QSUB_ID=$(qsub << ENDINPUT
@@ -144,6 +144,18 @@ ENDINPUT
 fi
 
 
+bams_to_tags() {
+    OUT=$1
+    # Shift arguments
+    shift 1
+    for F in $@; do
+        >&2 echo $F
+        bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $6}' >> ${OUT}.tmp
+    done
+    sort -k1,1 -k2,2n -o ${OUT} ${OUT}.tmp
+    rm ${OUT}.tmp
+}
+
 # Pooled ChIPDiff
 CHIPDIFF="${FOLDER}/k27ac_diff_chipdiff"
 if [ ! -d $CHIPDIFF ]; then
@@ -159,6 +171,11 @@ minFoldChange    3
 minRegionDist    1000
 CONFIG
 
+    >&2 echo "Processing OD Tags";
+    bams_to_tags OD.tag $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam')
+    >&2 echo "Processing YD Tags";
+    bams_to_tags YD.tag $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam')
+
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N chipdiff_k27ac
@@ -167,28 +184,30 @@ CONFIG
 #PBS -o ${WORK_DIR}/chipdiff_k27ac_3.log
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
->&2 echo "Processing OD Tags";
-for F in $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam'); do
-    >&2 echo $F
-    bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $6}' >> _OD_TAGS.tag
-done
-sort -k1,1 -k2,2n -o OD_TAGS.tag _OD_TAGS.tag
-rm _OD_TAGS.tag
 
->&2 echo "Processing YD Tags";
-for F in $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam'); do
-    >&2 echo $F
-    bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $6}' >> _YD_TAGS.tag
-done
-sort -k1,1 -k2,2n -o YD_TAGS.tag _YD_TAGS.tag
-rm _YD_TAGS.tag
-
-ChIPDiff YD_TAGS.tag OD_TAGS.tag $CHROM_SIZES config.txt diff_YD_OD_3
+ChIPDiff YD_tags.tag OD_tags.tag $CHROM_SIZES config.txt diff_YD_OD_3
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
     check_logs
 fi
+
+
+bams_to_reads() {
+    OUT=$1
+    # Shift arguments
+    shift 1
+    for F in $@; do
+        >&2 echo $F
+        bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $3, $6}' >> ${OUT}.tmp
+    done
+    sort -k1,1 -k2,2n -o ${OUT} ${OUT}.tmp
+    rm ${OUT}.tmp
+}
+
+macs2_shift() {
+    echo $(cat $1 | grep "# d =" | sed 's/.*# d = //g')
+}
 
 # MANorm
 MANORM="${FOLDER}/k27ac_diff_manorm"
@@ -207,10 +226,15 @@ if [ ! -d $MANORM ]; then
     cp ${DIFF_MACS_POOLED}/YD_${Q}_peaks.broadPeak ${WORK_DIR}/YD_peaks.bed
     cp ${DIFF_MACS_POOLED}/OD_${Q}_peaks.broadPeak ${WORK_DIR}/OD_peaks.bed
 
+    >&2 echo "Processing OD Pooled Reads";
+    bams_to_reads OD_reads.bed $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam')
+    >&2 echo "Processing YD Pooled Reads";
+    bams_to_reads YD_reads.bed $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam')
+
     # Check MACS2 for shift values
-    SHIFT_OD=$(cat ${DIFF_MACS_POOLED}/OD_${Q}_peaks.xls | grep "# d =" | sed 's/.*# d = //g')
+    SHIFT_OD=$(macs2_shift ${DIFF_MACS_POOLED}/OD_${Q}_peaks.xls)
     echo "SHIFT OD: $SHIFT_OD"
-    SHIFT_YD=$(cat ${DIFF_MACS_POOLED}/YD_${Q}_peaks.xls | grep "# d =" | sed 's/.*# d = //g')
+    SHIFT_YD=$(macs2_shift ${DIFF_MACS_POOLED}/YD_${Q}_peaks.xls)
     echo "SHIFT YD: $SHIFT_YD"
 
     QSUB_ID=$(qsub << ENDINPUT
@@ -221,26 +245,11 @@ if [ ! -d $MANORM ]; then
 #PBS -o ${WORK_DIR}/manorm_k27ac_3.log
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
->&2 echo "Processing OD Pooled Reads";
-for F in $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam'); do
-    >&2 echo $F
-    bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $3, $6}' >> _OD_reads.bed
-done
-sort -k1,1 -k2,2n -o OD_reads.bed _OD_reads.bed
-
->&2 echo "Processing YD Pooled Reads";
-for F in $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam'); do
-    >&2 echo $F
-    bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $3, $6}' >> _YD_reads.bed
-done
-sort -k1,1 -k2,2n -o YD_reads.bed _YD_reads.bed
 
 # Load required R module
 module load R
 
 bash ${WORK_DIR}/MAnorm.sh YD_peaks.bed OD_peaks.bed YD_reads.bed OD_reads.bed $SHIFT_YD $SHIFT_OD
-
-rm _*.bed
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
