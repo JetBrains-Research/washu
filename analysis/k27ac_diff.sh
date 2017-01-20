@@ -38,6 +38,9 @@ FOLDER="$BASE/chipseq/processed/3vs3_2"
 echo "Processing k27ac difference: $FOLDER"
 CHROM_SIZES="$BASE/../indexes/hg19/hg19.chrom.sizes"
 
+# Base Q value threshold for all the experiments
+QS=( 0.01 )
+
 # Hillbilly strategy
 DIFF_HB="${FOLDER}/k27ac_diff_hb"
 if [ ! -d ${DIFF_HB} ]; then
@@ -46,7 +49,6 @@ if [ ! -d ${DIFF_HB} ]; then
     # * Call peaks independently
     # * Intersect individual peaks to get common peaks
     # * Analyze OD and YD common peaks
-    QS=( 0.01 )
     for Q in "${QS[@]}"; do
         echo "Processing HillBilly $Q";
         # Get aggregated peaks k27ac YD
