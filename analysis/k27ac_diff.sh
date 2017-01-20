@@ -102,6 +102,35 @@ ENDINPUT
     done
 fi
 
+
+# MACS2 pooled peaks YD with control = OD
+DIFF_MACS_POOLED_Y_VS_O="${FOLDER}/k27ac_diff_macs_pooled_y_vs_o"
+if [ ! -d $DIFF_MACS_POOLED_Y_VS_O ]; then
+    mkdir $DIFF_MACS_POOLED_Y_VS_O
+    cd $DIFF_MACS_POOLED_Y_VS_O
+    WORK_DIR=$DIFF_MACS_POOLED_Y_VS_O
+
+    for Q in "${QS[@]}"; do
+        echo "Processing MACS2 pooled $Q";
+        # Get aggregated peaks k27ac YD
+        QSUB_ID=$(qsub << ENDINPUT
+#!/bin/sh
+#PBS -N macs2_broad_k27ac_Y_vs_O
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -j oe
+#PBS -o ${WORK_DIR}/macs2_broad_k27ac_Y_vs_O_${Q}.log
+# This is necessary because qsub default working dir is user home
+cd ${WORK_DIR}
+module load bedtools2
+macs2 callpeak -t ${FOLDER}/k27ac_bams/YD_ac*.bam -c ${FOLDER}/k27ac_bams/OD_ac*.bam \
+ -f BAM -g hs -n YD_${Q} -B --broad --broad-cutoff ${Q}
+ENDINPUT
+)
+        wait_complete "$QSUB_ID"
+        check_logs
+    done
+fi
+
 macs2_total_tags_control() {
     echo $(cat $1 | grep "total tags in control" | sed 's/.*total tags in control: //g')
 }
