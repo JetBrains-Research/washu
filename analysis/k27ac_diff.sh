@@ -248,8 +248,10 @@ cd ${WORK_DIR}
 sort -k1,1 -k2,2n -o YD_reads_sorted.bed YD_reads.bed
 sort -k1,1 -k2,2n -o OD_reads_sorted.bed OD_reads.bed
 
-# Load required R module
+# Load required modules
 module load R
+module load bedtools2
+
 bash ${WORK_DIR}/MAnorm.sh YD_peaks.bed OD_peaks.bed YD_reads_sorted.bed OD_reads_sorted.bed $SHIFT_YD $SHIFT_OD
 ENDINPUT
 )
