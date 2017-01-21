@@ -16,7 +16,7 @@ CHRFILES=()
 for i in $@
 do
     tmpfile=${i}.chr_only.tmp
-    grep -E "chr[0-9]+|chrX" $i | sort -k1,1 -k2,2n > $tmpfile
+    grep -E "chr[0-9]+|chrX" $i | sort -k1,1 -k2,2n -k3,3n > $tmpfile
     CHRFILES+=("$tmpfile")
 done
 
@@ -30,7 +30,7 @@ multiIntersectBed -i "${CHRFILES[@]}" |\
  # NOTE[shpynov] use awk instead of grep, because grep has some problems with tab characters.
  awk "/$pattern/" |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
- sort -k1,1 -k2,2n
+ sort -k1,1 -k2,2n -k3,3n
 
 # Cleanup
 rm ${CHRFILES[@]}

@@ -26,7 +26,7 @@ CHRFILES=()
 for i in ${FILES[@]}
 do
     tmpfile=${i}.chr_only.tmp
-    grep -E "chr[0-9]+|chrX" $i | sort -k1,1 -k2,2n > $tmpfile
+    grep -E "chr[0-9]+|chrX" $i | sort -k1,1 -k2,2n -k3,3n > $tmpfile
     CHRFILES+=("$tmpfile")
 done
 
@@ -40,15 +40,15 @@ bedtools merge -c 6,7 -o max |\
 
 cat ${TMP_FILE} | awk '/\t1\t0/' |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
- sort -k1,1 -k2,2n > ${OUT_PREFIX}_cond1.bed
+ sort -k1,1 -k2,2n -k3,3n > ${OUT_PREFIX}_cond1.bed
 
 cat ${TMP_FILE} | awk '/\t0\t1/' |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
- sort -k1,1 -k2,2n > ${OUT_PREFIX}_cond2.bed
+ sort -k1,1 -k2,2n -k3,3n > ${OUT_PREFIX}_cond2.bed
 
 cat ${TMP_FILE} | awk '/\t1\t1/' |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
- sort -k1,1 -k2,2n > ${OUT_PREFIX}_common.bed
+ sort -k1,1 -k2,2n -k3,3n > ${OUT_PREFIX}_common.bed
 
 # Cleanup
 rm ${TMP_FILE}

@@ -20,7 +20,7 @@ G=$2
 # Remove coordinates outside chromosome sizes
 bedtools slop -i ${F} -g ${G} -b 0 | bedClip stdin ${G} ${F}.clip
 # Fix problem with not sorted clip file
-LC_COLLATE=C sort -k1,1 -k2,2n ${F}.clip > ${F}.sort.clip
+LC_COLLATE=C sort -k1,1 -k2,2n -k3,3n ${F}.clip > ${F}.sort.clip
 bedGraphToBigWig ${F}.sort.clip ${G} ${F/bdg/bw}
  
 rm -f ${F}*.clip

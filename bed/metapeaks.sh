@@ -26,7 +26,7 @@ PEAKS=()
 for i in $@
 do
     tmpfile=${i}.chr_only.tmp
-    grep -E "chr[0-9]+|chrX" $i | sort -k1,1 -k2,2n > $tmpfile
+    grep -E "chr[0-9]+|chrX" $i | sort -k1,1 -k2,2n -k3,3n > $tmpfile
     CHRFILES+=("$tmpfile")
     peak=$(cat $tmpfile | wc -l)
     PEAKS+=("$peak")
