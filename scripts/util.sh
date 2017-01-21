@@ -4,10 +4,11 @@
 # CHPC (qsub) mock replacement
 which qsub &>/dev/null || {
     echo "CHPC (qsub) system not found, using mock replacement"
+    QSUB_MOCK_ENABLED="TRUE"
     qsub() {
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
         echo "MOCK qsub"
-        echo "$CMD" > /tmp/qsub.sh
+        echo "$CMD" | tee /tmp/qsub.sh
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
         bash /tmp/qsub.sh | tee "$LOG"
     }
@@ -24,7 +25,8 @@ which qsub &>/dev/null || {
 wait_complete()
 {
     echo "Waiting for tasks..."
-    which qsub &>/dev/null || {
+    if  [ -n $QSUB_MOCK_ENABLED ]
+    then
         for TASK in $@
         do :
             echo -n "TASK: $TASK"
@@ -38,7 +40,7 @@ wait_complete()
             fi
             echo
         done
-    }
+    fi
     echo "Done."
 }
 
