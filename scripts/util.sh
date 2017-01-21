@@ -1,24 +1,44 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
+# CHPC (qsub) mock replacement
+which qsub &>/dev/null || {
+    echo "CHPC (qsub) system not found, using mock replacement"
+    qsub() {
+        while read -r line; do CMD+=$line; CMD+=$'\n'; done;
+        echo "MOCK qsub"
+        echo "$CMD" > /tmp/qsub.sh
+        LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
+        bash /tmp/qsub.sh | tee "$LOG"
+    }
+    qstat() {
+        echo "MOCK qstat $@"
+    }
+    module() {
+        echo "MOCK module $@"
+    }
+}
+
 # Small procedure to wait until all the tasks are finished on the qsub cluster
 # Example of usage: wait_complete $TASKS, where $TASKS is a task ids returned by qsub.
 wait_complete()
 {
-    echo "Waiting for tasks."
-    for JOB in $@
-    do :
-        echo -n "JOB: $JOB"
-        # The job id is actually the first numbers in the string
-        JOB_ID=$(echo ${JOB} | sed -e "s/\([0-9]*\).*/\1/")
-        if [ ! -z "$JOB_ID" ]; then
-            while qstat ${JOB_ID} &> /dev/null; do
-                echo -n "."
-                sleep 5
-            done;
-        fi
-        echo
-    done
+    echo "Waiting for tasks..."
+    which qsub &>/dev/null || {
+        for TASK in $@
+        do :
+            echo -n "TASK: $TASK"
+            # The task id is actually the first numbers in the string
+            TASK_ID=$(echo ${TASK} | sed -e "s/\([0-9]*\).*/\1/")
+            if [ ! -z "$TASK_ID" ]; then
+                while qstat ${TASK_ID} &> /dev/null; do
+                    echo -n "."
+                    sleep 10
+                done;
+            fi
+            echo
+        done
+    }
     echo "Done."
 }
 
