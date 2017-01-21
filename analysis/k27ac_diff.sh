@@ -1,30 +1,21 @@
 #!/usr/bin/env bash
-# Script to process analysis analysis of K27ac OD vs YD
+# Script to process differential chip-seq analysis
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
 
 # Check tools
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
-# QSUB mock replacement
-which qsub &>/dev/null || {
-    echo "QSUB system not found, using mock replacement"
-    qsub() {
-        while read -r line; do CMD+=$line; CMD+=$'\n'; done;
-        echo "$CMD" > /tmp/qsub.sh
-        LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
-        bash /tmp/qsub.sh | tee "$LOG"
-    }
-    qstat() {
-        echo ""
-    }
-    module() {
-        echo ""
-    }
-}
-
-# Load technical stuff
+# Load cluster stuff
 source ~/work/washu/scripts/util.sh
+
+# TODO[shpynov] Is there any better way to echo multiline?
+EOL=$'\n'
+
+GROUP1="Y"
+echo "GROUP1: $EOL$GROUP1"
+GROUP2="O"
+echo "GROUP1: $EOL$GROUP2"
 
 # Configure folder
 BASE="/scratch/artyomov_lab_aging/Y10OD10"
@@ -35,143 +26,159 @@ if [ ! -d $BASE ]; then
     BASE="/Volumes/WD/scratch/artyomov_lab_aging/Y10OD10"
 fi
 FOLDER="$BASE/chipseq/processed/3vs3_2"
-echo "Processing k27ac difference: $FOLDER"
+echo "FOLDER: $EOL$FOLDER"
+
 CHROM_SIZES="$BASE/../indexes/hg19/hg19.chrom.sizes"
+echo "CHROM_SIZES: $EOL$CHROM_SIZES"
+
+NAME="diff_k27ac_${GROUP1}_${GROUP2}"
+echo "NAME: $EOL$NAME"
+
+PREFIX="$(pwd)/$NAME"
+echo "PREFIX: $EOL$PREFIX"
 
 # Base Q value threshold for all the experiments
-QS=( 0.01 )
+Q=0.01
+echo "Q: $EOL$Q"
 
-# Hillbilly strategy
-DIFF_HB="${FOLDER}/k27ac_diff_hb"
-if [ ! -d ${DIFF_HB} ]; then
-    mkdir $DIFF_HB
-    cd $DIFF_HB
-    # * Call peaks independently
-    # * Intersect individual peaks to get common peaks
-    # * Analyze OD and YD common peaks
-    for Q in "${QS[@]}"; do
-        echo "Processing HillBilly $Q";
-        # Get aggregated peaks k27ac YD
-        bash ~/work/washu/bed/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/YD_ac*.broadPeak > YD_peaks_${Q}.bed
-        # Get aggregated peaks k27ac OD
-        bash ~/work/washu/bed/intersect.sh ${FOLDER}/k27ac_bams_macs_broad_${Q}/OD_ac*.broadPeak > OD_peaks_${Q}.bed
+READS1=$(ls ${FOLDER}/k27ac_bams/YD_ac*.bam)
+echo "READS $GROUP1: $EOL$READS1"
+READS2=$(ls ${FOLDER}/k27ac_bams/OD_ac*.bam)
+echo "READS $GROUP2: $EOL$READS2"
 
-        bash ~/work/washu/bed/compare.sh YD_peaks_${Q}.bed OD_peaks_${Q}.bed diff_YD_OD_${Q}
-    done
+INPUT_READS1=$(ls ${FOLDER}/k27ac_bams/YD_input.bam)
+echo "INPUT_READS $GROUP1: $EOL$INPUT_READS1"
+INPUT_READS2=$(ls ${FOLDER}/k27ac_bams/OD_input.bam)
+echo "INPUT_READS $GROUP2: $EOL$INPUT_READS2"
+
+INDIVIDUAL_PEAKS1=$(ls ${FOLDER}/k27ac_bams_macs_broad_${Q}/YD_ac*.broadPeak)
+echo "INDIVIDUAL_PEAKS $GROUP1: $EOL$INDIVIDUAL_PEAKS1"
+INDIVIDUAL_PEAKS2=$(ls ${FOLDER}/k27ac_bams_macs_broad_${Q}/OD_ac*.broadPeak)
+echo "INDIVIDUAL_PEAKS $GROUP2: $EOL$INDIVIDUAL_PEAKS2"
+
+
+DIFF_INTERSECTION="${PREFIX}_intersection"
+echo "Processing $DIFF_INTERSECTION"
+if [ ! -d ${DIFF_INTERSECTION} ]; then
+    mkdir ${DIFF_INTERSECTION}
+    cd ${DIFF_INTERSECTION}
+    echo "Intersect individual peaks to get common peaks for ${GROUP1} and ${GROUP2} and then compare them"
+
+    bash ~/work/washu/bed/intersect.sh $INDIVIDUAL_PEAKS1 > ${GROUP1}_peaks_${Q}.bed
+    bash ~/work/washu/bed/intersect.sh $INDIVIDUAL_PEAKS2 > ${GROUP2}_peaks_${Q}.bed
+
+    bash ~/work/washu/bed/compare.sh ${GROUP1}_peaks_${Q}.bed ${GROUP2}_peaks_${Q}.bed ${NAME}_${Q}
 fi
 
-# MACS2 pooled peaks
-# * Call pooled peaks for OD and YD
-DIFF_MACS_POOLED="${FOLDER}/k27ac_diff_macs_pooled"
+DIFF_MACS_POOLED="${PREFIX}_macs_pooled"
+echo "Processing $DIFF_MACS_POOLED"
 if [ ! -d $DIFF_MACS_POOLED ]; then
-    mkdir $DIFF_MACS_POOLED
-    cd $DIFF_MACS_POOLED
-    WORK_DIR=$DIFF_MACS_POOLED
+    mkdir ${DIFF_MACS_POOLED}
+    cd ${DIFF_MACS_POOLED}
+    echo "Processing MACS2 pooled peaks and compare them";
 
-    for Q in "${QS[@]}"; do
-        echo "Processing MACS2 pooled $Q";
-        # Get aggregated peaks k27ac YD
-        QSUB_ID_YD=$(qsub << ENDINPUT
+    QSUB_ID1=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N macs2_broad_k27ac_YD
+#PBS -N ${NAME}_1_macs2_broad_${Q}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/macs2_broad_k27ac_YD_${Q}.log
+#PBS -o ${DIFF_MACS_POOLED}/${NAME}_1_macs2_broad_${Q}.log
 # This is necessary because qsub default working dir is user home
-cd ${WORK_DIR}
+cd ${DIFF_MACS_POOLED}
 module load bedtools2
-macs2 callpeak -t ${FOLDER}/k27ac_bams/YD_ac*.bam -c ${FOLDER}/k27ac_bams/YD_input.bam\
- -f BAM -g hs -n YD_${Q} -B --broad --broad-cutoff ${Q}
+macs2 callpeak -t $READS1 -c $INPUT_READS1 -f BAM -g hs -n ${GROUP1}_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
 
-        QSUB_ID_OD=$(qsub << ENDINPUT
+    QSUB_ID2=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N macs2_broad_k27ac_OD
+#PBS -N ${NAME}_2_macs2_broad_${Q}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/macs2_broad_k27ac_OD_${Q}.log
+#PBS -o ${DIFF_MACS_POOLED}/${NAME}_2_macs2_broad_${Q}.log
 # This is necessary because qsub default working dir is user home
-cd ${WORK_DIR}
+cd ${DIFF_MACS_POOLED}
 module load bedtools2
-macs2 callpeak -t ${FOLDER}/k27ac_bams/OD_ac*.bam -c ${FOLDER}/k27ac_bams/OD_input.bam\
- -f BAM -g hs -n OD_${Q} -B --broad --broad-cutoff ${Q}
+macs2 callpeak -t $READS2 -c $INPUT_READS2 -f BAM -g hs -n ${GROUP2}_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
-        wait_complete "$QSUB_ID_YD $QSUB_ID_OD"
-        check_logs
-        bash ~/work/washu/bed/compare.sh YD_${Q}_peaks.broadPeak OD_${Q}_peaks.broadPeak diff_YD_OD_${Q}
-    done
+    wait_complete "$QSUB_ID1 $QSUB_ID2"
+    check_logs
+    bash ~/work/washu/bed/compare.sh ${GROUP1}_${Q}_peaks.broadPeak ${GROUP2}_${Q}_peaks.broadPeak ${NAME}_${Q}
 fi
 
 
-# MACS2 pooled peaks YD with control = OD
-DIFF_MACS_POOLED_Y_VS_O="${FOLDER}/k27ac_diff_macs_pooled_y_vs_o"
-if [ ! -d $DIFF_MACS_POOLED_Y_VS_O ]; then
-    mkdir $DIFF_MACS_POOLED_Y_VS_O
-    cd $DIFF_MACS_POOLED_Y_VS_O
-    WORK_DIR=$DIFF_MACS_POOLED_Y_VS_O
+DIFF_MACS_POOLED_1_VS_2="${PREFIX}_macs_pooled_1_vs_2"
+echo "Processing $DIFF_MACS_POOLED_1_VS_2"
+if [ ! -d $DIFF_MACS_POOLED_1_VS_2 ]; then
+    mkdir ${DIFF_MACS_POOLED_1_VS_2}
+    cd ${DIFF_MACS_POOLED_1_VS_2}
 
-    for Q in "${QS[@]}"; do
-        echo "Processing MACS2 pooled $Q";
-        # Get aggregated peaks k27ac YD
-        QSUB_ID=$(qsub << ENDINPUT
+    echo "Processing MACS2 pooled ${GROUP1} vs ${GROUP2} as control and vice versa"
+    
+    QSUB_ID_1_2=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N macs2_broad_k27ac_Y_vs_O
+#PBS -N ${NAME}_1_vs_2_macs2_broad
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/macs2_broad_k27ac_Y_vs_O_${Q}.log
+#PBS -o ${DIFF_MACS_POOLED_1_VS_2}/${NAME}_1_vs_2_macs2_broad.log
 # This is necessary because qsub default working dir is user home
-cd ${WORK_DIR}
+cd ${DIFF_MACS_POOLED_1_VS_2}
 module load bedtools2
-macs2 callpeak -t ${FOLDER}/k27ac_bams/YD_ac*.bam -c ${FOLDER}/k27ac_bams/OD_ac*.bam \
- -f BAM -g hs -n YD_${Q} -B --broad --broad-cutoff ${Q}
+macs2 callpeak -t $READS1 -c $READS2 -f BAM -g hs -n ${NAME}_1_vs_2_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
-        wait_complete "$QSUB_ID"
-        check_logs
-    done
+    QSUB_ID_2_1=$(qsub << ENDINPUT
+#!/bin/sh
+#PBS -N ${NAME}_2_vs_1_macs2_broad
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -j oe
+#PBS -o ${DIFF_MACS_POOLED_1_VS_2}/${NAME}_2_vs_1_macs2_broad.log
+# This is necessary because qsub default working dir is user home
+cd ${DIFF_MACS_POOLED_1_VS_2}
+module load bedtools2
+macs2 callpeak -t $READS2 -c $READS1 -f BAM -g hs -n ${NAME}_2_vs_1_${Q} -B --broad --broad-cutoff ${Q}
+ENDINPUT
+)
+    wait_complete "$QSUB_ID_1_2 $QSUB_ID_2_1"
+    check_logs
 fi
 
 macs2_total_tags_control() {
     echo $(cat $1 | grep "total tags in control" | sed 's/.*total tags in control: //g')
 }
 
-# MACS2 bdgdiff
-# See https://github.com/taoliu/MACS/wiki/Call-differential-binding-events
-# * Call pooled peaks for OD and YD
-# * Use macs2 bdgdiff
-DIFF_MACS_BDGDIFF="${FOLDER}/k27ac_diff_macs_bdgdiff"
+DIFF_MACS_BDGDIFF="${PREFIX}_macs_bdgdiff"
+echo "Processing $DIFF_MACS_BDGDIFF"
 if [ ! -d $DIFF_MACS_BDGDIFF ]; then
-    mkdir $DIFF_MACS_BDGDIFF
-    cd $DIFF_MACS_BDGDIFF
-    WORK_DIR=$DIFF_MACS_BDGDIFF
+    mkdir ${DIFF_MACS_BDGDIFF}
+    cd ${DIFF_MACS_BDGDIFF}
 
-    for Q in "${QS[@]}"; do
-        echo "Processing MACS2 bdgdiff $Q";
-        CONTROL_OD=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/macs2_broad_k27ac_OD_${Q}.log)
-        echo "Control OD: $CONTROL_OD"
-        CONTROL_YD=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/macs2_broad_k27ac_YD_${Q}.log)
-        echo "Control YD: $CONTROL_YD"
+    echo "Use MACS2 pooled peaks as input for MACS2 bdgdiff"
 
-        QSUB_ID=$(qsub << ENDINPUT
+    CONTROL1=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/${NAME}_1_macs2_broad_${Q}.log)
+    echo "Control $GROUP1: $CONTROL1"
+    CONTROL2=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/${NAME}_2_macs2_broad_${Q}.log)
+    echo "Control $GROUP2: $CONTROL2"
+
+
+    QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N macs2_broad_k27ac_bdgdiff
+#PBS -N ${NAME}_macs2_broad_bdgdiff
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/macs2_bdgdiff_k27ac_${Q}.log
+#PBS -o ${DIFF_MACS_BDGDIFF}/${NAME}_macs2_broad_bdgdiff.log
 # This is necessary because qsub default working dir is user home
-cd ${WORK_DIR}
+cd ${DIFF_MACS_BDGDIFF}
 module load bedtools2
 macs2 bdgdiff\
- --t1 ${DIFF_MACS_POOLED}/YD_${Q}_treat_pileup.bdg --c1 ${DIFF_MACS_POOLED}/YD_${Q}_control_lambda.bdg\
- --t2 ${DIFF_MACS_POOLED}/OD_${Q}_treat_pileup.bdg --c2 ${DIFF_MACS_POOLED}/OD_${Q}_control_lambda.bdg\
-  --d1 ${CONTROL_YD} --d2 ${CONTROL_OD} --o-prefix diff_YD_OD_${Q}
+ --t1 ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_treat_pileup.bdg --c1 ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_control_lambda.bdg\
+ --t2 ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_treat_pileup.bdg --c2 ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_control_lambda.bdg\
+  --d1 ${CONTROL1} --d2 ${CONTROL2} --o-prefix ${NAME}_${Q}
 ENDINPUT
 )
-        wait_complete "$QSUB_ID"
-        check_logs
-    done
+    wait_complete "$QSUB_ID"
+    check_logs
 fi
 
 
@@ -186,11 +193,12 @@ bams_to_tags() {
 }
 
 # Pooled ChIPDiff
-CHIPDIFF="${FOLDER}/k27ac_diff_chipdiff"
+CHIPDIFF="${PREFIX}_chipdiff"
+echo "Processing $CHIPDIFF"
 if [ ! -d $CHIPDIFF ]; then
-    mkdir $CHIPDIFF
-    cd $CHIPDIFF
-    WORK_DIR=$CHIPDIFF
+    mkdir ${CHIPDIFF}
+    cd ${CHIPDIFF}
+    echo "Processing chipdiff as on pooled tags (reads)"
 
     cat >config.txt <<CONFIG
 maxIterationNum  500
@@ -199,25 +207,25 @@ maxTrainingSeqNum 10000
 minFoldChange    3
 minRegionDist    1000
 CONFIG
+    >&2 echo "Processing ${GROUP1} Tags";
+    bams_to_tags ${GROUP1}_tags.tag $READS1
 
-    >&2 echo "Processing OD Tags";
-    bams_to_tags OD_tags.tag $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam')
-    >&2 echo "Processing YD Tags";
-    bams_to_tags YD_tags.tag $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam')
+    >&2 echo "Processing ${GROUP2} Tags";
+    bams_to_tags ${GROUP2}_tags.tag $READS2
 
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N chipdiff_k27ac
+#PBS -N ${NAME}_chipdiff_3
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/chipdiff_k27ac_3.log
+#PBS -o ${CHIPDIFF}/${NAME}_chipdiff_3.log
 # This is necessary because qsub default working dir is user home
-cd ${WORK_DIR}
+cd ${CHIPDIFF}
 
-sort -k1,1 -k2,2n -o YD_tags_sorted.tag YD_tags.tag
-sort -k1,1 -k2,2n -o OD_tags_sorted.tag OD_tags.tag
+sort -k1,1 -k2,2n -k3,3n -o ${GROUP1}_tags_sorted.tag ${GROUP1}_tags.tag
+sort -k1,1 -k2,2n -k3,3n -o ${GROUP2}_tags_sorted.tag ${GROUP2}_tags.tag
 
-ChIPDiff YD_tags_sorted.tag OD_tags_sorted.tag $CHROM_SIZES config.txt diff_YD_OD_3
+ChIPDiff ${GROUP1}_tags_sorted.tag ${GROUP2}_tags_sorted.tag $CHROM_SIZES config.txt ${NAME}_3
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
@@ -240,12 +248,14 @@ macs2_shift() {
 }
 
 # MANorm
-MANORM="${FOLDER}/k27ac_diff_manorm"
+MANORM="${PREFIX}_manorm"
+echo "Processing $MANORM"
 if [ ! -d $MANORM ]; then
-    mkdir $MANORM
-    cd $MANORM
-    WORK_DIR=$MANORM
-    Q=0.01
+    mkdir ${MANORM}
+    mkdir ${MANORM}/${Q}
+    cd ${MANORM}/${Q}
+
+    echo "Processing MAnorm using pooled MACS2 peaks as peakfile and pooled reads as readfiles"
 # README.txt
 # Create a folder and place in the folder MAnorm.sh, MAnorm.r, and all 4 bed files to be analyzed.
 # run command:   ./MAnorm.sh    sample1_peakfile[BED]     sample2_peakfile[BED] \
@@ -253,37 +263,41 @@ if [ ! -d $MANORM ]; then
 #                               sample1_readshift_lentgh[INT]      sample2_readshift_length[INT]
 
     cp ~/MAnorm_Linux_R_Package/MAnorm.* ${WORK_DIR}
-    cp ${DIFF_MACS_POOLED}/YD_${Q}_peaks.broadPeak ${WORK_DIR}/YD_peaks.bed
-    cp ${DIFF_MACS_POOLED}/OD_${Q}_peaks.broadPeak ${WORK_DIR}/OD_peaks.bed
+    cp ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_peaks.broadPeak ${WORK_DIR}/${GROUP1}_peaks.bed
+    cp ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_peaks.broadPeak ${WORK_DIR}/${GROUP2}_peaks.bed
 
-    >&2 echo "Processing OD Pooled Reads";
-    bams_to_reads OD_reads.bed $(find ${FOLDER}/k27ac_bams/ -name 'OD_ac*.bam')
-    >&2 echo "Processing YD Pooled Reads";
-    bams_to_reads YD_reads.bed $(find ${FOLDER}/k27ac_bams/ -name 'YD_ac*.bam')
+    >&2 echo "Processing ${GROUP1} Pooled Reads";
+    bams_to_reads ${GROUP1}_reads.bed $READS1
+    >&2 echo "Processing ${GROUP2} Pooled Reads";
+    bams_to_reads ${GROUP2}_reads.bed $READS2
 
     # Check MACS2 for shift values
-    SHIFT_OD=$(macs2_shift ${DIFF_MACS_POOLED}/OD_${Q}_peaks.xls)
-    echo "SHIFT OD: $SHIFT_OD"
-    SHIFT_YD=$(macs2_shift ${DIFF_MACS_POOLED}/YD_${Q}_peaks.xls)
-    echo "SHIFT YD: $SHIFT_YD"
+    SHIFT1=$(macs2_shift ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_peaks.xls)
+    echo "SHIFT ${GROUP1}: $SHIFT1"
+    SHIFT2=$(macs2_shift ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_peaks.xls)
+    echo "SHIFT ${GROUP2}: $SHIFT2"
 
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N manorm_k27ac
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/manorm_k27ac_3.log
+#PBS -o ${MANORM}/${Q}/manorm_k27ac_3.log
 # This is necessary because qsub default working dir is user home
-cd ${WORK_DIR}
+cd ${MANORM}/${Q}
 
-sort -k1,1 -k2,2n -o YD_reads_sorted.bed YD_reads.bed
-sort -k1,1 -k2,2n -o OD_reads_sorted.bed OD_reads.bed
+sort -k1,1 -k2,2n -k3,3n -o ${GROUP1}_reads_sorted.bed ${GROUP1}_reads.bed
+sort -k1,1 -k2,2n -k3,3n -o ${GROUP2}_reads_sorted.bed ${GROUP2}_reads.bed
+
+sort -k1,1 -k2,2n -k3,3n -o ${GROUP1}_peaks_sorted.bed ${GROUP1}_peaks.bed
+sort -k1,1 -k2,2n -k3,3n -o ${GROUP2}_peaks_sorted.bed ${GROUP2}_peaks.bed
 
 # Load required modules
 module load R
 module load bedtools2
 
-bash ${WORK_DIR}/MAnorm.sh YD_peaks.bed OD_peaks.bed YD_reads_sorted.bed OD_reads_sorted.bed $SHIFT_YD $SHIFT_OD
+bash ${MANORM}/${Q}/MAnorm.sh ${GROUP1}_peaks_sorted.bed ${GROUP2}_peaks_sorted.bed \
+${GROUP1}_reads_sorted.bed ${GROUP2}_reads_sorted.bed $SHIFT1 $SHIFT2
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
