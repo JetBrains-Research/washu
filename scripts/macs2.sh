@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
+which macs2 &>/dev/null || { echo "MACS2 not found! Download MACS2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
+
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 

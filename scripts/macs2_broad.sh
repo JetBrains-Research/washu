@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
+which macs2 &>/dev/null || { echo "MACS2 not found! Download MACS2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
+
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
@@ -42,10 +44,10 @@ module load bedtools2
 
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
-    /home/oshpynov/miniconda2/bin/macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -B --broad --broad-cutoff ${Q}
+    macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -B --broad --broad-cutoff ${Q}
 else
     echo "${FILE}: no control file"
-    /home/oshpynov/miniconda2/bin/macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B --broad --broad-cutoff ${Q}
+    macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B --broad --broad-cutoff ${Q}
 fi
 
 # Compute Reads in Peaks
