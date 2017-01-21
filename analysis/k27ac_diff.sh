@@ -41,19 +41,19 @@ echo "PREFIX: $EOL$PREFIX"
 Q=0.01
 echo "Q: $EOL$Q"
 
-READS1=$(ls ${FOLDER}/k27ac_bams/YD_ac*.bam)
+READS1=$(find ${FOLDER}/k27ac_bams -name 'YD_ac*.bam' -printf '%P ')
 echo "READS $GROUP1: $EOL$READS1"
-READS2=$(ls ${FOLDER}/k27ac_bams/OD_ac*.bam)
+READS2=$(find ${FOLDER}/k27ac_bams -name 'OD_ac*.bam' -printf '%P ')
 echo "READS $GROUP2: $EOL$READS2"
 
-INPUT_READS1=$(ls ${FOLDER}/k27ac_bams/YD_input.bam)
+INPUT_READS1=$(find ${FOLDER}/k27ac_bams -name 'YD_input.bam' -printf '%P ')
 echo "INPUT_READS $GROUP1: $EOL$INPUT_READS1"
-INPUT_READS2=$(ls ${FOLDER}/k27ac_bams/OD_input.bam)
+INPUT_READS2=$(find ${FOLDER}/k27ac_bams -name 'OD_input.bam' -printf '%P ')
 echo "INPUT_READS $GROUP2: $EOL$INPUT_READS2"
 
-INDIVIDUAL_PEAKS1=$(ls ${FOLDER}/k27ac_bams_macs_broad_${Q}/YD_ac*.broadPeak)
+INDIVIDUAL_PEAKS1=$(find ${FOLDER}/k27ac_bams_macs_broad_${Q} -name 'YD_ac*.broadPeak' -printf '%P ')
 echo "INDIVIDUAL_PEAKS $GROUP1: $EOL$INDIVIDUAL_PEAKS1"
-INDIVIDUAL_PEAKS2=$(ls ${FOLDER}/k27ac_bams_macs_broad_${Q}/OD_ac*.broadPeak)
+INDIVIDUAL_PEAKS2=$(find ${FOLDER}/k27ac_bams_macs_broad_${Q} -name 'OD_ac*.broadPeak' -printf '%P ')
 echo "INDIVIDUAL_PEAKS $GROUP2: $EOL$INDIVIDUAL_PEAKS2"
 
 
