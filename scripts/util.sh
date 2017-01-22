@@ -12,7 +12,7 @@ which qsub &>/dev/null || {
         echo "source ~/work/washu/scripts/util.sh" >> /tmp/qsub.sh
         echo "$CMD" >> /tmp/qsub.sh
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
-        bash /tmp/qsub.sh | tee "$LOG"
+        bash /tmp/qsub.sh > "$LOG"
     }
     qstat() {
         >&2 echo "MOCK qstat $@"
