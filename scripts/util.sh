@@ -3,7 +3,6 @@
 
 # CHPC (qsub) mock replacement
 which qsub &>/dev/null || {
-    echo "CHPC (qsub) system not found, using mock replacement"
     qsub() {
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
         >&2 echo "MOCK qsub"
@@ -27,21 +26,19 @@ which qsub &>/dev/null || {
 wait_complete()
 {
     echo "Waiting for tasks..."
-    which qsub &>/dev/null || {
-        for TASK in $@
-        do :
-            echo -n "TASK: $TASK"
-            # The task id is actually the first numbers in the string
-            TASK_ID=$(echo ${TASK} | sed -e "s/\([0-9]*\).*/\1/")
-            if [ ! -z "$TASK_ID" ]; then
-                while qstat ${TASK_ID} &> /dev/null; do
-                    echo -n "."
-                    sleep 10
-                done;
-            fi
-            echo
-        done
-    }
+    for TASK in $@
+    do :
+        echo -n "TASK: $TASK"
+        # The task id is actually the first numbers in the string
+        TASK_ID=$(echo ${TASK} | sed -e "s/\([0-9]*\).*/\1/")
+        if [ ! -z "$TASK_ID" ]; then
+            while qstat ${TASK_ID} &> /dev/null; do
+                echo -n "."
+                sleep 10
+            done;
+        fi
+        echo
+    done
     echo "Done."
 }
 
