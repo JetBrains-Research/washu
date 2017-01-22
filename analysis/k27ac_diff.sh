@@ -158,7 +158,7 @@ if [ ! -d $DIFF_MACS_BDGDIFF ]; then
 
     CONTROL1=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_peaks.xls)
     echo "Control $GROUP1: $CONTROL1"
-    CONTROL2=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_peaks.xlsg)
+    CONTROL2=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_peaks.xls)
     echo "Control $GROUP2: $CONTROL2"
 
     QSUB_ID=$(qsub << ENDINPUT
