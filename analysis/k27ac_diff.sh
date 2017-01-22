@@ -156,11 +156,10 @@ if [ ! -d $DIFF_MACS_BDGDIFF ]; then
 
     echo "Use MACS2 pooled peaks as input for MACS2 bdgdiff"
 
-    CONTROL1=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/${NAME}_1_macs2_broad_${Q}.log)
+    CONTROL1=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_peaks.xls)
     echo "Control $GROUP1: $CONTROL1"
-    CONTROL2=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/${NAME}_2_macs2_broad_${Q}.log)
+    CONTROL2=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_peaks.xlsg)
     echo "Control $GROUP2: $CONTROL2"
-
 
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
