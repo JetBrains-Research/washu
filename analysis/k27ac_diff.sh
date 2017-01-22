@@ -58,6 +58,7 @@ echo "INDIVIDUAL_PEAKS $GROUP2: $EOL$INDIVIDUAL_PEAKS2"
 
 
 DIFF_INTERSECTION="${PREFIX}_intersection"
+echo
 echo "Processing $DIFF_INTERSECTION"
 if [ ! -d ${DIFF_INTERSECTION} ]; then
     mkdir ${DIFF_INTERSECTION}
@@ -71,6 +72,7 @@ if [ ! -d ${DIFF_INTERSECTION} ]; then
 fi
 
 DIFF_MACS_POOLED="${PREFIX}_macs_pooled"
+echo
 echo "Processing $DIFF_MACS_POOLED"
 if [ ! -d $DIFF_MACS_POOLED ]; then
     mkdir ${DIFF_MACS_POOLED}
@@ -85,7 +87,6 @@ if [ ! -d $DIFF_MACS_POOLED ]; then
 #PBS -o ${DIFF_MACS_POOLED}/${NAME}_1_macs2_broad_${Q}.log
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_POOLED}
-module load bedtools2
 macs2 callpeak -t $READS1 -c $INPUT_READS1 -f BAM -g hs -n ${GROUP1}_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
@@ -98,7 +99,6 @@ ENDINPUT
 #PBS -o ${DIFF_MACS_POOLED}/${NAME}_2_macs2_broad_${Q}.log
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_POOLED}
-module load bedtools2
 macs2 callpeak -t $READS2 -c $INPUT_READS2 -f BAM -g hs -n ${GROUP2}_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
@@ -109,6 +109,7 @@ fi
 
 
 DIFF_MACS_POOLED_1_VS_2="${PREFIX}_macs_pooled_1_vs_2"
+echo
 echo "Processing $DIFF_MACS_POOLED_1_VS_2"
 if [ ! -d $DIFF_MACS_POOLED_1_VS_2 ]; then
     mkdir ${DIFF_MACS_POOLED_1_VS_2}
@@ -124,7 +125,6 @@ if [ ! -d $DIFF_MACS_POOLED_1_VS_2 ]; then
 #PBS -o ${DIFF_MACS_POOLED_1_VS_2}/${NAME}_1_vs_2_macs2_broad.log
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_POOLED_1_VS_2}
-module load bedtools2
 macs2 callpeak -t $READS1 -c $READS2 -f BAM -g hs -n ${NAME}_1_vs_2_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
@@ -136,7 +136,6 @@ ENDINPUT
 #PBS -o ${DIFF_MACS_POOLED_1_VS_2}/${NAME}_2_vs_1_macs2_broad.log
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_POOLED_1_VS_2}
-module load bedtools2
 macs2 callpeak -t $READS2 -c $READS1 -f BAM -g hs -n ${NAME}_2_vs_1_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
@@ -149,6 +148,7 @@ macs2_total_tags_control() {
 }
 
 DIFF_MACS_BDGDIFF="${PREFIX}_macs_bdgdiff"
+echo
 echo "Processing $DIFF_MACS_BDGDIFF"
 if [ ! -d $DIFF_MACS_BDGDIFF ]; then
     mkdir ${DIFF_MACS_BDGDIFF}
@@ -170,7 +170,6 @@ if [ ! -d $DIFF_MACS_BDGDIFF ]; then
 #PBS -o ${DIFF_MACS_BDGDIFF}/${NAME}_macs2_broad_bdgdiff.log
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_BDGDIFF}
-module load bedtools2
 macs2 bdgdiff\
  --t1 ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_treat_pileup.bdg --c1 ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_control_lambda.bdg\
  --t2 ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_treat_pileup.bdg --c2 ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_control_lambda.bdg\
@@ -194,6 +193,7 @@ bams_to_tags() {
 
 # Pooled ChIPDiff
 CHIPDIFF="${PREFIX}_chipdiff"
+echo
 echo "Processing $CHIPDIFF"
 if [ ! -d $CHIPDIFF ]; then
     mkdir ${CHIPDIFF}
@@ -249,6 +249,7 @@ macs2_shift() {
 
 # MANorm
 MANORM="${PREFIX}_manorm"
+echo
 echo "Processing $MANORM"
 if [ ! -d $MANORM ]; then
     mkdir ${MANORM}
@@ -262,9 +263,9 @@ if [ ! -d $MANORM ]; then
 #                               sample1_readfile[BED]     sample2_readfile[BED]  \
 #                               sample1_readshift_lentgh[INT]      sample2_readshift_length[INT]
 
-    cp ~/MAnorm_Linux_R_Package/MAnorm.* ${WORK_DIR}
-    cp ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_peaks.broadPeak ${WORK_DIR}/${GROUP1}_peaks.bed
-    cp ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_peaks.broadPeak ${WORK_DIR}/${GROUP2}_peaks.bed
+    cp ~/MAnorm_Linux_R_Package/MAnorm.* ${MANORM}/${Q}
+    cp ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_peaks.broadPeak ${MANORM}/${Q}/${GROUP1}_peaks.bed
+    cp ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_peaks.broadPeak ${MANORM}/${Q}/${GROUP2}_peaks.bed
 
     >&2 echo "Processing ${GROUP1} Pooled Reads";
     bams_to_reads ${GROUP1}_reads.bed $READS1
