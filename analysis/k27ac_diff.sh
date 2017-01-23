@@ -261,8 +261,10 @@ if [ ! -d $MANORM ]; then
 # run command:   ./MAnorm.sh    sample1_peakfile[BED]     sample2_peakfile[BED] \
 #                               sample1_readfile[BED]     sample2_readfile[BED]  \
 #                               sample1_readshift_lentgh[INT]      sample2_readshift_length[INT]
+    MANORM_SH=$(which MAnorm.sh)
+    echo "Found MAnorm.sh: ${MANORM_SH}"
+    cp ${MANORM_SH} ${MANORM_SH%%.sh}.R ${MANORM}/${Q}
 
-    cp ~/MAnorm_Linux_R_Package/MAnorm.* ${MANORM}/${Q}
     cp ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_peaks.broadPeak ${MANORM}/${Q}/${GROUP1}_peaks.bed
     cp ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_peaks.broadPeak ${MANORM}/${Q}/${GROUP2}_peaks.bed
 
