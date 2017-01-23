@@ -263,7 +263,7 @@ if [ ! -d $MANORM ]; then
 #                               sample1_readshift_lentgh[INT]      sample2_readshift_length[INT]
     MANORM_SH=$(which MAnorm.sh)
     echo "Found MAnorm.sh: ${MANORM_SH}"
-    cp ${MANORM_SH} ${MANORM_SH%%.sh}.R ${MANORM}/${Q}
+    cp ${MANORM_SH} ${MANORM_SH%%.sh}.r ${MANORM}/${Q}
 
     cp ${DIFF_MACS_POOLED}/${GROUP1}_${Q}_peaks.broadPeak ${MANORM}/${Q}/${GROUP1}_peaks.bed
     cp ${DIFF_MACS_POOLED}/${GROUP2}_${Q}_peaks.broadPeak ${MANORM}/${Q}/${GROUP2}_peaks.bed
