@@ -11,8 +11,9 @@ which qsub &>/dev/null || {
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
         bash /tmp/qsub.sh | tee "$LOG"
     }
+    # wait_complete checks exit code
     qstat() {
-        echo
+        return 1
     }
     module() {
         echo
