@@ -225,6 +225,8 @@ sort -k1,1 -k2,2n -k3,3n -o ${GROUP1}_tags_sorted.tag ${GROUP1}_tags.tag
 sort -k1,1 -k2,2n -k3,3n -o ${GROUP2}_tags_sorted.tag ${GROUP2}_tags.tag
 
 ChIPDiff ${GROUP1}_tags_sorted.tag ${GROUP2}_tags_sorted.tag $CHROM_SIZES config.txt ${NAME}_3
+cat ${NAME}_3.region | awk -v OFS='\t' '$4=="-" {print $1,$2,$3}' > ${NAME}_3_cond1.bed
+cat ${NAME}_3.region | awk -v OFS='\t' '$4=="+" {print $1,$2,$3}' < ${NAME}_3_cond2.bed
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
