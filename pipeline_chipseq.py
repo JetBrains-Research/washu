@@ -77,3 +77,8 @@ for Q in [0.01, 0.001, 0.1]:
     run_bash("macs2_broad.sh", WORK_DIR, GENOME, str(Q))
     move_forward(WORK_DIR, "_macs_broad_{}".format(Q), ["*{}*".format(Q)], copy_only=True)
     process_macs2_logs(WORK_DIR + "_macs_broad_{}".format(Q))
+
+# Batch rseg
+run_bash("rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
+move_forward(WORK_DIR, "_rseg", ["*-domains.bed", "*-scores.wig", "*-boundaries.bed",
+                                 "*-boundary-scores.wig", "*-counts.bed"], copy_only=True)
