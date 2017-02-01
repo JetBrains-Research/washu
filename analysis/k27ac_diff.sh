@@ -9,13 +9,13 @@ which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://gith
 # Load cluster stuff
 source ~/work/washu/scripts/util.sh
 
-# TODO[shpynov] Is there any better way to echo multiline?
-EOL=$'\n'
-
 GROUP1="Y"
-echo "GROUP1: $EOL$GROUP1"
+echo "GROUP1"
+echo $GROUP1
+
 GROUP2="O"
-echo "GROUP1: $EOL$GROUP2"
+echo "GROUP2"
+echo $GROUP2
 
 # Configure folder
 BASE="/scratch/artyomov_lab_aging/Y10OD10"
@@ -26,35 +26,46 @@ if [ ! -d $BASE ]; then
     BASE="/Volumes/WD/scratch/artyomov_lab_aging/Y10OD10"
 fi
 FOLDER="$BASE/chipseq/processed/3vs3_2"
-echo "FOLDER: $EOL$FOLDER"
+echo "FOLDER"
+echo $FOLDER
 
 CHROM_SIZES="$BASE/../indexes/hg19/hg19.chrom.sizes"
-echo "CHROM_SIZES: $EOL$CHROM_SIZES"
+echo "CHROM_SIZES"
+echo $CHROM_SIZES
 
 NAME="diff_k27ac_${GROUP1}_${GROUP2}"
-echo "NAME: $EOL$NAME"
+echo "NAME"
+echo $NAME
 
 PREFIX="$(pwd)/$NAME"
-echo "PREFIX: $EOL$PREFIX"
+echo "PREFIX"
+echo $PREFIX
 
 # Base Q value threshold for all the experiments
 Q=0.01
-echo "Q: $EOL$Q"
+echo "Q"
+echo $Q
 
 READS1=$(find ${FOLDER}/k27ac_bams -name 'YD_ac*.bam' | tr '\n' ' ') # Replace all newlines with spaces
-echo "READS $GROUP1: $EOL$READS1"
+echo "READS $GROUP1"
+echo $READS1
 READS2=$(find ${FOLDER}/k27ac_bams -name 'OD_ac*.bam' | tr '\n' ' ')
-echo "READS $GROUP2: $EOL$READS2"
+echo "READS $GROUP2"
+echo $READS2
 
-INPUT_READS1=$(find ${FOLDER}/k27ac_bams -name 'YD_input.bam' | tr '\n' ' ')
-echo "INPUT_READS $GROUP1: $EOL$INPUT_READS1"
-INPUT_READS2=$(find ${FOLDER}/k27ac_bams -name 'OD_input.bam' | tr '\n' ' ')
-echo "INPUT_READS $GROUP2: $EOL$INPUT_READS2"
+INPUTS1=$(find ${FOLDER}/k27ac_bams -name 'YD_input.bam' | tr '\n' ' ')
+echo "INPUT_READS $GROUP1"
+echo $INPUTS1
+INPUTS2=$(find ${FOLDER}/k27ac_bams -name 'OD_input.bam' | tr '\n' ' ')
+echo "INPUT_READS $GROUP2"
+echo $INPUTS2
 
-INDIVIDUAL_PEAKS1=$(find ${FOLDER}/k27ac_bams_macs_broad_${Q} -name 'YD_ac*.broadPeak' | tr '\n' ' ')
-echo "INDIVIDUAL_PEAKS $GROUP1: $EOL$INDIVIDUAL_PEAKS1"
-INDIVIDUAL_PEAKS2=$(find ${FOLDER}/k27ac_bams_macs_broad_${Q} -name 'OD_ac*.broadPeak' | tr '\n' ' ')
-echo "INDIVIDUAL_PEAKS $GROUP2: $EOL$INDIVIDUAL_PEAKS2"
+PEAKS1=$(find ${FOLDER}/k27ac_bams_macs_broad_${Q} -name 'YD_ac*.broadPeak' | tr '\n' ' ')
+echo "INDIVIDUAL_PEAKS $GROUP1"
+echo $PEAKS1
+PEAKS2=$(find ${FOLDER}/k27ac_bams_macs_broad_${Q} -name 'OD_ac*.broadPeak' | tr '\n' ' ')
+echo "INDIVIDUAL_PEAKS $GROUP2"
+echo $PEAKS2
 
 
 DIFF_INTERSECTION="${PREFIX}_intersection"
@@ -65,8 +76,8 @@ if [ ! -d ${DIFF_INTERSECTION} ]; then
     cd ${DIFF_INTERSECTION}
     echo "Intersect individual peaks to get common peaks for ${GROUP1} and ${GROUP2} and then compare them"
 
-    bash ~/work/washu/bed/intersect.sh $INDIVIDUAL_PEAKS1 > ${GROUP1}_peaks_${Q}.bed
-    bash ~/work/washu/bed/intersect.sh $INDIVIDUAL_PEAKS2 > ${GROUP2}_peaks_${Q}.bed
+    bash ~/work/washu/bed/intersect.sh $PEAKS1 > ${GROUP1}_peaks_${Q}.bed
+    bash ~/work/washu/bed/intersect.sh $PEAKS2 > ${GROUP2}_peaks_${Q}.bed
 
     bash ~/work/washu/bed/compare.sh ${GROUP1}_peaks_${Q}.bed ${GROUP2}_peaks_${Q}.bed ${NAME}_${Q}
 fi
@@ -87,7 +98,7 @@ if [ ! -d $DIFF_MACS_POOLED ]; then
 #PBS -o ${DIFF_MACS_POOLED}/${NAME}_1_macs2_broad_${Q}.log
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_POOLED}
-macs2 callpeak -t $READS1 -c $INPUT_READS1 -f BAM -g hs -n ${GROUP1}_${Q} -B --broad --broad-cutoff ${Q}
+macs2 callpeak -t $READS1 -c $INPUTS1 -f BAM -g hs -n ${GROUP1}_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
 
@@ -99,7 +110,7 @@ ENDINPUT
 #PBS -o ${DIFF_MACS_POOLED}/${NAME}_2_macs2_broad_${Q}.log
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_POOLED}
-macs2 callpeak -t $READS2 -c $INPUT_READS2 -f BAM -g hs -n ${GROUP2}_${Q} -B --broad --broad-cutoff ${Q}
+macs2 callpeak -t $READS2 -c $INPUTS2 -f BAM -g hs -n ${GROUP2}_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
     wait_complete "$QSUB_ID1 $QSUB_ID2"
