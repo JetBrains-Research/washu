@@ -4,6 +4,7 @@ Technical pipelines for ChIP-Seq, RNA-Seq, RRBS processing on PBS greed
 Code
 ----
 * `/R`          - R scripts
+* `/analysis`   - Downstream analysis, e.g. replicated ChIP-Seq comparison
 * `/bed`        - Scripts for bed files manipulation - intersection, chromhmm enrichment, etc.
 * `/logs`       - Scripts for batch logs (bowtie, macs2, etc) processing 
 * `/notebooks`  - Jupiter notebooks
