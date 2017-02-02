@@ -9,6 +9,10 @@ which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://gith
 # Load cluster stuff
 source ~/work/washu/scripts/util.sh
 
+################################################################################
+# Configuration start ##########################################################
+################################################################################
+
 GROUP1="Y"
 echo "GROUP1"
 echo $GROUP1
@@ -67,6 +71,10 @@ PEAKS2=$(find ${FOLDER}/k27ac_bams_macs_broad_${Q} -name 'OD_ac*.broadPeak' | tr
 echo "INDIVIDUAL_PEAKS $GROUP2"
 echo $PEAKS2
 
+
+################################################################################
+# Configuration end ############################################################
+################################################################################
 
 DIFF_INTERSECTION="${PREFIX}_intersection"
 echo
