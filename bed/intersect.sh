@@ -2,7 +2,7 @@
 # This script is used to compute intersection of peaks for given list of files.
 #
 # What happens:
-# - Filter out unknown contigs and Y chromosome peaks
+# - Filter out unknown contigs
 # - Two peaks aver overlapping if they share at least one nucleotide
 # - Prints only peaks that overlap in all files (merged)
 #
@@ -16,7 +16,7 @@ CHRFILES=()
 for i in $@
 do
     tmpfile=${i}.chr_only.tmp
-    grep -E "chr[0-9]+|chrX" $i | sort -k1,1 -k2,2n -k3,3n > $tmpfile
+    grep -E "chr[0-9]+|chrX|chrY" $i | sort -k1,1 -k2,2n -k3,3n > $tmpfile
     CHRFILES+=("$tmpfile")
 done
 
