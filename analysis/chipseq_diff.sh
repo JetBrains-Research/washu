@@ -240,8 +240,8 @@ CONFIG
 # This is necessary because qsub default working dir is user home
 cd ${CHIPDIFF}
 
-sort -k1,1 -k2,2n -k3,3n -o ${GROUP1}_tags_sorted.tag ${GROUP1}_tags.tag
-sort -k1,1 -k2,2n -k3,3n -o ${GROUP2}_tags_sorted.tag ${GROUP2}_tags.tag
+sort -k1,1 -k2,2n -o ${GROUP1}_tags_sorted.tag ${GROUP1}_tags.tag
+sort -k1,1 -k2,2n -o ${GROUP2}_tags_sorted.tag ${GROUP2}_tags.tag
 
 ChIPDiff ${GROUP1}_tags_sorted.tag ${GROUP2}_tags_sorted.tag $CHROM_SIZES config.txt ${NAME}_3
 cat ${NAME}_3.region | awk -v OFS='\t' '$4=="-" {print $1,$2,$3}' > ${NAME}_3_cond1.bed
@@ -309,11 +309,11 @@ if [ ! -d $MANORM ]; then
 # This is necessary because qsub default working dir is user home
 cd ${MANORM}/${Q}
 
-sort -k1,1 -k2,2n -k3,3n -o ${GROUP1}_reads_sorted.bed ${GROUP1}_reads.bed
-sort -k1,1 -k2,2n -k3,3n -o ${GROUP2}_reads_sorted.bed ${GROUP2}_reads.bed
+sort -k1,1 -k2,2n -o ${GROUP1}_reads_sorted.bed ${GROUP1}_reads.bed
+sort -k1,1 -k2,2n -o ${GROUP2}_reads_sorted.bed ${GROUP2}_reads.bed
 
-sort -k1,1 -k2,2n -k3,3n -o ${GROUP1}_peaks_sorted.bed ${GROUP1}_peaks.bed
-sort -k1,1 -k2,2n -k3,3n -o ${GROUP2}_peaks_sorted.bed ${GROUP2}_peaks.bed
+sort -k1,1 -k2,2n -o ${GROUP1}_peaks_sorted.bed ${GROUP1}_peaks.bed
+sort -k1,1 -k2,2n -o ${GROUP2}_peaks_sorted.bed ${GROUP2}_peaks.bed
 
 # Load required modules
 module load R

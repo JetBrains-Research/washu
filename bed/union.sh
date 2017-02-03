@@ -24,7 +24,7 @@ do
     grep -E "chr[0-9]+|chrX" $f | awk -v OFS='\t' -v N=$n '{print $1,$2,$3,N}' >> ${TMP}
     n=$((n+1))
 done
-sort -k1,1 -k2,2n -k3,3n ${TMP} > ${TMP}.sorted
+sort -k1,1 -k2,2n ${TMP} > ${TMP}.sorted
 bedtools merge -i ${TMP}.sorted -c 4 -o collapse -delim "|"
 
 # Cleanup
