@@ -19,9 +19,13 @@ UNION_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/union.sh'
 class MetaBedTest(unittest.TestCase):
     def test_str(self):
         self.assertEqual("A.bed", str(Bed(TEST_DATA + '/A.bed')))
-        self.assertEqual("union(A.bed, B.bed)", str(union(Bed(TEST_DATA + '/A.bed'), Bed(TEST_DATA + '/B.bed'))))
-        self.assertEqual("union(A.bed, B.bed, C.bed)",
-                         str(union(Bed(TEST_DATA + '/B.bed'), Bed(TEST_DATA + '/A.bed'), Bed(TEST_DATA + '/C.bed'))))
+        self.assertEqual("""minus
+	union
+		B.bed
+		A.bed
+	C.bed""", str(minus(
+            union(Bed(TEST_DATA + '/B.bed'), Bed(TEST_DATA + '/A.bed')),
+            Bed(TEST_DATA + '/C.bed'))))
 
     def test_union(self):
         u = union(Bed(TEST_DATA + '/A.bed'), Bed(TEST_DATA + '/B.bed'))
@@ -42,13 +46,13 @@ chr1	600	750	1|2
 chr1	600	750
 """, Path(i.path).read_text())
 
-    def test_minus(self):
-        m = minus(Bed(TEST_DATA + '/A.bed'), Bed(TEST_DATA + '/B.bed'))
-        self.assertIsNone(m.path)
-        m.compute()
-        self.assertIsNotNone(m.path)
-        self.assertEqual("""chr1	0	100
-""", Path(m.path).read_text())
+        def test_minus(self):
+            m = minus(Bed(TEST_DATA + '/A.bed'), Bed(TEST_DATA + '/B.bed'))
+            self.assertIsNone(m.path)
+            m.compute()
+            self.assertIsNotNone(m.path)
+            self.assertEqual("""chr1	0	100
+    """, Path(m.path).read_text())
 
     def test_count(self):
         self.assertEqual(4, Bed(TEST_DATA + '/A.bed').count())
