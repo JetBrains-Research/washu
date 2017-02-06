@@ -70,7 +70,7 @@ class Operation(Bed):
 
 class Intersection(Operation):
     def __init__(self, operands=None):
-        super().__init__("union", operands)
+        super().__init__("intersection", operands)
 
     def compute(self):
         # Do not compute twice
