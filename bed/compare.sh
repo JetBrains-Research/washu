@@ -38,15 +38,15 @@ bedtools merge -c 6,7 -o max |\
 # Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
  awk -v OFS="\t" '{print $1,$2,$3,int($4),int($5)}' > ${TMP_FILE}
 
-cat ${TMP_FILE} | awk '/\t1\t0/' |\
+cat ${TMP_FILE} | awk '/\t1\t0$/' |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
  sort -k1,1 -k2,2n > ${OUT_PREFIX}_cond1.bed
 
-cat ${TMP_FILE} | awk '/\t0\t1/' |\
+cat ${TMP_FILE} | awk '/\t0\t1$/' |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
  sort -k1,1 -k2,2n > ${OUT_PREFIX}_cond2.bed
 
-cat ${TMP_FILE} | awk '/\t1\t1/' |\
+cat ${TMP_FILE} | awk '/\t1\t1$/' |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
  sort -k1,1 -k2,2n > ${OUT_PREFIX}_common.bed
 
