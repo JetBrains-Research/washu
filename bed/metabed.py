@@ -34,7 +34,10 @@ class Bed:
         pass
 
     def __str__(self):
-        return os.path.basename(self.path)
+        return self.pp(0)
+
+    def pp(self, indent):
+        return '\t' * indent + os.path.basename(self.path)
 
     def count(self):
         self.compute()
@@ -45,12 +48,6 @@ class Bed:
     def save(self, path):
         self.compute()
         print(subprocess.Popen(["cp", self.path, path]).communicate())
-
-    def __add__(self, other):
-        return intersect(self, other)
-
-    def __sub__(self, other):
-        return minus(self, other)
 
 
 class Operation(Bed):
@@ -65,11 +62,14 @@ class Operation(Bed):
         raise Exception("Unknown operation: {}".format(self.operation))
 
     def __str__(self):
-        return "{}({})".format(self.operation, ", ".join(sorted(map(lambda x: str(x), self.operands))))
+        return self.pp(0)
+
+    def pp(self, indent):
+        return '\t' * indent + self.operation + '\n' + '\n'.join([x.pp(indent + 1) for x in self.operands])
 
 
 class Intersection(Operation):
-    def __init__(self, operands=None):
+    def __init__(self, operands):
         super().__init__("intersection", operands)
 
     def compute(self):
@@ -78,8 +78,8 @@ class Intersection(Operation):
             return
 
         # Compute all the operands recursively
-        for p in self.operands:
-            p.compute()
+        for o in self.operands:
+            o.compute()
         if len(self.operands) == 0:
             raise Exception("Illegal {}: {}".format(self.operation, str(self.operands)))
         self.path = self.intersect_files(*[x.path for x in self.operands])
@@ -98,7 +98,7 @@ def intersect(*operands):
 
 
 class Minus(Operation):
-    def __init__(self, operands=None):
+    def __init__(self, operands):
         super().__init__("minus", operands)
 
     def compute(self):
@@ -107,8 +107,8 @@ class Minus(Operation):
             return
 
         # Compute all the operands recursively
-        for p in self.operands:
-            p.compute()
+        for o in self.operands:
+            o.compute()
         if len(self.operands) != 2:
             raise Exception("Illegal minus: {}".format(str(self.operands)))
         self.path = self.minus_files(self.operands[0].path, self.operands[1].path)
@@ -127,7 +127,7 @@ def minus(*operands):
 
 
 class Union(Operation):
-    def __init__(self, operands=None):
+    def __init__(self, operands):
         super().__init__("union", operands)
 
     def compute(self):
@@ -136,8 +136,8 @@ class Union(Operation):
             return
 
         # Compute all the operands recursively
-        for p in self.operands:
-            p.compute()
+        for o in self.operands:
+            o.compute()
         if len(self.operands) == 0:
             raise Exception("Illegal {}: {}".format(self.operation, str(self.operands)))
         self.path = self.union_files(*[x.path for x in self.operands])
@@ -156,7 +156,7 @@ def union(*operands):
 
 
 class Compare(Operation):
-    def __init__(self, operands=None):
+    def __init__(self, operands):
         super().__init__("compare", operands)
         self.cond1 = self.cond2 = self.common = None
 
