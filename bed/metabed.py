@@ -34,7 +34,8 @@ class Bed:
         self.path = path
 
     def compute(self):
-        pass
+        if not Path(self.path).is_file():
+            raise Exception("File not found: {}".format(self.path))
 
     def __str__(self):
         return self.pp(0)
