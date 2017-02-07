@@ -15,11 +15,14 @@ import os
 import subprocess
 import tempfile
 from pathlib import Path
+from matplotlib_venn import venn2
+from matplotlib_venn import venn3
 
 UNION_SH = os.path.dirname(os.path.abspath(__file__)) + '/union.sh'
 INTERSECT_SH = os.path.dirname(os.path.abspath(__file__)) + '/intersect.sh'
 MINUS_SH = os.path.dirname(os.path.abspath(__file__)) + '/minus.sh'
 COMPARE_SH = os.path.dirname(os.path.abspath(__file__)) + '/compare.sh'
+METAPEAKS_SH = os.path.dirname(os.path.abspath(__file__)) + '/metapeaks.sh'
 
 TEMPFILES = []
 
@@ -188,6 +191,46 @@ class Compare(Operation):
 
 def compare(*operands):
     return Compare(operands)
+
+
+def metapeaks(filesmap):
+    """Plot venn diagrams for 2 or 3 files"""
+    VENN2_PATTERNS = ["0 1", "1 0", "1 1"]
+    VENN3_PATTERNS = ["0 0 1", "0 1 0", "0 1 1", "1 0 0", "1 0 1", "1 1 0", "1 1 1"]
+
+    def showvenn2(s1, s2, aB, Ab, AB):
+        venn2(subsets=(Ab, aB, AB), set_labels=(s1, s2))
+
+    def showvenn3(s1, s2, s3, abC, aBc, aBC, Abc, AbC, ABc, ABC):
+        venn3(subsets=(Abc, aBc, ABc, abC, AbC, aBC, ABC), set_labels=(s1, s2, s3))
+
+    if not isinstance(filesmap, dict):
+        raise Exception("Map <name: bed> is expected")
+    args = {}
+    if len(filesmap) == 2:
+        patterns = VENN2_PATTERNS
+    elif len(filesmap) == 3:
+        patterns = VENN3_PATTERNS
+    else:
+        raise Exception("Wrong number of files", len(filesmap))
+
+    # Configure args for Venn diagram
+    for p in patterns:
+        args[p] = 0
+    names = filesmap.keys()
+    ps = subprocess.Popen(['bash', METAPEAKS_SH, *[filesmap[x].path for x in names]], stdout=subprocess.PIPE)
+    out = ps.communicate()[0].decode("utf-8")
+    for line in out.split('\n'):
+        for p in patterns:
+            if p in line:
+                try:
+                    args[p] = int(line[len(p):])
+                except:
+                    pass
+    if len(filesmap) == 2:
+        showvenn2(*names, *[args[x] for x in patterns])
+    elif len(filesmap) == 3:
+        showvenn3(*names, *[args[x] for x in patterns])
 
 
 def cleanup():
