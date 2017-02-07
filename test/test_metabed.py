@@ -75,6 +75,15 @@ chr1	600	750
     def test_save(self):
         self.assertEqual(3, union(Bed(TEST_DATA + '/A.bed'), Bed(TEST_DATA + '/B.bed')).count())
 
+    def test_process_pvalue(self):
+        u = union(Bed(TEST_DATA + '/A.narrowPeak'), Bed(TEST_DATA + '/B.narrowPeak'))
+        f = u.process_pvalue()
+        self.assertEqual("""chr2	9745187	9746077	26
+chr2	9746391	9746765	20
+chr1	4857963	4858364	6
+chr1	4807879	4808181	4
+""", Path(f).read_text())
+
     @classmethod
     def tearDownClass(cls):
         cleanup()

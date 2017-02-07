@@ -2,10 +2,12 @@
 
 """
 Simple bedtools / bash scripts wrapper with the following operations:
-* commutative and associative UNION and INTERSECTION
-* minus
-* compare
-* metapeaks
+* union                     multi argument union operation
+* intersection              multi arguments intersection
+* minus                     remove all the ranges from first file, which intersect with second one
+* compare                   compares 2 files producing _cond1.bed, _cond2.bed and _common.bed files
+* metapeaks                 compares multiple files and creates Venn diagram in case of 2 or 3 files
+* process_pvalue            for each range show it's predecessors and compute min of p_values (-log 10p)
 
 NOTE: python3 required
 > source activate py3.5
@@ -54,6 +56,15 @@ class Bed:
         self.compute()
         print(subprocess.Popen(["cp", self.path, path]).communicate())
 
+    def collect_beds(self):
+        return [self]
+
+    def pvalue_position(self):
+        if self.path.endswith('.broadPeak') or self.path.endswith('.narrowPeak'):
+            return 8
+        # Ignore position
+        return 100
+
 
 class Operation(Bed):
     """Represents operations over Bed files and other Operations"""
@@ -71,6 +82,59 @@ class Operation(Bed):
 
     def pp(self, indent):
         return '\t' * indent + self.operation + '\n' + '\n'.join([x.pp(indent + 1) for x in self.operands])
+
+    def collect_beds(self):
+        result = []
+        for o in self.operands:
+            result += o.collect_beds()
+        return result
+
+    def process_pvalue(self):
+        """Method to process each row of resulting bed with the union of parents."""
+        # Ensure that we've already computed result
+        self.compute()
+        p1 = subprocess.Popen(['head', '-1', self.path], stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(['awk', '{ print NF }'], stdin=p1.stdout, stdout=subprocess.PIPE)
+        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+        columns = int(p2.communicate()[0].decode('utf-8').strip())
+        beds = self.collect_beds()
+        with tempfile.NamedTemporaryFile(mode='w', suffix='_trace.bed', prefix='metabed', delete=False) as tmpfile:
+            subprocess.Popen(['bedtools', 'intersect', '-wa', '-wb', '-a', self.path,
+                              '-b', *[x.path for x in beds],
+                              '-names', *[str(x) for x in beds], '-sorted'],
+                             shell=False, universal_newlines=True, stdout=tmpfile).communicate()
+            TEMPFILES.append(tmpfile.name)
+
+            # Extract only pvalue_associated columns
+            filtered_path = tmpfile.name.replace('_trace.bed', '_filtered.bed')
+            TEMPFILES.append(filtered_path)
+            with open(filtered_path, mode='a') as filtered_file:
+                for bed in beds:
+                    pvalue_position = bed.pvalue_position()
+                    p1 = subprocess.Popen(['grep', str(bed)], stdin=open(tmpfile.name), stdout=subprocess.PIPE)
+                    p2 = subprocess.Popen(['awk', "-v", "OFS=\\t",
+                                           '{print $1,$2,$3,$' + str(columns + pvalue_position + 1) + '}'],
+                                          stdin=p1.stdout, stdout=filtered_file)
+                    p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+                    p2.communicate()
+
+            # Finally merge pvalues with min function
+            result_path = filtered_path.replace('_filtered.bed', '_pvalue.bed')
+            TEMPFILES.append(result_path)
+            with open(result_path, 'w') as result_file:
+                p1 = subprocess.Popen(['sort', '-k1,1', '-k2,2n'],
+                                      stdin=open(filtered_path), stdout=subprocess.PIPE)
+                p2 = subprocess.Popen(['bedtools', 'merge', '-c', '4', '-o', 'min'],
+                                      stdin=p1.stdout, stdout=subprocess.PIPE)
+                p3 = subprocess.Popen(['sort', '-k4,4nr'],
+                                      stdin=p2.stdout, stdout=result_file)
+                p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+                p2.stdout.close()  # Allow p2 to receive a SIGPIPE if p3 exits.
+                p3.communicate()
+            print('Trace file', tmpfile.name)
+            print('Pvalue filtered file', filtered_path)
+            print('Result file', result_path)
+            return result_path
 
 
 class Intersection(Operation):
@@ -125,6 +189,9 @@ class Minus(Operation):
             subprocess.Popen(cmd, shell=False, universal_newlines=True, stdout=tmpfile).communicate()
             TEMPFILES.append(tmpfile.name)
             return tmpfile.name
+
+    def collect_beds(self):
+        return self.operands[0].collect_beds()
 
 
 def minus(*operands):
@@ -237,4 +304,5 @@ def metapeaks(filesmap):
 
 def cleanup():
     for path in TEMPFILES:
-        os.remove(path)
+        if Path(path).is_file():
+            os.remove(path)
