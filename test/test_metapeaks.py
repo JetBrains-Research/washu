@@ -5,6 +5,7 @@ import os
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/bed'
 METAPEAKS_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/metapeaks.sh'
 
+
 # 0      100  200    300  400    500  600    700
 # A.bed
 # |---------| |---------| |---------| |---------|
