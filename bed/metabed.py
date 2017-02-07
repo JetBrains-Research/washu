@@ -5,6 +5,7 @@ Simple bedtools / bash scripts wrapper with the following operations:
 * commutative and associative UNION and INTERSECTION
 * minus
 * compare
+* metapeaks
 
 NOTE: python3 required
 > source activate py3.5
