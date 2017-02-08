@@ -2,7 +2,7 @@ import os
 import unittest
 from pathlib import Path
 
-from bed.metabed import Bed, union, intersect, minus, compare, cleanup
+from bed.bedtrace import Bed, union, intersect, minus, compare, cleanup
 
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/bed'
 UNION_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/union.sh'
@@ -16,7 +16,7 @@ UNION_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/union.sh'
 # C.bed
 #  |-| |-|        |-|          |-|                  |-|
 
-class MetaBedTest(unittest.TestCase):
+class BedTrace(unittest.TestCase):
     def test_str(self):
         self.assertEqual("A.bed", str(Bed(TEST_DATA + '/A.bed')))
         self.assertEqual("""minus
@@ -82,6 +82,14 @@ chr1	600	750
 chr2	9746391	9746765	20
 chr1	4857963	4858364	6
 chr1	4807879	4808181	4
+""", Path(f).read_text())
+
+    def test_process_pvalue_single(self):
+        u = minus(Bed(TEST_DATA + '/A.narrowPeak'),
+                  intersect(Bed(TEST_DATA + '/A.narrowPeak'), Bed(TEST_DATA + '/B.narrowPeak')))
+        f = u.process_pvalue()
+        self.assertEqual("""chr2	9745187	9746077	26
+chr2	9746391	9746765	20
 """, Path(f).read_text())
 
     @classmethod

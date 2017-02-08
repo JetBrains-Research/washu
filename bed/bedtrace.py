@@ -9,6 +9,14 @@ Simple bedtools / bash scripts wrapper with the following operations:
 * metapeaks                 compares multiple files and creates Venn diagram in case of 2 or 3 files
 * process_pvalue            for each range show it's predecessors and compute min of p_values (-log 10p)
 
+NOTE: it is not supposed to replace pybedtools, but add some missing functionality.
+Major differences are:
+ * union and intersection operations are commutative and associative
+ * TRACE available for all the operations, i.e. consider operation
+        minus(minus(intersect(A1, A2), intersect(B1, B2)), C)
+   you would like to find out what were the predecessors of result and sort result by p-value.
+
+
 NOTE: python3 required
 > source activate py3.5
 
@@ -89,6 +97,14 @@ class Bed:
     def collect_beds(self):
         return [self]
 
+    def head(self):
+        print('HEAD')
+        print(run([['head', self.path]])[0].decode('utf-8'))
+
+    def tail(self):
+        print('TAIL')
+        print(run([['tail', self.path]])[0].decode('utf-8'))
+
     def pvalue_position(self):
         if self.path.endswith('.broadPeak') or self.path.endswith('.narrowPeak'):
             return 8
@@ -137,9 +153,14 @@ class Operation(Bed):
             with open(filtered_path, mode='a') as filtered_file:
                 for bed in beds:
                     pvalue_position = bed.pvalue_position()
-                    run([['grep', str(bed)],
-                         ['awk', "-v", "OFS=\\t", '{print $1,$2,$3,$' + str(c + pvalue_position + 1) + '}']],
-                        stdin=open(tmpfile.name), stdout=filtered_file)
+                    if len(beds) > 1:
+                        # Names are available for multiple -b intersection files only
+                        run([['grep', str(bed)],
+                             ['awk', "-v", "OFS=\\t", '{print $1,$2,$3,$' + str(c + pvalue_position + 1) + '}']],
+                            stdin=open(tmpfile.name), stdout=filtered_file)
+                    else:
+                        run([['awk', "-v", "OFS=\\t", '{print $1,$2,$3,$' + str(c + pvalue_position) + '}']],
+                            stdin=open(tmpfile.name), stdout=filtered_file)
 
             # Finally merge pvalues with min function
             result_path = filtered_path.replace('_filtered.bed', '_pvalue.bed')
@@ -149,14 +170,19 @@ class Operation(Bed):
                      ['bedtools', 'merge', '-c', '4', '-o', 'min'],
                      ['sort', '-k4,4nr']],
                     stdin=open(filtered_path), stdout=result_file)
-            print('Trace file', tmpfile.name)
-            print('Pvalue filtered file', filtered_path)
-            print('Result file', result_path)
-            print('HEAD')
-            print(run([['head', result_path]])[0].decode('utf-8'))
-            print('TAIL')
-            print(run([['tail', result_path]])[0].decode('utf-8'))
+            print('TRACE', tmpfile.name)
+            print('RESULT', result_path)
+            result_bed = Bed(result_path)
+            result_bed.head()
+            result_bed.tail()
+            os.remove(filtered_path)
             return result_path
+
+    def head(self):
+        super(Operation, self).head()
+
+    def tail(self):
+        super(Operation, self).tail()
 
 
 class Intersection(Operation):
@@ -293,29 +319,33 @@ def metapeaks(filesmap):
     if not isinstance(filesmap, dict):
         raise Exception("Map <name: bed> is expected")
     args = {}
+    venn_patterns = None
     if len(filesmap) == 2:
-        patterns = VENN2_PATTERNS
+        venn_patterns = VENN2_PATTERNS
     elif len(filesmap) == 3:
-        patterns = VENN3_PATTERNS
+        venn_patterns = VENN3_PATTERNS
     else:
-        raise Exception("Wrong number of files", len(filesmap))
+        print("Cannot create Venn diagram, wrong number of files", len(filesmap))
 
-    # Configure args for Venn diagram
-    for p in patterns:
-        args[p] = 0
     names = filesmap.keys()
     out = run([['bash', METAPEAKS_SH, *[filesmap[x].path for x in names]]])[0].decode("utf-8")
-    for line in out.split('\n'):
-        for p in patterns:
-            if p in line:
-                try:
-                    args[p] = int(line[len(p):])
-                except:
-                    pass
-    if len(filesmap) == 2:
-        showvenn2(*names, *[args[x] for x in patterns])
-    elif len(filesmap) == 3:
-        showvenn3(*names, *[args[x] for x in patterns])
+    if venn_patterns:
+        # Configure args for Venn diagram
+        for p in venn_patterns:
+            args[p] = 0
+        for line in out.split('\n'):
+            for p in venn_patterns:
+                if p in line:
+                    try:
+                        args[p] = int(line[len(p):])
+                    except:
+                        pass
+        if len(filesmap) == 2:
+            showvenn2(*names, *[args[x] for x in venn_patterns])
+        elif len(filesmap) == 3:
+            showvenn3(*names, *[args[x] for x in venn_patterns])
+    else:
+        print(out)
 
 
 def cleanup():
