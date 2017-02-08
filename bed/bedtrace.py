@@ -26,6 +26,7 @@ import os
 import subprocess
 import tempfile
 from pathlib import Path
+import sys
 from matplotlib_venn import venn2
 from matplotlib_venn import venn3
 
@@ -108,7 +109,10 @@ class Bed:
     def pvalue_position(self):
         if self.path.endswith('.broadPeak') or self.path.endswith('.narrowPeak'):
             return 8
-        # Ignore position
+        if 'diffbind' in self.path:
+            # See diffbind for output details
+            return 10
+        print('PValue column is unknown for {}'.format(self.path), file=sys.stderr)
         return 100
 
 
@@ -141,7 +145,7 @@ class Operation(Bed):
         self.compute()
         c = columns(self.path)
         beds = self.collect_beds()
-        with tempfile.NamedTemporaryFile(mode='w', suffix='_trace.bed', prefix='metabed', delete=False) as tmpfile:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='_trace.bed', prefix='bedtrace', delete=False) as tmpfile:
             run([['bedtools', 'intersect', '-wa', '-wb', '-a', self.path,
                   '-b', *[x.path for x in beds],
                   '-names', *[str(x) for x in beds], '-sorted']], stdout=tmpfile)
@@ -168,7 +172,7 @@ class Operation(Bed):
             with open(result_path, 'w') as result_file:
                 run([['sort', '-k1,1', '-k2,2n'],
                      ['bedtools', 'merge', '-c', '4', '-o', 'min'],
-                     ['sort', '-k4,4nr']],
+                     ['sort', '-k4,4gr']],
                     stdin=open(filtered_path), stdout=result_file)
             print('TRACE', tmpfile.name)
             print('RESULT', result_path)
@@ -203,7 +207,7 @@ class Intersection(Operation):
 
     @staticmethod
     def intersect_files(*files):
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.bed', prefix='metabeds', delete=False) as tmpfile:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.bed', prefix='bedtraces', delete=False) as tmpfile:
             run([["bash", INTERSECT_SH, *files]], stdout=tmpfile)
             TEMPFILES.append(tmpfile.name)
             return tmpfile.name
@@ -231,7 +235,7 @@ class Minus(Operation):
 
     @staticmethod
     def minus_files(file1, file2):
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.bed', prefix='metabeds', delete=False) as tmpfile:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.bed', prefix='bedtraces', delete=False) as tmpfile:
             run([["bash", MINUS_SH, file1, file2]], stdout=tmpfile)
             TEMPFILES.append(tmpfile.name)
             return tmpfile.name
@@ -262,7 +266,7 @@ class Union(Operation):
 
     @staticmethod
     def union_files(*files):
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.bed', prefix='metabeds', delete=False) as tmpfile:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.bed', prefix='bedtraces', delete=False) as tmpfile:
             run([["bash", UNION_SH, *files]], stdout=tmpfile)
             TEMPFILES.append(tmpfile.name)
             return tmpfile.name
@@ -287,7 +291,7 @@ class Compare(Operation):
         self.path = self.compare(self.operands[0].path, self.operands[1].path)
 
     def compare(self, file1, file2):
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', prefix='metabeds', delete=False) as tmpfile:
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', prefix='bedtraces', delete=False) as tmpfile:
             prefix = tmpfile.name.replace('.txt', '')
             run([["bash", COMPARE_SH, file1, file2, prefix]], stdout=tmpfile)
             self.cond1 = prefix + "_cond1.bed"

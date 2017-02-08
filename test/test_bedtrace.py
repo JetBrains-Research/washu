@@ -92,9 +92,17 @@ chr1	4807879	4808181	4
 chr2	9746391	9746765	20
 """, Path(f).read_text())
 
+    def test_process_diffbind(self):
+        u = minus(Bed(TEST_DATA + '/A_diffbind.bed'), Bed(TEST_DATA + '/A.narrowPeak'))
+        f = u.process_pvalue()
+        self.assertEqual("""chr1	28417357	28419402	1.53e-06
+chr1	8212454	8213531	7.98e-10
+""", Path(f).read_text())
+
     @classmethod
     def tearDownClass(cls):
-        cleanup()
+        pass
+        # cleanup()
 
 
 if __name__ == '__main__':
