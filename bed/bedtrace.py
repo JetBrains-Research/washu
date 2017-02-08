@@ -66,7 +66,7 @@ def run(commands, stdin=None, stdout=subprocess.PIPE):
 
 
 def columns(path):
-    return int(run([['head', '-1', path], ['awk', '{ print NF }']])[0].decode('utf-8').strip())
+    return int(run([['grep', 'chr', path], ['head', '-1'], ['awk', '{ print NF }']])[0].decode('utf-8').strip())
 
 
 class Bed:
@@ -107,43 +107,22 @@ class Bed:
         print(run([['tail', self.path]])[0].decode('utf-8'))
 
     def pvalue_position(self):
+        # TODO[shpynov]: add peak caller option as in diffbind?
         if self.path.endswith('.broadPeak') or self.path.endswith('.narrowPeak'):
             return 8
         if 'diffbind' in self.path:
-            # See diffbind for output details
             return 10
+        if 'bdgdiff' in self.path:
+            return 5
         print('PValue column is unknown for {}'.format(self.path), file=sys.stderr)
         return 100
-
-
-class Operation(Bed):
-    """Represents operations over Bed files and other Operations"""
-
-    def __init__(self, operation=None, operands=None):
-        super().__init__(None)
-        self.operation = operation
-        self.operands = operands
-
-    def compute(self):
-        raise Exception("Unknown operation: {}".format(self.operation))
-
-    def __str__(self):
-        return self.pp(0)
-
-    def pp(self, indent):
-        return '\t' * indent + self.operation + '\n' + '\n'.join([x.pp(indent + 1) for x in self.operands])
-
-    def collect_beds(self):
-        result = []
-        for o in self.operands:
-            result += o.collect_beds()
-        return result
 
     def process_pvalue(self):
         """Method to process each row of resulting bed with the union of parents."""
         # Ensure that we've already computed result
         self.compute()
         c = columns(self.path)
+        print('Columns', c)
         beds = self.collect_beds()
         with tempfile.NamedTemporaryFile(mode='w', suffix='_trace.bed', prefix='bedtrace', delete=False) as tmpfile:
             run([['bedtools', 'intersect', '-wa', '-wb', '-a', self.path,
@@ -157,6 +136,7 @@ class Operation(Bed):
             with open(filtered_path, mode='a') as filtered_file:
                 for bed in beds:
                     pvalue_position = bed.pvalue_position()
+                    print("Columns", bed, pvalue_position)
                     if len(beds) > 1:
                         # Names are available for multiple -b intersection files only
                         run([['grep', str(bed)],
@@ -182,11 +162,29 @@ class Operation(Bed):
             os.remove(filtered_path)
             return result_path
 
-    def head(self):
-        super(Operation, self).head()
 
-    def tail(self):
-        super(Operation, self).tail()
+class Operation(Bed):
+    """Represents operations over Bed files and other Operations"""
+
+    def __init__(self, operation=None, operands=None):
+        super().__init__(None)
+        self.operation = operation
+        self.operands = operands
+
+    def compute(self):
+        raise Exception("Unknown operation: {}".format(self.operation))
+
+    def __str__(self):
+        return self.pp(0)
+
+    def pp(self, indent):
+        return '\t' * indent + self.operation + '\n' + '\n'.join([x.pp(indent + 1) for x in self.operands])
+
+    def collect_beds(self):
+        result = []
+        for o in self.operands:
+            result += o.collect_beds()
+        return result
 
 
 class Intersection(Operation):

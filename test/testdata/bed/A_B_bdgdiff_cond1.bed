@@ -1,0 +1,3 @@
+track name="condition 1 (peaks)" description="unique regions in condition 1" visibility=1
+chr1	10571239	10571874	diff_k27ac_Y_O_0.01_cond1_1	4.94096
+chr1	92780966	92781404	diff_k27ac_Y_O_0.01_cond1_3	5.47439
