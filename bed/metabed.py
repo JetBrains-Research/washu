@@ -152,6 +152,10 @@ class Operation(Bed):
             print('Trace file', tmpfile.name)
             print('Pvalue filtered file', filtered_path)
             print('Result file', result_path)
+            print('HEAD')
+            print(run([['head', result_path]])[0].decode('utf-8'))
+            print('TAIL')
+            print(run([['tail', result_path]])[0].decode('utf-8'))
             return result_path
 
 
