@@ -76,20 +76,6 @@ echo $PEAKS2
 # Configuration end ############################################################
 ################################################################################
 
-DIFF_INTERSECTION="${PREFIX}_intersection"
-echo
-echo "Processing $DIFF_INTERSECTION"
-if [ ! -d ${DIFF_INTERSECTION} ]; then
-    mkdir ${DIFF_INTERSECTION}
-    cd ${DIFF_INTERSECTION}
-    echo "Intersect individual peaks to get common peaks for ${GROUP1} and ${GROUP2} and then compare them"
-
-    bash ~/work/washu/bed/intersect.sh $PEAKS1 > ${GROUP1}_peaks_${Q}.bed
-    bash ~/work/washu/bed/intersect.sh $PEAKS2 > ${GROUP2}_peaks_${Q}.bed
-
-    bash ~/work/washu/bed/compare.sh ${GROUP1}_peaks_${Q}.bed ${GROUP2}_peaks_${Q}.bed ${NAME}_${Q}
-fi
-
 DIFF_MACS_POOLED="${PREFIX}_macs_pooled"
 echo
 echo "Processing $DIFF_MACS_POOLED"
