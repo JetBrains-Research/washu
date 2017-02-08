@@ -30,6 +30,36 @@ METAPEAKS_SH = os.path.dirname(os.path.abspath(__file__)) + '/metapeaks.sh'
 TEMPFILES = []
 
 
+def run(commands, stdin=None, stdout=subprocess.PIPE):
+    """Launches pipe of commands given stdin and final stdout"""
+    processes = []
+    _stdin = stdin
+    for i in range(0, len(commands)):
+        cmd = commands[i]
+        if i < len(commands) - 1:
+            _stdout = subprocess.PIPE
+        else:
+            _stdout = stdout
+        if i == 0:
+            p = subprocess.Popen(cmd, stdin=_stdin, stdout=_stdout)
+        elif i == len(commands) - 1:
+            p = subprocess.Popen(cmd, stdin=_stdin, stdout=_stdout)
+        else:
+            p = subprocess.Popen(cmd, stdin=_stdin, stdout=_stdout)
+        processes.append(p)
+        _stdin = p.stdout
+
+    for i in range(0, len(processes)):
+        if i < len(processes) - 1:
+            processes[i].stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+        else:
+            return processes[i].communicate()
+
+
+def columns(path):
+    return int(run([['head', '-1', path], ['awk', '{ print NF }']])[0].decode('utf-8').strip())
+
+
 class Bed:
     """Simple path of Bed file storage"""
 
@@ -93,16 +123,12 @@ class Operation(Bed):
         """Method to process each row of resulting bed with the union of parents."""
         # Ensure that we've already computed result
         self.compute()
-        p1 = subprocess.Popen(['head', '-1', self.path], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(['awk', '{ print NF }'], stdin=p1.stdout, stdout=subprocess.PIPE)
-        p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
-        columns = int(p2.communicate()[0].decode('utf-8').strip())
+        c = columns(self.path)
         beds = self.collect_beds()
         with tempfile.NamedTemporaryFile(mode='w', suffix='_trace.bed', prefix='metabed', delete=False) as tmpfile:
-            subprocess.Popen(['bedtools', 'intersect', '-wa', '-wb', '-a', self.path,
-                              '-b', *[x.path for x in beds],
-                              '-names', *[str(x) for x in beds], '-sorted'],
-                             shell=False, universal_newlines=True, stdout=tmpfile).communicate()
+            run([['bedtools', 'intersect', '-wa', '-wb', '-a', self.path,
+                  '-b', *[x.path for x in beds],
+                  '-names', *[str(x) for x in beds], '-sorted']], stdout=tmpfile)
             TEMPFILES.append(tmpfile.name)
 
             # Extract only pvalue_associated columns
@@ -111,26 +137,18 @@ class Operation(Bed):
             with open(filtered_path, mode='a') as filtered_file:
                 for bed in beds:
                     pvalue_position = bed.pvalue_position()
-                    p1 = subprocess.Popen(['grep', str(bed)], stdin=open(tmpfile.name), stdout=subprocess.PIPE)
-                    p2 = subprocess.Popen(['awk', "-v", "OFS=\\t",
-                                           '{print $1,$2,$3,$' + str(columns + pvalue_position + 1) + '}'],
-                                          stdin=p1.stdout, stdout=filtered_file)
-                    p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
-                    p2.communicate()
+                    run([['grep', str(bed)],
+                         ['awk', "-v", "OFS=\\t", '{print $1,$2,$3,$' + str(c + pvalue_position + 1) + '}']],
+                        stdin=open(tmpfile.name), stdout=filtered_file)
 
             # Finally merge pvalues with min function
             result_path = filtered_path.replace('_filtered.bed', '_pvalue.bed')
             TEMPFILES.append(result_path)
             with open(result_path, 'w') as result_file:
-                p1 = subprocess.Popen(['sort', '-k1,1', '-k2,2n'],
-                                      stdin=open(filtered_path), stdout=subprocess.PIPE)
-                p2 = subprocess.Popen(['bedtools', 'merge', '-c', '4', '-o', 'min'],
-                                      stdin=p1.stdout, stdout=subprocess.PIPE)
-                p3 = subprocess.Popen(['sort', '-k4,4nr'],
-                                      stdin=p2.stdout, stdout=result_file)
-                p1.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
-                p2.stdout.close()  # Allow p2 to receive a SIGPIPE if p3 exits.
-                p3.communicate()
+                run([['sort', '-k1,1', '-k2,2n'],
+                     ['bedtools', 'merge', '-c', '4', '-o', 'min'],
+                     ['sort', '-k4,4nr']],
+                    stdin=open(filtered_path), stdout=result_file)
             print('Trace file', tmpfile.name)
             print('Pvalue filtered file', filtered_path)
             print('Result file', result_path)
@@ -155,9 +173,8 @@ class Intersection(Operation):
 
     @staticmethod
     def intersect_files(*files):
-        cmd = ["bash", INTERSECT_SH, *files]
         with tempfile.NamedTemporaryFile(mode='w', suffix='.bed', prefix='metabeds', delete=False) as tmpfile:
-            subprocess.Popen(cmd, shell=False, universal_newlines=True, stdout=tmpfile).communicate()
+            run([["bash", INTERSECT_SH, *files]], stdout=tmpfile)
             TEMPFILES.append(tmpfile.name)
             return tmpfile.name
 
@@ -184,9 +201,8 @@ class Minus(Operation):
 
     @staticmethod
     def minus_files(file1, file2):
-        cmd = ["bash", MINUS_SH, file1, file2]
         with tempfile.NamedTemporaryFile(mode='w', suffix='.bed', prefix='metabeds', delete=False) as tmpfile:
-            subprocess.Popen(cmd, shell=False, universal_newlines=True, stdout=tmpfile).communicate()
+            run([["bash", MINUS_SH, file1, file2]], stdout=tmpfile)
             TEMPFILES.append(tmpfile.name)
             return tmpfile.name
 
@@ -216,9 +232,8 @@ class Union(Operation):
 
     @staticmethod
     def union_files(*files):
-        cmd = ["bash", UNION_SH, *files]
         with tempfile.NamedTemporaryFile(mode='w', suffix='.bed', prefix='metabeds', delete=False) as tmpfile:
-            subprocess.Popen(cmd, shell=False, universal_newlines=True, stdout=tmpfile).communicate()
+            run([["bash", UNION_SH, *files]], stdout=tmpfile)
             TEMPFILES.append(tmpfile.name)
             return tmpfile.name
 
@@ -244,9 +259,7 @@ class Compare(Operation):
     def compare(self, file1, file2):
         with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', prefix='metabeds', delete=False) as tmpfile:
             prefix = tmpfile.name.replace('.txt', '')
-            cmd = ["bash", COMPARE_SH, file1, file2, prefix]
-            subprocess.Popen(cmd, shell=False, universal_newlines=True, stdout=tmpfile).communicate()
-
+            run([["bash", COMPARE_SH, file1, file2, prefix]], stdout=tmpfile)
             self.cond1 = prefix + "_cond1.bed"
             self.cond2 = prefix + "_cond2.bed"
             self.common = prefix + "_common.bed"
@@ -287,8 +300,7 @@ def metapeaks(filesmap):
     for p in patterns:
         args[p] = 0
     names = filesmap.keys()
-    ps = subprocess.Popen(['bash', METAPEAKS_SH, *[filesmap[x].path for x in names]], stdout=subprocess.PIPE)
-    out = ps.communicate()[0].decode("utf-8")
+    out = run([['bash', METAPEAKS_SH, *[filesmap[x].path for x in names]]])[0].decode("utf-8")
     for line in out.split('\n'):
         for p in patterns:
             if p in line:
