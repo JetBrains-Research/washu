@@ -98,13 +98,13 @@ class Bed:
     def collect_beds(self):
         return [self]
 
-    def head(self):
+    def head(self, lines=5):
         print('HEAD')
-        print(run([['head', self.path]])[0].decode('utf-8'))
+        print(run([['head', '-{}'.format(lines), self.path]])[0].decode('utf-8'))
 
-    def tail(self):
+    def tail(self, lines=5):
         print('TAIL')
-        print(run([['tail', self.path]])[0].decode('utf-8'))
+        print(run([['tail', '-{}'.format(lines), self.path]])[0].decode('utf-8'))
 
     def pvalue_position(self):
         # TODO[shpynov]: add peak caller option as in diffbind?
