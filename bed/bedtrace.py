@@ -122,7 +122,6 @@ class Bed:
         # Ensure that we've already computed result
         self.compute()
         c = columns(self.path)
-        print('Columns', c)
         beds = self.collect_beds()
         with tempfile.NamedTemporaryFile(mode='w', suffix='_trace.bed', prefix='bedtrace', delete=False) as tmpfile:
             run([['bedtools', 'intersect', '-wa', '-wb', '-a', self.path,
@@ -136,7 +135,6 @@ class Bed:
             with open(filtered_path, mode='a') as filtered_file:
                 for bed in beds:
                     pvalue_position = bed.pvalue_position()
-                    print("Columns", bed, pvalue_position)
                     if len(beds) > 1:
                         # Names are available for multiple -b intersection files only
                         run([['grep', str(bed)],
