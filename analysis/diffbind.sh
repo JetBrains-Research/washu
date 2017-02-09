@@ -58,3 +58,7 @@ cat ${CSV_NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t
  awk -v OFS='\t' '$9 > 0 {print $0}' | sort -k1,1 -k2,2n > ${CSV_NAME}_cond1.bed
 cat ${CSV_NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
  awk -v OFS='\t' '$9 < 0 {print $0}' | sort -k1,1 -k2,2n > ${CSV_NAME}_cond2.bed
+
+# Save diffbind results to simple BED3 format
+awk -v OFS='\t' '{ print $1,$2,$3}' ${CSV_NAME}_cond1.bed > ${CSV_NAME}_cond1.bed3
+awk -v OFS='\t' '{ print $1,$2,$3}' ${CSV_NAME}_cond2.bed > ${CSV_NAME}_cond2.bed3
