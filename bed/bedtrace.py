@@ -114,8 +114,7 @@ class Bed:
             return 10
         if 'bdgdiff' in self.path:
             return 5
-        print('PValue column is unknown for {}'.format(self.path), file=sys.stderr)
-        return 100
+        raise Exception('PValue column is unknown for {}'.format(self.path))
 
     def process_pvalue(self):
         """Method to process each row of resulting bed with the union of parents."""
