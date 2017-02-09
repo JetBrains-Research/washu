@@ -7,13 +7,14 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 which R &>/dev/null || { echo "R not found! Install R <https://www.r-project.org/>"; exit 1; }
 >&2 echo "diffbind: $@"
 
-if [ $# -lt 1 ]; then
-    echo "Need 1 parameter! <DIFFBIND_CSV>"
+if [ $# -lt 2 ]; then
+    echo "Need 2 parameters! <DIFFBIND_CSV> <GENES_GTF>"
     exit 1
 fi
 
 CSV=$1
 CSV_NAME=${CSV%%.csv}
+GENES_GTF=$2
 
 # Load cluster stuff
 source ~/work/washu/scripts/util.sh
@@ -62,3 +63,14 @@ cat ${CSV_NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t
 # Save diffbind results to simple BED3 format
 awk -v OFS='\t' '{ print $1,$2,$3}' ${CSV_NAME}_cond1.bed > ${CSV_NAME}_cond1.bed3
 awk -v OFS='\t' '{ print $1,$2,$3}' ${CSV_NAME}_cond2.bed > ${CSV_NAME}_cond2.bed3
+
+# Convert gtf to bed
+GENES_BED=${GENES_GTF%%.gtf}.bed
+if [ -f ${GENES_BED} ]; then
+    cat $GENES_GTF | awk -v OFS="\t" '{if ($3=="gene") {print $1,$4-1,$5,$10,".",$7}}' |\
+     tr -d '";' | sort -k1,1 -k2,2n > $GENES_BED
+fi
+
+# Compute closest genes
+bedtools closest -t all -a ${CSV_NAME}_cond1.bed3 -b ${GENES_BED} > ${CSV_NAME}_cond1_closest_genes.tsv
+bedtools closest -t all -a ${CSV_NAME}_cond2.bed3 -b ${GENES_BED} > ${CSV_NAME}_cond2_closest_genes.tsv
