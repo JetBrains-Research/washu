@@ -2,7 +2,6 @@
 # This script is used to compute intersection of peaks for given list of files.
 #
 # What happens:
-# - Filter out unknown contigs
 # - Two peaks aver overlapping if they share at least one nucleotide
 # - Produces 3 files: exclusive peaks for condition 1 and 2 and common peaks.
 #
@@ -22,18 +21,18 @@ OUT_PREFIX=$3
 
 # FILTERED data on chromosomes only, i.e. no contig
 FILES=( $BED_1 $BED_2 )
-CHRFILES=()
-for i in ${FILES[@]}
+SORTED_FILES=()
+for F in ${FILES[@]}
 do
-    tmpfile=${i}.chr_only.tmp
-    grep -E "chr[0-9]+|chrX|chrY" $i | sort -k1,1 -k2,2n > $tmpfile
-    CHRFILES+=("$tmpfile")
+    SORTED=${F}.sorted
+    sort -k1,1 -k2,2n $F > ${SORTED}
+    SORTED_FILES+=("$SORTED")
 done
 
 TMP_FILE=${OUT_PREFIX}_all.txt
 
 # Compute common and exclusive peaks
-multiIntersectBed -i ${CHRFILES[@]} |\
+multiIntersectBed -i ${SORTED_FILES[@]} |\
 bedtools merge -c 6,7 -o max |\
 # Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
  awk -v OFS="\t" '{print $1,$2,$3,int($4),int($5)}' > ${TMP_FILE}
@@ -52,4 +51,4 @@ cat ${TMP_FILE} | awk '/\t1\t1$/' |\
 
 # Cleanup
 rm ${TMP_FILE}
-rm ${CHRFILES[@]}
+rm ${SORTED_FILES[@]}

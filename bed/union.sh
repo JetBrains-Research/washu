@@ -2,7 +2,6 @@
 # This script is used to compute union of peaks for given list of files.
 #
 # What happens:
-# - Filter out unknown contigs and Y chromosome peaks
 # - Two peaks aver overlapping if they share at least one nucleotide
 # - Prints only peaks that exist at least in one file.
 #       4th column indicates tracks, parents of each peak in union.
@@ -17,12 +16,11 @@ if [ -f ${TMP} ]; then
     rm $TMP
 fi
 
-# FILTERED data on chromosomes only, i.e. no contig
-n=1
-for f in $@
+N=1
+for F in $@
 do
-    grep -E "chr[0-9]+|chrX" $f | awk -v OFS='\t' -v N=$n '{print $1,$2,$3,N}' >> ${TMP}
-    n=$((n+1))
+    awk -v OFS='\t' -v N=$N '{print $1,$2,$3,N}' $F >> ${TMP}
+    N=$((N+1))
 done
 sort -k1,1 -k2,2n ${TMP} > ${TMP}.sorted
 bedtools merge -i ${TMP}.sorted -c 4 -o collapse -delim "|"

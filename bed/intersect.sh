@@ -2,7 +2,6 @@
 # This script is used to compute intersection of peaks for given list of files.
 #
 # What happens:
-# - Filter out unknown contigs
 # - Two peaks aver overlapping if they share at least one nucleotide
 # - Prints only peaks that overlap in all files (merged)
 #
@@ -11,19 +10,18 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 >&2 echo "intersect: $@"
 
-# FILTERED data on chromosomes only, i.e. no contig
-CHRFILES=()
-for i in $@
+SORTED_FILES=()
+for F in $@
 do
-    tmpfile=${i}.chr_only.tmp
-    grep -E "chr[0-9]+|chrX|chrY" $i | sort -k1,1 -k2,2n > $tmpfile
-    CHRFILES+=("$tmpfile")
+    SORTED=${F}.sorted
+    sort -k1,1 -k2,2n $F > ${SORTED}
+    SORTED_FILES+=("$SORTED")
 done
 
 range=$(seq -s, 6 1 $(($# + 5)))
 pattern=$(printf '\t1%.0s' $(seq 1 $#))
 
-multiIntersectBed -i "${CHRFILES[@]}" |\
+bedtools multiinter -i "${SORTED_FILES[@]}" |\
  bedtools merge -c $range -o max |\
  # Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
  awk '{if (NR > 1) printf("\n"); printf("%s\t%s\t%s", $1, $2, $3); for (i=4; i<=NF; i++) printf("\t%d", int($i)); }' |\
@@ -33,4 +31,4 @@ multiIntersectBed -i "${CHRFILES[@]}" |\
  sort -k1,1 -k2,2n
 
 # Cleanup
-rm ${CHRFILES[@]}
+rm ${SORTED_FILES[@]}

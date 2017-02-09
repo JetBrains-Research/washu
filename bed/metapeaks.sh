@@ -2,7 +2,6 @@
 # This script is used to compute overlap of peaks for given list of files.
 #
 # What happens:
-# - Filter out unknown contigs
 # - Two peaks aver overlapping if they share at least one nucleotide
 # - For each of the combination of input files, number of overlap peaks are computed
 #
@@ -20,16 +19,15 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 >&2 echo "metapeaks: $@"
 
-# FILTERED data on chromosomes only, i.e. no contig
-CHRFILES=()
+SORTED_FILES=()
 PEAKS=()
-for i in $@
+for F in $@
 do
-    tmpfile=${i}.chr_only.tmp
-    grep -E "chr[0-9]+|chrX|chrY" $i | sort -k1,1 -k2,2n > $tmpfile
-    CHRFILES+=("$tmpfile")
-    peak=$(cat $tmpfile | wc -l)
-    PEAKS+=("$peak")
+    NPEAKS=$(cat $F | wc -l)
+    PEAKS+=("$NPEAKS")
+    SORTED=${F}.sorted
+    sort -k1,1 -k2,2n $F > ${SORTED}
+    SORTED_FILES+=("$SORTED")
 done
 
 echo "PEAKS: ${PEAKS[@]}"
@@ -37,7 +35,7 @@ echo "PEAKS: ${PEAKS[@]}"
 range=$(seq -s, 6 1 $(($# + 5)))
 
 METAPEAKS=$(
-    multiIntersectBed -i "${CHRFILES[@]}" |\
+    bedtools multiinter -i "${SORTED_FILES[@]}" |\
     bedtools merge -c $range -o max |\
     # Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
     awk '{if (NR > 1) printf("\n"); printf("%s\t%s\t%s", $1, $2, $3); for (i=4; i<=NF; i++) printf("\t%d", int($i)); }' |\
@@ -54,4 +52,4 @@ awk 'NR > 1 { printf(", ") }{printf("%s", $NF)}'
 echo
 
 # Cleanup
-rm ${CHRFILES[@]}
+rm ${SORTED_FILES[@]}
