@@ -327,6 +327,9 @@ def metapeaks(filesmap):
         print("Cannot create Venn diagram, wrong number of files", len(filesmap))
 
     names = filesmap.keys()
+    # Check everything is computed
+    for x in filesmap.values():
+        x.compute()
     out = run([['bash', METAPEAKS_SH, *[filesmap[x].path for x in names]]])[0].decode("utf-8")
     if venn_patterns:
         # Configure args for Venn diagram
