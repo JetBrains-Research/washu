@@ -25,15 +25,16 @@ fi
 FILE=$1
 CHROMHMM=$2
 
-if [ ! $CHROMHMM =~ *.bed ]; then
-    which bigBedToBed &>/dev/null || { echo "bigBedToBed not found! Download: http://hgdownload.cse.ucsc.edu/admin/exe/"; exit 1; }
-    NAME=${CHROMHMM%%.*}
-    echo "Bed file required, found bigBed. Converting to $CHROMHMM.bed"
-    bigBedToBed $FILE $CHROMHMM.bed
-    CHROMHMM=$CHROMHMM.bed
-fi
+#if [ ! $CHROMHMM =~ "*.bed" ]; then
+#    which bigBedToBed &>/dev/null || { echo "bigBedToBed not found! Download: http://hgdownload.cse.ucsc.edu/admin/exe/"; exit 1; }
+#    NAME=${CHROMHMM%%.*}
+#    echo "Bed file required, found bigBed. Converting to $CHROMHMM.bed"
+#    bigBedToBed $FILE $CHROMHMM.bed
+#    CHROMHMM=$CHROMHMM.bed
+#fi
 
-# Compute intersection length by chromhmm state
-bedtools intersect -a $FILE -b $CHROMHMM -wa -wb |\
- awk -v COLS=$(head -1 $FILE | awk '{ print NF }') '{ tot[$(4+COLS)]+=1 } END { for (i in tot) print i"\t"tot[i] }' |\
+# Compute intersection by chromhmm state
+COLS=$(cat $FILE | grep "chr" | head -1 | awk '{ print NF }')
+bedtools intersect -a "$FILE" -b "$CHROMHMM" -wa -wb |\
+ awk -v COLS=$COLS -v OFS='\t' '{ states[$(4+COLS)]+=1 } END { for (i in states) print i,states[i] }' |\
  sort
