@@ -17,7 +17,7 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 
 if [ $# -lt 2 ]; then
-    echo "Need 2 parameters! <BED_FILE> <CHROMHMM_MARKUP_FILE.BED>"
+    echo "Need 2 parameters! <BED_FILE> <CHROMHMM_MARKUP.bigBed | CHROMHMM_MARKUP.bed>"
     exit 1
 fi
 >&2 echo "chromhmm_stat $@"
@@ -25,13 +25,16 @@ fi
 FILE=$1
 CHROMHMM=$2
 
-#if [ ! $CHROMHMM =~ "*.bed" ]; then
-#    which bigBedToBed &>/dev/null || { echo "bigBedToBed not found! Download: http://hgdownload.cse.ucsc.edu/admin/exe/"; exit 1; }
-#    NAME=${CHROMHMM%%.*}
-#    echo "Bed file required, found bigBed. Converting to $CHROMHMM.bed"
-#    bigBedToBed $FILE $CHROMHMM.bed
-#    CHROMHMM=$CHROMHMM.bed
-#fi
+# Convert to bed if required
+if [[ ! $CHROMHMM == *.bed ]]; then
+    NAME=${CHROMHMM%%.*}
+    >&2 echo "ChromHMM markup is in bigBed format, converting to $CHROMHMM.bed"
+    if [ ! -f "$CHROMHMM.bed" ]; then
+        which bigBedToBed &>/dev/null || { echo "bigBedToBed not found! Download: http://hgdownload.cse.ucsc.edu/admin/exe/"; exit 1; }
+        bigBedToBed $FILE $CHROMHMM.bed
+    fi
+    CHROMHMM=$CHROMHMM.bed
+fi
 
 # Compute intersection by chromhmm state
 COLS=$(cat $FILE | grep "chr" | head -1 | awk '{ print NF }')
