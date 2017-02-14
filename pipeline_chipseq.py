@@ -35,7 +35,7 @@ args = parser.parse_args()
 # Configuration
 WORK_DIR = args.path_to_directory
 GENOME = "hg19"
-INDEXES = os.path.join("/scratch/artyomov_lab_aging/indexes", GENOME)
+INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y10OD10/chipseq/indexes", GENOME)
 CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
 READS = 15  # Subsampling to 15mln reads
 
