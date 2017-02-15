@@ -24,4 +24,5 @@ if [[ ! $GENES == *.bed ]]; then
     GENES=${GENES_BED}
 fi
 
-bedtools closest -a ${FILE} -b ${GENES} | awk '{ print $7 }' | sort | uniq
+COLS=$(cat $FILE | grep "chr" | head -1 | awk '{ print NF }')
+bedtools closest -a ${FILE} -b ${GENES} | awk -v COLS=$COLS '{ print $(4+COLS) }' | sort | uniq
