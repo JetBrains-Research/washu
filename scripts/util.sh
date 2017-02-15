@@ -53,7 +53,7 @@ check_logs()
 }
 
 # Convert genome to macs2 species encoding
-macs2_species()
+macs_species()
 {
     GENOME=$1
     # Convert Genome build to macs2 species

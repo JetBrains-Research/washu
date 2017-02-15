@@ -17,7 +17,7 @@ Q=$3
 
 echo "Batch macs2 broad: ${WORK_DIR} ${GENOME} ${Q}"
 
-SPECIES=$(macs2_species $GENOME)
+SPECIES=$(macs_species $GENOME)
 
 cd ${WORK_DIR}
 

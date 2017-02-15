@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-which macs2 &>/dev/null || { echo "MACS2 not found! Download MACS2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
+which macs14 &>/dev/null || { echo "MACS14 not found! Download MACS14: <http://liulab.dfci.harvard.edu/MACS/00README.html>"; exit 1; }
 
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
 if [ $# -lt 3 ]; then
-    echo "Need 3 parameters! <work_dir> <genome> <q>"
+    echo "Need 3 parameters! <work_dir> <genome> <p>"
     exit 1
 fi
 
 WORK_DIR=$1
 GENOME=$2
-Q=$3
+P=$3
 
-echo "Batch macs2: ${WORK_DIR} ${GENOME} ${Q}"
+echo "Batch macs14: ${WORK_DIR} ${GENOME} ${P}"
 
 SPECIES=$(macs_species $GENOME)
 
@@ -28,7 +28,7 @@ do :
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
-    ID=${NAME}_${Q}
+    ID=${NAME}_${P}
 
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
@@ -44,10 +44,10 @@ module load bedtools2
 
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
-    macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
+    macs14 -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -p ${P}
 else
     echo "${FILE}: no control file"
-    macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
+    macs14 -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -p ${P}
 fi
 
 # Compute Reads in Peaks
@@ -63,4 +63,4 @@ check_logs
 # Create pdf reports
 MODELS=$(ls *.r); for M in ${MODELS[@]}; do Rscript $M; done
 
-echo "Batch macs2: ${WORK_DIR} ${GENOME} ${Q}"
+echo "Batch macs14: ${WORK_DIR} ${GENOME} ${P}"

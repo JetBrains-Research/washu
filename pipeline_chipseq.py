@@ -67,7 +67,7 @@ WORK_DIR = move_forward(WORK_DIR, "_{}mln".format(READS), ["*{}*".format(READS)]
 run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
 move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 
-# Batch macs with different peak calling procedures settings
+# Batch macs2 with different peak calling procedures settings
 for Q in [0.01, 0.001, 0.1]:
     run_bash("macs2.sh", WORK_DIR, GENOME, str(Q))
     move_forward(WORK_DIR, "_macs_{}".format(Q), ["*{}*".format(Q)], copy_only=True)
@@ -77,6 +77,13 @@ for Q in [0.01, 0.001, 0.1]:
     run_bash("macs2_broad.sh", WORK_DIR, GENOME, str(Q))
     move_forward(WORK_DIR, "_macs_broad_{}".format(Q), ["*{}*".format(Q)], copy_only=True)
     process_macs2_logs(WORK_DIR + "_macs_broad_{}".format(Q))
+
+# Batch macs14 with different peak calling procedures settings
+# P = 1e-5 is default for MACS14
+for P in [0.00001]:
+    run_bash("macs14.sh", WORK_DIR, GENOME, str(P))
+    move_forward(WORK_DIR, "_macs14_{}".format(P), ["*{}*".format(P)], copy_only=True)
+    process_macs2_logs(WORK_DIR + "_macs14_{}".format(P))
 
 # Batch rseg
 run_bash("rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
