@@ -14,15 +14,15 @@ FILE=$1
 GENES=$2
 
 if [[ ! $GENES == *.bed ]]; then
-    # Gtf to sorted bed conversion
-    GENES_BED=${GENES/gtf/sorted.bed}
-    if [ ! -f ${GENES_BED} ]; then
-        >&2 echo "Converting gtf to ${GENES_BED}"
-        cat ${GENES} |  awk 'OFS="\t" {if ($3=="gene") {print $1,$4-1,$5,$10,".",$7}}' | tr -d '";' |\
-         sort -k1,1 -k2,2n > ${GENES_BED}
+    # Gtf to sorted tsv conversion
+    GENES_TSV=${GENES/gtf/sorted.tsv}
+    if [ ! -f ${GENES_TSV} ]; then
+        >&2 echo "Converting gtf to ${GENES_TSV}"
+        cat ${GENES} |  awk 'OFS="\t" {if ($3=="gene") {print $1,$4-1,$5,$16}}' | tr -d '";' |\
+         sort -k1,1 -k2,2n > ${GENES_TSV}
     fi
-    GENES=${GENES_BED}
+    GENES=${GENES_TSV}
 fi
 
 COLS=$(cat $FILE | grep "chr" | head -1 | awk '{ print NF }')
-bedtools closest -a ${FILE} -b ${GENES} | awk -v COLS=$COLS '{ print $(4+COLS) }' | sort | uniq
+bedtools closest -a ${FILE} -b ${GENES} -d | awk -v COLS=$COLS -v OFS='\t' '{ print $1,$2,$3,$(COLS+4),$(COLS+5) }' | sort
