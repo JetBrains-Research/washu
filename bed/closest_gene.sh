@@ -18,7 +18,8 @@ if [[ ! $GENES == *.bed ]]; then
     GENES_TSV=${GENES/gtf/sorted.tsv}
     if [ ! -f ${GENES_TSV} ]; then
         >&2 echo "Converting gtf to ${GENES_TSV}"
-        cat ${GENES} |  awk 'OFS="\t" {if ($3=="gene") {print $1,$4-1,$5,$16}}' | tr -d '";' |\
+        GENE_NAME_FIELD=$(cat ${GENES} | grep "chr1" | head -1 | awk '{for (i=1; i<NF; i++) {if ($i=="gene_name") print (i+1)}}')
+        cat ${GENES} |  awk -v GN=${GENE_NAME_FIELD} 'OFS="\t" {if ($3=="gene") {print $1,$4-1,$5,$GN}}' | tr -d '";' |\
          sort -k1,1 -k2,2n > ${GENES_TSV}
     fi
     GENES=${GENES_TSV}
