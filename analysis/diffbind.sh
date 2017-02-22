@@ -64,13 +64,7 @@ cat ${CSV_NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t
 awk -v OFS='\t' '{ print $1,$2,$3}' ${CSV_NAME}_cond1.bed > ${CSV_NAME}_cond1.bed3
 awk -v OFS='\t' '{ print $1,$2,$3}' ${CSV_NAME}_cond2.bed > ${CSV_NAME}_cond2.bed3
 
-# Convert gtf to bed
-GENES_BED=${GENES_GTF%%.gtf}.bed
-if [ -f ${GENES_BED} ]; then
-    cat $GENES_GTF | awk -v OFS="\t" '{if ($3=="gene") {print $1,$4-1,$5,$10,".",$7}}' |\
-     tr -d '";' | sort -k1,1 -k2,2n > $GENES_BED
-fi
-
-# Compute closest genes
-bedtools closest -t all -a ${CSV_NAME}_cond1.bed3 -b ${GENES_BED} > ${CSV_NAME}_cond1_closest_genes.tsv
-bedtools closest -t all -a ${CSV_NAME}_cond2.bed3 -b ${GENES_BED} > ${CSV_NAME}_cond2_closest_genes.tsv
+~/work/washu/bed/closest_gene.sh ${GENES_GTF} \
+    ${CSV_NAME}_cond1.bed3 > ${CSV_NAME}_cond1_closest_genes.tsv
+~/work/washu/bed/closest_gene.sh ${GENES_GTF} \
+    ${CSV_NAME}_cond2.bed3 > ${CSV_NAME}_cond2_closest_genes.tsv
