@@ -23,11 +23,10 @@ fi
 
 NAME=${BAM%%.bam}
 
-bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${NAME}.bdg
-# Remove coordinates outside chromosome sizes
-bedtools slop -i ${NAME}.bdg -g ${CHROM_SIZES} -b 0 | bedClip stdin ${CHROM_SIZES} ${NAME}.bdg.clip
-# Fix problem with not sorted clip file
-LC_COLLATE=C sort -k1,1 -k2,2n ${NAME}.bdg.clip > ${NAME}.bdg.sort.clip
-bedGraphToBigWig ${NAME}.bdg.sort.clip ${CHROM_SIZES} ${NAME}.bw
- 
-rm -f ${NAME}.bdg*.clip
+bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} | bedClip stdin ${CHROM_SIZES} ${NAME}.bdg
+# CLIP output should be sorted for bedGraphToBigWig call
+LC_COLLATE=C sort -k1,1 -k2,2n ${NAME}.bdg > ${NAME}.sorted.bdg
+bedGraphToBigWig ${NAME}.sorted.bdg ${CHROM_SIZES} ${NAME}.bw
+
+# Cleanup
+rm -f ${NAME}*.bdg
