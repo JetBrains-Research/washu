@@ -22,9 +22,8 @@ if [ ! -f "${CHROM_SIZES}" ]; then
 fi
 
 NAME=${BAM%%.bam}
-genomeCoverageBed -ibam $BAM -bg -g ${CHROM_SIZES} > ${NAME}.bdg
-bash ~/work/washu/bdg2bw.sh ${NAME}.bdg ${CHROM_SIZES}
 
+bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${NAME}.bdg
 # Remove coordinates outside chromosome sizes
 bedtools slop -i ${NAME}.bdg -g ${CHROM_SIZES} -b 0 | bedClip stdin ${CHROM_SIZES} ${NAME}.bdg.clip
 # Fix problem with not sorted clip file
