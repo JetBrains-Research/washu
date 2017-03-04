@@ -87,13 +87,17 @@ class Bed:
 
     def count(self):
         self.compute()
-        p1 = subprocess.Popen(["cat", self.path], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(["wc", "-l"], stdin=p1.stdout, stdout=subprocess.PIPE)
-        return int(p2.communicate()[0].strip())
+        return int(run([["cat", self.path], ['wc', '-l']])[0].strip())
 
     def save(self, path):
         self.compute()
         print(subprocess.Popen(["cp", self.path, path]).communicate())
+
+    def save3(self, path):
+        """ Save as BED3 format """
+        self.compute()
+        with open(path, mode='w') as out:
+            run([['awk', "-v", "OFS=\\t", '{print $1,$2,$3}']], stdin=open(self.path), stdout=out)
 
     def collect_beds(self):
         return [self]
