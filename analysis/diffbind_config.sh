@@ -6,7 +6,7 @@
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <WORKING_FOLDER> <NAME>"
     echo "Example: scratch/artyomov_lab_aging/Y10OD10/chipseq/processed k27ac_10vs10"
-    echo "Necessary folders: \${NAME}_bams, \${NAME}_bams_macs_broad_0.01"
+    echo "Necessary folders: \${NAME}_bams, \${NAME}_bams_macs_broad_0.1"
     exit 1
 fi
 WORK_DIR=$1
