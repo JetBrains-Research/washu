@@ -15,21 +15,18 @@ NAME=$2
 cd $WORK_DIR
 READS_DIR=${NAME}_bams
 PEAKS_DIR=${NAME}_bams_macs_broad_0.1
-RESULT=${NAME}_diffbind.csv
 T=$'\t'
 
 # Don't use -printf "%P\n", because it doesn't work on MacOS
 PEAKS_FILES=$(find $PEAKS_DIR -name "*.xls" | grep -v input | sort)
-echo "SampleID${T}Tissue${T}Factor${T}Condition${T}Replicate${T}bamReads${T}ControlID${T}bamControl${T}Peaks${T}PeakCaller" > $RESULT
+echo "SampleID${T}Tissue${T}Factor${T}Condition${T}Replicate${T}bamReads${T}ControlID${T}bamControl${T}Peaks${T}PeakCaller"
 for P in $PEAKS_FILES; do
-    F=${P##*1/};
-    SAMPLE=${F%%_R*};
-    CONDITION=${SAMPLE%%D*};
-    REPLICATE=${SAMPLE##*D};
-    READ=$(ls $READS_DIR/${SAMPLE}*.bam);
-    CONTROL=$(ls $READS_DIR/${CONDITION}*input*.bam);
-    PEAK=$(ls $PEAKS_DIR/${SAMPLE}*.xls);
-    echo "$SAMPLE${T}CD14${T}Age${T}$CONDITION${T}$REPLICATE${T}$(pwd)/$READ${T}${CONDITION}_pooled${T}$(pwd)/$CONTROL${T}$(pwd)/${PEAK}${T}macs" >> $RESULT;
+    F=${P##*1/}
+    SAMPLE=${F%%_R*}
+    CONDITION=${SAMPLE%%D*}
+    REPLICATE=${SAMPLE##*D}
+    READ=$(ls $READS_DIR/${SAMPLE}*.bam)
+    CONTROL=$(ls $READS_DIR/${CONDITION}*input*.bam)
+    PEAK=$(ls $PEAKS_DIR/${SAMPLE}*.xls)
+    echo "$SAMPLE${T}CD14${T}Age${T}$CONDITION${T}$REPLICATE${T}$(pwd)/$READ${T}${CONDITION}_pooled${T}$(pwd)/$CONTROL${T}$(pwd)/${PEAK}${T}macs"
 done
-
-echo "DONE: ${RESULT}"
