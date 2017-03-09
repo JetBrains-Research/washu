@@ -1,10 +1,18 @@
 # Script to launch diffbind package and plot all the figures
 # author: oleg.shpynov@jetbrains.com
 
-source("https://bioconductor.org/biocLite.R")
-library(DiffBind)
-library(ggplot2)
-library(stringr)
+# Function to load or install library from bioconductor
+load_library <- function(name) {
+    if (!require(name)) {
+        source("http://bioconductor.org/biocLite.R")
+        biocLite(name)
+    }
+    library(name)
+}
+
+load_library(DiffBind)
+load_library(ggplot2)
+load_library(stringr)
 
 main <- function(path) {
   write(paste("Processing file", path))
