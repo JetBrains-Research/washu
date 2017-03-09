@@ -2,7 +2,7 @@
 # Script to prepare configuration csv for diffbind
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
 
->&2 echo "diffbind: $@"
+>&2 echo "diffbind_config: $@"
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <WORKING_FOLDER> <NAME>"
     echo "Example: scratch/artyomov_lab_aging/Y10OD10/chipseq/processed k27ac_10vs10"
