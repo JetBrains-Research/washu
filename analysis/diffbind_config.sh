@@ -14,7 +14,7 @@ NAME=$2
 
 cd $WORK_DIR
 READS_DIR=${NAME}_bams
-PEAKS_DIR=${NAME}_bams_macs_broad_0.01
+PEAKS_DIR=${NAME}_bams_macs_broad_0.1
 RESULT=${NAME}_diffbind.csv
 T=$'\t'
 
