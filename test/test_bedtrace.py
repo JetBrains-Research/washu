@@ -106,6 +106,15 @@ chr1	8212454	8213531	7.98e-10
 chr1	10571239	10571874	4.94096
 """, Path(f).read_text())
 
+    def test_save3(self):
+        u = Bed(TEST_DATA + '/A_B_bdgdiff_cond1.bed')
+        # TODO test save3
+        f = u.process_pvalue()
+        self.assertEqual("""chr1	92780966	92781404	5.47439
+chr1	10571239	10571874	4.94096
+""", Path(f).read_text())
+
+
     @classmethod
     def tearDownClass(cls):
         pass
