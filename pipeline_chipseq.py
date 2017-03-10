@@ -68,26 +68,26 @@ move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 # move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 
 # Batch macs2 with different peak calling procedures settings
-for Q in [0.01]:
-    macs_suffix = "_macs_{}".format(Q)
-    if not os.path.exists(WORK_DIR + macs_suffix):
-        run_bash("macs2.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
-        move_forward(WORK_DIR, macs_suffix, ["*{}*".format(Q), '*.bw', '*.bdg'], copy_only=True)
-        process_macs2_logs(WORK_DIR + macs_suffix)
+Q = 0.01
+macs_suffix = "_macs_{}".format(Q)
+if not os.path.exists(WORK_DIR + macs_suffix):
+    run_bash("macs2.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
+    move_forward(WORK_DIR, macs_suffix, ["*{}*".format(Q), '*.bw', '*.bdg'], copy_only=True)
+    process_macs2_logs(WORK_DIR + macs_suffix)
 
-for Q in [0.01]:
-    macs_broad_suffix = "_macs_broad_{}".format(Q)
-    if not os.path.exists(WORK_DIR + macs_broad_suffix):
-        run_bash("macs2_broad.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
-        move_forward(WORK_DIR, macs_broad_suffix, ["*{}*".format(Q), '*.bw', '*.bdg'], copy_only=True)
-        process_macs2_logs(WORK_DIR + macs_broad_suffix)
+
+macs_broad_suffix = "_macs_broad_{}".format(Q)
+if not os.path.exists(WORK_DIR + macs_broad_suffix):
+    run_bash("macs2_broad.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
+    move_forward(WORK_DIR, macs_broad_suffix, ["*{}*".format(Q), '*.bw', '*.bdg'], copy_only=True)
+    process_macs2_logs(WORK_DIR + macs_broad_suffix)
 
 # # Batch macs14 with different peak calling procedures settings
 # # P = 1e-5 is default for MACS14
-# for P in [0.00001]:
-#     run_bash("macs14.sh", WORK_DIR, GENOME, str(P))
-#     move_forward(WORK_DIR, "_macs14_{}".format(P), ["*{}*".format(P)], copy_only=True)
-#     process_macs2_logs(WORK_DIR + "_macs14_{}".format(P))
+# P=0.00001
+# run_bash("macs14.sh", WORK_DIR, GENOME, str(P))
+# move_forward(WORK_DIR, "_macs14_{}".format(P), ["*{}*".format(P)], copy_only=True)
+# process_macs2_logs(WORK_DIR + "_macs14_{}".format(P))
 #
 # # Batch rseg
 # run_bash("rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
