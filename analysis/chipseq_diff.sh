@@ -27,8 +27,6 @@ DIFFBIND_CSV=$4
 FOLDER=$(pwd)
 echo "FOLDER"
 echo $FOLDER
-echo "GROUP1 Y"
-echo "GROUP2 O"
 
 PREFIX="$FOLDER/$NAME"
 echo "PREFIX"
@@ -74,10 +72,10 @@ echo $PEAKS_O
 #
 #    QSUB_ID1=$(qsub << ENDINPUT
 ##!/bin/sh
-##PBS -N ${NAME}_1_macs2_broad_${Q}
+##PBS -N ${NAME}_Y_macs2_broad_${Q}
 ##PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 ##PBS -j oe
-##PBS -o ${DIFF_MACS_POOLED}/${NAME}_1_macs2_broad_${Q}.log
+##PBS -o ${DIFF_MACS_POOLED}/${NAME}_Y_macs2_broad_${Q}.log
 ## This is necessary because qsub default working dir is user home
 #cd ${DIFF_MACS_POOLED}
 #macs2 callpeak -t $READS_Y -c $INPUTS_Y -f BAM -g hs -n Y_${Q} -B --broad --broad-cutoff ${Q}
@@ -86,10 +84,10 @@ echo $PEAKS_O
 #
 #    QSUB_ID2=$(qsub << ENDINPUT
 ##!/bin/sh
-##PBS -N ${NAME}_2_macs2_broad_${Q}
+##PBS -N ${NAME}_O_macs2_broad_${Q}
 ##PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 ##PBS -j oe
-##PBS -o ${DIFF_MACS_POOLED}/${NAME}_2_macs2_broad_${Q}.log
+##PBS -o ${DIFF_MACS_POOLED}/${NAME}_O_macs2_broad_${Q}.log
 ## This is necessary because qsub default working dir is user home
 #cd ${DIFF_MACS_POOLED}
 #macs2 callpeak -t $READS_O -c $INPUTS_O -f BAM -g hs -n O_${Q} -B --broad --broad-cutoff ${Q}
@@ -101,38 +99,38 @@ echo $PEAKS_O
 #fi
 
 
-MACS_POOLED_1_VS_2="${PREFIX}_macs_pooled_1_vs_2"
+MACS_POOLED_Y_VS_O="${PREFIX}_macs_pooled_Y_vs_O"
 echo
-echo "Processing $MACS_POOLED_1_VS_2"
-if [ ! -d $MACS_POOLED_1_VS_2 ]; then
-    mkdir ${MACS_POOLED_1_VS_2}
-    cd ${MACS_POOLED_1_VS_2}
+echo "Processing $MACS_POOLED_Y_VS_O"
+if [ ! -d $MACS_POOLED_Y_VS_O ]; then
+    mkdir ${MACS_POOLED_Y_VS_O}
+    cd ${MACS_POOLED_Y_VS_O}
 
     echo "Processing MACS2 pooled Y vs O as control and vice versa"
     
-    QSUB_ID_1_2=$(qsub << ENDINPUT
+    QSUB_ID_Y_vs_O=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N ${NAME}_1_vs_2_macs2_broad
+#PBS -N ${NAME}_Y_vs_O_macs2_broad
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${MACS_POOLED_1_VS_2}/${NAME}_1_vs_2_macs2_broad.log
+#PBS -o ${MACS_POOLED_Y_VS_O}/${NAME}_Y_vs_O_macs2_broad.log
 # This is necessary because qsub default working dir is user home
-cd ${MACS_POOLED_1_VS_2}
-macs2 callpeak -t $READS_Y -c $READS_O -f BAM -g hs -n ${NAME}_1_vs_2_${Q} -B --broad --broad-cutoff ${Q}
+cd ${MACS_POOLED_Y_VS_O}
+macs2 callpeak -t $READS_Y -c $READS_O -f BAM -g hs -n ${NAME}_Y_vs_O_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
-    QSUB_ID_2_1=$(qsub << ENDINPUT
+    QSUB_ID_O_vs_Y=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N ${NAME}_2_vs_1_macs2_broad
+#PBS -N ${NAME}_O_vs_Y_macs2_broad
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${MACS_POOLED_1_VS_2}/${NAME}_2_vs_1_macs2_broad.log
+#PBS -o ${MACS_POOLED_Y_VS_O}/${NAME}_O_vs_Y_macs2_broad.log
 # This is necessary because qsub default working dir is user home
-cd ${MACS_POOLED_1_VS_2}
-macs2 callpeak -t $READS_O -c $READS_Y -f BAM -g hs -n ${NAME}_2_vs_1_${Q} -B --broad --broad-cutoff ${Q}
+cd ${MACS_POOLED_Y_VS_O}
+macs2 callpeak -t $READS_O -c $READS_Y -f BAM -g hs -n ${NAME}_O_vs_Y_${Q} -B --broad --broad-cutoff ${Q}
 ENDINPUT
 )
-    wait_complete "$QSUB_ID_1_2 $QSUB_ID_2_1"
+    wait_complete "$QSUB_ID_Y_vs_O $QSUB_ID_O_vs_Y"
     check_logs
 fi
 
