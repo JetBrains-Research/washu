@@ -37,7 +37,7 @@ WORK_DIR = args.path_to_directory
 GENOME = "hg19"
 INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y10OD10/chipseq/indexes", GENOME)
 CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
-READS = 15  # Subsampling to 15mln reads
+# READS = 15  # Subsampling to 15mln reads
 
 print("Genomes and indices folder: ", INDEXES)
 run_bash("index_genome.sh", GENOME, INDEXES)
@@ -68,18 +68,18 @@ move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 # move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 
 # Batch macs2 with different peak calling procedures settings
-for Q in [0.01, 0.001, 0.1]:
+for Q in [0.01]:
     macs_suffix = "_macs_{}".format(Q)
     if not os.path.exists(WORK_DIR + macs_suffix):
-        run_bash("macs2.sh", WORK_DIR, GENOME, str(Q))
-        move_forward(WORK_DIR, macs_suffix, ["*{}*".format(Q)], copy_only=True)
+        run_bash("macs2.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
+        move_forward(WORK_DIR, macs_suffix, ["*{}*".format(Q), '*.bw', '*.bdg'], copy_only=True)
         process_macs2_logs(WORK_DIR + macs_suffix)
 
-for Q in [0.01, 0.001, 0.1]:
+for Q in [0.01]:
     macs_broad_suffix = "_macs_broad_{}".format(Q)
     if not os.path.exists(WORK_DIR + macs_broad_suffix):
-        run_bash("macs2_broad.sh", WORK_DIR, GENOME, str(Q))
-        move_forward(WORK_DIR, macs_broad_suffix, ["*{}*".format(Q)], copy_only=True)
+        run_bash("macs2_broad.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
+        move_forward(WORK_DIR, macs_broad_suffix, ["*{}*".format(Q), '*.bw', '*.bdg'], copy_only=True)
         process_macs2_logs(WORK_DIR + macs_broad_suffix)
 
 # # Batch macs14 with different peak calling procedures settings
