@@ -2,17 +2,28 @@
 # author: oleg.shpynov@jetbrains.com
 
 # Function to load or install library from bioconductor
-load_library <- function(name) {
-    if (!require(name)) {
-        source("http://bioconductor.org/biocLite.R")
-        biocLite(name)
+installed <- rownames(installed.packages())
+
+require_or_install <- function(..., bioc = FALSE) {
+  for (p in list(...)) {
+    if (!(p %in% installed)) {
+      if (bioc) {
+        if (!exists("biocLite")) {
+          source("http://bioconductor.org/biocLite.R")
+        }
+        biocLite(p)
+      } else {
+        install.packages(p, repos = "http://cran.us.r-project.org")
+      }
     }
-    library(name)
+
+    require(p, character.only = TRUE)
+  }
 }
 
-load_library("DiffBind")
-load_library("ggplot2")
-load_library("stringr")
+require_or_install("DiffBind")
+require_or_install("ggplot2")
+require_or_install("stringr")
 
 main <- function(path) {
   write(paste("Processing file", path))
