@@ -39,24 +39,24 @@ echo $Q
 
 READS_Y=$(awk '{ if ($4 == "Y") printf("%s ", $6); }' $DIFFBIND_CSV | sort --unique)
 echo "READS Y"
-echo $READS_Y
+echo "$READS_Y"
 READS_O=$(awk '{ if ($4 == "O") printf("%s ", $6); }' $DIFFBIND_CSV | sort --unique)
 echo "READS O"
-echo $READS_O
+echo "$READS_O"
 
 INPUTS_Y=$(awk '{ if ($4 == "Y") printf("%s ", $8); }' $DIFFBIND_CSV | sort --unique)
 echo "INPUT_READS Y"
-echo $INPUTS_Y
+echo "$INPUTS_Y"
 INPUTS_O=$(awk '{ if ($4 == "O") printf("%s ", $8); }' $DIFFBIND_CSV | sort --unique)
 echo "INPUT_READS O"
-echo $INPUTS_O
+echo "$INPUTS_O"
 
 PEAKS_Y=$(awk '{ if ($4 == "Y") printf("%s ", $9); }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort --unique)
 echo "INDIVIDUAL_PEAKS Y"
-echo $PEAKS_Y
+echo "$PEAKS_Y"
 PEAKS_O=$(awk '{ if ($4 == "O") printf("%s ", $9); }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort --unique)
 echo "INDIVIDUAL_PEAKS O"
-echo $PEAKS_O
+echo "$PEAKS_O"
 
 ################################################################################
 # Configuration end ############################################################
