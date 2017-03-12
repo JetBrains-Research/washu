@@ -5,8 +5,6 @@
 
 # Check tools
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
-which bedGraphToBigWig &>/dev/null || { echo "bedGraphToBigWig not found! Download: <http://hgdownload.cse.ucsc.edu/admin/exe/>"; exit 1; }
-which bedClip &>/dev/null || { echo "bedClip not found! Download: <http://hgdownload.cse.ucsc.edu/admin/exe/>"; exit 1; }
 
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <BAM> <chrom.sizes>"
@@ -22,11 +20,5 @@ if [ ! -f "${CHROM_SIZES}" ]; then
 fi
 
 NAME=${BAM%%.bam}
-
-bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} | bedClip stdin ${CHROM_SIZES} ${NAME}.bdg
-# CLIP output should be sorted for bedGraphToBigWig call
-LC_COLLATE=C sort -k1,1 -k2,2n ${NAME}.bdg > ${NAME}.sorted.bdg
-bedGraphToBigWig ${NAME}.sorted.bdg ${CHROM_SIZES} ${NAME}.bw
-
-# Cleanup
-rm -f ${NAME}*.bdg
+bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${NAME}.bdg
+bash ~/work/washu/bdg2bw.sh ${NAME}.bdg ${CHROM_SIZES}
