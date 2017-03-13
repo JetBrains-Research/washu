@@ -131,7 +131,6 @@ macs2 callpeak -t $READS_O -c $READS_Y -f BAM -g hs -n ${NAME}_O_vs_Y_${Q} -B --
 ENDINPUT
 )
     wait_complete "$QSUB_ID_Y_vs_O $QSUB_ID_O_vs_Y"
-    check_logs
 fi
 
 #macs2_total_tags_control() {
@@ -167,7 +166,6 @@ fi
 #ENDINPUT
 #)
 #    wait_complete "$QSUB_ID"
-#    check_logs
 #fi
 
 
@@ -220,7 +218,6 @@ cat ${NAME}_3.region | awk -v OFS='\t' '$4=="+" {print $1,$2,$3}' < ${NAME}_3_co
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
-    check_logs
 fi
 
 
@@ -295,7 +292,6 @@ fi
 #ENDINPUT
 #)
 #    wait_complete "$QSUB_ID"
-#    check_logs
 #fi
 
 
@@ -321,7 +317,6 @@ Rscript ~/work/washu/analysis/diffbind.R ${DIFFBIND_CSV}
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
-    check_logs
 
     # Filter out old and young donors and sort by Q-Value
     cat ${CSV_NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
