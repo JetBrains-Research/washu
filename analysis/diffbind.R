@@ -27,6 +27,8 @@ require_or_install("stringr")
 
 main <- function(path) {
   write(paste("Processing file", path))
+  result_pdf = str_replace(path, ".csv", "_result.pdf")
+  pdf(file=result_pdf)
   yo=dba(sampleSheet=path)
   yo = dba.count(yo)
   plot(yo)
@@ -37,10 +39,12 @@ main <- function(path) {
   pvals=dba.plotBox(yo)
   olap.rate=dba.overlap(yo,mode=DBA_OLAP_RATE)
   plot(olap.rate,type="b", ylab="# peaks", xlab="Overlap at least this many peaksets")
+  dev.off()
+  write(paste("Saved plots", result_pdf))
   db = dba.report(yo)
-  result = str_replace(path, ".csv", "_result.csv")
-  write(paste("Saved", result))
-  write.table(db, result, sep = ",", row.names = FALSE)
+  result_csv = str_replace(path, ".csv", "_result.csv")
+  write.table(db, result_csv, sep = ",", row.names = FALSE)
+  write(paste("Saved", result_csv))
 }
 
 if (!interactive()) {
