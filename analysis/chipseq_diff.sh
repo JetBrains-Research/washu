@@ -37,24 +37,24 @@ Q=0.01
 echo "Q"
 echo $Q
 
-READS_Y=$(awk '{ if ($4 == "Y") print $6 }' $DIFFBIND_CSV | sort --unique | tr '\n' ' ')
+READS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $6 }' $DIFFBIND_CSV | sort --unique | tr '\n' ' ')
 echo "READS Y"
 echo "$READS_Y"
-READS_O=$(awk '{ if ($4 == "O") print $6 }' $DIFFBIND_CSV | sort --unique | tr '\n' ' ')
+READS_O=$(awk -v FS=',' '{ if ($4 == "O") print $6 }' $DIFFBIND_CSV | sort --unique | tr '\n' ' ')
 echo "READS O"
 echo "$READS_O"
 
-INPUTS_Y=$(awk '{ if ($4 == "Y") print $8 }' $DIFFBIND_CSV | sort --unique | tr '\n' ' ')
+INPUTS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $8 }' $DIFFBIND_CSV | sort --unique | tr '\n' ' ')
 echo "INPUT_READS Y"
 echo "$INPUTS_Y"
-INPUTS_O=$(awk '{ if ($4 == "O") print $8 }' $DIFFBIND_CSV | sort --unique | tr '\n' ' ')
+INPUTS_O=$(awk -v FS=',' '{ if ($4 == "O") print $8 }' $DIFFBIND_CSV | sort --unique | tr '\n' ' ')
 echo "INPUT_READS O"
 echo "$INPUTS_O"
 
-PEAKS_Y=$(awk '{ if ($4 == "Y") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort --unique | tr '\n' ' ')
+PEAKS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort --unique | tr '\n' ' ')
 echo "INDIVIDUAL_PEAKS Y"
 echo "$PEAKS_Y"
-PEAKS_O=$(awk '{ if ($4 == "O") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort --unique | tr '\n' ' ')
+PEAKS_O=$(awk -v FS=',' '{ if ($4 == "O") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort --unique | tr '\n' ' ')
 echo "INDIVIDUAL_PEAKS O"
 echo "$PEAKS_O"
 
