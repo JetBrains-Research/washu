@@ -320,7 +320,7 @@ if [ ! -d $DIFFBIND ]; then
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N ${NAME}_diffbind
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=32gb
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o ${NAME}_diffbind.log
 # This is necessary because qsub default working dir is user home
