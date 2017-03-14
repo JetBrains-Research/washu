@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 # Script to process differential chip-seq analysis
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
+#
+# Example of ChIP-Seq differential analysis:
+# * Create config for diffbind
+# * Use config to configure reads, peaks, etc
+#
+# Command line:
+# cd /scratch/artyomov_lab_aging/Y10OD10/chipseq/processed
+# mkdir k27ac_diff
+# bash ~/work/washu/analysis/diffbind_config.sh /scratch/artyomov_lab_aging/Y10OD10/chipseq/processed k27ac_10vs10 0.01\
+# > k27ac_diff/config.csv
+# cd k27ac_diff
+# bash ~/work/washu/analysis/chipseq_diff.sh diff_27ac /scratch/artyomov_lab_aging/Y10OD10/chipseq/indexes/hg19/hg19.chrom.sizes /scratch/artyomov_lab_aging/Y10OD10/chipseq/indexes/hg19/Homo_sapiens.GRCh37.87.gtf.gz config.csv | tee log.txt
+
 
 # Check tools
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
