@@ -21,8 +21,8 @@ PEAKS_DIR=${NAME}_bams_macs_broad_${Q}
 READS_FILES=$(find $READS_DIR -name "*.bam" | grep -v input | sort) # Don't use -printf "%P\n" - doesn't work on MacOS
 echo "SampleID,Tissue,Factor,Condition,Replicate,bamReads,ControlID,bamControl,Peaks,PeakCaller"
 for R in $READS_FILES; do
-    F=${R##*1/}
-    SAMPLE=${F%%_R*}
+    FNAME=${R##*/}
+    SAMPLE=${FNAME%%_R*}
     CONDITION=${SAMPLE%%D*}
     REPLICATE=${SAMPLE##*D}
     READ=$(ls $READS_DIR/${SAMPLE}*.bam)
