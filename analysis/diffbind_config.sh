@@ -17,7 +17,8 @@ cd $WORK_DIR
 READS_DIR=${NAME}_bams
 PEAKS_DIR=${NAME}_bams_macs_broad_${Q}
 T=$'\t'
-
+ODN=1
+YDN=1
 # Don't use -printf "%P\n", because it doesn't work on MacOS
 PEAKS_FILES=$(find $PEAKS_DIR -name "*.xls" | grep -v input | sort)
 echo "SampleID${T}Tissue${T}Factor${T}Condition${T}Replicate${T}bamReads${T}ControlID${T}bamControl${T}Peaks${T}PeakCaller"
@@ -25,7 +26,15 @@ for P in $PEAKS_FILES; do
     F=${P##*1/}
     SAMPLE=${F%%_R*}
     CONDITION=${SAMPLE%%D*}
-    REPLICATE=${SAMPLE##*D}
+    # Use correct replicate number
+    if [ $CONDITION == "O" ];  then
+        REPLICATE=${ODN}
+        ODN=$(($ODN + 1))
+    else
+        REPLICATE=${YDN}
+        YDN=$(($YDN + 1))
+    fi
+
     READ=$(ls $READS_DIR/${SAMPLE}*.bam)
     CONTROL=$(ls $READS_DIR/${CONDITION}*input*.bam)
     PEAK=$(ls $PEAKS_DIR/${SAMPLE}*.xls)
