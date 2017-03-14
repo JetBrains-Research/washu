@@ -4,17 +4,18 @@
 
 >&2 echo "diffbind_config: $@"
 if [ $# -lt 2 ]; then
-    echo "Need 2 parameters! <WORKING_FOLDER> <NAME>"
+    echo "Need 2 parameters! <WORKING_FOLDER> <NAME> <Q>"
     echo "Example: scratch/artyomov_lab_aging/Y10OD10/chipseq/processed k27ac_10vs10"
-    echo "Necessary folders: \${NAME}_bams, \${NAME}_bams_macs_broad_0.1"
+    echo "Necessary folders: \${NAME}_bams, \${NAME}_bams_macs_broad_\$Q"
     exit 1
 fi
 WORK_DIR=$1
 NAME=$2
+Q=$3
 
 cd $WORK_DIR
 READS_DIR=${NAME}_bams
-PEAKS_DIR=${NAME}_bams_macs_broad_0.1
+PEAKS_DIR=${NAME}_bams_macs_broad_${Q}
 T=$'\t'
 
 # Don't use -printf "%P\n", because it doesn't work on MacOS
