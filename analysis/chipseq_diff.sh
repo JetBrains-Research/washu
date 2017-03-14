@@ -300,10 +300,10 @@ echo
 echo "Processing $DIFFBIND"
 if [ ! -d $DIFFBIND ]; then
     mkdir ${DIFFBIND}
+    cp ${DIFFBIND_CSV} ${DIFFBIND}/diffbind.csv
     cd ${DIFFBIND}
-    echo "Processing diffbind"
-    CSV_NAME=${DIFFBIND_CSV%%.csv}
     
+    echo "Processing diffbind"
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N ${NAME}_diffbind
@@ -313,23 +313,23 @@ if [ ! -d $DIFFBIND ]; then
 # This is necessary because qsub default working dir is user home
 cd ${DIFFBIND}
 module load R
-Rscript ~/work/washu/analysis/diffbind.R ${DIFFBIND_CSV}
+Rscript ~/work/washu/analysis/diffbind.R diffbind.csv
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
 
     # Filter out old and young donors and sort by Q-Value
-    cat ${CSV_NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
-        awk -v OFS='\t' '$9 > 0 {print $0}' | sort -k1,1 -k2,2n > ${CSV_NAME}_cond1.bed
-    cat ${CSV_NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
-        awk -v OFS='\t' '$9 < 0 {print $0}' | sort -k1,1 -k2,2n > ${CSV_NAME}_cond2.bed
+    cat diffbind_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
+        awk -v OFS='\t' '$9 > 0 {print $0}' | sort -k1,1 -k2,2n > diffbind_cond1.bed
+    cat diffbind_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
+        awk -v OFS='\t' '$9 < 0 {print $0}' | sort -k1,1 -k2,2n > diffbind_cond2.bed
 
     # Save diffbind results to simple BED3 format
-    awk -v OFS='\t' '{ print $1,$2,$3}' ${CSV_NAME}_cond1.bed > ${CSV_NAME}_cond1.bed3
-    awk -v OFS='\t' '{ print $1,$2,$3}' ${CSV_NAME}_cond2.bed > ${CSV_NAME}_cond2.bed3
+    awk -v OFS='\t' '{ print $1,$2,$3}' diffbind_cond1.bed > diffbind_cond1.bed3
+    awk -v OFS='\t' '{ print $1,$2,$3}' diffbind_cond2.bed > diffbind_cond2.bed3
 
     ~/work/washu/bed/closest_gene.sh ${GENES_GTF} \
-        ${CSV_NAME}_cond1.bed3 > ${CSV_NAME}_cond1_closest_genes.tsv
+        diffbind_cond1.bed3 > diffbind_cond1_closest_genes.tsv
     ~/work/washu/bed/closest_gene.sh ${GENES_GTF} \
-        ${CSV_NAME}_cond2.bed3 > ${CSV_NAME}_cond2_closest_genes.tsv
+        diffbind_cond2.bed3 > diffbind_cond2_closest_genes.tsv
 fi
