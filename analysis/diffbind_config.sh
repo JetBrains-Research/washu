@@ -38,5 +38,5 @@ for P in $PEAKS_FILES; do
     READ=$(ls $READS_DIR/${SAMPLE}*.bam)
     CONTROL=$(ls $READS_DIR/${CONDITION}*input*.bam)
     PEAK=$(ls $PEAKS_DIR/${SAMPLE}*.xls)
-    echo "$SAMPLE${T}CD14${T}Age${T}$CONDITION${T}$REPLICATE${T}$(pwd)/$READ${T}${CONDITION}_pooled${T}$(pwd)/$CONTROL${T}$(pwd)/${PEAK}${T}macs"
+    echo "$SAMPLE${T}CD14${T}Age${T}$CONDITION${T}$REPLICATE${T}$WORK_DIR/$READ${T}${CONDITION}_pooled${T}$WORK_DIR/$CONTROL${T}$(pwd)/${PEAK}${T}macs"
 done
