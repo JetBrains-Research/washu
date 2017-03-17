@@ -1,0 +1,38 @@
+
+#genome-browser-footer {
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    color: #777;
+}
+
+#genome-browser-footer a {
+    color: #777;
+}
+
+#genome-browser-footer li {
+    display: inline-block;
+    position: relative;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+
+.content {
+    width: 1020px;
+    margin: 20px auto;
+}
+
+.browsers-list-li {
+    vertical-align: text-top;
+    display: inline-block;
+}
+
+.no-borders {
+    border-top: none !important;
+}
+
+ul.footer {
+  display: inline;
+}

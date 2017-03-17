@@ -1,0 +1,52 @@
+<!--MOCK for embeddable files-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>$DATA_NAME</title>
+    <script language="javascript" src="//www.biodalliance.org/release-0.13/dalliance-compiled.js"></script>
+    <style>
+        .dalliance-root {
+            max-height: 800px !important;
+        }
+    </style>
+</head>
+<body>
+<script language="javascript">
+  new Browser({
+    // 5:42,334,449..42,811,409 # GHR gene - see http://genomics.senescence.info/genes/
+    chr:          '5',
+    viewStart:    42334449,
+    viewEnd:      42811409,
+
+    coordSystem: {
+      speciesName: 'Human',
+      auth: 'GRCh',
+      version: '37',
+      ucscName: 'hg19'
+    },
+
+    sources:     [{name:                 'Genome',
+                   twoBitURI:            'http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/hg19.2bit',
+                   tier_type:            'sequence'},
+                  {name:                 'Genes',
+                   desc:                 'Gene structures from GENCODE 19',
+                   bwgURI:               '//www.biodalliance.org/datasets/gencode.bb',
+                   stylesheet_uri:       '//www.biodalliance.org/stylesheets/gencode.xml',
+                   collapseSuperGroups:  true,
+                   trixURI:              '//www.biodalliance.org/datasets/geneIndex.ix'},
+                  {name:                 'Repeats',
+                   desc:                 'Repeat annotation from Ensembl',
+                   bwgURI:               '//www.biodalliance.org/datasets/repeats.bb',
+                   stylesheet_uri:       '//www.biodalliance.org/stylesheets/bb-repeats.xml'},
+                  {name:                 'Conservation',
+                   desc:                 'Conservation',
+                   bwgURI:               '//www.biodalliance.org/datasets/phastCons46way.bw',
+                   noDownsample:         true},
+//$DATA_HERE
+                   ],
+  });
+</script>
+<div id="svgHolder"></div>
+</body>
+</html>
