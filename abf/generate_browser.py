@@ -32,32 +32,32 @@ BrowserRecord = namedtuple('BrowserRecord', ['name', 'browser_type', 'dirs'])
 def process_record(output, record):
     """Creates corresponding html with name and content and returns <li> element for landing page"""
     print("Processing", record)
-    if record.browser_type != 'bw':
+    if record.browser_type == 'bw':
+        tracks = []
+        for dir in record.dirs.split(','):
+            print("Processing", dir)
+            for f in glob.glob('{}/*.bw'.format(dir)):
+                print("BW", f)
+                # TODO[shpynov] added colors
+                tracks.append("""
+{name:                 '$NAME',
+bwgURI:               '/$FILE',
+style: [{type: 'default', style: {glyph: 'HISTOGRAM', BGCOLOR: 'rgb(219, 41, 35)', HEIGHT: 30, id: 'style1'}}],
+noDownsample:         true},
+""".replace('$NAME', os.path.basename(f)).replace('$FILE', f))
+        with open('{}/data.html'.format(path), 'r') as file:
+            data_html = file.read()
+        file = '{}/{}.html'.format(output, record.name)
+        with open(file, 'w') as file:
+            file.write(data_html.
+                       replace('$DATA_NAME', record.name).
+                       replace('//$DATA_HERE', '\n'.join(tracks)))
+        print('Created', file)
+        return '<li><a href="{0}/{1}.html">{1}</a></li>'.format(output, record.name)
+    else:
         print("Unknown type", record.browser_type)
         # TODO[shpynov] Add folders browsing
         return None
-
-    tracks = []
-    for dir in record.dirs.split(','):
-        print("Processing", dir)
-        for f in glob.glob('{}/*.bw'.format(dir)):
-            print("BW", f)
-            # TODO[shpynov] added colors
-            tracks.append("""
-                   {name:                 '$NAME',
-                    bwgURI:               '/$FILE',
-                    style: [{type: 'default', style: {glyph: 'HISTOGRAM', BGCOLOR: 'rgb(219, 41, 35)', HEIGHT: 30, id: 'style1'}}],
-                    noDownsample:         true},
-""".replace('$NAME', record.name).replace('$FILE', f))
-    with open('{}/data.html'.format(path), 'r') as file:
-        data_html = file.read()
-    file = '{}/{}.html'.format(output, record.name)
-    with open(file, 'w') as file:
-        file.write(data_html.
-                   replace('$DATA_NAME', record.name).
-                   replace('//$DATA_HERE', '\n'.join(tracks)))
-    print('Created', file)
-    return '<li><a href="{0}/{1}.html">{1}</a></li>'.format(output, record.name)
 
 
 def process(output, records):
