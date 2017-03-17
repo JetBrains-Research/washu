@@ -35,7 +35,7 @@ main <- function(path) {
   yo = dba.contrast(yo)
   yo = dba.analyze(yo)
   dba.plotMA(yo)
-  dba.plotPCA(yo,contrast=1)
+  dba.plotPCA(yo,contrast=0)
   pvals=dba.plotBox(yo)
   olap.rate=dba.overlap(yo,mode=DBA_OLAP_RATE)
   plot(olap.rate,type="b", ylab="# peaks", xlab="Overlap at least this many peaksets")
