@@ -31,20 +31,26 @@ main <- function(path) {
   pdf(file=result_pdf)
   yo=dba(sampleSheet=path)
   yo = dba.count(yo)
+  # Plot histogram
   plot(yo)
+  # Analyze contrast factor and compute difference
   yo = dba.contrast(yo)
   yo = dba.analyze(yo)
-  dba.plotMA(yo)
-  dba.plotPCA(yo,contrast=0)
-  pvals=dba.plotBox(yo)
+  # Print number of overlap peaks by donors
   olap.rate=dba.overlap(yo,mode=DBA_OLAP_RATE)
   plot(olap.rate,type="b", ylab="# peaks", xlab="Overlap at least this many peaksets")
-  dev.off()
-  write(paste("Saved plots", result_pdf))
+  # PCA, MA plots
+  dba.plotPCA(yo)
+  dba.plotMA(yo)
+  # Save difference to resulting csv file
   db = dba.report(yo)
   result_csv = str_replace(path, ".csv", "_result.csv")
   write.table(db, result_csv, sep = ",", row.names = FALSE)
   write(paste("Saved", result_csv))
+  # IMPORTANT: plot difference histogram on the last step as it fails if there is no difference
+  dba.plotBox(yo)
+  dev.off()
+  write(paste("Saved plots", result_pdf))
 }
 
 if (!interactive()) {
