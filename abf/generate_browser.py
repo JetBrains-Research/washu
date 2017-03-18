@@ -4,6 +4,7 @@ import glob
 import shutil
 from collections import namedtuple
 import os
+
 path = os.path.dirname(os.path.realpath(__file__))
 
 __author__ = 'Oleg Shpynov'
@@ -54,9 +55,13 @@ noDownsample:         true},
                        replace('//$DATA_HERE', '\n'.join(tracks)))
         print('Created', file)
         return '<li><a href="{0}/{1}.html">{1}</a></li>'.format(output, record.name)
+    elif record.browser_type == 'dir':
+        ds = record.dirs.split(',')
+        if len(ds) > 1:
+            raise argparse.ArgumentTypeError('Type dir should have single dir')
+        return '<li><a href="{0}">{1}</a></li>'.format(ds[0], record.name)
     else:
         print("Unknown type", record.browser_type)
-        # TODO[shpynov] Add folders browsing
         return None
 
 
@@ -74,9 +79,11 @@ def process(output, records):
 
 def main():
     parser = argparse.ArgumentParser(description='''
-generate_browser.py is a script to generate index.html and other html files for ageing web server
+generate_browser.py is a script to generate index.html and other html files for ageing web server.
+
 USAGE: generate_browser.py --browsers name1 type1 folders11,...,folder1n1 name2 type2 folder21,..,folder2n2 output_folder
-This will generate index html with 2 links name1 and name2 containing embedded biodallance browsers for containing bw files.
+This will generate index html with 2 links name1 and name2 with embedded biodallance browsers or folders view.
+Supported types: bw and dir.
 ''')
     parser.add_argument('--output', required=True, action=WritableDirectory, type=str,
                         help='Path to directory with data to run pipeline')
