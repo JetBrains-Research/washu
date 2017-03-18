@@ -12,6 +12,8 @@ Use the following nginx config to enable CORS and OPTIONS request.
             if ($request_method = 'OPTIONS') {
                  return 200;
             }
+            autoindex on;
+            autoindex_exact_size off;
         }
 
 Copy this page to root folder and start nginx.
@@ -47,8 +49,8 @@ $CONTENT_HERE
 </div>
 <footer id="genome-browser-footer">
     <ul>
-        <li>&copy; 2015-2017 <a href="https://research.jetbrains.org/groups/biolabs" title="JetBrains BioLabs"
-                                target="_blank">BioLabs</a></li>
+        <li>&copy; 2017 <a href="https://research.jetbrains.org/groups/biolabs" title="JetBrains BioLabs"
+                           target="_blank">BioLabs</a></li>
     </ul>
 </footer>
 </body>

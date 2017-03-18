@@ -84,6 +84,9 @@ generate_browser.py is a script to generate index.html and other html files for 
 USAGE: generate_browser.py --browsers name1 type1 folders11,...,folder1n1 name2 type2 folder21,..,folder2n2 output_folder
 This will generate index html with 2 links name1 and name2 with embedded biodallance browsers or folders view.
 Supported types: bw and dir.
+
+EXAMPLE:
+python ~/work/washu/abf/generate_browser.py --output . --browsers k27ac bw k27ac_10vs10_bams_bws k27ac_signal bw k27ac_10vs10_signal k27ac_peaks dir k27ac_10vs10_bams_macs_broad_0.01 k4me1 bw k4me1_10vs10_reseq_bams_bws k4me1_signal bw k4me1_10vs10_reseq_signal k4me1_peaks dir k4me1_10vs10_reseq_bams_macs_broad_0.01
 ''')
     parser.add_argument('--output', required=True, action=WritableDirectory, type=str,
                         help='Path to directory with data to run pipeline')
