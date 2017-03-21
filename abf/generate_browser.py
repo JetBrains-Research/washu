@@ -20,12 +20,13 @@ class WritableDirectory(argparse.Action):
             raise argparse.ArgumentTypeError("{0} is not a writable directory".format(values))
 
 
-# TRACKS example
-# <!--K27ac YD-->
-#                   {name:                 'K27ac YD5',
-#                    bwgURI:               '/k27ac_10vs10_bams_bws/YD5_R1_hg19.bw',
-#                    style: [{type: 'default', style: {glyph: 'HISTOGRAM', BGCOLOR: 'rgb(219, 41, 35)', HEIGHT: 30, id: 'style1'}}],
-#                    noDownsample:         true},
+def mod_color(file):
+    if 'k27ac' in file:
+        return 255, 0, 0
+    if 'k4me1' in file:
+        return 231, 45, 56
+    return 0, 0, 178
+
 
 BrowserRecord = namedtuple('BrowserRecord', ['name', 'browser_type', 'dirs'])
 
@@ -39,13 +40,18 @@ def process_record(output, record):
             print("Processing", dir)
             for f in glob.glob('{}/*.bw'.format(dir)):
                 print("BW", f)
-                # TODO[shpynov] added colors
+                r, g, b = mod_color(f)
+                # OD are shown 20% darker
+                if 'OD' in f:
+                    r, g, b = int(0.8 * r), int(0.8 * g), int(0.8 * b)
+                rgb = "{},{},{}".format(r, g, b)
+
                 tracks.append("""
 {name:                 '$NAME',
 bwgURI:               '/$FILE',
-style: [{type: 'default', style: {glyph: 'HISTOGRAM', BGCOLOR: 'rgb(219, 41, 35)', HEIGHT: 30, id: 'style1'}}],
+style: [{type: 'default', style: {glyph: 'HISTOGRAM', BGCOLOR: 'rgb($RGB)', HEIGHT: 30, id: 'style1'}}],
 noDownsample:         true},
-""".replace('$NAME', os.path.basename(f)).replace('$FILE', f))
+""".replace('$NAME', os.path.basename(f)).replace('$FILE', f).replace('$RGB', rgb))
         with open('{}/data.html'.format(path), 'r') as file:
             data_html = file.read()
         file = '{}/{}.html'.format(output, record.name)
@@ -81,12 +87,16 @@ def main():
     parser = argparse.ArgumentParser(description='''
 generate_browser.py is a script to generate index.html and other html files for ageing web server.
 
-USAGE: generate_browser.py --browsers name1 type1 folders11,...,folder1n1 name2 type2 folder21,..,folder2n2 output_folder
-This will generate index html with 2 links name1 and name2 with embedded biodallance browsers or folders view.
+USAGE: generate_browser.py --output out --browsers name1 type1 folders11,...,folder1n1 name2 type2 folder21,..,folder2n2
 Supported types: bw and dir.
 
 EXAMPLE:
-python ~/work/washu/abf/generate_browser.py --output . --browsers k27ac bw k27ac_10vs10_bams_bws k27ac_signal bw k27ac_10vs10_signal k27ac_peaks dir k27ac_10vs10_bams_macs_broad_0.01 k4me1 bw k4me1_10vs10_reseq_bams_bws k4me1_signal bw k4me1_10vs10_reseq_signal k4me1_peaks dir k4me1_10vs10_reseq_bams_macs_broad_0.01
+python ~/work/washu/abf/generate_browser.py --output . --browsers k27ac bw k27ac_10vs10_bams_bws \
+    k27ac_signal bw k27ac_10vs10_signal \
+    k27ac_peaks dir k27ac_10vs10_bams_macs_broad_0.01 \
+    k4me1 bw k4me1_10vs10_reseq_bams_bws \
+    k4me1_signal bw k4me1_10vs10_reseq_signal \
+    k4me1_peaks dir k4me1_10vs10_reseq_bams_macs_broad_0.01
 ''')
     parser.add_argument('--output', required=True, action=WritableDirectory, type=str,
                         help='Path to directory with data to run pipeline')
