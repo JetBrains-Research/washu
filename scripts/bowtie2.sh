@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
+# Check Picard tools
+if [[ ! -f ~/picard.jar ]]; then
+    echo "Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"; exit 1;
+fi
+
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
@@ -77,12 +82,14 @@ else
     bowtie2 -p 8 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} ${FILE}
 fi
 samtools view -bS -q 10 ${ID}.sam -o ${ID}_not_sorted.bam
-samtools sort -@ 4 ${ID}_not_sorted.bam -o ${ID}.with_dup.bam
-samtools rmdup ${ID}.with_dup.bam ${ID}.bam
+samtools sort -@ 4 ${ID}_not_sorted.bam -o ${ID}.bam
 
+# Remove duplicated reads
+java -jar ~/picard.jar MarkDuplicates REMOVE_DUPLICATES=true \
+    INPUT=${ID}.bam OUTPUT=${ID}_unique.bam M=${ID}_metrics.txt
 
 # Cleanup
-rm ${ID}.sam ${ID}_not_sorted.bam ${ID}.with_dup.bam
+rm ${ID}.sam ${ID}_not_sorted.bam
 
 ENDINPUT
 )
