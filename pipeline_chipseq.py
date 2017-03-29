@@ -55,6 +55,9 @@ subprocess.run("multiqc " + WORK_DIR, shell=True)
 # Create summary
 process_bowtie_logs(WORK_DIR)
 
+# Process insert size of BAM visualization
+run_bash("fragments.sh", WORK_DIR)
+
 # Batch BigWig visualization
 run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
 move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)

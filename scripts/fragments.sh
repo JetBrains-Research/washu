@@ -31,8 +31,8 @@ module load samtools
 module load R
 
 cd ${WORK_DIR}
-samtools view -f66 $NAME.bam | cut -f 9 | sed 's/^-//' > InsertSizeMetrics.txt
-Rscript ~/work/washu/R/fragments.R
+samtools view -f66 $FILE | cut -f 9 | sed 's/^-//' > ${NAME}_metrics.txt
+Rscript ~/work/washu/R/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
