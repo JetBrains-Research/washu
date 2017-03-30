@@ -12,7 +12,7 @@ which qsub &>/dev/null || {
         bash /tmp/qsub.sh | tee "$LOG"
     }
     # wait_complete checks exit code
-    qstat() {
+    checkjob() {
         return 1
     }
     module() {
@@ -31,9 +31,9 @@ wait_complete()
         # The task id is actually the first numbers in the string
         TASK_ID=$(echo ${TASK} | sed -e "s/\([0-9]*\).*/\1/")
         if [ ! -z "$TASK_ID" ]; then
-            while qstat ${TASK_ID} &> /dev/null; do
+            while checkjob ${TASK_ID} &> /dev/null; do
                 echo -n "."
-                sleep 10
+                sleep 100
             done;
         fi
         echo
