@@ -41,6 +41,7 @@ CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
 
 print("Genomes and indices folder: ", INDEXES)
 run_bash("index_genome.sh", GENOME, INDEXES)
+run_bash("index_bowtie.sh", GENOME, INDEXES)
 
 # Batch QC & multiqc
 run_bash("fastqc.sh", WORK_DIR)
