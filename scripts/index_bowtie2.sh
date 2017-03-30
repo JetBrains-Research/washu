@@ -13,7 +13,7 @@ source ~/work/washu/scripts/util.sh
 
 echo "Check bowtie2 indexes ${GENOME}"
 cd ${FOLDER}
-if ([ ! -f "$GENOME.1.bt2" ] && [ ! -f "$GENOME.1.bt2l" ]); then
+if ([[ ! -f "$GENOME.1.bt2" ]] && [[ ! -f "$GENOME.1.bt2l" ]]); then
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie2_indexes_${GENOME}
