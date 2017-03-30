@@ -26,7 +26,7 @@ do :
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N zinbra_${ID}
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=64gb
+#PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=64gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_zinbra_${GENOME}.log
 

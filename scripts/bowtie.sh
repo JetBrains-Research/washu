@@ -69,7 +69,7 @@ do :
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie_${GENOME}_${NAME}
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_bowtie_${GENOME}.log
 
@@ -91,9 +91,9 @@ cd ${WORK_DIR}
 # --strata           hits in sub-optimal strata aren't reported (requires --best)
 
 if [ -f "${FILE_PAIRED}" ]; then
-    bowtie -p 8 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
+    bowtie -p 4 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
 else
-    bowtie -p 8 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} ${FILE} ${ID}.sam
+    bowtie -p 4 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} ${FILE} ${ID}.sam
 fi
 samtools view -bS ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort ${ID}_not_sorted.bam -o ${ID}.bam

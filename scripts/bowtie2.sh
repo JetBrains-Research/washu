@@ -60,7 +60,7 @@ do :
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie2_${GENOME}_${NAME}
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=32gb
+#PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=32gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_bowtie2_${GENOME}.log
 
@@ -77,9 +77,9 @@ cd ${WORK_DIR}
 # --sensitive            -D 15 -R 2 -N 0 -L 22 -i S,1,1.15 (default)
 
 if [ -f "${FILE_PAIRED}" ]; then
-    bowtie2 -p 8 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED}
+    bowtie2 -p 4 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED}
 else
-    bowtie2 -p 8 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} ${FILE}
+    bowtie2 -p 4 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} ${FILE}
 fi
 samtools view -bS -q 10 ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort -@ 4 ${ID}_not_sorted.bam -o ${ID}.bam
