@@ -84,7 +84,10 @@ fi
 samtools view -bS -q 10 ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort -@ 4 ${ID}_not_sorted.bam -o ${ID}.bam
 
-# Remove duplicated reads
+module load java
+# PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
+# There is insufficient memory for the Java Runtime Environment to continue.
+export _JAVA_OPTIONS="-Xmx12g"
 java -jar ~/picard.jar MarkDuplicates REMOVE_DUPLICATES=true \
     INPUT=${ID}.bam OUTPUT=${ID}_unique.bam M=${ID}_metrics.txt
 
