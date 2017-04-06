@@ -42,7 +42,7 @@ wait_complete ${TASKS}
 check_logs
 
 echo "Processing multiqc"
-mkdir ${WORK_DIR}/fastqc
+mkdir -p ${WORK_DIR}/fastqc
 mv *_fastqc.* ${WORK_DIR}/fastqc
 multiqc ${WORK_DIR}/fastqc
 echo "Done. Batch Fastqc: $WORK_DIR"

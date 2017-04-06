@@ -13,7 +13,7 @@ source ~/work/washu/scripts/util.sh
 
 echo "Processing genome $GENOME"
 if [ ! -d "$FOLDER" ]; then
-    mkdir ${FOLDER}
+    mkdir -p ${FOLDER}
 fi
 cd ${FOLDER}
 

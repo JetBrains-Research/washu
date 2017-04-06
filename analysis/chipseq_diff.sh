@@ -8,7 +8,7 @@
 #
 # Command line:
 # cd /scratch/artyomov_lab_aging/Y10OD10/chipseq/processed
-# mkdir k27ac_diff
+# mkdir -p k27ac_diff
 # bash ~/work/washu/analysis/diffbind_config.sh /scratch/artyomov_lab_aging/Y10OD10/chipseq/processed k27ac_10vs10 0.01\
 # > k27ac_diff/config.csv
 # cd k27ac_diff
@@ -79,7 +79,7 @@ echo "$PEAKS_O"
 #echo
 #echo "Processing $DIFF_MACS_POOLED"
 #if [ ! -d $DIFF_MACS_POOLED ]; then
-#    mkdir ${DIFF_MACS_POOLED}
+#    mkdir -p ${DIFF_MACS_POOLED}
 #    cd ${DIFF_MACS_POOLED}
 #    echo "Processing MACS2 pooled peaks and compare them";
 #
@@ -116,7 +116,7 @@ MACS_POOLED_Y_VS_O="${PREFIX}_macs_pooled_Y_vs_O"
 echo
 echo "Processing $MACS_POOLED_Y_VS_O"
 if [ ! -d $MACS_POOLED_Y_VS_O ]; then
-    mkdir ${MACS_POOLED_Y_VS_O}
+    mkdir -p ${MACS_POOLED_Y_VS_O}
     cd ${MACS_POOLED_Y_VS_O}
 
     echo "Processing MACS2 pooled Y vs O as control and vice versa"
@@ -154,7 +154,7 @@ fi
 #echo
 #echo "Processing $MACS_BDGDIFF"
 #if [ ! -d $MACS_BDGDIFF ]; then
-#    mkdir ${MACS_BDGDIFF}
+#    mkdir -p ${MACS_BDGDIFF}
 #    cd ${MACS_BDGDIFF}
 #
 #    echo "Use MACS2 pooled peaks as input for MACS2 bdgdiff"
@@ -196,7 +196,7 @@ CHIPDIFF="${PREFIX}_chipdiff"
 echo
 echo "Processing $CHIPDIFF"
 if [ ! -d $CHIPDIFF ]; then
-    mkdir ${CHIPDIFF}
+    mkdir -p ${CHIPDIFF}
     cd ${CHIPDIFF}
     echo "Processing chipdiff as on pooled tags (reads)"
 
@@ -253,8 +253,8 @@ fi
 #echo
 #echo "Processing $MANORM"
 #if [ ! -d $MANORM ]; then
-#    mkdir ${MANORM}
-#    mkdir ${MANORM}/${Q}
+#    mkdir -p ${MANORM}
+#    mkdir -p ${MANORM}/${Q}
 #    cd ${MANORM}/${Q}
 #
 #    echo "Processing MAnorm using pooled MACS2 peaks as peakfile and pooled reads as readfiles"
@@ -312,7 +312,7 @@ DIFFBIND="${PREFIX}_diffbind"
 echo
 echo "Processing $DIFFBIND"
 if [ ! -d $DIFFBIND ]; then
-    mkdir ${DIFFBIND}
+    mkdir -p ${DIFFBIND}
     NAME=diffbind
     cp ${DIFFBIND_CSV} ${DIFFBIND}/${NAME}.csv
     cd ${DIFFBIND}
