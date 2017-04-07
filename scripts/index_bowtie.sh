@@ -18,7 +18,7 @@ if ([[ ! -f "$GENOME.1.ebwt" ]] && [[ ! -f "$GENOME.1.ebwtl" ]]); then
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N bowtie_indexes_${GENOME}
-#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=32gb
 #PBS -j oe
 #PBS -o ${FOLDER}/${GENOME}_bowtie_indexes.log
 
