@@ -25,6 +25,9 @@ which qsub &>/dev/null || {
 wait_complete()
 {
     echo "Waiting for tasks..."
+    # Sleep 1 minute to wait until checkjob command would be able to process just submitted tasks
+    sleep 1m
+
     for TASK in $@
     do :
         echo -n "TASK: $TASK"
