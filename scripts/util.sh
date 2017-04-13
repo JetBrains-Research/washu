@@ -25,16 +25,13 @@ which qsub &>/dev/null || {
 wait_complete()
 {
     echo "Waiting for tasks..."
-    # Sleep 1 minute to wait until checkjob command would be able to process just submitted tasks
-    sleep 1m
-
     for TASK in $@
     do :
         echo -n "TASK: $TASK"
         # The task id is actually the first numbers in the string
         TASK_ID=$(echo ${TASK} | sed -e "s/\([0-9]*\).*/\1/")
         if [ ! -z "$TASK_ID" ]; then
-            while checkjob ${TASK_ID} &> /dev/null; do
+            while qstat ${TASK_ID} &> /dev/null; do
                 echo -n "."
                 sleep 100
             done;
