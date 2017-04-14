@@ -43,6 +43,8 @@ do :
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
+# Required for signal track processing
+module load bedtools2
 
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
@@ -59,7 +61,6 @@ else
 fi
 
 # Compute Reads in Peaks
-module load bedtools2
 bash ~/work/washu/logs/rip.sh ${FILE} ${ID}*.*Peak
 ENDINPUT
 )
