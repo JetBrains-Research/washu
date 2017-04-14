@@ -75,16 +75,26 @@ move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 Q = 0.01
 macs_suffix = "_macs_{}".format(Q)
 if not os.path.exists(WORK_DIR + macs_suffix):
-    run_bash("macs2.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
+    run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, str(Q), '-B', '-q', str(Q))
     move_forward(WORK_DIR, macs_suffix, ["*{}*".format(Q), '*.bw', '*.bdg'], copy_only=True)
     process_macs2_logs(WORK_DIR + macs_suffix)
 
 
 macs_broad_suffix = "_macs_broad_{}".format(Q)
 if not os.path.exists(WORK_DIR + macs_broad_suffix):
-    run_bash("macs2_broad.sh", WORK_DIR, GENOME, str(Q), CHROM_SIZES)
-    move_forward(WORK_DIR, macs_broad_suffix, ["*{}*".format(Q), '*.bw', '*.bdg'], copy_only=True)
+    NAME = 'broad_{}'.format(Q)
+    run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--broad', '--broad-cutoff', str(Q))
+    move_forward(WORK_DIR, macs_broad_suffix, ["*{}*".format(NAME), '*.bw', '*.bdg'], copy_only=True)
     process_macs2_logs(WORK_DIR + macs_broad_suffix)
+
+FRAGMENT = 138
+macs_fragment_broad_suffix = "_macs_d_{}_broad_{}".format(FRAGMENT, Q)
+if not os.path.exists(WORK_DIR + macs_fragment_broad_suffix):
+    NAME = 'd_{}_broad_{}'.format(FRAGMENT, Q)
+    run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--broad', '--broad-cutoff', str(Q),
+             '--nomodel', '--shift', '0', '--extsize', str(FRAGMENT))
+    move_forward(WORK_DIR, macs_fragment_broad_suffix, ["*{}*".format(NAME), '*.bw', '*.bdg'], copy_only=True)
+    process_macs2_logs(WORK_DIR + macs_fragment_broad_suffix)
 
 # # Batch macs14 with different peak calling procedures settings
 # # P = 1e-5 is default for MACS14

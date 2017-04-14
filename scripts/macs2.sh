@@ -6,17 +6,19 @@ which macs2 &>/dev/null || { echo "MACS2 not found! Download MACS2: <https://git
 # Load technical stuff
 source ~/work/washu/scripts/util.sh
 
-if [ $# -lt 4 ]; then
-    echo "Need 4 parameters! <work_dir> <genome> <q> <chrom.sizes>"
+if [ $# -lt 5 ]; then
+    echo "Need 5 parameters! <work_dir> <genome> <chrom.sizes> <suffix> <params>"
     exit 1
 fi
 
 WORK_DIR=$1
 GENOME=$2
-Q=$3
-CHROM_SIZES=$4
+CHROM_SIZES=$3
+SUFFIX=$4
+shift 4
+PARAMS=$@
 
-echo "Batch macs2: ${WORK_DIR} ${GENOME} ${Q} ${CHROM_SIZES}"
+echo "Batch macs2: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${SUFFIX} ${PARAMS}"
 
 SPECIES=$(macs_species $GENOME)
 
@@ -29,7 +31,7 @@ do :
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
-    ID=${NAME}_${Q}
+    ID=${NAME}_${SUFFIX}
 
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
@@ -41,11 +43,10 @@ do :
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
-module load bedtools2
 
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
-    macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
+    macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
 
     if [ ! -f "${NAME}_signal.bw" ]; then
         echo "Create fold enrichment signal track for ${FILE} and ${INPUT}"
@@ -54,11 +55,12 @@ if [ -f "${INPUT}" ]; then
     fi
 else
     echo "${FILE}: no control file"
-    macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -B -q ${Q}
+    macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
 fi
 
 # Compute Reads in Peaks
-bash ~/work/washu/logs/rip.sh ${FILE} ${ID}*.narrowPeak
+module load bedtools2
+bash ~/work/washu/logs/rip.sh ${FILE} ${ID}*.*Peak
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
@@ -71,4 +73,4 @@ check_logs
 module load R
 MODELS=$(ls *.r); for M in ${MODELS[@]}; do Rscript $M; done
 
-echo "DONE. Batch macs2: ${WORK_DIR} ${GENOME} ${Q} ${CHROM_SIZES}"
+echo "DONE. Batch macs2: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${SUFFIX} ${PARAMS}"
