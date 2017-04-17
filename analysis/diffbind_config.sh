@@ -17,16 +17,27 @@ cd $WORK_DIR
 READS_DIR=${NAME}_bams
 PEAKS_DIR=${NAME}_bams_macs_broad_${Q}
 
+>&2 echo "WORK_DIR: $WORK_DIR"
+>&2 echo "READS_DIR: $READS_DIR"
+>&2 echo "PEAKS_DIR: $PEAKS_DIR"
+
 # Start with reads, so that we can move outliers to separate folders and process only valid data
 READS_FILES=$(find $READS_DIR -name "*.bam" | grep -v input | sort) # Don't use -printf "%P\n" - doesn't work on MacOS
 echo "SampleID,Tissue,Factor,Condition,Replicate,bamReads,ControlID,bamControl,Peaks,PeakCaller"
 for R in $READS_FILES; do
+    >&2 echo "READ: $R"
     FNAME=${R##*/}
     SAMPLE=${FNAME%%_R*}
+    >&2 echo "SAMPLE: $SAMPLE"
     CONDITION=${SAMPLE%%D*}
+    >&2 echo "CONDITION: $CONDITION"
     REPLICATE=${SAMPLE##*D}
+    >&2 echo "REPLICATE: $REPLICATE"
     READ=$(ls $READS_DIR/${SAMPLE}*.bam)
+    >&2 echo "READ: $READ"
     CONTROL=$(ls $READS_DIR/${CONDITION}*input*.bam)
+    >&2 echo "CONTROL: $CONTROL"
     PEAK=$(ls $PEAKS_DIR/${SAMPLE}*.xls)
+    >&2 echo "PEAK: $PEAK"
     echo "$SAMPLE,CD14,Age,$CONDITION,$REPLICATE,$WORK_DIR/$READ,${CONDITION}_pooled,$WORK_DIR/$CONTROL,$WORK_DIR/${PEAK},macs"
 done
