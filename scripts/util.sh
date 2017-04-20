@@ -9,7 +9,8 @@ which qsub &>/dev/null || {
         echo "source ~/work/washu/scripts/util.sh" >> /tmp/qsub.sh
         echo "$CMD" >> /tmp/qsub.sh
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
-        bash /tmp/qsub.sh | tee "$LOG"
+        # Redirect both stderr and stdout to stdout
+        bash /tmp/qsub.sh 2>&1 >/dev/null | tee "$LOG"
     }
     # wait_complete checks exit code
     checkjob() {
