@@ -22,7 +22,7 @@ SPECIES=$(macs_species $GENOME)
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -name '*.bam' | sed 's#./##g')
+for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
     INPUT=$(python ~/work/washu/scripts/find_input.py ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
