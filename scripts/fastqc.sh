@@ -14,7 +14,7 @@ echo "Batch Fastqc: ${WORK_DIR}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -regextype posix-extended -regex '.*\.f.*q(\.gz)?' -printf '%P\n')
+for FILE in $(find . -regextype posix-extended -regex '.*\.f.*q(\.gz)?' | sed 's#./##g')
 do :
     NAME=${FILE%%.f*q} # file name without extension
 

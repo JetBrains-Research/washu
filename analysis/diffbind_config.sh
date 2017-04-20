@@ -34,7 +34,7 @@ if [[ ! -d ${PEAKS_DIR} ]]; then
 fi
 
 # Start with reads, so that we can move outliers to separate folders and process only valid data
-READS_FILES=$(find $READS_DIR -name "*.bam" | grep -v input | sort) # Don't use -printf "%P\n" - doesn't work on MacOS
+READS_FILES=$(find $READS_DIR -name "*.bam" | grep -v input | sort)
 echo "SampleID,Tissue,Factor,Condition,Replicate,bamReads,ControlID,bamControl,Peaks,PeakCaller"
 for R in $READS_FILES; do
     >&2 echo "READ: $R"

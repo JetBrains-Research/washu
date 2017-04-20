@@ -15,7 +15,7 @@ echo "Batch BigWig: ${WORK_DIR} ${CHROM_SIZES}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -name '*.bam' -printf '%P\n' | grep -vE ".tr")
+for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -vE ".tr")
 do :
     NAME=${FILE%%.bam} # file name without extension
 

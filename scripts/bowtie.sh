@@ -37,7 +37,7 @@ else
     INDEX_ARG=""
 fi
 
-for FILE in $(find . -name '*.f*q' -printf '%P\n' | sort)
+for FILE in $(find . -name '*.f*q' | sed 's#./##g' | sort)
 do :
     if $(echo "${PROCESSED[@]}"  | fgrep -q "${FILE}");
     then

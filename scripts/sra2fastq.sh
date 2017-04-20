@@ -14,7 +14,7 @@ echo "Batch Sra2fastq: ${WORK_DIR}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -name '*.sra' -printf '%P\n')
+for FILE in $(find . -name '*.sra' | sed 's#./##g')
 do :
     NAME=${FILE%%.sra} # file name without extension
 

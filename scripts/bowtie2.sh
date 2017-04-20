@@ -28,7 +28,7 @@ for F in ${INDEX_FILES[@]}; do TAG=${F##*/}; ln -s $F $TAG; done
 
 PROCESSED=""
 TASKS=""
-for FILE in $(find . -name '*.f*q' -printf '%P\n' | sort)
+for FILE in $(find . -name '*.f*q' | sed 's#./##g' | sort)
 do :
     if $(echo "${PROCESSED[@]}"  | fgrep -q "${FILE}");
     then

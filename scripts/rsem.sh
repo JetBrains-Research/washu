@@ -19,7 +19,7 @@ echo "Batch RSEM: ${WORK_DIR} ${REF}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -name '*.tr.bam' -printf '%P\n')
+for FILE in $(find . -name '*.tr.bam' | sed 's#./##g')
 do :
 
     NAME=${FILE%%.tr.bam} # file name without extension
