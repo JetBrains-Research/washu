@@ -3,7 +3,8 @@
 # author oleg.shpynov@jetbrains.com
 
 which bedtools &>/dev/null || { echo "bedtools not found!"; exit 1; }
- 
+>&2 echo "rip.sh: $@"
+
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <bam> <peaks>"
     exit 1
