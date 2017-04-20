@@ -11,6 +11,10 @@ if [ $# -lt 5 ]; then
     exit 1
 fi
 
+# Locate rip.sh script
+SCRIPT_DIR=$(dirname $0)
+RIP_SH_PATH="${SCRIPT_DIR}/../reports/rip.sh"
+
 WORK_DIR=$1
 GENOME=$2
 CHROM_SIZES=$3
@@ -61,7 +65,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash ~/work/washu/logs/rip.sh ${FILE} ${ID}*.*Peak
+bash ${RIP_SH_PATH} ${FILE} ${ID}*.*Peak
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
