@@ -8,6 +8,7 @@ source ~/work/washu/scripts/util.sh
 
 if [ $# -lt 5 ]; then
     echo "Need 5 parameters! <work_dir> <genome> <chrom.sizes> <suffix> <params>"
+    echo "if <chrom.sizes> file not specified (NONE), no signal will be created"
     exit 1
 fi
 
@@ -23,6 +24,9 @@ shift 4
 PARAMS=$@
 
 echo "Batch macs2: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${SUFFIX} ${PARAMS}"
+if [ -f ${CHROM_SIZES} ]; then
+    echo "chrom.sizes file not specified, no signal"
+fi
 
 SPECIES=$(macs_species $GENOME)
 
@@ -54,7 +58,7 @@ if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
     macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
 
-    if [ ! -f "${NAME}_signal.bw" ]; then
+    if [ -f "${CHROM_SIZES}" ]; then
         echo "Create fold enrichment signal track for ${FILE} and ${INPUT}"
         macs2 bdgcmp -t ${ID}_treat_pileup.bdg -c ${ID}_control_lambda.bdg -o ${NAME}_signal.bdg -m FE
         bash ~/work/washu/bdg2bw.sh ${NAME}_signal.bdg ${CHROM_SIZES}
