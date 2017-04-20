@@ -3,7 +3,7 @@ import unittest
 
 import pandas as pd
 
-from logs.bowtie_logs import process_bowtie_logs
+from reports.bowtie_logs import process_bowtie_logs
 
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/bowtie'
 

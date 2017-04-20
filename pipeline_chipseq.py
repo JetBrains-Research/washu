@@ -23,8 +23,8 @@ NOTE: python3 required
 
 author oleg.shpynov@jetbrains.com
 """
-from logs.macs2_logs import process_macs2_logs
-from logs.bowtie_logs import process_bowtie_logs
+from reports.macs2_logs import process_macs2_logs
+from reports.bowtie_logs import process_bowtie_logs
 from pipeline_utils import *
 
 parser = argparse.ArgumentParser(description='ULI ChIP-Seq data pipeline for WashU cluster')
@@ -71,14 +71,14 @@ move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 # run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
 # move_forward(WORK_DIR, "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 
-# Batch macs2 with different peak calling procedures settings
+# Batch macs with different peak calling procedures settings
 P = 0.05
-macs_p_suffix = "_macs_p{}".format(P)
-if not os.path.exists(WORK_DIR + macs_p_suffix):
-    NAME = 'p{}'.format(P)
-    run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '-p', str(P))
-    move_forward(WORK_DIR, macs_p_suffix, ["*{}*".format(NAME), '*.bw', '*.bdg'], copy_only=True)
-    process_macs2_logs(WORK_DIR + macs_p_suffix)
+# macs_p_suffix = "_macs_p{}".format(P)
+# if not os.path.exists(WORK_DIR + macs_p_suffix):
+#     NAME = 'p{}'.format(P)
+#     run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '-p', str(P))
+#     move_forward(WORK_DIR, macs_p_suffix, ["*{}*".format(NAME), '*.bw', '*.bdg'], copy_only=True)
+#     process_macs2_logs(WORK_DIR + macs_p_suffix)
 
 macs_broad_p_suffix = "_macs_broad_p{}".format(P)
 if not os.path.exists(WORK_DIR + macs_broad_p_suffix):
@@ -88,12 +88,12 @@ if not os.path.exists(WORK_DIR + macs_broad_p_suffix):
     process_macs2_logs(WORK_DIR + macs_broad_p_suffix)
 
 Q = 0.01
-macs_q_suffix = "_macs_q{}".format(Q)
-if not os.path.exists(WORK_DIR + macs_q_suffix):
-    NAME = 'q{}'.format(Q)
-    run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '-q', str(Q))
-    move_forward(WORK_DIR, macs_q_suffix, ["*{}*".format(NAME), '*.bw', '*.bdg'], copy_only=True)
-    process_macs2_logs(WORK_DIR + macs_q_suffix)
+# macs_q_suffix = "_macs_q{}".format(Q)
+# if not os.path.exists(WORK_DIR + macs_q_suffix):
+#     NAME = 'q{}'.format(Q)
+#     run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '-q', str(Q))
+#     move_forward(WORK_DIR, macs_q_suffix, ["*{}*".format(NAME), '*.bw', '*.bdg'], copy_only=True)
+#     process_macs2_logs(WORK_DIR + macs_q_suffix)
 
 macs_broad_q_suffix = "_macs_broad_q{}".format(Q)
 if not os.path.exists(WORK_DIR + macs_broad_q_suffix):
@@ -114,12 +114,16 @@ if not os.path.exists(WORK_DIR + macs_broad_q_suffix):
 
 # # Batch macs14 with different peak calling procedures settings
 # # P = 1e-5 is default for MACS14
-# P=0.00001
-# run_bash("macs14.sh", WORK_DIR, GENOME, str(P))
-# move_forward(WORK_DIR, "_macs14_{}".format(P), ["*{}*".format(P)], copy_only=True)
-# process_macs2_logs(WORK_DIR + "_macs14_{}".format(P))
-#
-# # Batch rseg
-# run_bash("rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
-# move_forward(WORK_DIR, "_rseg", ["*-domains.bed", "*-scores.wig", "*-boundaries.bed",
-#                                  "*-boundary-scores.wig", "*-counts.bed"], copy_only=True)
+# P = 0.00001
+# macs14_suffix = '_macs14_p{}'.format(P)
+# if not os.path.exists(WORK_DIR + macs14_suffix):
+#     run_bash("macs14.sh", WORK_DIR, GENOME, str(P))
+#     move_forward(WORK_DIR, macs14_suffix, ["*{}*".format(P)], copy_only=True)
+#     process_macs2_logs(WORK_DIR + "_macs14_{}".format(P))
+
+# Batch rseg
+# rseg_suffix = '_rseg'
+# if not os.path.exists(WORK_DIR + rseg_suffix):
+#     run_bash("rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
+#     move_forward(WORK_DIR, rseg_suffix, ["*-domains.bed", "*-scores.wig", "*-boundaries.bed",
+#                                          "*-boundary-scores.wig", "*-counts.bed"], copy_only=True)

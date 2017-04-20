@@ -3,7 +3,7 @@ import unittest
 
 import pandas as pd
 
-from logs.macs2_logs import process_macs2_logs
+from reports.macs2_logs import process_macs2_logs
 
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/macs2'
 
