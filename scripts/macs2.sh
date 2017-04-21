@@ -15,6 +15,7 @@ fi
 # Locate rip.sh script
 SCRIPT_DIR=$(dirname $0)
 RIP_SH_PATH="${SCRIPT_DIR}/../reports/rip.sh"
+MACS_UTIL_PY="${SCRIPT_DIR}/macs_util.py"
 
 WORK_DIR=$1
 GENOME=$2
@@ -35,7 +36,7 @@ cd ${WORK_DIR}
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
-    INPUT=$(python ~/work/washu/scripts/find_input.py ${WORK_DIR}/${FILE})
+    INPUT=$(python ${MACS_UTIL_PY} find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension

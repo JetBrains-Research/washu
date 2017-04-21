@@ -21,10 +21,13 @@ SPECIES=$(macs_species $GENOME)
 
 cd ${WORK_DIR}
 
+SCRIPT_DIR=$(dirname $0)
+MACS_UTIL_PY="${SCRIPT_DIR}/macs_util.py"
+
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
-    INPUT=$(python ~/work/washu/scripts/find_input.py ${WORK_DIR}/${FILE})
+    INPUT=$(python ${MACS_UTIL_PY} find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension

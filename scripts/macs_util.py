@@ -97,10 +97,6 @@ def main():
     # find_input option
     if len(args) == 2 and args[0] == 'find_input':
         print(find_input(args[1]))
-        return
-    # show usage and exit with 1
-    usage()
-    sys.exit(1)
 
 
 if __name__ == "__main__":
