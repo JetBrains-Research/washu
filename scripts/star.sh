@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # author zayats1812@mail.ru
 
-# Load technical stuff
-source ~/work/washu/scripts/util.sh
+# Load technical stuff, not available in qsub emulation
+if [ -f "$(dirname $0)/util.sh" ]; then
+    source "$(dirname $0)/util.sh"
+fi
+
 if [ $# -lt 3 ]; then
     echo "Need 3 parameter! <WORK_DIR> <STAR_REF> <READ_FILES>"
     exit 1

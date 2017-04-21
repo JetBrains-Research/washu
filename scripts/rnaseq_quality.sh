@@ -2,8 +2,10 @@
 # original rna-seq quality script by Alex Predeus
 # modified by zayats1812@mail.ru
 
-# Load technical stuff
-source ~/work/washu/scripts/util.sh
+# Load technical stuff, not available in qsub emulation
+if [ -f "$(dirname $0)/util.sh" ]; then
+    source "$(dirname $0)/util.sh"
+fi
 
 if [ $# -lt 1 ]; then
     echo "Need 1 parameter! <WORK_DIR>"
@@ -28,7 +30,7 @@ do :
     TAG=${FILE%%.bam} # file name without extension
 
     # Submit task
-    QSUB_ID=$(qsub -v WORK_DIR="$WORK_DIR",TAG="$TAG" ~/work/washu/scripts/rnaseq_quality_task.sh)
+    QSUB_ID=$(qsub -v WORK_DIR="$WORK_DIR",TAG="$TAG" $(dirname $0)/rnaseq_quality_task.sh)
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done

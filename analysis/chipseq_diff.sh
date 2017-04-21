@@ -20,7 +20,7 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
 # Load cluster stuff
-source ~/work/washu/scripts/util.sh
+source $(dirname $0)/../scripts/util.sh
 
 ################################################################################
 # Configuration start ##########################################################
@@ -327,7 +327,7 @@ if [ ! -d $DIFFBIND ]; then
 # This is necessary because qsub default working dir is user home
 cd ${DIFFBIND}
 module load R
-Rscript ~/work/washu/analysis/diffbind.R ${NAME}.csv
+Rscript $(dirname $0)/diffbind.R ${NAME}.csv
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
@@ -342,8 +342,8 @@ ENDINPUT
     awk -v OFS='\t' '{ print $1,$2,$3}' ${NAME}_cond1.bed > ${NAME}_cond1.bed3
     awk -v OFS='\t' '{ print $1,$2,$3}' ${NAME}_cond2.bed > ${NAME}_cond2.bed3
 
-    ~/work/washu/bed/closest_gene.sh ${GENES_GTF} \
-        ${NAME}_cond1.bed3 > ${NAME}_cond1_closest_genes.tsv
-    ~/work/washu/bed/closest_gene.sh ${GENES_GTF} \
-        ${NAME}_cond2.bed3 > ${NAME}_cond2_closest_genes.tsv
+    CLOSEST_GENE_SH=$(dirname $0)/../bed/closest_gene.sh
+
+    bash ${CLOSEST_GENE_SH} ${GENES_GTF} ${NAME}_cond1.bed3 > ${NAME}_cond1_closest_genes.tsv
+    bash ${CLOSEST_GENE_SH} ${GENES_GTF} ${NAME}_cond2.bed3 > ${NAME}_cond2_closest_genes.tsv
 fi

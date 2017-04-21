@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-# Load technical stuff
-source ~/work/washu/scripts/util.sh
+# Load technical stuff, not available in qsub emulation
+if [ -f "$(dirname $0)/util.sh" ]; then
+    source "$(dirname $0)/util.sh"
+fi
 
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <WORK_DIR> <CHROM_SIZES>"
@@ -31,8 +33,7 @@ do :
 cd ${WORK_DIR}
 
 module load bedtools2
-
-bash ~/work/washu/bam2bw.sh ${FILE} ${CHROM_SIZES}
+bash $(dirname $0)/../bam2bw.sh ${FILE} ${CHROM_SIZES}
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"

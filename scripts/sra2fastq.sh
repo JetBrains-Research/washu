@@ -7,8 +7,10 @@ if [ $# -lt 1 ]; then
 fi
 WORK_DIR=$1
 
-# Load technical stuff
-source ~/work/washu/scripts/util.sh
+# Load technical stuff, not available in qsub emulation
+if [ -f "$(dirname $0)/util.sh" ]; then
+    source "$(dirname $0)/util.sh"
+fi
 
 echo "Batch Sra2fastq: ${WORK_DIR}"
 cd ${WORK_DIR}

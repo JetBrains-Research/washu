@@ -3,8 +3,10 @@
 
 which rseg &>/dev/null || { echo "rseg not found! Download rseg: <http://smithlabresearch.org/software/rseg/>"; exit 1; }
 
-# Load technical stuff
-source ~/work/washu/scripts/util.sh
+# Load technical stuff, not available in qsub emulation
+if [ -f "$(dirname $0)/util.sh" ]; then
+    source "$(dirname $0)/util.sh"
+fi
 
 if [ $# -lt 3 ]; then
     echo "Need 3 parameters! <work_dir> <genome> <chrom.sizes>"
@@ -31,7 +33,7 @@ echo "Obtain deadzones file for ${GENOME}"
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
-    INPUT=$(python ~/work/washu/scripts/macs2_find_input.py ${FILE})
+    INPUT=$(python $(dirname $0)/macs_util.py find_input ${FILE})
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension

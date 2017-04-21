@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # author zayats1812@mail.ru
 
-# Load technical stuff
-source ~/work/washu/scripts/util.sh
+# Load technical stuff, not available in qsub emulation
+if [ -f "$(dirname $0)/util.sh" ]; then
+    source "$(dirname $0)/util.sh"
+fi
 
 if [ $# -lt 1 ]; then
     echo "Need 1 parameter! <WORK_DIR>"
@@ -42,6 +44,6 @@ ENDINPUT
 done
 wait_complete ${TASKS}
 module load R
-Rscript ~/work/washu/R/gather.R
+Rscript $(dirname $0)/../R/gather.R
 
 echo "Done. Batch RSEM: ${WORK_DIR} ${REF}"

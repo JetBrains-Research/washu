@@ -8,8 +8,10 @@ fi
 GENOME=$1
 FOLDER=$2
 
-# Load technical stuff
-source ~/work/washu/scripts/util.sh
+# Load technical stuff, not available in qsub emulation
+if [ -f "$(dirname $0)/util.sh" ]; then
+    source "$(dirname $0)/util.sh"
+fi
 
 echo "Check bowtie2 indexes ${GENOME}"
 cd ${FOLDER}

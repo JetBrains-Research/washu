@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # author zayats1812@mail.ru
 
-# Load technical stuff
-source ~/work/washu/scripts/util.sh
+# Load technical stuff, not available in qsub emulation
+if [ -f "$(dirname $0)/util.sh" ]; then
+    source "$(dirname $0)/util.sh"
+fi
 
 if [ $# -lt 1 ]; then
     echo "Need 1 parameter! <WORK_DIR>"
@@ -32,7 +34,7 @@ module load R
 
 cd ${WORK_DIR}
 samtools view -f66 $FILE | cut -f 9 | sed 's/^-//' > ${NAME}_metrics.txt
-Rscript ~/work/washu/R/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
+Rscript $(dirname $0)/../R/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"

@@ -21,4 +21,4 @@ fi
 
 NAME=${BAM%%.bam}
 bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${NAME}.bdg
-bash ~/work/washu/bdg2bw.sh ${NAME}.bdg ${CHROM_SIZES}
+bash $(dirname $0)/bdg2bw.sh ${NAME}.bdg ${CHROM_SIZES}
