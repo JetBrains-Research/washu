@@ -34,17 +34,17 @@ else:
 run_bash("fastqc.sh", WORK_DIR)
 
 run_bash("star.sh", WORK_DIR, INDEXES, "\"" + " ".join(pairs) + "\"")
-WORK_DIR = move_forward(WORK_DIR, "_bams",
+WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bams",
                         ["*.bam", "*star_*.log", "star_align_*"])
 
 run_bash("rnaseq_quality.sh", WORK_DIR)
-WORK_DIR = move_forward(WORK_DIR, "_quality",
+WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_quality",
                         ["*.rnastat", "rnaseq_quality.*"], copy_only=True)
 
 run_bash("bigwig.sh", WORK_DIR, CHROMSIZES)
-WORK_DIR = move_forward(WORK_DIR, "_bws",
+WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bws",
                         ["*.bw", "*.bw.log", "*.bdg"], copy_only=True)
 
 run_bash("rsem.sh", WORK_DIR, INDEXES)
-WORK_DIR = move_forward(WORK_DIR, "_rsem",
+WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_rsem",
                         ["*.results", "*.stat", "rsem_exp_*", "*.tsv"])

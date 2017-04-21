@@ -28,10 +28,9 @@ def run_bash(script_file, *args):
     subprocess.run(command, shell=True)
 
 
-def move_forward(folder, suffix, what_to_move, copy_only=False):
+def move_forward(folder, new_folder, what_to_move, copy_only=False):
     # Necessary for correct copy behavior
     os.chdir(folder)
-    new_folder = folder + suffix
     os.mkdir(new_folder)
     for pattern in itertools.chain.from_iterable(map(glob, what_to_move)):
         shutil.move(pattern, new_folder)
