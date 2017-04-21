@@ -90,6 +90,15 @@ for P in [0.05]:
         move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
         process_macs2_logs(FOLDER)
 
+    NAME = 'p{}_broad_nolambda'.format(P)
+    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
+    print(FOLDER)
+    if not os.path.exists(FOLDER):
+        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
+                 '-p', str(P), '--broad', '--nolambda')
+        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
+        process_macs2_logs(FOLDER)
+
     # Cutoff for broad region.
     # This option is not available unless --broad is set.
     # If -p is set, this is a pvalue cutoff, otherwise, it's a qvalue cutoff. DEFAULT: 0.1
@@ -114,7 +123,7 @@ for Q in [0.01]:
         move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
         process_macs2_logs(FOLDER)
 
-    NAME = 'broad_q{}'.format(Q)
+    NAME = 'broad_{}'.format(Q)
     FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
     print(FOLDER)
     if not os.path.exists(FOLDER):
@@ -123,10 +132,29 @@ for Q in [0.01]:
         move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
         process_macs2_logs(FOLDER)
 
+    NAME = 'broad_{}_nolambda'.format(Q)
+    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
+    print(FOLDER)
+    if not os.path.exists(FOLDER):
+        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
+                 '--broad', '--broad-cutoff', str(Q), '--nolambda')
+        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
+        process_macs2_logs(FOLDER)
+
     # Cutoff for broad region.
     # This option is not available unless --broad is set.
     # If -p is set, this is a pvalue cutoff, otherwise, it's a qvalue cutoff. DEFAULT: 0.1
     CUTOFF = 0.1
+    NAME = 'broad_{}'.format(CUTOFF)
+    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
+    print(FOLDER)
+    if not os.path.exists(FOLDER):
+        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
+                 '--broad', '--broad-cutoff', str(CUTOFF))
+        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
+        process_macs2_logs(FOLDER)
+
+    # Try both q and cutoff
     NAME = 'q{}_broad_{}'.format(Q, CUTOFF)
     FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
     print(FOLDER)
