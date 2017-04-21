@@ -37,7 +37,6 @@ TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
     INPUT=$(python ${MACS_UTIL_PY} find_input ${WORK_DIR}/${FILE})
-    echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
     ID=${NAME}_${SUFFIX}
