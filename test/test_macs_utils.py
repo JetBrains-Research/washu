@@ -1,8 +1,8 @@
 import unittest
 import os
 
-from scripts.find_input import lcs
-from scripts.find_input import find_input
+from scripts.macs_util import lcs
+from scripts.macs_util import find_input
 
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/input'
 

@@ -23,9 +23,9 @@ NOTE: python3 required
 
 author oleg.shpynov@jetbrains.com
 """
-from reports.macs2_logs import process_macs2_logs
 from reports.bowtie_logs import process_bowtie_logs
 from pipeline_utils import *
+from scripts.macs_util import run_macs2
 
 parser = argparse.ArgumentParser(description='ULI ChIP-Seq data pipeline for WashU cluster')
 parser.add_argument('path_to_directory', action=WritableDirectory, type=str,
@@ -73,109 +73,40 @@ move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_onl
 
 # Batch macs with different peak calling procedures settings
 for P in [0.05]:
-    NAME = 'p{}'.format(P)
-    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-    print(FOLDER)
-    if not os.path.exists(FOLDER):
-        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '-p', str(P))
-        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-        process_macs2_logs(FOLDER)
-
-    NAME = 'p{}_broad'.format(P)
-    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-    print(FOLDER)
-    if not os.path.exists(FOLDER):
-        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
-                 '-p', str(P), '--broad')
-        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-        process_macs2_logs(FOLDER)
-
-    NAME = 'p{}_broad_nolambda'.format(P)
-    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-    print(FOLDER)
-    if not os.path.exists(FOLDER):
-        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
-                 '-p', str(P), '--broad', '--nolambda')
-        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-        process_macs2_logs(FOLDER)
-
+    run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'p{}'.format(P),
+              '-p', P)
+    run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'p{}_broad'.format(P),
+              '-p', P, '--broad')
+    run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'p{}_broad_nolambda'.format(P),
+              '-p', P, '--broad', '--nolambda')
     # Cutoff for broad region.
-    # This option is not available unless --broad is set.
     # If -p is set, this is a pvalue cutoff, otherwise, it's a qvalue cutoff. DEFAULT: 0.1
-    CUTOFF = P
-    NAME = 'p{}_broad_{}'.format(P, CUTOFF)
-    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-    print(FOLDER)
-    if not os.path.exists(FOLDER):
-        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
-                 '-p', str(P), '--broad', '--broad-cutoff', str(CUTOFF))
-        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-        process_macs2_logs(FOLDER)
+    CUTOFF = 0.5
+    run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'p{}_broad_{}'.format(P, CUTOFF),
+              '-p', P, '--broad', '--broad-cutoff', CUTOFF)
 
 # Default is 0.01. For broad marks, you can try 0.05 as cutoff.
-for Q in [0.01]:
-    NAME = 'q{}'.format(Q)
-    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-    print(FOLDER)
-    if not os.path.exists(FOLDER):
-        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
-                 '-q', str(Q))
-        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-        process_macs2_logs(FOLDER)
-
-    NAME = 'broad_{}'.format(Q)
-    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-    print(FOLDER)
-    if not os.path.exists(FOLDER):
-        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
-                 '--broad', '--broad-cutoff', str(Q))
-        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-        process_macs2_logs(FOLDER)
-
-    NAME = 'broad_{}_nolambda'.format(Q)
-    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-    print(FOLDER)
-    if not os.path.exists(FOLDER):
-        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
-                 '--broad', '--broad-cutoff', str(Q), '--nolambda')
-        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-        process_macs2_logs(FOLDER)
-
+for Q in [0.01, 0.05]:
+    run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'q{}'.format(Q),
+              '-q', Q)
+    run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_{}'.format(Q),
+              '--broad', '--broad-cutoff', Q)
+    run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_{}_nolambda'.format(Q),
+              '--broad', '--broad-cutoff', Q, '--nolambda')
+    run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'q{}_broad'.format(Q),
+              '-q', Q, '--broad')
     # Cutoff for broad region.
-    # This option is not available unless --broad is set.
     # If -p is set, this is a pvalue cutoff, otherwise, it's a qvalue cutoff. DEFAULT: 0.1
-    CUTOFF = 0.1
-    NAME = 'broad_{}'.format(CUTOFF)
-    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-    print(FOLDER)
-    if not os.path.exists(FOLDER):
-        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
-                 '--broad', '--broad-cutoff', str(CUTOFF))
-        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-        process_macs2_logs(FOLDER)
-
-    # Try both q and cutoff
-    NAME = 'q{}_broad_{}'.format(Q, CUTOFF)
-    FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-    print(FOLDER)
-    if not os.path.exists(FOLDER):
-        run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
-                 '-q', str(Q), '--broad', '--broad-cutoff', str(CUTOFF))
-        move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-        process_macs2_logs(FOLDER)
+    CUTOFF = 0.5
+    run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'q{}_broad_{}'.format(Q, CUTOFF),
+              '-q', Q, '--broad', '--broad-cutoff', CUTOFF)
 
 # Custom fragment peak calling option
 # FRAGMENT = 138
 # Q = 0.01
-# NAME = 'd{}_q_{}_broad'.format(FRAGMENT, Q)
-# FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-# print(FOLDER)
-# if not os.path.exists(FOLDER):
-#     run_bash("macs2.sh", WORK_DIR, GENOME, CHROM_SIZES, NAME, '-B', '--verbose', '3',
-#              '--broad', '--broad-cutoff', str(Q),
-#              '--nomodel', '--shift', '0', '--extsize', str(FRAGMENT))
-#     move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-#     process_macs2_logs(FOLDER)
+# run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'd{}_broad_{}'.format(FRAGMENT, Q),
+#              '--broad', '--broad-cutoff', Q,
+#              '--nomodel', '--shift', '0', '--extsize', FRAGMENT)
 
 # # Batch macs14 with different peak calling procedures settings
 # # P = 1e-5 is default for MACS14

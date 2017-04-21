@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+from pipeline_utils import run_bash, move_forward
+from reports.macs2_logs import process_macs2_logs
+
 __author__ = 'oleg.shpynov@jetbrains.com'
 
 import getopt
@@ -6,8 +9,10 @@ import sys
 import os
 
 help_message = '''
-    Script to find input given the file name.
-    Heuristics: among all the files within folder find file with "input" substring and
+Script with MACS2 utils.
+Usage:
+macs_util find_input <file>
+    Finds input given the file name. Heuristics: among all the files within folder find file with "input" substring and
     most common subsequence with initial file.
 '''
 
@@ -46,13 +51,13 @@ def lcs(x, y):
     return len(back_track(m, n))
 
 
-def find_input(file):
-    filename = os.path.basename(file)
+def find_input(bam):
+    filename = os.path.basename(bam)
     if 'input' in filename:
         return ''
 
     # Find all the files within folder
-    dir_path = os.path.dirname(file)
+    dir_path = os.path.dirname(bam)
     f = []
     for (_, _, name) in os.walk(dir_path):
         f.extend(name)
@@ -61,7 +66,7 @@ def find_input(file):
     def sort_function(x):
         return lcs(filename, x)
 
-    extension = os.path.splitext(file)[1]
+    extension = os.path.splitext(bam)[1]
     inputs = [x for x in f if 'input' in x and extension in x]
     if len(inputs) > 0:
         return max(inputs, key=sort_function)
@@ -69,21 +74,33 @@ def find_input(file):
         return ''
 
 
+def run_macs2(work_dir, genome, chrom_sizes, name, *params):
+    folder = '{}_macs_{}'.format(work_dir, name)
+    print('Processing', folder)
+    if not os.path.exists(folder):
+        # -B produces bedgraph for signal
+        if os.path.exists(chrom_sizes):
+            params += ['-B']
+        run_bash("macs2.sh", work_dir, genome, chrom_sizes, name, *[str(p) for p in params])
+        move_forward(work_dir, folder, ["*{}*".format(name)], copy_only=True)
+        process_macs2_logs(folder)
+
+
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
-
-    if len(args) != 1:
-        usage()
-        sys.exit(1)
-
-    file = args[0]
+    # Process help
     for o, a in opts:
         if o in ("-h", "--help"):
             usage()
-            sys.exit()
-
-    print(find_input(file))
+            return
+    # find_input option
+    if len(args) == 2 and args[0] == 'find_input':
+        print(find_input(args[1]))
+        return
+    # show usage and exit with 1
+    usage()
+    sys.exit(1)
 
 
 if __name__ == "__main__":
