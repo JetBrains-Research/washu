@@ -87,6 +87,9 @@ run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1',
           '--broad', '--broad-cutoff', 0.1)
 
 # Default broad peak calling with modifications
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1_nolambda',
+          '--broad', '--broad-cutoff', 0.1,
+          '--nolambda')
 run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1_mfold10-30_bw_300',
           '--broad', '--broad-cutoff', 0.1,
           '--mfold', 10, 30,
