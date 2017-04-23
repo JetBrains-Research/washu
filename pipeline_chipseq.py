@@ -31,14 +31,18 @@ parser = argparse.ArgumentParser(description='ULI ChIP-Seq data pipeline for Was
 parser.add_argument('path_to_directory', action=WritableDirectory, type=str,
                     help='Path to directory with data to run pipeline')
 args = parser.parse_args()
-
-# Configuration
+#################
+# Configuration #
+#################
 WORK_DIR = args.path_to_directory
 GENOME = "hg19"
 INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y10OD10/chipseq/indexes", GENOME)
 CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
-# READS = 15  # Subsampling to 15mln reads
+READS = 15  # Subsampling to 15mln reads
 
+##################
+# Pipeline start #
+##################
 print("Genomes and indices folder: ", INDEXES)
 run_bash("index_genome.sh", GENOME, INDEXES)
 run_bash("index_bowtie.sh", GENOME, INDEXES)
@@ -70,6 +74,39 @@ move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_onl
 # # Batch BigWig visualization
 # run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
 # move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
+
+########################
+# Peak calling section #
+########################
+
+# Example for regular peak calling (https://github.com/taoliu/MACS)
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'q0.01',
+          '-q', 0.01)
+# Example for broad peak calling (https://github.com/taoliu/MACS)
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1',
+          '--broad', '--broad-cutoff', 0.1)
+
+# Default broad peak calling with modifications
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1_mfold10-30_bw_300',
+          '--broad', '--broad-cutoff', 0.1,
+          '--mfold', 10, 30,
+          '--bw', 300)
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1_mfold10-30',
+          '--broad', '--broad-cutoff', 0.1,
+          '--mfold', 10, 30)
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1_bw_300',
+          '--broad', '--broad-cutoff', 0.1,
+          '--bw', 300)
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1_mfold2-100',
+          '--broad', '--broad-cutoff', 0.1,
+          '--mfold', 2, 100)
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1_bw_150',
+          '--broad', '--broad-cutoff', 0.1,
+          '--bw', 150)
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1_bw_600',
+          '--broad', '--broad-cutoff', 0.1,
+          '--bw', 600)
+
 
 # Batch macs with different peak calling procedures settings
 for P in [0.05]:
