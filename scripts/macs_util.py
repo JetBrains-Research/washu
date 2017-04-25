@@ -80,7 +80,7 @@ def run_macs2(work_dir, genome, chrom_sizes, name, *params):
     if not os.path.exists(folder):
         # -B produces bedgraph for signal
         if os.path.exists(chrom_sizes):
-            params += ['-B']
+            params += ('-B',)
         run_bash("macs2.sh", work_dir, genome, chrom_sizes, name, *[str(p) for p in params])
         move_forward(work_dir, folder, ["*{}*".format(name)], copy_only=True)
         process_macs2_logs(folder)
