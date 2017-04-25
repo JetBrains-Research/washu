@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-# Check Picard tools
-if [[ ! -f ~/picard.jar ]]; then
-    echo "Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"; exit 1;
-fi
-
 # Load technical stuff, not available in qsub emulation
 if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
@@ -99,14 +94,6 @@ else
 fi
 samtools view -bS ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort ${ID}_not_sorted.bam -o ${ID}.bam
-
-# Remove duplicated reads
-module load java
-# PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
-# There is insufficient memory for the Java Runtime Environment to continue.
-export _JAVA_OPTIONS="-Xmx12g"
-java -jar ~/picard.jar MarkDuplicates REMOVE_DUPLICATES=true \
-    INPUT=${ID}.bam OUTPUT=${ID}_unique.bam M=${ID}_metrics.txt
 
 # Cleanup
 rm ${ID}.sam ${ID}_not_sorted.bam
