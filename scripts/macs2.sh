@@ -22,7 +22,7 @@ shift 4
 PARAMS=$@
 
 echo "Batch macs2: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${SUFFIX} ${PARAMS}"
-if [ -f ${CHROM_SIZES} ]; then
+if [ ! -f ${CHROM_SIZES} ]; then
     echo "chrom.sizes file not specified, no signal"
 fi
 
