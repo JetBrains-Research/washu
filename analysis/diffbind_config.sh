@@ -6,8 +6,7 @@
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <READS_DIR> <PEAKS_DIR>"
     echo "Example: "
-    echo "  bash diffbind_config.sh scratch/artyomov_lab_aging/Y10OD10/chipseq/processed/k4me1_10vs10_reseq_bams\\"
-    echo "    scratch/artyomov_lab_aging/Y10OD10/chipseq/processed/k4me1_10vs10_reseq_bams_macs_broad_0.1"
+    echo "  bash diffbind_config.sh k4me1_10vs10_reseq_bams k4me1_10vs10_reseq_bams_macs_broad_0.1"
     exit 1
 fi
 
@@ -36,7 +35,7 @@ for R in $READS_FILES; do
     >&2 echo "READ: $R"
     FNAME=${R##*/}
     # Should be changed for particular naming scheme
-    SAMPLE=${FNAME%%_K9me3.bam}
+    SAMPLE=${FNAME%%_hg19.bam}
     >&2 echo "SAMPLE: $SAMPLE"
     CONDITION=${SAMPLE%%D*}
     >&2 echo "CONDITION: $CONDITION"
