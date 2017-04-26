@@ -35,7 +35,7 @@ for R in $READS_FILES; do
     >&2 echo "READ: $R"
     FNAME=${R##*/}
     # Should be changed for particular naming scheme
-    SAMPLE=${FNAME%%_hg19.bam}
+    SAMPLE=${FNAME%%_R1_hg19.bam}
     >&2 echo "SAMPLE: $SAMPLE"
     CONDITION=${SAMPLE%%D*}
     >&2 echo "CONDITION: $CONDITION"
