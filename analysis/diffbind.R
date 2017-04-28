@@ -26,6 +26,7 @@ require_or_install("ggplot2")
 require_or_install("stringr")
 
 main <- function(path) {
+  write(paste("DiffBind version: ", packageVersion("DiffBind")))
   write(paste("Processing file", path))
   result_pdf = str_replace(path, ".csv", "_result.pdf")
   pdf(file=result_pdf)
