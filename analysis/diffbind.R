@@ -41,7 +41,8 @@ main <- function(path) {
   olap.rate=dba.overlap(yo,mode=DBA_OLAP_RATE)
   plot(olap.rate,type="b", ylab="# peaks", xlab="Overlap at least this many peaksets")
   # PCA, MA plots
-  dba.plotPCA(yo)
+  dba.plotPCA(yo,contrast=0)
+  dba.plotPCA(yo,contrast=1)
   dba.plotMA(yo)
   # Save difference to resulting csv file
   db = dba.report(yo)
