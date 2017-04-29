@@ -114,8 +114,8 @@ ENDINPUT
 
     CLOSEST_GENE_SH=$(dirname $0)/../bed/closest_gene.sh
 
-    bash ${CLOSEST_GENE_SH} ${GENES_GTF} ${NAME}_cond1.bed3 > ${NAME}_cond1_closest_genes.tsv
-    bash ${CLOSEST_GENE_SH} ${GENES_GTF} ${NAME}_cond2.bed3 > ${NAME}_cond2_closest_genes.tsv
+    bash ${CLOSEST_GENE_SH} ${NAME}_cond1.bed ${GENES_GTF} > ${NAME}_cond1_closest_genes.tsv
+    bash ${CLOSEST_GENE_SH} ${NAME}_cond2.bed ${GENES_GTF} > ${NAME}_cond2_closest_genes.tsv
 fi
 
 MACS_POOLED_Y_VS_O="${PREFIX}_macs_pooled_Y_vs_O_${BROAD}"
