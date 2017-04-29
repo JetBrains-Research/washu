@@ -70,7 +70,7 @@ main <- function(path) {
     dba.plotPCA(yo, contrast = 1)
     dev.off()
 
-    pdf(file = str_replace(path, ".csv", "difference.pdf"))
+    pdf(file = str_replace(path, ".csv", "_difference.pdf"))
     dba.plotBox(yo)
     dev.off()
 }
