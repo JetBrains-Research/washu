@@ -310,8 +310,8 @@ if [ ! -d $MANORM ]; then
     echo "Found MAnorm.sh: ${MANORM_SH}"
     cp ${MANORM_SH} ${MANORM_SH%%.sh}.r ${MANORM}/${Q}
 
-    cp ${DIFF_MACS_POOLED}/Y_${Q}_peaks.broadPeak ${MANORM}/${Q}/Y_peaks.bed
-    cp ${DIFF_MACS_POOLED}/O_${Q}_peaks.broadPeak ${MANORM}/${Q}/O_peaks.bed
+    cp ${DIFF_MACS_POOLED}/Y_${BROAD}_peaks.broadPeak ${MANORM}/${Q}/Y_peaks.bed
+    cp ${DIFF_MACS_POOLED}/O_${BROAD}_peaks.broadPeak ${MANORM}/${Q}/O_peaks.bed
 
     >&2 echo "Processing Y Pooled Reads";
     bams_to_reads Y_reads.bed $READS_Y
@@ -319,9 +319,9 @@ if [ ! -d $MANORM ]; then
     bams_to_reads O_reads.bed $READS_O
 
     # Check MACS2 for shift values
-    SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${Q}_peaks.xls)
+    SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD}_peaks.xls)
     echo "SHIFT Y: $SHIFT_Y"
-    SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${Q}_peaks.xls)
+    SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD}_peaks.xls)
     echo "SHIFT O: $SHIFT_O"
 
     QSUB_ID=$(qsub << ENDINPUT
