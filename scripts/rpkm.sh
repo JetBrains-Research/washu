@@ -36,7 +36,7 @@ cd ${WORK_DIR}
 
 # Check index
 module load samtools
-if [[ ! -f "${FILE}.bai "]]; then
+if [[ ! -f "${FILE}.bai" ]]; then
     samtools index ${FILE}
 fi
 
