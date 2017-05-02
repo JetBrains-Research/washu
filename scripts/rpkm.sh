@@ -34,8 +34,13 @@ do :
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 
-bamCoverage --bam ${FILE} --outFileName ${NAME}.bw --outFileFormat bigwig --fragmentLength 10 --ignoreDuplicates --normalizeUsingRPKM
+# Check index
+module load samtools
+if [[ ! -f "${FILE}.bai "]]; then
+    samtools index ${FILE}
+fi
 
+bamCoverage --bam ${FILE} --outFileName ${NAME}.bw --outFileFormat bigwig --ignoreDuplicates --normalizeUsingRPKM
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
