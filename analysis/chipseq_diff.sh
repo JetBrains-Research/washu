@@ -292,13 +292,11 @@ macs2_shift() {
 }
 
 # MANorm
-MANORM="${PREFIX}_manorm"
+MANORM="${PREFIX}_manorm_${Q}"
 echo
 echo "Processing $MANORM"
 if [ ! -d $MANORM ]; then
     mkdir -p ${MANORM}
-    mkdir -p ${MANORM}/${Q}
-    cd ${MANORM}/${Q}
 
     echo "Processing MAnorm using pooled MACS2 peaks as peakfile and pooled reads as readfiles"
 # README.txt
@@ -308,10 +306,10 @@ if [ ! -d $MANORM ]; then
 #                               sample1_readshift_lentgh[INT]      sample2_readshift_length[INT]
     MANORM_SH=$(which MAnorm.sh)
     echo "Found MAnorm.sh: ${MANORM_SH}"
-    cp ${MANORM_SH} ${MANORM_SH%%.sh}.r ${MANORM}/${Q}
+    cp ${MANORM_SH} ${MANORM_SH%%.sh}.r ${MANORM}
 
-    cp ${DIFF_MACS_POOLED}/Y_${BROAD}_peaks.broadPeak ${MANORM}/${Q}/Y_peaks.bed
-    cp ${DIFF_MACS_POOLED}/O_${BROAD}_peaks.broadPeak ${MANORM}/${Q}/O_peaks.bed
+    cp ${DIFF_MACS_POOLED}/Y_${BROAD}_peaks.broadPeak ${MANORM}/Y_peaks.bed
+    cp ${DIFF_MACS_POOLED}/O_${BROAD}_peaks.broadPeak ${MANORM}/O_peaks.bed
 
     >&2 echo "Processing Y Pooled Reads";
     bams_to_reads Y_reads.bed $READS_Y
@@ -329,9 +327,9 @@ if [ ! -d $MANORM ]; then
 #PBS -N manorm_k27ac
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${MANORM}/${Q}/manorm_k27ac_3.log
+#PBS -o ${MANORM}/manorm_k27ac_3.log
 # This is necessary because qsub default working dir is user home
-cd ${MANORM}/${Q}
+cd ${MANORM}
 
 sort -k1,1 -k2,2n -o Y_reads_sorted.bed Y_reads.bed
 sort -k1,1 -k2,2n -o O_reads_sorted.bed O_reads.bed
@@ -343,8 +341,7 @@ sort -k1,1 -k2,2n -o O_peaks_sorted.bed O_peaks.bed
 module load R
 module load bedtools2
 
-bash ${MANORM}/${Q}/MAnorm.sh Y_peaks_sorted.bed O_peaks_sorted.bed \
-Y_reads_sorted.bed O_reads_sorted.bed $SHIFT_Y $SHIFT_O
+bash ${MANORM}/MAnorm.sh Y_peaks_sorted.bed O_peaks_sorted.bed Y_reads_sorted.bed O_reads_sorted.bed $SHIFT_Y $SHIFT_O
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
