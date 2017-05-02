@@ -285,7 +285,7 @@ macs2_shift() {
 }
 
 # MANorm
-MANORM="${PREFIX}_manorm_${Q}"
+MANORM="${PREFIX}_manorm"
 echo
 echo "Processing $MANORM"
 if [ ! -d $MANORM ]; then
@@ -317,10 +317,10 @@ if [ ! -d $MANORM ]; then
 
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N manorm_k27ac
+#PBS -N manorm_${Q}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${MANORM}/manorm.log
+#PBS -o ${MANORM}/manorm_${Q}.log
 # This is necessary because qsub default working dir is user home
 cd ${MANORM}
 
