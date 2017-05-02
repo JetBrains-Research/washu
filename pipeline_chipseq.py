@@ -25,6 +25,7 @@ author oleg.shpynov@jetbrains.com
 """
 from reports.bowtie_logs import process_bowtie_logs
 from pipeline_utils import *
+from reports.macs2_logs import process_macs2_logs
 from scripts.macs_util import run_macs2
 
 parser = argparse.ArgumentParser(description='ULI ChIP-Seq data pipeline for WashU cluster')
@@ -66,6 +67,10 @@ run_bash("fragments.sh", WORK_DIR)
 # Batch BigWig visualization
 run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
 move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
+
+# Batch RPKM visualization
+run_bash("rpkm.sh", WORK_DIR)
+move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"], copy_only=True)
 
 # Remove duplicates
 run_bash("remove_duplicates.sh", WORK_DIR)
@@ -146,26 +151,26 @@ for Q in [0.01, 0.05]:
               '-q', Q, '--broad', '--broad-cutoff', CUTOFF)
 
 # Custom fragment peak calling option
-# FRAGMENT = 138
-# Q = 0.01
-# run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'd{}_broad_{}'.format(FRAGMENT, Q),
-#              '--broad', '--broad-cutoff', Q,
-#              '--nomodel', '--shift', '0', '--extsize', FRAGMENT)
+FRAGMENT = 138
+Q = 0.01
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'd{}_broad_{}'.format(FRAGMENT, Q),
+             '--broad', '--broad-cutoff', Q,
+             '--nomodel', '--shift', '0', '--extsize', FRAGMENT)
 
-# # Batch macs14 with different peak calling procedures settings
-# # P = 1e-5 is default for MACS14
-# P = 0.00001
-# NAME = '14_p{}'.format(P)
-# FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
-# print(FOLDER)
-# if not os.path.exists(FOLDER):
-#     run_bash("macs14.sh", WORK_DIR, GENOME, str(P))
-#     move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
-#     process_macs2_logs(FOLDER)
-#
-# # Batch rseg
-# rseg_suffix = '_rseg'
-# if not os.path.exists(WORK_DIR + rseg_suffix):
-#     run_bash("rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
-#     move_forward(WORK_DIR, WORK_DIR + rseg_suffix, ["*-domains.bed", "*-scores.wig", "*-boundaries.bed",
-#                                                     "*-boundary-scores.wig", "*-counts.bed"], copy_only=True)
+# Batch macs14 with different peak calling procedures settings
+# P = 1e-5 is default for MACS14
+P = 0.00001
+NAME = '14_p{}'.format(P)
+FOLDER = '{}_macs_{}'.format(WORK_DIR, NAME)
+print(FOLDER)
+if not os.path.exists(FOLDER):
+    run_bash("macs14.sh", WORK_DIR, GENOME, str(P))
+    move_forward(WORK_DIR, FOLDER, ["*{}*".format(NAME)], copy_only=True)
+    process_macs2_logs(FOLDER)
+
+# Batch rseg
+rseg_suffix = '_rseg'
+if not os.path.exists(WORK_DIR + rseg_suffix):
+    run_bash("rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
+    move_forward(WORK_DIR, WORK_DIR + rseg_suffix, ["*-domains.bed", "*-scores.wig", "*-boundaries.bed",
+                                                    "*-boundary-scores.wig", "*-counts.bed"], copy_only=True)
