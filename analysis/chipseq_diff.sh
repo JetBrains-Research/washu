@@ -27,15 +27,14 @@ source $(dirname $0)/../scripts/util.sh
 ################################################################################
 
 >&2 echo "chipseq_diff: $@"
-if [ $# -lt 4 ]; then
-    echo "Need 4 parameters! <NAME> <CHROM_SIZES> <GENES_GTF> <DIFFBIND_CSV>"
+if [ $# -lt 3 ]; then
+    echo "Need 3 parameters! <NAME> <CHROM_SIZES> <DIFFBIND_CSV>"
     exit 1
 fi
 
 NAME=$1
 CHROM_SIZES=$2
-GENES_GTF=$3
-DIFFBIND_CSV=$4
+DIFFBIND_CSV=$3
 
 FOLDER=$(pwd)
 echo "FOLDER"
@@ -107,18 +106,12 @@ ENDINPUT
         awk -v OFS='\t' '$9 > 0 {print $0}' | sort -k10,10g > ${NAME}_cond1.bed
     cat ${NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
         awk -v OFS='\t' '$9 < 0 {print $0}' | sort -k10,10g > ${NAME}_cond2.bed
-
     # Save ${NAME} results to simple BED3 format
     awk -v OFS='\t' '{ print $1,$2,$3}' ${NAME}_cond1.bed > ${NAME}_cond1.bed3
     awk -v OFS='\t' '{ print $1,$2,$3}' ${NAME}_cond2.bed > ${NAME}_cond2.bed3
-
-    CLOSEST_GENE_SH=$(dirname $0)/../bed/closest_gene.sh
-
-    bash ${CLOSEST_GENE_SH} ${NAME}_cond1.bed ${GENES_GTF} > ${NAME}_cond1_closest_genes.tsv
-    bash ${CLOSEST_GENE_SH} ${NAME}_cond2.bed ${GENES_GTF} > ${NAME}_cond2_closest_genes.tsv
 fi
 
-MACS_POOLED_Y_VS_O="${PREFIX}_macs_pooled_Y_vs_O_${BROAD}"
+MACS_POOLED_Y_VS_O="${PREFIX}_macs_pooled_Y_vs_O"
 echo
 echo "Processing $MACS_POOLED_Y_VS_O"
 if [ ! -d $MACS_POOLED_Y_VS_O ]; then
@@ -327,7 +320,7 @@ if [ ! -d $MANORM ]; then
 #PBS -N manorm_k27ac
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${MANORM}/manorm_k27ac_3.log
+#PBS -o ${MANORM}/manorm.log
 # This is necessary because qsub default working dir is user home
 cd ${MANORM}
 
