@@ -44,13 +44,10 @@ PREFIX="$FOLDER/$NAME"
 echo "PREFIX"
 echo $PREFIX
 
-# Base Q value threshold for all the experiments
 Q=0.01
-echo "Q"
-echo $Q
-BROAD=0.1
-echo "BROAD"
-echo $BROAD
+echo "Q $Q"
+BROAD_CUTOFF=0.1
+echo "BROAD_CUTOFF $BROAD_CUTOFF"
 
 READS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $6 }' $DIFFBIND_CSV | sort --unique | tr '\n' ' ')
 echo "READS Y"
@@ -67,10 +64,10 @@ echo "INPUT_READS O"
 echo "$INPUTS_O"
 
 PEAKS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort --unique | tr '\n' ' ')
-echo "INDIVIDUAL_PEAKS Y"
+echo "PEAKS Y"
 echo "$PEAKS_Y"
 PEAKS_O=$(awk -v FS=',' '{ if ($4 == "O") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort --unique | tr '\n' ' ')
-echo "INDIVIDUAL_PEAKS O"
+echo "PEAKS O"
 echo "$PEAKS_O"
 
 ################################################################################
@@ -128,7 +125,7 @@ if [ ! -d $MACS_POOLED_Y_VS_O ]; then
 #PBS -o ${MACS_POOLED_Y_VS_O}/${NAME}_Y_vs_O_macs2_broad.log
 # This is necessary because qsub default working dir is user home
 cd ${MACS_POOLED_Y_VS_O}
-macs2 callpeak -t $READS_Y -c $READS_O -f BAM -g hs -n ${NAME}_Y_vs_O_${BROAD} -B --broad --broad-cutoff ${BROAD}
+macs2 callpeak -t $READS_Y -c $READS_O -f BAM -g hs -n ${NAME}_Y_vs_O_${BROAD_CUTOFF} -B --broad --broad-cutoff ${BROAD_CUTOFF}
 ENDINPUT
 )
     QSUB_ID_O_vs_Y=$(qsub << ENDINPUT
@@ -139,7 +136,7 @@ ENDINPUT
 #PBS -o ${MACS_POOLED_Y_VS_O}/${NAME}_O_vs_Y_macs2_broad.log
 # This is necessary because qsub default working dir is user home
 cd ${MACS_POOLED_Y_VS_O}
-macs2 callpeak -t $READS_O -c $READS_Y -f BAM -g hs -n ${NAME}_O_vs_Y_${BROAD} -B --broad --broad-cutoff ${BROAD}
+macs2 callpeak -t $READS_O -c $READS_Y -f BAM -g hs -n ${NAME}_O_vs_Y_${BROAD_CUTOFF} -B --broad --broad-cutoff ${BROAD_CUTOFF}
 ENDINPUT
 )
     wait_complete "$QSUB_ID_Y_vs_O $QSUB_ID_O_vs_Y"
@@ -156,30 +153,30 @@ if [ ! -d $DIFF_MACS_POOLED ]; then
 
     QSUB_ID1=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N ${NAME}_Y_macs2_broad_${BROAD}
+#PBS -N ${NAME}_Y_macs2_broad_${BROAD_CUTOFF}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${DIFF_MACS_POOLED}/${NAME}_Y_macs2_broad_${BROAD}.log
+#PBS -o ${DIFF_MACS_POOLED}/${NAME}_Y_macs2_broad_${BROAD_CUTOFF}.log
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_POOLED}
-macs2 callpeak -t $READS_Y -c $INPUTS_Y -f BAM -g hs -n Y_${BROAD} -B --broad --broad-cutoff ${BROAD}
+macs2 callpeak -t $READS_Y -c $INPUTS_Y -f BAM -g hs -n Y_${BROAD_CUTOFF} -B --broad --broad-cutoff ${BROAD_CUTOFF}
 ENDINPUT
 )
 
     QSUB_ID2=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N ${NAME}_O_macs2_broad_${BROAD}
+#PBS -N ${NAME}_O_macs2_broad_${BROAD_CUTOFF}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${DIFF_MACS_POOLED}/${NAME}_O_macs2_broad_${BROAD}.log
+#PBS -o ${DIFF_MACS_POOLED}/${NAME}_O_macs2_broad_${BROAD_CUTOFF}.log
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_POOLED}
-macs2 callpeak -t $READS_O -c $INPUTS_O -f BAM -g hs -n O_${BROAD} -B --broad --broad-cutoff ${BROAD}
+macs2 callpeak -t $READS_O -c $INPUTS_O -f BAM -g hs -n O_${BROAD_CUTOFF} -B --broad --broad-cutoff ${BROAD_CUTOFF}
 ENDINPUT
 )
     wait_complete "$QSUB_ID1 $QSUB_ID2"
     check_logs
-    bash ~/work/washu/bed/compare.sh Y_${BROAD}_peaks.broadPeak O_${BROAD}_peaks.broadPeak ${NAME}_${BROAD}
+    bash ~/work/washu/bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
 fi
 
 macs2_total_tags_control() {
@@ -195,9 +192,9 @@ if [ ! -d $MACS_BDGDIFF ]; then
 
     echo "Use MACS2 pooled peaks as input for MACS2 bdgdiff"
 
-    CONTROL_Y=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/Y_${BROAD}_peaks.xls)
+    CONTROL_Y=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
     echo "Control Y: $CONTROL_Y"
-    CONTROL_O=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/O_${BROAD}_peaks.xls)
+    CONTROL_O=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
     echo "Control O: $CONTROL_O"
 
     QSUB_ID=$(qsub << ENDINPUT
@@ -209,9 +206,9 @@ if [ ! -d $MACS_BDGDIFF ]; then
 # This is necessary because qsub default working dir is user home
 cd ${MACS_BDGDIFF}
 macs2 bdgdiff\
- --t1 ${DIFF_MACS_POOLED}/Y_${BROAD}_treat_pileup.bdg --c1 ${DIFF_MACS_POOLED}/Y_${BROAD}_control_lambda.bdg\
- --t2 ${DIFF_MACS_POOLED}/O_${BROAD}_treat_pileup.bdg --c2 ${DIFF_MACS_POOLED}/O_${BROAD}_control_lambda.bdg\
-  --d1 ${CONTROL_Y} --d2 ${CONTROL_O} --o-prefix ${NAME}_${BROAD}
+ --t1 ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_treat_pileup.bdg --c1 ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_control_lambda.bdg\
+ --t2 ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_treat_pileup.bdg --c2 ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_control_lambda.bdg\
+  --d1 ${CONTROL_Y} --d2 ${CONTROL_O} --o-prefix ${NAME}_${BROAD_CUTOFF}
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
@@ -301,8 +298,8 @@ if [ ! -d $MANORM ]; then
     echo "Found MAnorm.sh: ${MANORM_SH}"
     cp ${MANORM_SH} ${MANORM_SH%%.sh}.r ${MANORM}
 
-    cp ${DIFF_MACS_POOLED}/Y_${BROAD}_peaks.broadPeak ${MANORM}/Y_peaks.bed
-    cp ${DIFF_MACS_POOLED}/O_${BROAD}_peaks.broadPeak ${MANORM}/O_peaks.bed
+    cp ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.broadPeak ${MANORM}/Y_peaks.bed
+    cp ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.broadPeak ${MANORM}/O_peaks.bed
 
     >&2 echo "Processing Y Pooled Reads";
     bams_to_reads Y_reads.bed $READS_Y
@@ -310,9 +307,9 @@ if [ ! -d $MANORM ]; then
     bams_to_reads O_reads.bed $READS_O
 
     # Check MACS2 for shift values
-    SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD}_peaks.xls)
+    SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
     echo "SHIFT Y: $SHIFT_Y"
-    SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD}_peaks.xls)
+    SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
     echo "SHIFT O: $SHIFT_O"
 
     QSUB_ID=$(qsub << ENDINPUT
