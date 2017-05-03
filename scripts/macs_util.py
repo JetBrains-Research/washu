@@ -5,8 +5,10 @@ from reports.macs2_logs import process_macs2_logs
 __author__ = 'oleg.shpynov@jetbrains.com'
 
 import getopt
-import sys
 import os
+import re
+import sys
+
 
 help_message = '''
 Script with MACS2 utils.
@@ -66,8 +68,7 @@ def find_input(bam):
     def sort_function(x):
         return lcs(filename, x)
 
-    extension = os.path.splitext(bam)[1]
-    inputs = [x for x in f if 'input' in x and extension in x]
+    inputs = [x for x in f if re.match('.*input.*\\.bam$', x)]
     if len(inputs) > 0:
         return max(inputs, key=sort_function)
     else:
