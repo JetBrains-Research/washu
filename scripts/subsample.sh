@@ -26,7 +26,7 @@ do :
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N subsample_${ID}
-#PBS -l nodes=1:ppn=8,walltime=4:00:00,vmem=24gb
+#PBS -l nodes=1:ppn=8,walltime=4:00:00,vmem=64gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}.log
 
