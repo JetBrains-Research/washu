@@ -24,9 +24,19 @@ echo "Prepare chrom_sized.bed"
 cat ${CHROM_SIZES} | awk '{print $1, 1, $2}' > ${GENOME}_chrom_sizes.bed
 
 echo "Obtain deadzones file for ${GENOME}"
-[[ ${GENOME} =~ ^hg19$ ]] && { wget http://smithlabresearch.org/data/deadzones-k36-hg19.bed; DEADZONES="deadzones-k36-hg19.bed" }
-[[ ${GENOME} =~ ^mm9$ ]] && { wget http://smithlabresearch.org/data/deadzones-k36-mm9.bed; DEADZONES="deadzones-k36-mm9.bed" }
-[[ -z "${DEADZONES}" ]] && echo "Unknown species for macs: ${GENOME}" && exit 1
+if [[ ${GENOME} =~ ^hg19$ ]]; then
+    wget http://smithlabresearch.org/data/deadzones-k36-hg19.bed
+    DEADZONES="deadzones-k36-hg19.bed"
+fi
+if [[ ${GENOME} =~ ^mm9$ ]]; then
+    wget http://smithlabresearch.org/data/deadzones-k36-mm9.bed
+    DEADZONES="deadzones-k36-mm9.bed"
+fi
+# Check that DEADZONES are with us
+if [[ -z "${DEADZONES}" ]]; then
+    echo "Unknown species for macs: ${GENOME}"
+    exit 1
+fi
 
 
 TASKS=""
