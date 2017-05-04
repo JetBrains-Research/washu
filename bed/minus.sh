@@ -17,10 +17,13 @@ fi
 
 FILE1=$1
 FILE2=$2
-sort -k1,1 -k2,2n $FILE1 > ${FILE1}.sorted
-sort -k1,1 -k2,2n $FILE2 > ${FILE2}.sorted
+# Folder with source file be read-only, use temp file
+SORTED1=$(mktemp)
+SORTED2=$(mktemp)
+sort -k1,1 -k2,2n $FILE1 > ${SORTED1}
+sort -k1,1 -k2,2n $FILE2 > ${SORTED2}
 
-bedtools multiinter -i ${FILE1}.sorted ${FILE2}.sorted |\
+bedtools multiinter -i ${SORTED1} ${SORTED2} |\
  bedtools merge -c 6,7 -o max |\
  # Zero problem: max of '0' is 2.225073859e-308 - known floating point issue in bedtools merge
  awk '{if (NR > 1) printf("\n"); printf("%s\t%s\t%s", $1, $2, $3); for (i=4; i<=NF; i++) printf("\t%d", int($i)); }' |\
@@ -30,4 +33,4 @@ bedtools multiinter -i ${FILE1}.sorted ${FILE2}.sorted |\
  sort -k1,1 -k2,2n
 
 # Cleanup
-rm ${FILE1}.sorted ${FILE2}.sorted
+rm ${SORTED1} ${SORTED2}

@@ -13,7 +13,8 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 SORTED_FILES=()
 for F in $@
 do
-    SORTED=${F}.sorted
+    # Folder with source file be read-only, use temp file
+    SORTED=$(mktemp)
     sort -k1,1 -k2,2n $F > ${SORTED}
     SORTED_FILES+=("$SORTED")
 done

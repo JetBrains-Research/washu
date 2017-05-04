@@ -24,7 +24,6 @@ echo "Prepare chrom_sized.bed"
 cat ${CHROM_SIZES} | awk '{print $1, 1, $2}' > ${GENOME}_chrom_sizes.bed
 
 echo "Obtain deadzones file for ${GENOME}"
-[[ ${GENOME} =~ ^hg18$ ]] && { wget http://smithlabresearch.org/data/deadzones-k36-hg18.bed; DEADZONES="deadzones-k36-hg18.bed" }
 [[ ${GENOME} =~ ^hg19$ ]] && { wget http://smithlabresearch.org/data/deadzones-k36-hg19.bed; DEADZONES="deadzones-k36-hg19.bed" }
 [[ ${GENOME} =~ ^mm9$ ]] && { wget http://smithlabresearch.org/data/deadzones-k36-mm9.bed; DEADZONES="deadzones-k36-mm9.bed" }
 [[ -z "${DEADZONES}" ]] && echo "Unknown species for macs: ${GENOME}" && exit 1
@@ -37,25 +36,24 @@ do :
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
-    ID=${NAME}
 
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N rseg_${ID}
+#PBS -N rseg_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${ID}_rseg.log
+#PBS -o ${WORK_DIR}/${NAME}_rseg.log
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
-    rseg-diff -c ${GENOME}_chrom_sizes.bed -o ${ID}.bed -i 20 -v -d ${DEADZONES} -mode 2 ${FILE} ${INPUT}
+    rseg-diff -c ${GENOME}_chrom_sizes.bed -o ${NAME}.bed -i 20 -v -d ${DEADZONES} -mode 2 ${FILE} ${INPUT}
 else
     echo "${FILE}: no control file"
-    rseg -c ${GENOME}_chrom_sizes.bed -o ${ID}.bed -i 20 -v -d ${DEADZONES} ${FILE}
+    rseg -c ${GENOME}_chrom_sizes.bed -o ${NAME}.bed -i 20 -v -d ${DEADZONES} ${FILE}
 fi
 ENDINPUT
 )

@@ -11,7 +11,8 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 >&2 echo "union: $@"
 
-TMP="_to_merge.bed"
+# Use temp file since folder can be read-only
+TMP=$(mktemp)
 if [ -f ${TMP} ]; then
     rm $TMP
 fi
@@ -22,8 +23,10 @@ do
     awk -v OFS='\t' -v N=$N '{print $1,$2,$3,N}' $F >> ${TMP}
     N=$((N+1))
 done
-sort -k1,1 -k2,2n ${TMP} > ${TMP}.sorted
-bedtools merge -i ${TMP}.sorted -c 4 -o collapse -delim "|"
+
+SORTED=$(mktemp)
+sort -k1,1 -k2,2n ${TMP} > ${SORTED}
+bedtools merge -i ${SORTED} -c 4 -o collapse -delim "|"
 
 # Cleanup
-rm ${TMP} ${TMP}.sorted
+rm ${TMP} ${SORTED}

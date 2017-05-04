@@ -25,7 +25,8 @@ for F in $@
 do
     NPEAKS=$(cat $F | wc -l)
     PEAKS+=("$NPEAKS")
-    SORTED=${F}.sorted
+    # Folder with source file be read-only, use temp file
+    SORTED=$(mktemp)
     sort -k1,1 -k2,2n $F > ${SORTED}
     SORTED_FILES+=("$SORTED")
 done

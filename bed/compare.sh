@@ -24,7 +24,8 @@ FILES=( $BED_1 $BED_2 )
 SORTED_FILES=()
 for F in ${FILES[@]}
 do
-    SORTED=${F}.sorted
+    # Folder with source file be read-only, use temp file
+    SORTED=$(mktemp)
     sort -k1,1 -k2,2n $F > ${SORTED}
     SORTED_FILES+=("$SORTED")
 done
