@@ -48,6 +48,9 @@ do :
 
     NAME=${FILE%%.bam} # file name without extension
 
+    # Create tmpfile in advance, because of interpolation of qsub call
+    FILE_TMP_BED=$(mktemp)
+
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
@@ -56,15 +59,28 @@ do :
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_rseg.log
 
+module load bedtools2
+
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 
+# RSEG works with BED only
+if [ ! -f ${FILE}.bed ]; then
+    bedtools bamtobed -i ${FILE} > ${FILE_TMP_BED}
+    mv ${FILE_TMP_BED} ${FILE}.bed
+fi
+
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
-    rseg-diff -c ${GENOME}_chrom_sizes.bed -o ${NAME}.bed -i 20 -v -d ${DEADZONES} -mode 2 ${FILE} ${INPUT}
+    if [ ! -f ${INPUT}.bed ]; then
+        bedtools bamtobed -i ${INPUT} > ${FILE_TMP_BED}
+        mv ${FILE_TMP_BED} ${INPUT}.bed
+    fi
+
+    rseg-diff -c ${GENOME}_chrom_sizes.bed -o ${NAME}.bed -i 20 -v -d ${DEADZONES} -mode 2 ${FILE}.bed ${INPUT}.bed
 else
     echo "${FILE}: no control file"
-    rseg -c ${GENOME}_chrom_sizes.bed -o ${NAME}.bed -i 20 -v -d ${DEADZONES} ${FILE}
+    rseg -c ${GENOME}_chrom_sizes.bed -o ${NAME}.bed -i 20 -v -d ${DEADZONES} ${FILE}.bed
 fi
 ENDINPUT
 )
