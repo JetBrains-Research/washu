@@ -25,24 +25,25 @@ cat ${CHROM_SIZES} | awk '{print $1, 1, $2}' > ${GENOME}_chrom_sizes.bed
 
 echo "Obtain deadzones file for ${GENOME}"
 if [[ ${GENOME} =~ ^hg19$ ]]; then
-    wget http://smithlabresearch.org/data/deadzones-k36-hg19.bed
     DEADZONES="deadzones-k36-hg19.bed"
 fi
 if [[ ${GENOME} =~ ^mm9$ ]]; then
-    wget http://smithlabresearch.org/data/deadzones-k36-mm9.bed
     DEADZONES="deadzones-k36-mm9.bed"
 fi
 # Check that DEADZONES are with us
 if [[ -z "${DEADZONES}" ]]; then
-    echo "Unknown species for macs: ${GENOME}"
+    echo "Unknown species for rseg: ${GENOME}"
     exit 1
 fi
-
+# Download DEADZONES file
+if [[ ! -f ${DEADZONES} ]]; then
+    wget "http://smithlabresearch.org/data/${DEADZONES}"
+fi
 
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
-    INPUT=$(python $(dirname $0)/macs_util.py find_input ${FILE})
+    INPUT=$(python $(dirname $0)/macs_util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
