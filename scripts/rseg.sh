@@ -65,16 +65,17 @@ module load bedtools2
 cd ${WORK_DIR}
 
 # RSEG works with BED only
-if [ ! -f ${FILE}.bed ]; then
-    bedtools bamtobed -i ${FILE} | sort -k1,1 -k2,2n > ${FILE_TMP_BED}
-    mv ${FILE_TMP_BED} ${FILE}.bed
-fi
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k2,2n > ${FILE}.bed
 
 if [ -f "${INPUT}" ]; then
+    # Use tmp files to reduced async problems with same input parallel processing
     echo "${FILE}: control file found: ${INPUT}"
     if [ ! -f ${INPUT}.bed ]; then
         bedtools bamtobed -i ${INPUT} | sort -k1,1 -k2,2n > ${FILE_TMP_BED}
-        mv ${FILE_TMP_BED} ${INPUT}.bed
+        # Check that we are the first in async calls, not 100% safe
+        if [ ! -f ${INPUT}.bed ]; then
+            mv ${FILE_TMP_BED} ${INPUT}.bed
+        fi
     fi
 
     rseg-diff -c ${GENOME}_chrom_sizes.bed -o ${NAME}_domains.bed -i 20 -v -d ${DEADZONES} -mode 2 ${FILE}.bed ${INPUT}.bed
