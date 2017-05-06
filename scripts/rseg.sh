@@ -66,14 +66,14 @@ cd ${WORK_DIR}
 
 # RSEG works with BED only
 if [ ! -f ${FILE}.bed ]; then
-    bedtools bamtobed -i ${FILE} > ${FILE_TMP_BED}
+    bedtools bamtobed -i ${FILE} | sort -k1,1 -k2,2n > ${FILE_TMP_BED}
     mv ${FILE_TMP_BED} ${FILE}.bed
 fi
 
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
     if [ ! -f ${INPUT}.bed ]; then
-        bedtools bamtobed -i ${INPUT} > ${FILE_TMP_BED}
+        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k2,2n > ${FILE_TMP_BED}
         mv ${FILE_TMP_BED} ${INPUT}.bed
     fi
 
