@@ -172,5 +172,4 @@ if not os.path.exists(FOLDER):
 rseg_suffix = '_rseg'
 if not os.path.exists(WORK_DIR + rseg_suffix):
     run_bash("rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
-    move_forward(WORK_DIR, WORK_DIR + rseg_suffix, ["*-domains.bed", "*-scores.wig", "*-boundaries.bed",
-                                                    "*-boundary-scores.wig", "*-counts.bed"], copy_only=True)
+    move_forward(WORK_DIR, WORK_DIR + rseg_suffix, ["*_domains.bed", "*rseg*"], copy_only=True)

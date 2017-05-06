@@ -77,10 +77,10 @@ if [ -f "${INPUT}" ]; then
         mv ${FILE_TMP_BED} ${INPUT}.bed
     fi
 
-    rseg-diff -c ${GENOME}_chrom_sizes.bed -o ${NAME}.bed -i 20 -v -d ${DEADZONES} -mode 2 ${FILE}.bed ${INPUT}.bed
+    rseg-diff -c ${GENOME}_chrom_sizes.bed -o ${NAME}_domains.bed -i 20 -v -d ${DEADZONES} -mode 2 ${FILE}.bed ${INPUT}.bed
 else
     echo "${FILE}: no control file"
-    rseg -c ${GENOME}_chrom_sizes.bed -o ${NAME}.bed -i 20 -v -d ${DEADZONES} ${FILE}.bed
+    rseg -c ${GENOME}_chrom_sizes.bed -o ${NAME}_domains.bed -i 20 -v -d ${DEADZONES} ${FILE}.bed
 fi
 ENDINPUT
 )
