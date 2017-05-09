@@ -71,7 +71,7 @@ if [ -f "${INPUT}" ]; then
     # Use tmp files to reduced async problems with same input parallel processing
     echo "${FILE}: control file found: ${INPUT}"
     if [ ! -f ${INPUT}.bed ]; then
-        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k2,2n > ${FILE_TMP_BED}
+        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k2,2n -k3,3n > ${FILE_TMP_BED}
         # Check that we are the first in async calls, not 100% safe
         if [ ! -f ${INPUT}.bed ]; then
             mv ${FILE_TMP_BED} ${INPUT}.bed
