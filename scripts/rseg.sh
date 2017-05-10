@@ -65,13 +65,13 @@ module load bedtools2
 cd ${WORK_DIR}
 
 # RSEG works with BED only
-bedtools bamtobed -i ${FILE} | sort -k1,1 -k2,2n -k3,3n > ${FILE}.bed
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k2,2n > ${FILE}.bed
 
 if [ -f "${INPUT}" ]; then
     # Use tmp files to reduced async problems with same input parallel processing
     echo "${FILE}: control file found: ${INPUT}"
     if [ ! -f ${INPUT}.bed ]; then
-        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k2,2n -k3,3n > ${FILE_TMP_BED}
+        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k2,2n > ${FILE_TMP_BED}
         # Check that we are the first in async calls, not 100% safe
         if [ ! -f ${INPUT}.bed ]; then
             mv ${FILE_TMP_BED} ${INPUT}.bed
@@ -90,5 +90,15 @@ ENDINPUT
 done
 wait_complete ${TASKS}
 check_logs
+
+# Cleanup
+for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
+do :
+    INPUT=$(python $(dirname $0)/macs_util.py find_input ${WORK_DIR}/${FILE})
+    if [ -f "${INPUT}" ]; then
+        rm ${INPUT.bed}
+    fi
+    rm ${FILE}.bed
+done
 
 echo "Done. Batch rseg: ${WORK_DIR} ${GENOME} ${CHROM_SIZES}"
