@@ -65,7 +65,7 @@ module load bedtools2
 cd ${WORK_DIR}
 
 # RSEG works with BED only
-bedtools bamtobed -i ${FILE} | sort -k1,1 -k2,2n > ${FILE}.bed
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k2,2n -k3,3n > ${FILE}.bed
 
 if [ -f "${INPUT}" ]; then
     # Use tmp files to reduced async problems with same input parallel processing
