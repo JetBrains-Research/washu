@@ -31,6 +31,11 @@ main <- function(path) {
     yo = dba(sampleSheet = path)
     yo = dba.count(yo)
 
+    # Write counts table
+    counts <- dba.peakset(yo, bRetrieve=TRUE)
+    counts_csv = str_replace(path, ".csv", "_counts.csv")
+    write.table(counts, counts_csv, sep = ",", row.names = FALSE)
+
     # Plot histogram
     pdf(file = str_replace(path, ".csv", "_histogram.pdf"))
     plot(yo)
