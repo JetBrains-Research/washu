@@ -35,12 +35,6 @@ do :
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 
-module load samtools
-if [ ! -f "${FILE}.bai" ]; then
-    echo "Creating index for ${FILE}"
-    samtools index ${FILE}
-fi
-
 module load java
 # PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
 # There is insufficient memory for the Java Runtime Environment to continue.
