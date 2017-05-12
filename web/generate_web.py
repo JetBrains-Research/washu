@@ -85,13 +85,13 @@ def process(output, records):
 
 def main():
     parser = argparse.ArgumentParser(description='''
-generate_browser.py is a script to generate index.html and other html files for ageing web server.
+generate_web.py is a script to generate index.html and other html files for ageing web server.
 
-USAGE: generate_browser.py --output out --browsers name1 type1 folders11,...,folder1n1 name2 type2 folder21,..,folder2n2
+USAGE: generate_web.py --output out --browsers name1 type1 folders11,...,folder1n1 name2 type2 folder21,..,folder2n2
 Supported types: bw and dir.
 
 EXAMPLE:
-python ~/work/washu/abf/generate_browser.py --output . --browsers k27ac bw k27ac_10vs10_bams_bws \
+python ~/work/washu/web/generate_web.py --output . --browsers k27ac bw k27ac_10vs10_bams_bws \
     k27ac_signal bw k27ac_10vs10_signal \
     k27ac_peaks dir k27ac_10vs10_bams_macs_broad_0.01 \
     k4me1 bw k4me1_10vs10_reseq_bams_bws \
