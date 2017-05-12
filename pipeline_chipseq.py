@@ -26,7 +26,7 @@ author oleg.shpynov@jetbrains.com
 from reports.bowtie_logs import process_bowtie_logs
 from pipeline_utils import *
 from reports.macs2_logs import process_macs2_logs
-from scripts.macs_util import run_macs2
+from scripts.util import run_macs2
 
 parser = argparse.ArgumentParser(description='ULI ChIP-Seq data pipeline for WashU cluster')
 parser.add_argument('path_to_directory', action=WritableDirectory, type=str,
@@ -173,3 +173,10 @@ rseg_suffix = '_rseg'
 if not os.path.exists(WORK_DIR + rseg_suffix):
     run_bash("rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
     move_forward(WORK_DIR, WORK_DIR + rseg_suffix, ["*_domains.bed", "*rseg*"], copy_only=True)
+
+# Batch sicer
+Q = 0.01
+rseg_suffix = '_sicer_{}'.format(Q)
+if not os.path.exists(WORK_DIR + rseg_suffix):
+    run_bash("sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, str(Q))
+    move_forward(WORK_DIR, WORK_DIR + rseg_suffix, ["*sicer*"], copy_only=True)

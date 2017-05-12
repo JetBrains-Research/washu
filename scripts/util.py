@@ -8,14 +8,17 @@ import getopt
 import os
 import re
 import sys
-
+from bed.bedtrace import run
 
 help_message = '''
-Script with MACS2 utils.
 Usage:
-macs_util find_input <file>
+
+python util.py find_input <file>
     Finds input given the file name. Heuristics: among all the files within folder find file with "input" substring and
     most common subsequence with initial file.
+
+python util.py effective_genome_fraction <genome> <chrom.sizes.path>
+    Computes effective genome size, required for SICER.
 '''
 
 
@@ -87,6 +90,26 @@ def run_macs2(work_dir, genome, chrom_sizes, name, *params):
         process_macs2_logs(folder)
 
 
+def effective_genome_fraction(genome, chrom_sizes_path):
+    """From MACS2 documentation:
+    The default hs 2.7e9 is recommended for UCSC human hg18 assembly.
+    Here are all precompiled parameters for effective genome size:
+    hs: 2.7e9
+    mm: 1.87e9
+    ce: 9e7
+    dm: 1.2e8"""
+    chrom_length = int(run([['cat', chrom_sizes_path],
+                            ['grep', '-v', 'chr_'],
+                            ['awk', '{ print L+=$2 } END {print L}']])[0].decode('utf-8').strip())
+    if genome.startswith('mm'):
+        size = 1.87e9
+    elif genome.startswith('hg'):
+        size = 2.7e9
+    else:
+        raise StandardError('Unknown species {}'.format(genome))
+    return size / chrom_length
+
+
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
@@ -98,6 +121,10 @@ def main():
     # find_input option
     if len(args) == 2 and args[0] == 'find_input':
         print(find_input(args[1]))
+
+    # effective_genome_fraction option
+    if len(args) == 3 and args[0] == 'effective_genome_fraction':
+        print(effective_genome_fraction(args[1], args[2]))
 
 
 if __name__ == "__main__":

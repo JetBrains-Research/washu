@@ -25,10 +25,10 @@ author oleg.shpynov@jetbrains.com
 import os
 import subprocess
 import tempfile
-from pathlib import Path
-import sys
+
 from matplotlib_venn import venn2
 from matplotlib_venn import venn3
+from pathlib import Path
 
 UNION_SH = os.path.dirname(os.path.abspath(__file__)) + '/union.sh'
 INTERSECT_SH = os.path.dirname(os.path.abspath(__file__)) + '/intersect.sh'

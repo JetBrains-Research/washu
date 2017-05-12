@@ -43,7 +43,7 @@ fi
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
-    INPUT=$(python $(dirname $0)/macs_util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
@@ -96,7 +96,7 @@ check_logs
 # Cleanup
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
-    INPUT=$(python $(dirname $0)/macs_util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
     if [ -f "${INPUT}" ]; then
         rm ${INPUT.bed}
     fi
