@@ -25,6 +25,7 @@ Useful scripts for batch processing. Suitable to work with Portable Batch System
 * `macs2.sh`    - Peak calling using [MACS2](https://github.com/taoliu/MACS). Creates summary report, with (**R**eads **I**n **P**eaks) and (**F**raction of **R**eads **I**n **P**eaks) metrics.
 * `rseg.sh`     - Peak calling using [RSeg](https://academic.oup.com/bioinformatics/article/27/6/870/236489/Identifying-dispersed-epigenomic-domains-from-ChIP) algorithm
 * `sicer.sh`    - Broad histone marks peak calling using [SICER](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/) algorithm
+
 | sample |  tags | redundant_rate | paired_peaks | fragment| alternatives | peaks| rip| frip |
 | ------------- |-------------:| -----:| -----:| -----:|-----:|-----:|-----:|-----:|
 | CD14_H3K4me3_hg38_bowtie_macs_broad_0.1.log| 50000000 | 0.1 | 20500 | 150 | 3,150 | 40000 | 3500000 | 70 |
