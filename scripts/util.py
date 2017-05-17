@@ -79,6 +79,23 @@ def find_input(bam):
 
 
 def run_macs2(work_dir, genome, chrom_sizes, name, *params):
+    """
+Defaults for MACS2 broad peak calling:
+# effective genome size = 2.70e+09
+# band width = 300
+# model fold = [5, 50]
+# qvalue cutoff for narrow/strong regions = 5.00e-02
+# qvalue cutoff for broad/weak regions = 1.00e-01
+# Larger dataset will be scaled towards smaller dataset.
+# Range for calculating regional lambda is: 1000 bps and 10000 bps
+# Broad region calling is on
+# Paired-End mode is off
+
+# Model params:
+#  --bw, --mfold, --nolambda, --nomodel, --shift, --extsize
+# Peak calling params:
+#  --p, --q, --broad, --broad-cutoff
+    """
     folder = '{}_macs_{}'.format(work_dir, name)
     print('Processing', folder)
     if not os.path.exists(folder):
