@@ -3,11 +3,13 @@
 
 # CHPC (qsub) mock replacement
 which qsub &>/dev/null || {
-    qsub() {
+    qsub()
+    {
         # LOAD args to $CMD
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
         echo "# This file was generated as QSUB MOCK" > /tmp/qsub.sh
-        echo 'module() {   echo "module $@" } ' >> /tmp/qsub.sh
+        # MOCK for module command
+        echo 'module() { echo "module $@"; } ' >> /tmp/qsub.sh
         echo "$CMD" >> /tmp/qsub.sh
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
         # Redirect both stderr and stdout to stdout then tee and then to stderr

@@ -76,9 +76,10 @@ if [ ! -f ${INPUT}.bed ]; then
     fi
 fi
 
+mkdir -p ${TMP_FOLDER}/out
 cp ${FILE}.bed ${TMP_FOLDER}
 cp ${INPUT}.bed ${TMP_FOLDER}
-mkdir -p ${TMP_FOLDER}/out
+
 
 # Usage: SICER.sh [InputDir] [bed file] [control file] [OutputDir] [Species]
 #   [redundancy threshold] [window size (bp)] [fragment size] [effective genome fraction] [gap size (bp)] [FDR]
@@ -89,7 +90,7 @@ mkdir -p ${TMP_FOLDER}/out
 #   gap size (bp)           = 600
 
 SICER.sh ${TMP_FOLDER} ${FILE}.bed ${INPUT}.bed ${FILE_TMP_BED}/out ${GENOME} 1 200 150 ${EFFECTIVE_GENOME_FRACTION} 600 ${FDR}
-cp ${TMP_FOLDER}/out/island.bed ${WORK_DIR}/${NAME}_sicer_${FDR}.bed
+cp ${TMP_FOLDER}/out/island.bed ${WORK_DIR}/${NAME}_sicer_${FDR}.bed:q
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
