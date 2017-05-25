@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-which SICER.sh &>/dev/null || { echo "SICER not found! Download rseg: <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/>"; exit 1; }
+which SICER.sh &>/dev/null || { echo "SICER not found! Download rseg: <http://home.gwu.edu/~wpeng/Software.htm>"; exit 1; }
 
 # Load technical stuff, not available in qsub emulation
 if [ -f "$(dirname $0)/util.sh" ]; then

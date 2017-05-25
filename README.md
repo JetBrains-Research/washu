@@ -46,6 +46,16 @@ Pipelines
 [MANorm](https://www.ncbi.nlm.nih.gov/pubmed/22424423)
 
 
+Requirements
+------------
+Add the following to `~/.bashrc`
+```bash
+# Allow pipeline execution from anywhere
+export PYTHONPATH="<PATH_TO_REPOSITORY>:$PYTHONPATH"
+
+# Enable 3rd party tools
+export PATH="<TOOL1>:<TOOL2>:...:<TOOL_N>:$PATH"
+```
 Data standards and pipelines
 --------------
 * ENCODE data [standards](https://www.encodeproject.org/data-standards/)
