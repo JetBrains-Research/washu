@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-which SICER.sh &>/dev/null || { echo "SICER not found! Download rseg: <http://home.gwu.edu/~wpeng/Software.htm>"; exit 1; }
+which SICER.sh &>/dev/null || {
+    echo "SICER not found! Download rseg: <http://home.gwu.edu/~wpeng/Software.htm>"
+    echo "Please refer to README for installation instructions, modify scripts, i.e."
+    echo "sed -i 's#/home/data/SICER1.1#<YOUR_INSTALLATION_FOLDER>#g' SICER.sh"
+    exit 1
+}
 
 # Load technical stuff, not available in qsub emulation
 if [ -f "$(dirname $0)/util.sh" ]; then
