@@ -117,13 +117,13 @@ def effective_genome_fraction(genome, chrom_sizes_path):
     dm: 1.2e8"""
     chrom_length = int(run([['cat', chrom_sizes_path],
                             ['grep', '-v', 'chr_'],
-                            ['awk', '{ print L+=$2 } END {print L}']])[0].decode('utf-8').strip())
+                            ['awk', '{ L+=$2 } END { print L }']])[0].decode('utf-8').strip())
     if genome.startswith('mm'):
         size = 1.87e9
     elif genome.startswith('hg'):
         size = 2.7e9
     else:
-        raise StandardError('Unknown species {}'.format(genome))
+        raise Exception('Unknown species {}'.format(genome))
     return size / chrom_length
 
 
