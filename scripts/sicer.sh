@@ -79,7 +79,7 @@ fi
 mkdir -p ${TMP_FOLDER}/out
 cp ${FILE}.bed ${TMP_FOLDER}
 cp ${INPUT}.bed ${TMP_FOLDER}
-
+cd ${TMP_FOLDER}
 
 # Usage: SICER.sh [InputDir] [bed file] [control file] [OutputDir] [Species]
 #   [redundancy threshold] [window size (bp)] [fragment size] [effective genome fraction] [gap size (bp)] [FDR]
