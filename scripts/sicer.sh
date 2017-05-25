@@ -45,7 +45,8 @@ do :
 
 
     # Create tmpfile in advance, because of interpolation of qsub call
-    TMP_FOLDER=$(mktemp -d)
+    INPUT_FOLDER=$(mktemp -d)
+    OUT_FOLDER=$(mktemp -d)
     FILE_TMP_BED=$(mktemp)
 
     # Submit task
@@ -76,10 +77,13 @@ if [ ! -f ${INPUT}.bed ]; then
     fi
 fi
 
-mkdir -p ${TMP_FOLDER}/out
-cp ${FILE}.bed ${TMP_FOLDER}
-cp ${INPUT}.bed ${TMP_FOLDER}
-cd ${TMP_FOLDER}
+# Ensure that folders exist
+mkdir -p ${INPUT_FOLDER}
+mkdir -p ${OUT_FOLDER}
+
+cp ${FILE}.bed ${INPUT_FOLDER}
+cp ${INPUT}.bed ${INPUT_FOLDER}
+cd ${INPUT_FOLDER}
 
 # Usage: SICER.sh [InputDir] [bed file] [control file] [OutputDir] [Species]
 #   [redundancy threshold] [window size (bp)] [fragment size] [effective genome fraction] [gap size (bp)] [FDR]
@@ -89,8 +93,8 @@ cd ${TMP_FOLDER}
 #   fragment size           = 150
 #   gap size (bp)           = 600
 
-SICER.sh ${TMP_FOLDER} ${FILE}.bed ${INPUT}.bed ${FILE_TMP_BED}/out ${GENOME} 1 200 150 ${EFFECTIVE_GENOME_FRACTION} 600 ${FDR}
-cp ${TMP_FOLDER}/out/island.bed ${WORK_DIR}/${NAME}_sicer_${FDR}.bed:q
+SICER.sh ${INPUT_FOLDER} ${FILE}.bed ${INPUT}.bed ${OUT_FOLDER} ${GENOME} 1 200 150 ${EFFECTIVE_GENOME_FRACTION} 600 ${FDR}
+cp ${OUT_FOLDER}/island.bed ${WORK_DIR}/${NAME}_sicer_${FDR}.bed
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
