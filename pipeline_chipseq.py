@@ -105,11 +105,11 @@ move_forward(WORK_DIR + "_unique", WORK_DIR + "_unique_pileup", ["*pileup*"], co
 # Peak calling section #
 ########################
 
-# Example for regular peak calling (https://github.com/taoliu/MACS) Q=0.01 in example
-run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1)
-
 # Example for broad peak calling (https://github.com/taoliu/MACS)
 run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1', '--broad', '--broad-cutoff', 0.1)
+
+# Example for regular peak calling (https://github.com/taoliu/MACS) Q=0.01 in example
+run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1)
 
 # MACS1.4 P=1e-5 is default
 # P = 0.00001
@@ -125,7 +125,8 @@ run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1', '--broad', '--broad-cutoff
 rseg_suffix = '_rseg'
 if not os.path.exists(WORK_DIR + rseg_suffix):
     run_bash("rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
-    move_forward(WORK_DIR, WORK_DIR + rseg_suffix, ["*_domains.bed", "*rseg*"], copy_only=True)
+    move_forward(WORK_DIR, WORK_DIR + rseg_suffix,
+                 ["*domains*", "*rseg*", "*.bam.bed", "deadzones*", "*_chrom_sizes.bed"], copy_only=True)
 
 # Batch SICER
 Q = 0.01
