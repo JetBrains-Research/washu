@@ -133,4 +133,4 @@ Q = 0.01
 rseg_suffix = '_sicer_{}'.format(Q)
 if not os.path.exists(WORK_DIR + rseg_suffix):
     run_bash("sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, str(Q))
-    move_forward(WORK_DIR, WORK_DIR + rseg_suffix, ["*.log", "*-removed.bed", "*-W*"], copy_only=True)
+    move_forward(WORK_DIR, WORK_DIR + rseg_suffix, ["*sicer.log", "*-removed.bed", "*-W*"], copy_only=True)
