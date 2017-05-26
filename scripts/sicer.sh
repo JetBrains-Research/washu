@@ -47,13 +47,11 @@ do :
 
 
     # Create tmpfile in advance, because of interpolation of qsub call
-    INPUT_FOLDER=$(mktemp -d)
-    OUT_FOLDER=$(mktemp -d)
-    # Ensure that folders exist
+    INPUT_FOLDER=${WORK_DIR}/tmp/${NAME}
+    OUT_FOLDER=${WORK_DIR}/${NAME}/out
+    # Create folders
     mkdir -p ${INPUT_FOLDER}
     mkdir -p ${OUT_FOLDER}
-
-    FILE_TMP_BED=$(mktemp)
 
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
@@ -70,20 +68,20 @@ cd ${WORK_DIR}
 
 # SICER works with BED only
 export LC_ALL=C
-bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${FILE_BED}
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${INPUT_FOLDER}/${FILE_BED}
 
 # Use tmp files to reduced async problems with same input parallel processing
 echo "${FILE}: control file found: ${INPUT}"
 if [ ! -f ${INPUT_BED} ]; then
-    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${FILE_TMP_BED}
+    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${INPUT_FOLDER}/${INPUT_BED}
     # Check that we are the first in async calls, not 100% safe
     if [ ! -f ${INPUT_BED} ]; then
-        mv ${FILE_TMP_BED} ${INPUT_BED}
+        cp ${INPUT_FOLDER}/${INPUT_BED} ${WORK_DIR}
     fi
+else
+    cp ${INPUT_BED} ${INPUT_FOLDER}
 fi
 
-cp ${FILE_BED} ${INPUT_FOLDER}
-cp ${INPUT_BED} ${INPUT_FOLDER}
 cd ${INPUT_FOLDER}
 
 # Usage: SICER.sh [InputDir] [bed file] [control file] [OutputDir] [Species]
@@ -105,13 +103,5 @@ wait_complete ${TASKS}
 check_logs
 
 # Cleanup
-for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
-do :
-    INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
-    if [ -f "${INPUT}" ]; then
-        rm ${INPUT_BED}
-    fi
-    rm ${FILE_BED}
-done
-
+rm -r ${WORK_DIR}/tmp
 echo "Done. Batch sicer: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${FDR}"
