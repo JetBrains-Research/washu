@@ -2,7 +2,7 @@
 # author oleg.shpynov@jetbrains.com
 
 which SICER.sh &>/dev/null || {
-    echo "SICER not found! Download rseg: <http://home.gwu.edu/~wpeng/Software.htm>"
+    echo "SICER not found! Download SICER: <http://home.gwu.edu/~wpeng/Software.htm>"
     echo "Please refer to README for installation instructions, modify scripts, i.e."
     echo "sed -i 's#/home/data/SICER1.1#<YOUR_INSTALLATION_FOLDER>#g' SICER.sh"
     echo "SICER is python2 library, force it!"
