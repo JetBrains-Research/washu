@@ -34,14 +34,16 @@ echo "EFFECTIVE_GENOME_FRACTION: ${EFFECTIVE_GENOME_FRACTION}"
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
+    NAME=${FILE%%.bam} # file name without extension
+    FILE_BED=${NAME}.bed
+
     INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
     if [ ! -f "${INPUT}" ]; then
         echo "SICER requires control"
         continue
     fi
-
-    NAME=${FILE%%.bam} # file name without extension
+    INPUT_BED=${INPUT%%.bam}.bed
 
 
     # Create tmpfile in advance, because of interpolation of qsub call
@@ -64,16 +66,15 @@ cd ${WORK_DIR}
 
 # SICER works with BED only
 export LC_ALL=C
-bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${FILE}.bed
-
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${FILE_BED}
 
 # Use tmp files to reduced async problems with same input parallel processing
 echo "${FILE}: control file found: ${INPUT}"
-if [ ! -f ${INPUT}.bed ]; then
+if [ ! -f ${INPUT_BED} ]; then
     bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${FILE_TMP_BED}
     # Check that we are the first in async calls, not 100% safe
-    if [ ! -f ${INPUT}.bed ]; then
-        mv ${FILE_TMP_BED} ${INPUT}.bed
+    if [ ! -f ${INPUT_BED} ]; then
+        mv ${FILE_TMP_BED} ${INPUT_BED}
     fi
 fi
 
@@ -93,8 +94,8 @@ cd ${INPUT_FOLDER}
 #   fragment size           = 150
 #   gap size (bp)           = 600
 
-SICER.sh ${INPUT_FOLDER} ${FILE}.bed ${INPUT}.bed ${OUT_FOLDER} ${GENOME} 1 200 150 ${EFFECTIVE_GENOME_FRACTION} 600 ${FDR}
-cp ${OUT_FOLDER}/island.bed ${WORK_DIR}/${NAME}_sicer_${FDR}.bed
+SICER.sh ${INPUT_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUT_FOLDER} ${GENOME} 1 200 150 ${EFFECTIVE_GENOME_FRACTION} 600 ${FDR}
+cp -f ${OUT_FOLDER}/* ${WORK_DIR}
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
@@ -108,9 +109,9 @@ for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
     INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
     if [ -f "${INPUT}" ]; then
-        rm ${INPUT}.bed
+        rm ${INPUT_BED}
     fi
-    rm ${FILE}.bed
+    rm ${FILE_BED}
 done
 
 echo "Done. Batch sicer: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${FDR}"
