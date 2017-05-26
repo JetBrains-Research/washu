@@ -82,8 +82,8 @@ if [ ! -f ${INPUT_BED} ]; then
     fi
 fi
 
-cp ${FILE}.bed ${INPUT_FOLDER}
-cp ${INPUT}.bed ${INPUT_FOLDER}
+cp ${FILE_BED} ${INPUT_FOLDER}
+cp ${INPUT_BED} ${INPUT_FOLDER}
 cd ${INPUT_FOLDER}
 
 # Usage: SICER.sh [InputDir] [bed file] [control file] [OutputDir] [Species]
