@@ -108,7 +108,7 @@ for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
     INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
     if [ -f "${INPUT}" ]; then
-        rm ${INPUT.bed}
+        rm ${INPUT}.bed
     fi
     rm ${FILE}.bed
 done
