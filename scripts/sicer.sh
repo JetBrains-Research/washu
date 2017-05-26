@@ -47,8 +47,8 @@ do :
 
 
     # Create tmpfile in advance, because of interpolation of qsub call
-    INPUT_FOLDER=${WORK_DIR}/tmp/${NAME}
-    OUT_FOLDER=${WORK_DIR}/${NAME}/out
+    INPUT_FOLDER=${WORK_DIR}/sicer_tmp/${NAME}
+    OUT_FOLDER=${INPUT_FOLDER}/out
     # Create folders
     mkdir -p ${INPUT_FOLDER}
     mkdir -p ${OUT_FOLDER}
@@ -103,5 +103,5 @@ wait_complete ${TASKS}
 check_logs
 
 # Cleanup
-rm -r ${WORK_DIR}/tmp
+rm -r ${WORK_DIR}/sicer_tmp
 echo "Done. Batch sicer: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${FDR}"
