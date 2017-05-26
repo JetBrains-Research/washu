@@ -49,6 +49,10 @@ do :
     # Create tmpfile in advance, because of interpolation of qsub call
     INPUT_FOLDER=$(mktemp -d)
     OUT_FOLDER=$(mktemp -d)
+    # Ensure that folders exist
+    mkdir -p ${INPUT_FOLDER}
+    mkdir -p ${OUT_FOLDER}
+
     FILE_TMP_BED=$(mktemp)
 
     # Submit task
@@ -77,10 +81,6 @@ if [ ! -f ${INPUT_BED} ]; then
         mv ${FILE_TMP_BED} ${INPUT_BED}
     fi
 fi
-
-# Ensure that folders exist
-mkdir -p ${INPUT_FOLDER}
-mkdir -p ${OUT_FOLDER}
 
 cp ${FILE}.bed ${INPUT_FOLDER}
 cp ${INPUT}.bed ${INPUT_FOLDER}
