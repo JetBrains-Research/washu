@@ -57,7 +57,7 @@ do :
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N sicer_${NAME}_${FDR}
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_${FDR}_sicer.log
 
