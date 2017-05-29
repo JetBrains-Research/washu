@@ -20,10 +20,10 @@ cd ${WORK_DIR}
 PROCESSED=""
 TASKS=""
 
-for FILE in $(find . -name '*.bam' | sort)
+for FILE in $(find . -name '*.bam' | sed 's#./##g' | sort)
 do :
     NAME=${FILE%%.bam}
-    PILEUP_BED=${NAME}_pileup.bed
+    FILE_BED=${NAME}.bed
 
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
@@ -32,10 +32,13 @@ do :
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_pileup.log
+
 cd ${WORK_DIR}
 module load bedtools2
-# To pileup bed
-bedtools bamtobed -i ${FILE} > ${PILEUP_BED}
+
+# To pileup sorted bed
+export LC_ALL=C
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${FILE_BED}
 ENDINPUT
 )
     TASKS="$TASKS $QSUB_ID"
