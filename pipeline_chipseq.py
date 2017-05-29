@@ -129,7 +129,7 @@ if not os.path.exists(WORK_DIR + rseg_suffix):
                  ["*domains*", "*rseg*", "*.bam.bed", "deadzones*", "*_chrom_sizes.bed"], copy_only=True)
 
 # Batch SICER
-Q = 0.01
+Q = 0.1
 rseg_suffix = '_sicer_{}'.format(Q)
 if not os.path.exists(WORK_DIR + rseg_suffix):
     run_bash("sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, str(Q))
