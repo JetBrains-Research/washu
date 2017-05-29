@@ -39,8 +39,9 @@ do :
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_remove_duplicates.log
 
-# Remove duplicated reads
+cd ${WORK_DIR}
 module load java
+
 # PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
 # There is insufficient memory for the Java Runtime Environment to continue.
 export _JAVA_OPTIONS="-Xmx12g"
@@ -53,10 +54,5 @@ ENDINPUT
 done
 wait_complete ${TASKS}
 check_logs
-
-# Cleanup indexes soft link
-if [ -z "${WORK_DIR}/indexes" ]; then
-    rm ${WORK_DIR}/indexes
-fi
 
 echo "Done. Batch remove duplicates: ${WORK_DIR}"
