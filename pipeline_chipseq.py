@@ -89,9 +89,9 @@ move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"], copy_only=Tru
 run_bash("remove_duplicates.sh", WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_unique", ["*_unique*", "*_metrics.txt", "*duplicates.log"], copy_only=True)
 
-# Build pileup for deduplicated files
+# Build BED pileup for deduplicated files
 run_bash("pileup.sh", WORK_DIR + "_unique")
-move_forward(WORK_DIR + "_unique", WORK_DIR + "_unique_pileup", ["*pileup*"], copy_only=True)
+move_forward(WORK_DIR + "_unique", WORK_DIR + "_unique_bed", ["*pileup*", "*.bed"], copy_only=True)
 
 # # Batch subsampling
 # run_bash("subsample.sh", WORK_DIR, str(READS))
