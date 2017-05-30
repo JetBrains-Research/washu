@@ -14,13 +14,21 @@ FILE=$1
 NAME=${FILE%%.bam}
 PEAKS=$2
  
-# Compute number of Reads In Peaks
+# Compute number pileup bed
 if [ ! -f "${NAME}_pileup.bed" ]; then
     # To pileup bed
     bedtools bamtobed -i ${FILE} > ${NAME}_pileup.bed
 fi
+READS=$(wc -l ${NAME}_pileup.bed | awk '{print $1}')
+
+# Compute number of reads, intersecting with peaks
 intersectBed -a ${NAME}_pileup.bed -b ${PEAKS} -c -f 0.20 > ${PEAKS}.intersectBed
-awk '{sum += $7} END {print sum}' ${PEAKS}.intersectBed | tee ${PEAKS}_rip.txt
+RIP=$(awk '{sum += $7} END {print sum}' ${PEAKS}.intersectBed)
+
+# Show result
+echo "${FILE},${READS}" > ${PEAKS}_rip.txt
+echo "${PEAKS},${RIP}" >> ${PEAKS}_rip.txt
+cat ${PEAKS}_rip.txt
 
 # Cleanup
 rm ${NAME}_pileup.bed ${PEAKS}.intersectBed
