@@ -36,14 +36,14 @@ def report(folder):
                                             ('tags', np.int),
                                             ('peaks', np.int),
                                             ('rip', np.int),
-                                            ('frip', np.float)]))
+                                            ('frip', np.int)]))
     rips = collect_rip_records(folder)
     for rr in rips:
         sample = rr.peaks_file.rpartition('/')[-1]
         reads = int(rr.reads)
         peaks = int(rr.peaks)
         rip = int(rr.rip)
-        frip = 100 * rip / reads
+        frip = int(100 * rip / reads)
         df.loc[len(df)] = (sample, reads, peaks, rip, frip)
     return df.sort_values(by=['sample'])
 
