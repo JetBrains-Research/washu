@@ -12,7 +12,7 @@ fi
  
 FILE=$1
 NAME=${FILE%%.bam}
-PEAKS=$2
+PEAKS_FILE=$2
  
 # Compute number pileup bed
 if [ ! -f "${NAME}_pileup.bed" ]; then
@@ -20,15 +20,16 @@ if [ ! -f "${NAME}_pileup.bed" ]; then
     bedtools bamtobed -i ${FILE} > ${NAME}_pileup.bed
 fi
 READS=$(wc -l ${NAME}_pileup.bed | awk '{print $1}')
+PEAKS=$(wc -l ${PEAKS_FILE} | awk '{print $1}')
 
 # Compute number of reads, intersecting with peaks
-intersectBed -a ${NAME}_pileup.bed -b ${PEAKS} -c -f 0.20 > ${PEAKS}.intersectBed
-RIP=$(awk '{sum += $7} END {print sum}' ${PEAKS}.intersectBed)
+intersectBed -a ${NAME}_pileup.bed -b ${PEAKS_FILE} -c -f 0.20 > ${PEAKS_FILE}.intersectBed
+RIP=$(awk '{sum += $7} END {print sum}' ${PEAKS_FILE}.intersectBed)
 
 # Show result
-echo "${FILE},${READS}" > ${PEAKS}_rip.txt
-echo "${PEAKS},${RIP}" >> ${PEAKS}_rip.txt
-cat ${PEAKS}_rip.txt
+echo "file,peaks_file,reads,peaks,rip" > ${PEAKS_FILE}_rip.csv
+echo "${FILE},${PEAKS_FILE},${READS},${PEAKS},${RIP}" >> ${PEAKS_FILE}_rip.csv
+cat ${PEAKS_FILE}_rip.csv
 
 # Cleanup
-rm ${NAME}_pileup.bed ${PEAKS}.intersectBed
+rm ${NAME}_pileup.bed ${PEAKS_FILE}.intersectBed

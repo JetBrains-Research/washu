@@ -85,6 +85,9 @@ else
     echo "${FILE}: no control file"
     rseg -c ${GENOME}_chrom_sizes.bed -o ${NAME}_domains.bed -i 20 -v -d ${DEADZONES} ${FILE}.bed
 fi
+
+# Compute Reads in Peaks
+bash $(dirname $0)/../reports/rip.sh ${FILE} ${NAME}_domains.bed
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"

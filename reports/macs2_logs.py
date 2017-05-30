@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+import numpy as np
+
+from reports.peaks_logs import collect_rip_records
+
 __author__ = 'oleg.shpynov@jetbrains.com'
 
 import getopt
@@ -23,9 +27,13 @@ MACS2_ALTERNATIVE_FRAGMENTS = '.*alternative fragment length\(s\) may be'
 
 
 def report(folder):
-    """Process macs2 logs processed by batch task"""
-    print('Processing macs2 logs', folder)
-    df = pd.DataFrame(columns=['sample', 'tags', 'redundant_rate', 'paired_peaks', 'fragment', 'alternatives'])
+    print('Process macs2 logs processed by batch task', folder)
+    df = pd.DataFrame(np.empty((0,), dtype=[('sample', np.str),
+                                            ('tags', np.int),
+                                            ('redundant_rate', np.float),
+                                            ('paired_peaks', np.int),
+                                            ('fragment', np.int),
+                                            ('alternatives', np.str)]))
     for dirpath, dirs, files in os.walk(folder):
         for f in files:
             if 'macs' not in f or not re.search('.log$', f):
@@ -49,38 +57,24 @@ def report(folder):
                         alt_fragments = re.sub(MACS2_ALTERNATIVE_FRAGMENTS, '', line).replace('bps', '').strip()
             df.loc[len(df)] = (f, tags, rr, paired_peaks, fragment, alt_fragments)
 
-    # Lines count data
-    lcs = []
-    # RiP data
-    rips = []
-
-    for dirpath, dirs, files in os.walk(folder):
-        for f in files:
-            # Peaks file
-            if re.search('.(bed|broadPeak|narrowPeak)$', f):
-                with open(folder + '/' + f) as peaksFile:
-                    peaks = sum(1 for _ in peaksFile)
-                lcs.append((f, peaks))
-
-            # _rip.txt file processing, see rip.sh
-            if re.search('.txt$', f):
-                with open(folder + '/' + f) as rip_file:
-                    rips.append((f, int([line.rstrip('\n') for line in rip_file][0])))
-
-    def lc_find(x):
-        """Lines count"""
-        rec = [lc[1] for lc in lcs if x.rpartition('_macs')[0] in lc[0]]
-        return 0 if len(rec) == 0 else rec[0]
-
-    def rip_find(x):
-        """Read in Peaks"""
-        rec = [rip[1] for rip in rips if x.rpartition('_macs')[0] in rip[0]]
-        return 0 if len(rec) == 0 else rec[0]
-
-    df['peaks'] = df['sample'].map(lambda x: lc_find(x))
-    df['rip'] = df['sample'].map(lambda x: rip_find(x))
+    # Collect RIP records
+    rips = collect_rip_records(folder)
+    df['peaks'] = df['sample'].map(lambda x: find_peaks(x.rpartition('_macs')[0], rips))
+    df['rip'] = df['sample'].map(lambda x: find_rip(x.rpartition('_macs')[0], rips))
     df['frip'] = list(map(lambda x: int(x), 100 * df['rip'] / df['tags']))
     return df.sort_values(by=['sample'])
+
+
+def find_peaks(x, rips):
+    """Find number of peaks in RipRecords"""
+    rec = [int(rr.peaks) for rr in rips if x in rr.file]
+    return 0 if len(rec) == 0 else rec[0]
+
+
+def find_rip(x, rips):
+    """Find Read in Peaks in RipRecords"""
+    rec = [int(rr.rip) for rr in rips if x in rr.file]
+    return 0 if len(rec) == 0 else rec[0]
 
 
 def process_macs2_logs(folder):

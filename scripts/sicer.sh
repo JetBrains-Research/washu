@@ -103,6 +103,9 @@ cp -f ${OUT_FOLDER}/* ${WORK_DIR}
 # -islandfiltered.bed. This file is in BED format and contains all reads that are within significant islands.
 # -islandfiltered-normalized.wig. This file is in WIG format and could be uploaded directly to UCSC genome browser for visualization of the island-filtered ChIP library.
 # -removed.bed. This file contains reads after redundancy removed.
+
+# Compute Reads in Peaks
+bash $(dirname $0)/../reports/rip.sh ${FILE} ${NAME}*island.bed
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"

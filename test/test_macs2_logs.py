@@ -9,7 +9,7 @@ TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/macs2'
 
 
 class Macs2LogsTest(unittest.TestCase):
-    def test_process_bowtie_logs(self):
+    def test_process_macs2_logs(self):
         file = TEST_DATA + '/macs2_report.csv'
         if os.path.exists(file):
             os.remove(file)
