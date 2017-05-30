@@ -131,7 +131,7 @@ if not os.path.exists(WORK_DIR + rseg_suffix):
     process_peaks_logs(WORK_DIR + rseg_suffix)
 
 # Batch SICER
-Q = 0.1
+Q = 0.01
 sicer_suffix = '_sicer_{}'.format(Q)
 if not os.path.exists(WORK_DIR + sicer_suffix):
     run_bash("sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, str(Q))
