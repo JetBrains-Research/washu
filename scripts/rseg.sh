@@ -43,13 +43,15 @@ fi
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
+    NAME=${FILE%%.bam} # file name without extension
+    FILE_BED=${NAME}.bed
+
     INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
+    INPUT_BED=${INPUT%%.bam}.bed
 
-    NAME=${FILE%%.bam} # file name without extension
-
-    # Create tmpfile in advance, because of interpolation of qsub call
-    FILE_TMP_BED=$(mktemp)
+    TMP_FOLDER=${WORK_DIR}/rseg_tmp/${NAME}
+    mkdir -p ${TMP_FOLDER}
 
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
@@ -67,23 +69,23 @@ cd ${WORK_DIR}
 # RSEG works with BED only
 # See sort instructions at http://smithlabresearch.org/wp-content/uploads/rseg_manual_v0.4.4.pdf
 export LC_ALL=C
-bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${FILE}.bed
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${TMP_FOLDER}/${FILE_BED}
 
 if [ -f "${INPUT}" ]; then
     # Use tmp files to reduced async problems with same input parallel processing
     echo "${FILE}: control file found: ${INPUT}"
-    if [ ! -f ${INPUT}.bed ]; then
-        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${FILE_TMP_BED}
+    if [ ! -f ${INPUT_BED} ]; then
+        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${TMP_FOLDER}/${INPUT_BED}
         # Check that we are the first in async calls, not 100% safe
-        if [ ! -f ${INPUT}.bed ]; then
-            mv ${FILE_TMP_BED} ${INPUT}.bed
+        if [ ! -f ${INPUT_BED} ]; then
+            cp ${TMP_FOLDER}/${INPUT_BED} ${WORK_DIR}
         fi
     fi
 
-    rseg-diff -c ${GENOME}_chrom_sizes.bed -o ${NAME}_domains.bed -i 20 -v -d ${DEADZONES} -mode 2 ${FILE}.bed ${INPUT}.bed
+    rseg-diff -c ${GENOME}_chrom_sizes.bed -o ${NAME}_domains.bed -i 20 -v -d ${DEADZONES} -mode 2 ${TMP_FOLDER}/${FILE_BED} ${INPUT_BED}
 else
     echo "${FILE}: no control file"
-    rseg -c ${GENOME}_chrom_sizes.bed -o ${NAME}_domains.bed -i 20 -v -d ${DEADZONES} ${FILE}.bed
+    rseg -c ${GENOME}_chrom_sizes.bed -o ${NAME}_domains.bed -i 20 -v -d ${DEADZONES} ${TMP_FOLDER}/${FILE_BED}
 fi
 
 # Compute Reads in Peaks
@@ -97,13 +99,5 @@ wait_complete ${TASKS}
 check_logs
 
 # Cleanup
-for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
-do :
-    INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
-    if [ -f "${INPUT}" ]; then
-        rm ${INPUT.bed}
-    fi
-    rm ${FILE}.bed
-done
-
+rm -r ${WORK_DIR}/rseg_tmp
 echo "Done. Batch rseg: ${WORK_DIR} ${GENOME} ${CHROM_SIZES}"
