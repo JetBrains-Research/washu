@@ -41,8 +41,14 @@ def report(folder):
     for rr in rips:
         sample = rr.peaks_file.rpartition('/')[-1]
         reads = int(rr.reads)
-        peaks = int(rr.peaks)
-        rip = int(rr.rip)
+        if len(rr.peaks) > 0:
+            peaks = int(rr.peaks)
+        else:
+            peaks = 0
+        if len(rr.rip) > 0:
+            rip = int(rr.rip)
+        else:
+            rip = 0
         frip = int(100 * rip / reads)
         df.loc[len(df)] = (sample, reads, peaks, rip, frip)
     return df.sort_values(by=['sample'])
