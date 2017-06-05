@@ -67,14 +67,18 @@ def report(folder):
 
 def find_peaks(x, rips):
     """Find number of peaks in RipRecords"""
-    rec = [int(rr.peaks) for rr in rips if x in rr.peaks_file]
-    return 0 if len(rec) == 0 else rec[0]
+    try:
+        return int([rr.peaks for rr in rips if x in rr.peaks_file][0])
+    except:
+        return 0
 
 
 def find_rip(x, rips):
     """Find Read in Peaks in RipRecords"""
-    rec = [int(rr.rip) for rr in rips if x in rr.peaks_file]
-    return 0 if len(rec) == 0 else rec[0]
+    try:
+        return int([rr.rip for rr in rips if x in rr.peaks_file][0])
+    except:
+        return 0
 
 
 def process_macs2_logs(folder):
