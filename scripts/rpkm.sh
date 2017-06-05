@@ -40,7 +40,7 @@ if [[ ! -f "${FILE}.bai" ]]; then
     samtools index ${FILE}
 fi
 
-bamCoverage --bam ${FILE} --outFileName ${NAME}.bw --outFileFormat bigwig --ignoreDuplicates --normalizeUsingRPKM
+bamCoverage --bam ${FILE} --outFileName ${NAME}_rpkm.bw --outFileFormat bigwig --ignoreDuplicates --normalizeUsingRPKM
 ENDINPUT
 )
     echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
