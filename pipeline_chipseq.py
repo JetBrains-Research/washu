@@ -94,6 +94,10 @@ move_forward(WORK_DIR, WORK_DIR + "_unique", ["*_unique*", "*_metrics.txt", "*du
 run_bash("bigwig.sh", WORK_DIR + "_unique")
 move_forward(WORK_DIR + "_unique", WORK_DIR + "_unique_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 
+# Batch RPKM visualization for deduplicated files
+run_bash("rpkm.sh", WORK_DIR + "_unique")
+move_forward(WORK_DIR, WORK_DIR + "_unique" + "_rpkms", ["*.bw", "*rpkm.log"], copy_only=True)
+
 # # Batch subsampling
 # run_bash("subsample.sh", WORK_DIR, str(READS))
 # WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_{}mln".format(READS), ["*{}*".format(READS)])
