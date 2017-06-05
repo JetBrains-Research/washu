@@ -27,7 +27,7 @@ do :
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N rpkm_${NAME}
-#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=32gb
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=48gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_rpkm.log
 
