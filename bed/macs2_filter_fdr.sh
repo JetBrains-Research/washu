@@ -15,8 +15,14 @@ PEAKS_FOLDER=$1
 OUTPUT_FOLDER=$2
 Q_SOURCE=$3
 Q_TARGET=$4
+READS_FOLDER=$5
 Q_MLOG10=$(echo "-l($Q_TARGET)/l(10)" | bc -l)
+
+echo "PEAKS_FOLDER: $PEAKS_FOLDER"
+echo "Q_SOURCE: $Q_SOURCE"
+echo "Q_TARGET: $Q_TARGET"
 echo "-log10($Q_TARGET)=${Q_MLOG10}"
+echo "READS_FOLDER: $READS_FOLDER"
 
 if [[ ! -d ${PEAKS_FOLDER} ]]; then
     echo "Missing folder ${PEAKS_FOLDER}"
@@ -36,14 +42,7 @@ for F in $(ls *.*Peak | grep -v gapped); do
 done
 
 # Compute FRIP values for adjusted peaks
-READS_FOLDER=$5
 if [[ -d ${READS_FOLDER} ]]; then
-    echo "Compute FRIPs for READS_FOLDER: $READS_FOLDER"
-    cd ${OUTPUT_FOLDER}
-    for F in $(ls *.*Peak | grep -v gapped); do
-	    NAME=${F%%_broad*};
-	    BAM=${READS_FOLDER}/${NAME}*.bam
-	    bash ~/work/washu/reports/rip.sh ${BAM} ${F}
-    done
-    python ~/work/washu/reports/peaks_logs.py ${OUTPUT_FOLDER}
+    echo "Compute FRIPs for PEAKS_FOLDER: $PEAKS_FOLDER; READS_FOLDER: $READS_FOLDER"
+    bash $(dirname $0)/peaks_frip.sh $OUTPUT_FOLDER $READS_FOLDER
 fi
