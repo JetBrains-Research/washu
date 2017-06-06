@@ -14,7 +14,7 @@ fi
 PEAKS_FOLDER=$1
 READS_FOLDER=$2
 
-echo "Compute FRIPs for READS_FOLDER: $READS_FOLDER"
+echo "Compute FRIPs for READS_FOLDER: $READS_FOLDER; PEAKS_FOLDER: $PEAKS_FOLDER"
 cd ${PEAKS_FOLDER}
 for F in $(ls *.*Peak | grep -v gapped); do
     NAME=${F%%_broad*};

@@ -43,6 +43,5 @@ done
 
 # Compute FRIP values for adjusted peaks
 if [[ -d ${READS_FOLDER} ]]; then
-    echo "Compute FRIPs for PEAKS_FOLDER: $PEAKS_FOLDER; READS_FOLDER: $READS_FOLDER"
     bash $(dirname $0)/peaks_frip.sh $OUTPUT_FOLDER $READS_FOLDER
 fi
