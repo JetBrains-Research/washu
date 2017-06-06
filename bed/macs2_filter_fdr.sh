@@ -2,6 +2,8 @@
 # This script is used to filter peaks by given FDR from given MACS2 peaks folder
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
 
+which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
+
 >&2 echo "macs2_filter_fdr.sh: $@"
 
 if [ $# -lt 4 ]; then
