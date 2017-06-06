@@ -5,7 +5,7 @@
 #
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
 
->&2 echo "top_peaks.sh: $@"
+>&2 echo "macs2_top_peaks.sh: $@"
 
 if [ $# -lt 3 ]; then
     echo "Need 3 parameters! <PEAKS_FOLDER> <OUTPUT_FOLDER> <N>"
@@ -25,5 +25,5 @@ mkdir -p ${OUTPUT_FOLDER}
 for F in $(find ${PEAKS_FOLDER} -name '*.xls'| sed 's#./##g' | grep -v input); do
     echo $F
     cat $F | grep -E '#|name' > ${OUTPUT_FOLDER}/$F
-    cat $F | grep -v -E '#|name' | sort -k8,8gr | head -10000 >> ${OUTPUT_FOLDER}/$F
+    cat $F | grep -v -E '#|name' | sort -k8,8gr | head -$N >> ${OUTPUT_FOLDER}/$F
 done
