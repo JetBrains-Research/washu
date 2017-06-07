@@ -79,14 +79,13 @@ echo
 echo "Processing $DIFFBIND"
 if [ ! -d $DIFFBIND ]; then
     mkdir -p ${DIFFBIND}
-    NAME=diffbind
     cp ${DIFFBIND_CSV} ${DIFFBIND}/${NAME}.csv
     cd ${DIFFBIND}
 
     echo "Processing diffbind"
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N ${NAME}_diffbind
+#PBS -N diffbind_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=32gb
 #PBS -j oe
 #PBS -o ${NAME}_diffbind.log
