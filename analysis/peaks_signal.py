@@ -51,10 +51,10 @@ def compute_signal(intersection_path, out, records):
 def main():
     parser = argparse.ArgumentParser(description=
                                      'Process signal data of given bedgraph files within provided bed regions.')
-    parser.add_argument('--regions', metavar='bed', type=str, help='BED file with regions of interest')
-    parser.add_argument('--out', type=str, help='output prefix')
+    parser.add_argument('--regions', metavar='bed', type=str, help='BED file with regions of interest', required=True)
+    parser.add_argument('--out', type=str, help='output prefix', required=True)
     parser.add_argument('--bedgraphs', metavar='name bdg', type=str, nargs='+',
-                        help='Bedgraph files to be processed in format: name bdg [name bdg ...]')
+                        help='Bedgraph files to be processed in format: name bdg [name bdg ...]', required=True)
     args = parser.parse_args()
     print('ARGS: {}'.format(args))
     regions = args.regions
