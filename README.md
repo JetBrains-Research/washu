@@ -48,7 +48,7 @@ Pipelines
 
 Requirements
 ------------
-Add the following to `~/.bashrc`
+Add the following to `~/.bashrc` (Linux) or `~/.bash_profile` (MacOS):
 ```bash
 # Allow pipeline execution from anywhere
 export PYTHONPATH="<PATH_TO_REPOSITORY>:$PYTHONPATH"
