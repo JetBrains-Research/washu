@@ -50,7 +50,7 @@ def compute_signal(intersection_path, sizes_path, out):
 
     print('Processing raw signal')
     pivot = pd.pivot_table(coverage, index=['chr', 'start', 'end'], columns='name', values='coverage', fill_value=0)
-    raw_signal = '{}.csv'.format(out)
+    raw_signal = '{}_raw.csv'.format(out)
     pivot.to_csv(raw_signal)
     print('Saved raw signal to {}'.format(raw_signal))
 
