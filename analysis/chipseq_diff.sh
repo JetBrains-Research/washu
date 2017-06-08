@@ -220,7 +220,9 @@ bams_to_tags() {
     shift 1
     for F in $@; do
         >&2 echo $F
-        bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $6}' >> $OUT
+        bedtools bamtobed -i ${F} |
+            grep -v 'chrU' | grep -v 'random' |
+            awk '{if ($6=="-") {print($1, $3-1, $6)} else {print($1, $2, $6)}}' >> $OUT
     done
 }
 
