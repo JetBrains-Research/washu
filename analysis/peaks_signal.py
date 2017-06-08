@@ -4,14 +4,23 @@
 import argparse
 import os
 from collections import namedtuple
-import numpy as np
 import pandas as pd
+
 from bed.bedtrace import run, Bed
 
 Record = namedtuple('Record', ['name', 'bdg'])
 
 
 def process(regions, records, out):
+    sizes_path = '{}.sizes.csv'
+    print('Processing sizes of libraries {}'.format(sizes_path))
+    if not os.path.exists(sizes_path):
+        with open(sizes_path, "w") as sizes_file:
+            for r in records:
+                size = int(run([['cat', r.bdg], ['awk', '{cov+=$4} END{print(cov)}']])[0].decode("utf-8"))
+                print('{} size: {}'.format(r.bdg, size))
+                sizes_file.write('{}\t{}\n'.format(r.name, size))
+
     intersection_path = '{}.intersection.tsv'.format(out)
     if not os.path.exists(intersection_path):
         regions3 = '{}.bed3'.format(regions)
@@ -20,30 +29,28 @@ def process(regions, records, out):
 
         print('Compute summary intersection file {}'.format(intersection_path))
         cmd = [['bedtools', 'intersect', '-wa', '-wb', '-a', regions3, '-b', *[r.bdg for r in records], '-names',
-                *[r.name for r in records], '-sorted'], ['awk', '-v', "OFS=\\t", '{print($1,$2,$3,$4,$8)}']]
+                *[r.name for r in records], '-sorted'],
+               ['awk', '-v', "OFS=\\t", '{print($1,$2,$3,$4,$8)}'],
+               ['awk' "BEGIN{c="";s=0;e=0;n="";x=0} "
+                "{ if ($1!=c || $2!=s || $3!=e || $4!=n) {"
+                "if (x!=0) print($1,$2,$3,$4,x); c=$1;s=$2;e=$3;n=$4;x=$5 "
+                "} else {x+=$5}} "
+                "END {print($1,$2,$3,$4,x)}"]]
         print(' | '.join([' '.join(c) for c in cmd]) + ' > ' + intersection_path)
         with open(intersection_path, "w") as intersection_file:
             run(cmd, stdout=intersection_file)
     print('Compute summary signal by {}'.format(intersection_path))
-    compute_signal(intersection_path, out, records)
+    compute_signal(intersection_path, sizes_path, out)
 
 
-def compute_signal(intersection_path, out, records):
-    intersection = pd.read_csv(intersection_path, names=('chr', 'start', 'end', 'name', 'coverage'), sep='\t')
-    coverage = intersection.groupby(['chr', 'start', 'end', 'name'], as_index=False).aggregate(np.sum)
+def compute_signal(intersection_path, sizes_path, out):
+    coverage = pd.read_csv(intersection_path, names=('chr', 'start', 'end', 'name', 'coverage'), sep='\t')
     # Pivot by names
     pivot = pd.pivot_table(coverage, index=['chr', 'start', 'end'], columns='name', values='coverage')
     raw_signal = '{}.csv'.format(out)
     pivot.to_csv(raw_signal)
     print('Saved raw signal to {}'.format(raw_signal))
 
-    sizes_path = '{}.sizes.csv'
-    print('Processing sizes of libraries {}'.format(sizes_path))
-    with open(sizes_path, "w") as sizes_file:
-        for r in records:
-            size = int(run([['cat', r.bdg], ['awk', '{cov+=$4} END{print(cov)}']])[0].decode("utf-8"))
-            print('{} size: {}'.format(r.bdg, size))
-            sizes_file.write('{}\t{}\n'.format(r.name, size))
     print('TODO[shpynov] normalization by library coverage and by summary coverage of peaks')
 
 
