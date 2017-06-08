@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
+# MOCK for module command
+which module &>/dev/null ||
+    module() { echo "module $@"; }
+
 # CHPC (qsub) mock replacement
 which qsub &>/dev/null || {
     qsub()
