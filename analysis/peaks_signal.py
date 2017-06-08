@@ -56,6 +56,7 @@ def compute_signal(intersection_path, sizes_path, out):
     print('Processing normalization by mln reads in library')
     sizes = pd.read_csv(sizes_path, names=('name', 'size'), sep='\t')
     sizes_mln = {row['name']: row['size'] / 1000000.0 for _, row in sizes.iterrows()}
+    print('Sizes mln: {}'.format(sizes_mln))
     coverage['coverage_by_mln'] = [row['coverage'] / sizes_mln[row['name']] for _, row in coverage.iterrows()]
     pivot_by_mln = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
                                   columns='name', values='coverage_by_mln', fill_value=0)
@@ -66,6 +67,7 @@ def compute_signal(intersection_path, sizes_path, out):
     print('Processing normalization by mln reads in peaks')
     sizes_peaks_mln = {row['name']: np.sum(coverage[coverage['name'] == row['name']]['coverage']) / 1000000.0
                        for _, row in sizes.iterrows()}
+    print('Sizes peaks mln: {}'.format(sizes_peaks_mln))
     coverage['coverage_by_peaks_mln'] = [row['coverage'] / sizes_peaks_mln[row['name']] for _, row in coverage.iterrows()]
     pivot_by_coverage = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
                                        columns='name', values='coverage_by_peaks_mln', fill_value=0)
