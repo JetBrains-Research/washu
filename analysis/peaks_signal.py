@@ -13,8 +13,8 @@ Record = namedtuple('Record', ['name', 'bdg'])
 
 def process(regions, records, out):
     sizes_path = '{}.sizes.csv'.format(out)
+    print('Sizes of libraries {}'.format(sizes_path))
     if not os.path.exists(sizes_path):
-        print('Processing sizes of libraries {}'.format(sizes_path))
         with open(sizes_path, "w") as sizes_file:
             for r in records:
                 size = int(run([['cat', r.bdg],
@@ -23,12 +23,12 @@ def process(regions, records, out):
                 sizes_file.write('{}\t{}\n'.format(r.name, size))
 
     intersection_path = '{}.intersection.tsv'.format(out)
+    print('Summary intersection file {}'.format(intersection_path))
     if not os.path.exists(intersection_path):
         regions3 = '{}.bed3'.format(regions)
         print('Save regions as BED3 format {}'.format(regions3))
         Bed(regions).save3(regions3)
 
-        print('Compute summary intersection file {}'.format(intersection_path))
         cmd = [['bedtools', 'intersect', '-wa', '-wb', '-a', regions3, '-b', *[r.bdg for r in records], '-names',
                 *[r.name for r in records], '-sorted'],
                ['awk', '-v', "OFS=\\t", '{print($1,$2,$3,$4,$8)}'],
@@ -40,7 +40,7 @@ def process(regions, records, out):
         print(' | '.join([' '.join(c) for c in cmd]) + ' > ' + intersection_path)
         with open(intersection_path, "w") as intersection_file:
             run(cmd, stdout=intersection_file)
-    print('Compute summary signal by {}'.format(intersection_path))
+    print('Compute summary signal by sizes: {} and intersection: {}'.format(sizes_path, intersection_path) )
     compute_signal(intersection_path, sizes_path, out)
 
 
