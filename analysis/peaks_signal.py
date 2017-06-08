@@ -4,8 +4,9 @@
 import argparse
 import os
 from collections import namedtuple
-import pandas as pd
 import numpy as np
+import pandas as pd
+
 from bed.bedtrace import run, Bed
 
 Record = namedtuple('Record', ['name', 'bdg'])
@@ -32,15 +33,15 @@ def process(regions, records, out):
         cmd = [['bedtools', 'intersect', '-wa', '-wb', '-a', regions3, '-b', *[r.bdg for r in records], '-names',
                 *[r.name for r in records], '-sorted'],
                ['awk', '-v', "OFS=\\t", '{print($1,$2,$3,$4,$8)}'],
-               ['awk' "BEGIN{c="";s=0;e=0;n="";x=0} "
-                "{ if ($1!=c || $2!=s || $3!=e || $4!=n) {"
-                "if (x!=0) print($1,$2,$3,$4,x); c=$1;s=$2;e=$3;n=$4;x=$5 "
-                "} else {x+=$5}} "
-                "END {print($1,$2,$3,$4,x)}"]]
+               ['awk', '-v', "OFS=\\t", "BEGIN{c="";s=0;e=0;n="";x=0} "
+                                        "{ if ($1!=c || $2!=s || $3!=e || $4!=n) {"
+                                        "if (x!=0) print($1,$2,$3,$4,x); c=$1;s=$2;e=$3;n=$4;x=$5 "
+                                        "} else {x+=$5}} "
+                                        "END {print($1,$2,$3,$4,x)}"]]
         print(' | '.join([' '.join(c) for c in cmd]) + ' > ' + intersection_path)
         with open(intersection_path, "w") as intersection_file:
             run(cmd, stdout=intersection_file)
-    print('Compute summary signal by sizes: {} and intersection: {}'.format(sizes_path, intersection_path) )
+    print('Compute summary signal by sizes: {} and intersection: {}'.format(sizes_path, intersection_path))
     compute_signal(intersection_path, sizes_path, out)
 
 
