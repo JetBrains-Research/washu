@@ -68,12 +68,22 @@ def compute_signal(intersection_path, sizes_path, out):
     sizes_peaks_mln = {row['name']: np.sum(coverage[coverage['name'] == row['name']]['coverage']) / 1000000.0
                        for _, row in sizes.iterrows()}
     print('Sizes peaks mln: {}'.format(sizes_peaks_mln))
-    coverage['coverage_by_peaks_mln'] = [row['coverage'] / sizes_peaks_mln[row['name']] for _, row in coverage.iterrows()]
+    coverage['coverage_by_peaks_mln'] = [row['coverage'] / sizes_peaks_mln[row['name']] for _, row in
+                                         coverage.iterrows()]
     pivot_by_coverage = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
                                        columns='name', values='coverage_by_peaks_mln', fill_value=0)
     raw_signal_by_coverage = '{}_by_peaks_mln.csv'.format(out)
     pivot_by_coverage.to_csv(raw_signal_by_coverage)
     print('Saved normalized by peaks mln reads signal to {}'.format(raw_signal_by_coverage))
+
+    print('Processing RPKM normalization')
+    coverage['coverage_rpkm'] = [row['coverage'] / ((row['end'] - row['start']) / 1000.0) / sizes_mln[row['name']] for
+                                 _, row in coverage.iterrows()]
+    pivot_rpkm = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
+                                columns='name', values='coverage_rpkm', fill_value=0)
+    rpkm = '{}_rpkm.csv'.format(out)
+    pivot_rpkm.to_csv(rpkm)
+    print('Saved RPKM to {}'.format(rpkm))
 
 
 def main():
