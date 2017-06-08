@@ -7,13 +7,14 @@ which qsub &>/dev/null || {
     {
         # LOAD args to $CMD
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
-        echo "# This file was generated as QSUB MOCK" > /tmp/qsub.sh
+        QSUB_FILE=$(mktemp /tmp/qsub.XXXXXXXXXXXX.sh)
+        echo "# This file was generated as QSUB MOCK" > $QSUB_FILE
         # MOCK for module command
-        echo 'module() { echo "module $@"; } ' >> /tmp/qsub.sh
-        echo "$CMD" >> /tmp/qsub.sh
+        echo 'module() { echo "module $@"; } ' >> $QSUB_FILE
+        echo "$CMD" >> $QSUB_FILE
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
         # Redirect both stderr and stdout to stdout then tee and then to stderr
-        bash /tmp/qsub.sh 2>&1 | tee "$LOG" 1>&2
+        bash $QSUB_FILE 2>&1 | tee "$LOG" 1>&2
     }
 }
 
