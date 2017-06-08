@@ -12,25 +12,22 @@ Record = namedtuple('Record', ['name', 'bdg'])
 
 
 def process(regions, records, out):
-    print('Save regions as BED3 format {}.bed3'.format(regions))
-    regions3 = '{}.bed3'.format(regions)
-    Bed(regions).save3(regions3)
-
     intersection_path = '{}.intersection.tsv'.format(out)
-    print('Compute summary intersection file {}'.format(intersection_path))
-    cmd = [['bedtools', 'intersect', '-wa', '-wb', '-a', regions3, '-b', *[r.bdg for r in records], '-names',
-            *[r.name for r in records], '-sorted'], ['awk', '-v', "OFS=\\t", '{print($1,$2,$3,$4,$8)}']]
-    print(' | '.join([' '.join(c) for c in cmd]) + ' > ' + intersection_path)
-    with open("Output.txt", "w") as intersection:
-        run(cmd, stdout=intersection)
-        compute_signal(intersection_path, out, records)
-    # Cleanup
-    os.remove(regions3)
-    os.remove(intersection_path)
+    if not os.path.exists(intersection_path):
+        print('Save regions as BED3 format {}.bed3'.format(regions))
+        regions3 = '{}.bed3'.format(regions)
+        Bed(regions).save3(regions3)
+        print('Compute summary intersection file {}'.format(intersection_path))
+        cmd = [['bedtools', 'intersect', '-wa', '-wb', '-a', regions3, '-b', *[r.bdg for r in records], '-names',
+                *[r.name for r in records], '-sorted'], ['awk', '-v', "OFS=\\t", '{print($1,$2,$3,$4,$8)}']]
+        print(' | '.join([' '.join(c) for c in cmd]) + ' > ' + intersection_path)
+        with open(intersection_path, "w") as intersection:
+            run(cmd, stdout=intersection)
+    print('Compute summary signal by {}'.format(intersection_path))
+    compute_signal(intersection_path, out, records)
 
 
 def compute_signal(intersection_path, out, records):
-    print('Compute summary signal by {}'.format(intersection_path))
     intersection = pd.read_csv(intersection_path, names=('chr', 'start', 'end', 'name', 'coverage'), sep='\t')
     coverage = intersection.groupby(['chr', 'start', 'end', 'name'], as_index=False).aggregate(np.sum)
     # Pivot by names
