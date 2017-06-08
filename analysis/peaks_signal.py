@@ -12,7 +12,7 @@ Record = namedtuple('Record', ['name', 'bdg'])
 
 
 def process(regions, records, out):
-    sizes_path = '{}.sizes.csv'
+    sizes_path = '{}.sizes.csv'.format(out)
     print('Processing sizes of libraries {}'.format(sizes_path))
     if not os.path.exists(sizes_path):
         with open(sizes_path, "w") as sizes_file:
