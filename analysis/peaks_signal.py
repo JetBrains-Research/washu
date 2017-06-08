@@ -14,15 +14,16 @@ Record = namedtuple('Record', ['name', 'bdg'])
 def process(regions, records, out):
     intersection_path = '{}.intersection.tsv'.format(out)
     if not os.path.exists(intersection_path):
-        print('Save regions as BED3 format {}.bed3'.format(regions))
         regions3 = '{}.bed3'.format(regions)
+        print('Save regions as BED3 format {}'.format(regions3))
         Bed(regions).save3(regions3)
+
         print('Compute summary intersection file {}'.format(intersection_path))
         cmd = [['bedtools', 'intersect', '-wa', '-wb', '-a', regions3, '-b', *[r.bdg for r in records], '-names',
                 *[r.name for r in records], '-sorted'], ['awk', '-v', "OFS=\\t", '{print($1,$2,$3,$4,$8)}']]
         print(' | '.join([' '.join(c) for c in cmd]) + ' > ' + intersection_path)
-        with open(intersection_path, "w") as intersection:
-            run(cmd, stdout=intersection)
+        with open(intersection_path, "w") as intersection_file:
+            run(cmd, stdout=intersection_file)
     print('Compute summary signal by {}'.format(intersection_path))
     compute_signal(intersection_path, out, records)
 
@@ -35,12 +36,14 @@ def compute_signal(intersection_path, out, records):
     raw_signal = '{}.csv'.format(out)
     pivot.to_csv(raw_signal)
     print('Saved raw signal to {}'.format(raw_signal))
-    sizes = {}
-    for r in records:
-        print('Processing {}'.format(r))
-        size = int(run([['cat', r.bdg], ['awk', '{cov+=$4} END{print(cov)}']])[0].decode("utf-8"))
-        sizes[r] = size
-        print('Size: {}'.format(size))
+
+    sizes_path = '{}.sizes.csv'
+    print('Processing sizes of libraries {}'.format(sizes_path))
+    with open(sizes_path, "w") as sizes_file:
+        for r in records:
+            size = int(run([['cat', r.bdg], ['awk', '{cov+=$4} END{print(cov)}']])[0].decode("utf-8"))
+            print('{} size: {}'.format(r.bdg, size))
+            sizes_file.write('{}\t{}\n'.format(r.name, size))
     print('TODO[shpynov] normalization by library coverage and by summary coverage of peaks')
 
 
