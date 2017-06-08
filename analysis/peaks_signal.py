@@ -46,7 +46,7 @@ def process(regions, records, out):
 def compute_signal(intersection_path, sizes_path, out):
     coverage = pd.read_csv(intersection_path, names=('chr', 'start', 'end', 'name', 'coverage'), sep='\t')
     # Pivot by names
-    pivot = pd.pivot_table(coverage, index=['chr', 'start', 'end'], columns='name', values='coverage')
+    pivot = pd.pivot_table(coverage, index=['chr', 'start', 'end'], columns='name', values='coverage', fill_value=0)
     raw_signal = '{}.csv'.format(out)
     pivot.to_csv(raw_signal)
     print('Saved raw signal to {}'.format(raw_signal))
