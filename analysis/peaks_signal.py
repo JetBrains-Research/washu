@@ -5,7 +5,7 @@ import argparse
 import os
 from collections import namedtuple
 import pandas as pd
-
+import numpy as np
 from bed.bedtrace import run, Bed
 
 Record = namedtuple('Record', ['name', 'bdg'])
@@ -17,7 +17,8 @@ def process(regions, records, out):
     if not os.path.exists(sizes_path):
         with open(sizes_path, "w") as sizes_file:
             for r in records:
-                size = int(run([['cat', r.bdg], ['awk', '{cov+=$4} END{print(cov)}']])[0].decode("utf-8"))
+                size = int(run([['cat', r.bdg],
+                                ['awk', '{cov+=$4} END{print(cov)}']])[0].decode("utf-8"))
                 print('{} size: {}'.format(r.bdg, size))
                 sizes_file.write('{}\t{}\n'.format(r.name, size))
 
@@ -45,13 +46,32 @@ def process(regions, records, out):
 
 def compute_signal(intersection_path, sizes_path, out):
     coverage = pd.read_csv(intersection_path, names=('chr', 'start', 'end', 'name', 'coverage'), sep='\t')
-    # Pivot by names
+
+    print('Processing raw signal')
     pivot = pd.pivot_table(coverage, index=['chr', 'start', 'end'], columns='name', values='coverage', fill_value=0)
     raw_signal = '{}.csv'.format(out)
     pivot.to_csv(raw_signal)
     print('Saved raw signal to {}'.format(raw_signal))
 
-    print('TODO[shpynov] normalization by library coverage and by summary coverage of peaks')
+    print('Processing normalization by mln reads in library')
+    sizes = pd.read_csv(sizes_path, names=('name', 'size'), sep='\t')
+    sizes_mln = {row['name']: row['size'] / 1000000.0 for _, row in sizes.iterrows()}
+    coverage['coverage_by_mln'] = [row['coverage'] / sizes_mln[row['name']] for _, row in coverage.iterrows()]
+    pivot_by_mln = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
+                                  columns='name', values='coverage_by_mln', fill_value=0)
+    raw_signal_by_mln = '{}_by_mln.csv'.format(out)
+    pivot_by_mln.to_csv(raw_signal_by_mln)
+    print('Saved normalized by mln reads signal to {}'.format(raw_signal_by_mln))
+
+    print('Processing normalization by mln reads in peaks')
+    sizes_peaks_mln = {row['name']: np.sum(coverage[coverage['name'] == row['name']]['coverage']) / 1000000.0
+                       for _, row in sizes.iterrows()}
+    coverage['coverage_by_peaks_mln'] = [row['coverage'] / sizes_peaks_mln[row['name']] for _, row in coverage.iterrows()]
+    pivot_by_coverage = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
+                                       columns='name', values='coverage_by_peaks_mln', fill_value=0)
+    raw_signal_by_coverage = '{}_by_peaks_mln.csv'.format(out)
+    pivot_by_coverage.to_csv(raw_signal_by_coverage)
+    print('Saved normalized by peaks mln reads signal to {}'.format(raw_signal_by_coverage))
 
 
 def main():
