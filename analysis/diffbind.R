@@ -66,7 +66,7 @@ main <- function(path, fragmentSize) {
     db = dba.report(yo)
     result_csv = str_replace(path, ".csv", "_result.csv")
     write.table(db, result_csv, sep = ",", row.names = FALSE)
-    write(paste("Saved", result_csv))
+    print(paste("Saved", result_csv))
 
     # IMPORTANT: plot difference on the last step as it fails if there is no difference
     pdf(file = str_replace(path, ".csv", "_difference_histogram.pdf"))
@@ -85,7 +85,7 @@ main <- function(path, fragmentSize) {
 if (! interactive()) {
     args <- commandArgs(TRUE)
     if (length(args) != 2) {
-        write("Usage: [executable] diffbind.csv fragment_size", stderr())
+        print("Usage: [executable] diffbind.csv fragment_size", stderr())
         q(status = 1)
     } else {
         do.call(main, as.list(args))
