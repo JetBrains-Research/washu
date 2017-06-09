@@ -44,7 +44,7 @@ cd ${WORK_DIR}
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | sort)
 do :
     NAME=${FILE%%.bam}
-    TAGS=${TAGS_FOLDER}/${NAME}.bed
+    TAGS=${TAGS_FOLDER}/${NAME}.tag
     COVERAGE_CSV=${COVERAGES_FOLDER}/${NAME}.csv
     if [[ ! -f ${COVERAGE_CSV} ]]; then
         # Submit task
@@ -60,7 +60,7 @@ module load bedtools2
 
 if [[ ! -f ${TAGS} ]]; then
     bedtools bamtobed -i ${FILE} |
-        awk -v OFS='\t' -v F=${FRAGMENT} '{if (\$6=="-") {print(\$1, \$2+F/2, \$2+F/2+1)} else {if (\$3-F/2>=1) print(\$1, \$3-F/2, \$3-F/2+1)}}' |
+        awk -v OFS='\t' -v F=${FRAGMENT} '{if (\$6=="-") {print(\$1, \$2+F/2, \$2+F/2+1)} else {if (\$3-F/2>=1) {print(\$1, \$3-F/2, \$3-F/2+1)}}}' |
         sort -k1,1 -k3,3n -k2,2n > ${TAGS}
 fi
 
