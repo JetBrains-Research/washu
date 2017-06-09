@@ -25,11 +25,13 @@ require_or_install("DiffBind")
 require_or_install("ggplot2")
 require_or_install("stringr")
 
-main <- function(path) {
-    write(paste("DiffBind version: ", packageVersion("DiffBind")))
+main <- function(path, fragmentSize) {
+    write(paste("DiffBind version", packageVersion("DiffBind")))
     write(paste("Processing file", path))
+    print(paste("Fragment size", fragmentSize))
+
     yo = dba(sampleSheet = path)
-    yo = dba.count(yo)
+    yo = dba.count(yo, bRemoveDuplicates=TRUE, fragmentSize=fragmentSize)
 
     # Write counts table
     counts <- dba.peakset(yo, bRetrieve=TRUE)
@@ -82,8 +84,8 @@ main <- function(path) {
 
 if (! interactive()) {
     args <- commandArgs(TRUE)
-    if (length(args) != 1) {
-        write("Usage: [executable] diffbind.csv", stderr())
+    if (length(args) != 2) {
+        write("Usage: [executable] diffbind.csv fragment_size", stderr())
         q(status = 1)
     } else {
         do.call(main, as.list(args))
