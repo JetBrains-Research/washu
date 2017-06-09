@@ -7,29 +7,28 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
-if [ $# -lt 3 ]; then
-    echo "Need 3 parameters! <WORK_DIR_WITH_BAMS> <REGIONS> <ID>"
+if [ $# -lt 4 ]; then
+    echo "Need 4 parameters! <WORK_DIR_WITH_BAMS> <FRAGMENT> <REGIONS> <ID>"
     exit 1
 fi
+echo "Batch peaks_signals: $@"
 
 WORK_DIR=$1
-REGIONS=$2
-ID=$3
+FRAGMENT=$2
+REGIONS=$3
+ID=$4
 
-echo "Batch peaks_signals: $@"
-cd ${WORK_DIR}
-
-BEDS_FOLDER=${WORK_DIR}/beds
+TAGS_FOLDER=${WORK_DIR}/tags
 COVERAGES_FOLDER=${WORK_DIR}/coverages/${ID}
-mkdir -p ${BEDS_FOLDER}
+mkdir -p ${TAGS_FOLDER}
 mkdir -p ${COVERAGES_FOLDER}
 
 PROCESSED=""
 TASKS=""
 
-REGIONS3=${REGIONS}.bed3
+REGIONS3=${COVERAGES_FOLDER}/regions.bed3
 if [[ ! -f ${REGIONS3} ]]; then
-    echo "Create BED regions file"
+    echo "Create BED3 regions file"
     cat ${REGIONS} | awk -v OFS='\t' '{print($1,$2,$3)}' > ${REGIONS3}
 fi
 
@@ -37,7 +36,7 @@ cd ${WORK_DIR}
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | sort)
 do :
     NAME=${FILE%%.bam}
-    FILE_BED=${BEDS_FOLDER}/${NAME}.bed
+    TAGS=${TAGS_FOLDER}/${NAME}.bed
     COVERAGE_CSV=${COVERAGES_FOLDER}/${NAME}.csv
     if [[ ! -f ${COVERAGE_CSV} ]]; then
         # Submit task
@@ -51,14 +50,14 @@ do :
 cd ${WORK_DIR}
 module load bedtools2
 
-if [[ ! -f ${FILE_BED} ]]; then
+if [[ ! -f ${TAGS} ]]; then
     bedtools bamtobed -i ${FILE} |
-            grep -v 'chrU' | grep -v 'random' |
-            awk -v OFS='\t' '{if (\$6=="-") {print(\$1, \$3-1, \$3)} else {print(\$1, \$2, \$2+1)}}' |
-            sort -k1,1 -k3,3n -k2,2n > ${FILE_BED}
+        grep -v 'chrU' | grep -v 'random' |
+        awk -v OFS='\t' -v F=${FRAGMENT} '{if (\$6=="-") {print(\$1, \$2+F/2, \$2+F/2+1)} else {print(\$1, \$3-F/2, \$3-F/2+1)}}' |
+        sort -k1,1 -k3,3n -k2,2n > ${TAGS}
 fi
 
-bedtools intersect -wa -wb -a ${REGIONS3} -b ${FILE_BED} -sorted |
+bedtools intersect -wa -wb -a ${REGIONS3} -b ${TAGS} -sorted |
 awk -v OFS=',' -v NAME=${NAME} 'BEGIN{c="";s=0;e=0;x=0}\
 {   if (\$1!=c||\$2!=s||\$3!=e) {\
         if (x!=0) {print(\$1,\$2,\$3,NAME,x)};\
@@ -78,7 +77,7 @@ wait_complete ${TASKS}
 check_logs
 
 # Process BED sizes
-cd ${BEDS_FOLDER}
+cd ${TAGS_FOLDER}
 if [[ ! -f sizes.csv ]]; then
     for FILE in $(find . -name '*.bed' | sed 's#./##g' | sort)
     do :
@@ -102,7 +101,7 @@ source activate py3.5
 cd $COVERAGES_FOLDER
 cat *.csv > ${ID}_coverage.csv
 
-python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.csv ${BEDS_FOLDER}/sizes.csv $ID
+python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.csv ${TAGS_FOLDER}/sizes.csv $ID
 
 ENDINPUT
 )
