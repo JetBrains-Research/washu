@@ -33,6 +33,7 @@ if [[ ! -f ${REGIONS3} ]]; then
     cat ${REGIONS} | awk -v OFS='\t' '{print($1,$2,$3)}' > ${REGIONS3}
 fi
 
+cd ${WORK_DIR}
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | sort)
 do :
     NAME=${FILE%%.bam}
@@ -62,6 +63,7 @@ if [[ ! -f ${COVERAGE_BED} ]]; then
 fi
 ENDINPUT
 )
+    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 wait_complete ${TASKS}
