@@ -63,7 +63,7 @@ if [[ ! -f ${COVERAGE_BED} ]]; then
     { if (\$1!=c||\$2!=s||\$3!=e) {\
         if (x!=0) print(\$1,\$2,\$3,x);c=\$1;s=\$2;e=\$3;x=1}\
         else {x+=1}\
-    } END{print(\$1,\$2,\$3,x)}" > ${COVERAGE_BED}
+    } END{print(\$1,\$2,\$3,x)}' > ${COVERAGE_BED}
 fi
 ENDINPUT
 )
