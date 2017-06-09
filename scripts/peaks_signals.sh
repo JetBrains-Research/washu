@@ -60,8 +60,7 @@ module load bedtools2
 
 if [[ ! -f ${TAGS} ]]; then
     bedtools bamtobed -i ${FILE} |
-        grep -v 'chrU' | grep -v 'random' |
-        awk -v OFS='\t' -v F=${FRAGMENT} '{if (\$6=="-") {print(\$1, \$2+F/2, \$2+F/2+1)} else {print(\$1, \$3-F/2, \$3-F/2+1)}}' |
+        awk -v OFS='\t' -v F=${FRAGMENT} '{if (\$6=="-") {print(\$1, \$2+F/2, \$2+F/2+1)} else {if (\$3-F/2>=1) print(\$1, \$3-F/2, \$3-F/2+1)}}' |
         sort -k1,1 -k3,3n -k2,2n > ${TAGS}
 fi
 
