@@ -34,10 +34,10 @@ do :
     # Submit task
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N remove_duplicates_${NAME}
+#PBS -N unique_${NAME}
 #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=32gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${NAME}_remove_duplicates.log
+#PBS -o ${WORK_DIR}/${NAME}_unique.log
 
 cd ${WORK_DIR}
 module load java
