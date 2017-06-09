@@ -83,10 +83,10 @@ done
 wait_complete ${TASKS}
 check_logs
 
-# Process BED sizes
+# Process libraries sizes
 cd ${TAGS_FOLDER}
 if [[ ! -f sizes.csv ]]; then
-    for FILE in $(find . -name '*.bed' | sed 's#./##g' | sort)
+    for FILE in $(find . -name '*.tag' | sed 's#./##g' | sort)
     do :
         NAME=${FILE%%.bed}
         LINES=$(cat $FILE | wc -l)
