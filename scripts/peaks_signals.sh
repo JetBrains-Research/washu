@@ -38,8 +38,8 @@ for FILE in $(find . -name '*.bam' | sed 's#./##g' | sort)
 do :
     NAME=${FILE%%.bam}
     FILE_BED=${BEDS_FOLDER}/${NAME}.bed
-    COVERAGE_BED=${COVERAGES_FOLDER}/${NAME}.bed
-    if [[ ! -f ${COVERAGE_BED} ]]; then
+    COVERAGE_CSV=${COVERAGES_FOLDER}/${NAME}.csv
+    if [[ ! -f ${COVERAGE_CSV} ]]; then
         # Submit task
         QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
@@ -59,13 +59,13 @@ if [[ ! -f ${FILE_BED} ]]; then
 fi
 
 bedtools intersect -wa -wb -a ${REGIONS3} -b ${FILE_BED} -sorted |
-awk -v OFS='\t' 'BEGIN{c="";s=0;e=0;x=0}\
+awk -v OFS=',' -v NAME=${NAME} 'BEGIN{c="";s=0;e=0;x=0}\
 {   if (\$1!=c||\$2!=s||\$3!=e) {\
-        if (x!=0) {print(\$1,\$2,\$3,x)};\
+        if (x!=0) {print(\$1,\$2,\$3,NAME,x)};\
         c=\$1;s=\$2;e=\$3;x=1\
     } else {x+=1}\
 }\
-END{print(\$1,\$2,\$3,x)}' > ${COVERAGE_BED}
+END{print(\$1,\$2,\$3,NAME,x)}' > ${COVERAGE_CSV}
 
 ENDINPUT
 )
@@ -90,11 +90,7 @@ fi
 
 # Merge all the coverages files into a single file for further python processing
 cd $COVERAGES_FOLDER
-for FILE in $(find . -name '*.bed' | sed 's#./##g' | sort)
-do :
-    NAME=${FILE%%.bed}
-    cat $FILE | awk -v OFS=',' -v NAME=$NAME '{print($1,$2,$3,NAME,$4)}' >> coverage.csv
-done
+cat *.csv > coverage.csv
 
 # Finally create tables
 python $(dirname $0)/peaks_signals.sh ${COVERAGES_FOLDER}/coverage.csv ${BEDS_FOLDER}/sizes.csv $ID
