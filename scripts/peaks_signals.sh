@@ -23,7 +23,7 @@ echo "FRAGMENT: $FRAGMENT"
 echo "REGIONS: $REGIONS"
 echo "ID: $ID"
 
-TAGS_FOLDER=${WORK_DIR}/tags
+TAGS_FOLDER=${WORK_DIR}/tags_${FRAGMENT}
 COVERAGES_FOLDER=${WORK_DIR}/coverages/${ID}
 mkdir -p ${TAGS_FOLDER}
 mkdir -p ${COVERAGES_FOLDER}
