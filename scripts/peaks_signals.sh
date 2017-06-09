@@ -88,10 +88,26 @@ if [[ ! -f sizes.csv ]]; then
     done
 fi
 
+# Create resulting tables
+QSUB_ID=$(qsub << ENDINPUT
+#!/bin/sh
+#PBS -N peaks_signal_${ID}
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
+#PBS -j oe
+#PBS -o ${WORK_DIR}/${ID}_peaks_signal.log
+
+source activate py3.5
+
 # Merge all the coverages files into a single file for further python processing
 cd $COVERAGES_FOLDER
-cat *.csv > coverage.csv
+cat *.csv > ${ID}_coverage.csv
 
-# Finally create tables
-python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/coverage.csv ${BEDS_FOLDER}/sizes.csv $ID
+python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.csv ${BEDS_FOLDER}/sizes.csv $ID
+
+ENDINPUT
+)
+echo "CREATE TABLES JOB: ${QSUB_ID}"
+wait_complete ${QSUB_ID}
+check_logs
+
 echo "Done. Batch peaks_signals: $@"
