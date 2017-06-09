@@ -39,9 +39,9 @@ do :
     NAME=${FILE%%.bam}
     FILE_BED=${BEDS_FOLDER}/${NAME}.bed
     COVERAGE_BED=${COVERAGES_FOLDER}/${NAME}.bed
-
-    # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+    if [[ ! -f ${COVERAGE_BED} ]]; then
+        # Submit task
+        QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N peaks_coverage_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=8gb
@@ -57,19 +57,22 @@ if [[ ! -f ${FILE_BED} ]]; then
             awk '{if (\$6=="-") {print(\$1, \$3-1, \$3)} else {print(\$1, \$2, \$2+1)}}' |
             sort -k1,1 -k3,3n -k2,2n > ${FILE_BED}
 fi
-if [[ ! -f ${COVERAGE_BED} ]]; then
-    bedtools intersect -wa -wb -a ${REGIONS3} -b ${FILE_BED} -sorted |
-    awk -v OFS='\t' 'BEGIN{c="";s=0;e=0;x=0}\
-    { if (\$1!=c||\$2!=s||\$3!=e) {\
-        if (x!=0) print(\$1,\$2,\$3,x);c=\$1;s=\$2;e=\$3;x=1}\
-        else {x+=1}\
-    } END{print(\$1,\$2,\$3,x)}' > ${COVERAGE_BED}
-fi
+
+bedtools intersect -wa -wb -a ${REGIONS3} -b ${FILE_BED} -sorted |
+awk -v OFS='\t' 'BEGIN{c="";s=0;e=0;x=0}\
+{   if (\$1!=c||\$2!=s||\$3!=e) {\
+        if (x!=0) print(\$1,\$2,\$3,x);c=\$1;s=\$2;e=\$3;x=1\
+    } else {x+=1}\
+}\
+END{print(\$1,\$2,\$3,x)}' > ${COVERAGE_BED}
+
 ENDINPUT
 )
-    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+        echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
+        TASKS="$TASKS $QSUB_ID"
+    fi
 done
+
 wait_complete ${TASKS}
 check_logs
 
