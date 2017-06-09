@@ -61,7 +61,8 @@ fi
 bedtools intersect -wa -wb -a ${REGIONS3} -b ${FILE_BED} -sorted |
 awk -v OFS='\t' 'BEGIN{c="";s=0;e=0;x=0}\
 {   if (\$1!=c||\$2!=s||\$3!=e) {\
-        if (x!=0) print(\$1,\$2,\$3,x);c=\$1;s=\$2;e=\$3;x=1\
+        if (x!=0) {print(\$1,\$2,\$3,x)};\
+        c=\$1;s=\$2;e=\$3;x=1\
     } else {x+=1}\
 }\
 END{print(\$1,\$2,\$3,x)}' > ${COVERAGE_BED}
