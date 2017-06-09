@@ -88,7 +88,7 @@ cd ${TAGS_FOLDER}
 if [[ ! -f sizes.csv ]]; then
     for FILE in $(find . -name '*.tag' | sed 's#./##g' | sort)
     do :
-        NAME=${FILE%%.bed}
+        NAME=${FILE%%.tag}
         LINES=$(cat $FILE | wc -l)
         echo "$NAME,$LINES" >> sizes.csv
     done
