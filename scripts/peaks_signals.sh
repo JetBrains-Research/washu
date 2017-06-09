@@ -93,5 +93,5 @@ cd $COVERAGES_FOLDER
 cat *.csv > coverage.csv
 
 # Finally create tables
-python $(dirname $0)/peaks_signals.sh ${COVERAGES_FOLDER}/coverage.csv ${BEDS_FOLDER}/sizes.csv $ID
+python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/coverage.csv ${BEDS_FOLDER}/sizes.csv $ID
 echo "Done. Batch peaks_signals: $@"
