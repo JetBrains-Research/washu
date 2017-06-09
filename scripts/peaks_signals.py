@@ -65,7 +65,7 @@ def main():
         usage()
         sys.exit(1)
 
-    process(args[0], args[1], args[3])
+    process(args[0], args[1], args[2])
 
 
 if __name__ == "__main__":
