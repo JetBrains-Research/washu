@@ -54,7 +54,7 @@ module load bedtools2
 if [[ ! -f ${FILE_BED} ]]; then
     bedtools bamtobed -i ${FILE} |
             grep -v 'chrU' | grep -v 'random' |
-            awk '{if (\$6=="-") {print(\$1, \$3-1, \$3)} else {print(\$1, \$2, \$2+1)}}' |
+            awk -v OFS='\t' '{if (\$6=="-") {print(\$1, \$3-1, \$3)} else {print(\$1, \$2, \$2+1)}}' |
             sort -k1,1 -k3,3n -k2,2n > ${FILE_BED}
 fi
 
