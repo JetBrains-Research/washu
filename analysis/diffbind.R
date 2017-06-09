@@ -26,8 +26,8 @@ require_or_install("ggplot2")
 require_or_install("stringr")
 
 main <- function(path, fragmentSize) {
-    write(paste("DiffBind version", packageVersion("DiffBind")))
-    write(paste("Processing file", path))
+    print(paste("DiffBind version", packageVersion("DiffBind")))
+    print(paste("Processing file", path))
     print(paste("Fragment size", fragmentSize))
 
     yo = dba(sampleSheet = path)
