@@ -199,7 +199,7 @@ if [ ! -d $MACS_BDGDIFF ]; then
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N ${NAME}_macs2_broad_bdgdiff
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=48gb
 #PBS -j oe
 #PBS -o ${MACS_BDGDIFF}/${NAME}_macs2_broad_bdgdiff.log
 # This is necessary because qsub default working dir is user home
