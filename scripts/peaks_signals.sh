@@ -83,6 +83,10 @@ done
 wait_complete ${TASKS}
 check_logs
 
+# Merge all the coverages files into a single file for further python processing
+cd $COVERAGES_FOLDER
+cat $(ls *.csv | grep -v ${ID})  > ${ID}_coverage.csv
+
 # Process libraries sizes
 cd ${TAGS_FOLDER}
 if [[ ! -f sizes.csv ]]; then
@@ -102,12 +106,8 @@ QSUB_ID=$(qsub << ENDINPUT
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}_peaks_signal.log
 
-source activate py3.5
-
-# Merge all the coverages files into a single file for further python processing
 cd $COVERAGES_FOLDER
-cat *.csv > ${ID}_coverage.csv
-
+source activate py3.5
 python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.csv ${TAGS_FOLDER}/sizes.csv $ID
 
 ENDINPUT
