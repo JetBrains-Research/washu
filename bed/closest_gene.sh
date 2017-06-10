@@ -27,4 +27,6 @@ if [[ ! $GENES == *.bed ]]; then
 fi
 
 COLS=$(cat $FILE | grep "chr" | head -1 | awk '{ print NF }')
-bedtools closest -a ${FILE} -b ${GENES} -d | awk -v COLS=$COLS -v OFS='\t' '{ print $1,$2,$3,$(COLS+4),$(COLS+5) }' | sort
+bedtools closest -a ${FILE} -b ${GENES} -d |\
+    awk -v COLS=$COLS '{out=$1; for (i=2;i<=NF;i++) {out=out"\t"$i}; out=out"\t"$(COLS+4)"\t"$(COLS+5); print out; }'|\
+    sort
