@@ -6,6 +6,7 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <BED_FILE> <GENES.ANNOTATION.gtf | GENES.ANNOTATION.bed>"
+    echo "Download annotation at: https://www.gencodegenes.org/"
     exit 1
 fi
 >&2 echo "closest_gene $@"
