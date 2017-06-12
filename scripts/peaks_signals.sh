@@ -64,14 +64,8 @@ if [[ ! -f ${TAGS} ]]; then
         sort -k1,1 -k3,3n -k2,2n > ${TAGS}
 fi
 
-bedtools intersect -wa -wb -a ${REGIONS3} -b ${TAGS} -sorted |
-awk -v OFS=',' -v NAME=${NAME} 'BEGIN{c="";s=0;e=0;x=0}\
-{   if (\$1!=c||\$2!=s||\$3!=e) {\
-        if (x!=0) {print(\$1,\$2,\$3,NAME,x)};\
-        c=\$1;s=\$2;e=\$3;x=1\
-    } else {x+=1}\
-}\
-END{print(\$1,\$2,\$3,NAME,x)}' > ${COVERAGE_CSV}
+bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted |\
+    awk -v OFS=',' -v NAME=${NAME} '{ print(\$1,\$2,\$3,NAME,$\4) }' > ${COVERAGE_CSV}
 
 ENDINPUT
 )
