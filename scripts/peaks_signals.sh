@@ -64,8 +64,7 @@ if [[ ! -f ${TAGS} ]]; then
         sort -k1,1 -k3,3n -k2,2n > ${TAGS}
 fi
 
-bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted |\
-    awk -v OFS=',' -v NAME=${NAME} '{ print(\$1,\$2,\$3,\$4,NAME) }' > ${COVERAGE_CSV}
+bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted > ${COVERAGE_CSV}
 
 ENDINPUT
 )
@@ -77,11 +76,12 @@ done
 wait_complete ${TASKS}
 check_logs
 
-# Merge all the coverages files into a single file for further python processing
+# Merge all the coverages files for further python processing
 cd $COVERAGES_FOLDER
-cat $(ls *.csv | grep -v ${ID})  > ${ID}_coverage.csv
-# Cleanup
-rm $(ls *.csv | grep -v ${ID})
+for FILE in $(ls *.csv | grep -v ${ID}); do
+    NAME=${FILE%%.csv}
+    cat ${FILE} | awk -v OFS=',' -v NAME=${NAME} '{print $1,$2,$3,NAME}' >> ${ID}_coverage.csv
+done
 
 # Process libraries sizes
 cd ${TAGS_FOLDER}
