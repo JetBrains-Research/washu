@@ -17,7 +17,7 @@ def usage():
 
 
 def process(intersection_path, sizes_path, id):
-    coverage = pd.read_csv(intersection_path, names=('chr', 'start', 'end', 'name', 'coverage'))
+    coverage = pd.read_csv(intersection_path, names=('chr', 'start', 'end', 'coverage', 'name'))
 
     print('Processing raw signal')
     pivot = pd.pivot_table(coverage, index=['chr', 'start', 'end'], columns='name', values='coverage', fill_value=0)

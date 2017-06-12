@@ -65,7 +65,7 @@ if [[ ! -f ${TAGS} ]]; then
 fi
 
 bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted |\
-    awk -v OFS=',' -v NAME=${NAME} '{ print(\$1,\$2,\$3,NAME,$\4) }' > ${COVERAGE_CSV}
+    awk -v OFS=',' -v NAME=${NAME} '{ print(\$1,\$2,\$3,\$4,NAME) }' > ${COVERAGE_CSV}
 
 ENDINPUT
 )
