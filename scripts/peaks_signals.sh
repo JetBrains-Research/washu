@@ -37,7 +37,7 @@ TASKS=""
 REGIONS3=${COVERAGES_FOLDER}/regions.bed3
 if [[ ! -f ${REGIONS3} ]]; then
     echo "Create BED3 regions file"
-    cat ${REGIONS} | awk -v OFS='\t' '{print($1,$2,$3)}' > ${REGIONS3}
+    cat ${REGIONS} | awk -v OFS='\t' '{print($1,$2,$3)}' | sort -k1,1 -k3,3n -k2,2n > ${REGIONS3}
 fi
 
 cd ${WORK_DIR}
