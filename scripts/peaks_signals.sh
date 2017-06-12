@@ -45,8 +45,8 @@ for FILE in $(find . -name '*.bam' | sed 's#./##g' | sort)
 do :
     NAME=${FILE%%.bam}
     TAGS=${TAGS_FOLDER}/${NAME}.tag
-    COVERAGE_CSV=${COVERAGES_FOLDER}/${NAME}.csv
-    if [[ ! -f ${COVERAGE_CSV} ]]; then
+    COVERAGE_TSV=${COVERAGES_FOLDER}/${NAME}.tsv
+    if [[ ! -f ${COVERAGE_TSV} ]]; then
         # Submit task
         QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
@@ -64,7 +64,7 @@ if [[ ! -f ${TAGS} ]]; then
         sort -k1,1 -k3,3n -k2,2n > ${TAGS}
 fi
 
-bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted > ${COVERAGE_CSV}
+bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted > ${COVERAGE_TSV}
 
 ENDINPUT
 )
@@ -78,8 +78,8 @@ check_logs
 
 # Merge all the coverages files for further python processing
 cd $COVERAGES_FOLDER
-for FILE in $(ls *.csv | grep -v ${ID}); do
-    NAME=${FILE%%.csv}
+for FILE in $(ls *.tsv | grep -v ${ID}); do
+    NAME=${FILE%%.tsv}
     cat ${FILE} | awk -v OFS=',' -v NAME=${NAME} '{print $1,$2,$3,NAME}' >> ${ID}_coverage.csv
 done
 
