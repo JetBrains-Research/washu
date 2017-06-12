@@ -80,6 +80,8 @@ check_logs
 # Merge all the coverages files into a single file for further python processing
 cd $COVERAGES_FOLDER
 cat $(ls *.csv | grep -v ${ID})  > ${ID}_coverage.csv
+# Cleanup
+rm $(ls *.csv | grep -v ${ID})
 
 # Process libraries sizes
 cd ${TAGS_FOLDER}
