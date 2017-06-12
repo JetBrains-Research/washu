@@ -80,7 +80,7 @@ check_logs
 cd $COVERAGES_FOLDER
 for FILE in $(ls *.tsv | grep -v ${ID}); do
     NAME=${FILE%%.tsv}
-    cat ${FILE} | awk -v OFS=',' -v NAME=${NAME} '{print $1,$2,$3,NAME}' >> ${ID}_coverage.csv
+    cat ${FILE} | awk -v OFS=',' -v NAME=${NAME} '{print $1,$2,$3,$4,NAME}' >> ${ID}_coverage.csv
 done
 
 # Process libraries sizes
