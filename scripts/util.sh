@@ -11,7 +11,13 @@ which qsub &>/dev/null || {
     {
         # LOAD args to $CMD
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
-        QSUB_FILE=$(mktemp /tmp/qsub.XXXXXXXXXXXX.sh)
+        # MacOS cannot handle XXXX template with ".sh" suffix, also --suffix
+        # option not available in BSD mktemp, so let's do some hack
+        QSUB_FILE_PREFIX=$(mktemp "${TMPDIR:-/tmp/}qsub.XXXXXXXXXXXX")
+        QSUB_FILE=$(mktemp "${QSUB_FILE_PREFIX}.sh")
+        echo "QSUB task: ${QSUB_FILE}"
+        rm ${QSUB_FILE_PREFIX}
+
         echo "# This file was generated as QSUB MOCK" > $QSUB_FILE
         # MOCK for module command
         echo 'module() { echo "module $@"; } ' >> $QSUB_FILE
