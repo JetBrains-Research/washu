@@ -8,37 +8,35 @@ if [ -f "$(dirname $0)/util.sh" ]; then
 fi
 
 if [ $# -lt 4 ]; then
-    echo "Need 4 parameters! <WORK_DIR_WITH_BAMS> <FRAGMENT> <REGIONS> <ID>"
+    echo "Need 4 parameters! <WORK_DIR_WITH_BAMS> <INSERT_LENGTH> <REGIONS> <ID>"
     exit 1
 fi
 echo "Batch peaks_signals: $@"
 
 WORK_DIR=$1
-FRAGMENT=$2
+INSERT_LENGTH=$2
 REGIONS=$3
 ID=$4
 
 echo "WORK_DIR: $WORK_DIR"
-echo "FRAGMENT: $FRAGMENT"
+echo "INSERT_LENGTH: $INSERT_LENGTH"
 echo "REGIONS: $REGIONS"
 echo "ID: $ID"
 
-TAGS_FOLDER=${WORK_DIR}/tags_${FRAGMENT}
+TAGS_FOLDER=${WORK_DIR}/tags_${INSERT_LENGTH}
 COVERAGES_FOLDER=${WORK_DIR}/coverages/${ID}
 mkdir -p ${TAGS_FOLDER}
 mkdir -p ${COVERAGES_FOLDER}
 
-echo "TAGS SHIFTED TO FRAGMENT/2: $TAGS_FOLDER"
+echo "TAGS INSERT_LENGTH PROCESSED: $TAGS_FOLDER"
 echo "RESULTS FOLDER: $COVERAGES_FOLDER"
 
 PROCESSED=""
 TASKS=""
 
-REGIONS3=${COVERAGES_FOLDER}/regions.bed3
-if [[ ! -f ${REGIONS3} ]]; then
-    echo "Create BED3 regions file"
-    cat ${REGIONS} | awk -v OFS='\t' '{print($1,$2,$3)}' | sort -k1,1 -k3,3n -k2,2n > ${REGIONS3}
-fi
+REGIONS3=${COVERAGES_FOLDER}/${ID}.bed3
+echo "Create BED3 regions file ${REGIONS3}"
+cat ${REGIONS} | awk -v OFS='\t' '{print($1,$2,$3)}' | sort -k1,1 -k3,3n -k2,2n > ${REGIONS3}
 
 cd ${WORK_DIR}
 for FILE in $(find . -name '*.bam' | sed 's#./##g' | sort)
@@ -51,7 +49,7 @@ do :
         QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N peaks_coverage_${NAME}
-#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=8gb
+#PBS -l nodes=1:ppn=1,walltime=1:00:00,vmem=4gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_peaks_coverage.log
 
@@ -60,7 +58,7 @@ module load bedtools2
 
 if [[ ! -f ${TAGS} ]]; then
     bedtools bamtobed -i ${FILE} |
-        awk -v OFS='\t' -v F=${FRAGMENT} '{if (\$6=="-") {print(\$1, \$2+F/2, \$2+F/2+1)} else {if (\$3-F/2>=1) {print(\$1, \$3-F/2, \$3-F/2+1)}}}' |
+        awk -v OFS='\t' -v F=${INSERT_LENGTH} '{if (\$6 != "-") {print(\$1, \$2+F, \$2+F+1)} else {if (\$3-F>=1) {print(\$1, \$3-F, \$3-F+1)}}}' |
         sort -k1,1 -k3,3n -k2,2n > ${TAGS}
 fi
 
@@ -94,11 +92,10 @@ if [[ ! -f sizes.csv ]]; then
     done
 fi
 
-# Create resulting tables
 QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N peaks_signal_${ID}
-#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
+#PBS -l nodes=1:ppn=1,walltime=1:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}_peaks_signal.log
 
