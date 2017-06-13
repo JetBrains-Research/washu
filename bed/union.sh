@@ -18,9 +18,10 @@ if [ -f ${TMP} ]; then
 fi
 
 N=1
-for F in $@
+for FILE in $@
 do
-    awk -v OFS='\t' -v N=$N '{print $1,$2,$3,N}' $F >> ${TMP}
+    NAME=${FILE##.*/}
+    awk -v OFS='\t' -v N=${NAME}_${NAME} '{print $1,$2,$3,N}' $FILE >> ${TMP}
     N=$((N+1))
 done
 
