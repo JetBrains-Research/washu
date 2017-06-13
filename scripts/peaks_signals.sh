@@ -100,7 +100,13 @@ QSUB_ID=$(qsub << ENDINPUT
 #PBS -o ${WORK_DIR}/${ID}_peaks_signal.log
 
 cd $COVERAGES_FOLDER
-source activate py3.5
+PY_MAJOR_VERS=$(python -c 'import sys; print(sys.version_info[0])')
+echo ${PY_MAJOR_VERS}
+if [[ $PY_MAJOR_VERS != "3" ]]
+then
+  source activate py3.5
+fi
+
 python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.csv ${TAGS_FOLDER}/sizes.csv $ID
 
 ENDINPUT
