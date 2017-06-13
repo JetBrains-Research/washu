@@ -78,17 +78,17 @@ check_logs
 cd $COVERAGES_FOLDER
 for FILE in $(ls *.tsv | grep -v ${ID}); do
     NAME=${FILE%%.tsv}
-    cat ${FILE} | awk -v OFS=',' -v NAME=${NAME} '{print $1,$2,$3,$4,NAME}' >> ${ID}_coverage.csv
+    cat ${FILE} | awk -v OFS='\t' -v NAME=${NAME} '{print $1,$2,$3,$4,NAME}' >> ${ID}_coverage.tsv
 done
 
 # Process libraries sizes
 cd ${TAGS_FOLDER}
-if [[ ! -f sizes.csv ]]; then
+if [[ ! -f sizes.tsv ]]; then
     for FILE in $(find . -name '*.tag' | sed 's#./##g' | sort)
     do :
         NAME=${FILE%%.tag}
         LINES=$(cat $FILE | wc -l)
-        echo "$NAME,$LINES" >> sizes.csv
+        echo "${NAME}"$'\t'"${LINES}" >> sizes.tsv
     done
 fi
 
