@@ -107,7 +107,7 @@ then
   source activate py3.5
 fi
 
-python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.csv ${TAGS_FOLDER}/sizes.csv $ID
+python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.tsv ${TAGS_FOLDER}/sizes.tsv $ID
 
 ENDINPUT
 )
