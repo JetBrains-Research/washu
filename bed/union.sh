@@ -21,7 +21,7 @@ N=1
 for FILE in $@
 do
     NAME=${FILE##.*/}
-    awk -v OFS='\t' -v N=${NAME}_${NAME} '{print $1,$2,$3,N}' $FILE >> ${TMP}
+    awk -v OFS='\t' -v N=${N}_${NAME} '{print $1,$2,$3,N}' $FILE >> ${TMP}
     N=$((N+1))
 done
 
