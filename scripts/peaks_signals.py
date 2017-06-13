@@ -28,31 +28,31 @@ def process(coverage_path, sizes_path, id):
     pivot.to_csv(raw_signal, sep='\t')
     print('Saved raw signal to {}'.format(raw_signal))
 
-    print('Processing normalization by mln reads in library')
+    print('Processing normalization by RPM reads in library')
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'))
-    sizes_mln = {row['name']: row['size'] / 1000000.0 for _, row in sizes.iterrows()}
-    print('Sizes mln: {}'.format(sizes_mln))
-    coverage['rpm'] = [row['coverage'] / sizes_mln[row['name']] for _, row in coverage.iterrows()]
-    pivot_by_mln = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
+    sizes_rpm = {row['name']: row['size'] / 1000000.0 for _, row in sizes.iterrows()}
+    print('Sizes RPM: {}'.format(sizes_rpm))
+    coverage['rpm'] = [row['coverage'] / sizes_rpm[row['name']] for _, row in coverage.iterrows()]
+    pivot_by_rpm = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
                                   columns='name', values='rpm', fill_value=0)
-    raw_signal_by_mln = '{}_rpm.tsv'.format(id)
-    pivot_by_mln.to_csv(raw_signal_by_mln, sep='\t', )
-    print('Saved normalized reads per million RPM signal to {}'.format(raw_signal_by_mln))
+    raw_signal_by_rpm = '{}_rpm.tsv'.format(id)
+    pivot_by_rpm.to_csv(raw_signal_by_rpm, sep='\t', )
+    print('Saved normalized reads per million RPM signal to {}'.format(raw_signal_by_rpm))
 
-    print('Processing normalization by mln reads in peaks')
-    sizes_peaks_mln = {row['name']: np.sum(coverage[coverage['name'] == row['name']]['coverage']) / 1000000.0
+    print('Processing normalization by RPM reads in peaks')
+    sizes_peaks_rpm = {row['name']: np.sum(coverage[coverage['name'] == row['name']]['coverage']) / 1000000.0
                        for _, row in sizes.iterrows()}
-    print('Sizes peaks mln: {}'.format(sizes_peaks_mln))
-    coverage['rpm_peaks'] = [row['coverage'] / sizes_peaks_mln[row['name']] for _, row in
+    print('Sizes peaks RPM: {}'.format(sizes_peaks_rpm))
+    coverage['rpm_peaks'] = [row['coverage'] / sizes_peaks_rpm[row['name']] for _, row in
                                          coverage.iterrows()]
     pivot_by_coverage = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
                                        columns='name', values='rpm_peaks', fill_value=0)
     raw_signal_by_coverage = '{}_rpm_peaks.tsv'.format(id)
     pivot_by_coverage.to_csv(raw_signal_by_coverage, sep='\t')
-    print('Saved normalized reads by mln reads in peaks signal to {}'.format(raw_signal_by_coverage))
+    print('Saved normalized reads by RPM reads in peaks signal to {}'.format(raw_signal_by_coverage))
 
     print('Processing RPKM normalization')
-    coverage['coverage_rpkm'] = [row['coverage'] / ((row['end'] - row['start']) / 1000.0) / sizes_mln[row['name']] for
+    coverage['coverage_rpkm'] = [row['coverage'] / ((row['end'] - row['start']) / 1000.0) / sizes_rpm[row['name']] for
                                  _, row in coverage.iterrows()]
     pivot_rpkm = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
                                 columns='name', values='coverage_rpkm', fill_value=0)
