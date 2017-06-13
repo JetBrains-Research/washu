@@ -49,7 +49,7 @@ do :
         QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N peaks_coverage_${NAME}
-#PBS -l nodes=1:ppn=1,walltime=1:00:00,vmem=4gb
+#PBS -l nodes=1:ppn=1,walltime=1:00:00,vmem=8gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_peaks_coverage.log
 
