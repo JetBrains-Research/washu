@@ -60,6 +60,14 @@ def process(coverage_path, sizes_path, id):
     pivot_rpkm.to_csv(rpkm, sep='\t')
     print('Saved RPKM to {}'.format(rpkm))
 
+    print('Sizes peaks RPKM: {}'.format(sizes_peaks_rpm))
+    coverage['rpkm_peaks'] = [row['coverage'] / ((row['end'] - row['start']) / 1000.0) / sizes_peaks_rpm[row['name']] for
+                                 _, row in coverage.iterrows()]
+    pivot_by_coverage = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
+                                       columns='name', values='rpkm_peaks', fill_value=0)
+    rpkm_peaks = '{}_rpkm_peaks.tsv'.format(id)
+    pivot_by_coverage.to_csv(rpkm_peaks, sep='\t')
+    print('Saved normalized reads by RPKM reads in peaks signal to {}'.format(rpkm_peaks))
 
 def main():
     argv = sys.argv
