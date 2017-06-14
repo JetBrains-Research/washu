@@ -44,30 +44,30 @@ def process(coverage_path, sizes_path, id):
                        for _, row in sizes.iterrows()}
     print('Sizes peaks RPM: {}'.format(sizes_peaks_rpm))
     coverage['rpm_peaks'] = [row['coverage'] / sizes_peaks_rpm[row['name']] for _, row in
-                                         coverage.iterrows()]
-    pivot_by_coverage = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
-                                       columns='name', values='rpm_peaks', fill_value=0)
-    raw_signal_by_coverage = '{}_rpm_peaks.tsv'.format(id)
-    pivot_by_coverage.to_csv(raw_signal_by_coverage, sep='\t')
-    print('Saved normalized reads by RPM reads in peaks signal to {}'.format(raw_signal_by_coverage))
+                             coverage.iterrows()]
+    pivot_rpm_peaks = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
+                                     columns='name', values='rpm_peaks', fill_value=0)
+    raw_signal_by_rpm_peaks = '{}_rpm_peaks.tsv'.format(id)
+    pivot_rpm_peaks.to_csv(raw_signal_by_rpm_peaks, sep='\t')
+    print('Saved normalized reads by RPM reads in peaks signal to {}'.format(raw_signal_by_rpm_peaks))
 
     print('Processing RPKM normalization')
     coverage['coverage_rpkm'] = [row['coverage'] / ((row['end'] - row['start']) / 1000.0) / sizes_rpm[row['name']] for
                                  _, row in coverage.iterrows()]
     pivot_rpkm = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
                                 columns='name', values='coverage_rpkm', fill_value=0)
-    rpkm = '{}_rpkm.tsv'.format(id)
-    pivot_rpkm.to_csv(rpkm, sep='\t')
-    print('Saved RPKM to {}'.format(rpkm))
+    raw_signal_by_rpkm = '{}_rpkm.tsv'.format(id)
+    pivot_rpkm.to_csv(raw_signal_by_rpkm, sep='\t')
+    print('Saved RPKM to {}'.format(raw_signal_by_rpkm))
 
     print('Sizes peaks RPKM: {}'.format(sizes_peaks_rpm))
     coverage['rpkm_peaks'] = [row['coverage'] / ((row['end'] - row['start']) / 1000.0) / sizes_peaks_rpm[row['name']] for
                                  _, row in coverage.iterrows()]
-    pivot_by_coverage = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
-                                       columns='name', values='rpkm_peaks', fill_value=0)
-    rpkm_peaks = '{}_rpkm_peaks.tsv'.format(id)
-    pivot_by_coverage.to_csv(rpkm_peaks, sep='\t')
-    print('Saved normalized reads by RPKM reads in peaks signal to {}'.format(rpkm_peaks))
+    pivot_rpkm_peaks = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
+                                      columns='name', values='rpkm_peaks', fill_value=0)
+    raw_signal_by_rpkm_peaks = '{}_rpkm_peaks.tsv'.format(id)
+    pivot_rpkm_peaks.to_csv(raw_signal_by_rpkm_peaks, sep='\t')
+    print('Saved normalized reads by RPKM reads in peaks signal to {}'.format(raw_signal_by_rpkm_peaks))
 
 def main():
     argv = sys.argv
