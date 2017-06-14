@@ -103,7 +103,7 @@ cd $COVERAGES_FOLDER
 PY_MAJOR_VERS=\$(python -c 'import sys; print(sys.version_info[0])')
 if [[ \$PY_MAJOR_VERS != "3" ]]
 then
-  source activate py3.5
+    source activate py3.5
 fi
 
 python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.tsv ${TAGS_FOLDER}/sizes.tsv $ID
