@@ -30,30 +30,29 @@ def process(coverage_path, sizes_path, id):
 
     print('Processing normalization by all library mapped reads')
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'))
-    sizes_rpm = {row['name']: row['size'] / 1000000.0 for _, row in sizes.iterrows()}
+    sizes_pm = {row['name']: row['size'] / 1000000.0 for _, row in sizes.iterrows()}
+    coverage['sizes_pm'] = tuple(map(lambda name: sizes_pm[name], coverage['name']))
 
     print('Processing normalization by reads mapped to peaks')
-    sizes_peaks_rpm = {row['name']: np.sum(coverage[coverage['name'] == row['name']]['coverage']) / 1000000.0
+    sizes_peaks_pm = {row['name']: np.sum(coverage[coverage['name'] == row['name']]['coverage']) / 1000000.0
                        for _, row in sizes.iterrows()}
+    coverage['sizes_peaks_pm'] = tuple(map(lambda name: sizes_peaks_pm[name], coverage['name']))
 
-    print('Sizes RPM: {}'.format(sizes_rpm))
-    coverage['rpm'] = [row['coverage'] / sizes_rpm[row['name']] for _, row in coverage.iterrows()]
+    print('Sizes RPM: {}'.format(sizes_pm))
+    coverage['rpm'] = coverage['coverage'] / coverage['sizes_pm']
     save_signal(coverage, 'rpm', 'Saved RPM')
 
-    print('Sizes peaks RPM: {}'.format(sizes_peaks_rpm))
-    coverage['rpm_peaks'] = [row['coverage'] / sizes_peaks_rpm[row['name']] for _, row in
-                             coverage.iterrows()]
+    print('Sizes peaks RPM: {}'.format(sizes_peaks_pm))
+    coverage['rpm_peaks'] = coverage['coverage'] / coverage['sizes_peaks_pm']
     save_signal(coverage, 'rpm_peaks', 'Saved normalized reads by RPM reads in peaks signal')
 
     print('Processing RPKM normalization')
     coverage['rpk'] = (coverage['end'] - coverage['start']) / 1000.0
-    coverage['rpkm'] = [row['coverage'] / (row['rpk'] / sizes_rpm[row['name']] for _, row in
-                                           coverage.iterrows()]
+    coverage['rpkm'] = coverage['rpm'] / coverage['rpk']
     save_signal(coverage, 'rpkm', 'Saved RPKM')
 
-    print('Sizes peaks RPKM: {}'.format(sizes_peaks_rpm))
-    coverage['rpkm_peaks'] = [row['coverage'] / (row['rpk'] / sizes_peaks_rpm[row['name']] for _, row in
-                                                 coverage.iterrows()]
+    print('Sizes peaks RPKM: {}'.format(sizes_peaks_pm))
+    coverage['rpkm_peaks'] = coverage['rpm_peaks'] / coverage['rpk']
     save_signal(coverage, 'rpkm_peaks', 'Saved normalized reads by RPKM reads in peaks signal')
 
 def save_signal(coverage, signal_type, msg):
