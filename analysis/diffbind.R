@@ -25,67 +25,81 @@ require_or_install("DiffBind")
 require_or_install("ggplot2")
 require_or_install("stringr")
 
-main <- function(path, fragmentSize) {
+SCORE_FUNCTIONS = c(DBA_SCORE_TMM_MINUS_FULL,
+                    DBA_SCORE_TMM_MINUS_FULL_CPM,
+                    DBA_SCORE_TMM_MINUS_EFFECTIVE,
+                    DBA_SCORE_READS_MINUS)
+REMOVE_DUPLICATES = c(TRUE, FALSE)
+INSERT_SIZES = c(125) # Default insertSize
+
+main <- function(path) {
     print(paste("DiffBind version", packageVersion("DiffBind")))
     print(paste("Processing file", path))
-    print(paste("Fragment size", fragmentSize))
-
     yo = dba(sampleSheet = path)
-    yo = dba.count(yo, bRemoveDuplicates=TRUE, fragmentSize=fragmentSize)
+    for (insertSize in INSERT_SIZES) {
+        for (removeDuplicates in REMOVE_DUPLICATES) {
+            for (scoreFunction in SCORE_FUNCTIONS) {
+                print(paste('INSERT_SIZE', insertSize))
+                print(paste('REMOVE_DUPLICATES', removeDuplicates))
+                print(paste('SCORE_FUNCTION', scoreFunction))
+                id = paste(removeDuplicates, insertSize, scoreFunction, sep = '_')
 
-    # Write counts table
-    counts <- dba.peakset(yo, bRetrieve=TRUE)
-    counts_csv = str_replace(path, ".csv", "_counts.csv")
-    write.table(counts, counts_csv, sep = ",", row.names = FALSE)
+                print(paste('Count', id))
+                yo_counts = dba.count(yo,
+                    bRemoveDuplicates = removeDuplicates, fragmentSize = insertSize, score = scoreFunction)
+                print(paste('PeakSets', id))
+                peaksets <- dba.peakset(yo_counts, bRetrieve = TRUE)
+                scores_csv = str_replace(path, '.csv', paste('_', id, '_counts.csv', sep = ''))
+                write.table(peaksets, scores_csv, sep = ",", row.names = FALSE)
+                print(scores_csv)
 
-    # Plot histogram
-    pdf(file = str_replace(path, ".csv", "_histogram.pdf"))
-    plot(yo)
-    dev.off()
+                print(paste('Histograms', id))
+                hist_pdf = str_replace(path, '.csv', paste('_', id, '_hist.pdf', sep = ''))
+                pdf(file = hist_pdf)
+                plot(yo_counts)
+                dev.off()
+                print(hist_pdf)
 
-    # Analyze contrast factor and compute difference
-    yo = dba.contrast(yo)
-    yo = dba.analyze(yo)
+                print(paste('Analyze contrast factor and compute difference', id))
+                yo_contrast = dba.contrast(yo_counts)
+                yo_contrast = dba.analyze(yo_contrast)
 
-    # Print number of overlap peaks by donors
-    pdf(file = str_replace(path, ".csv", "_overlap.pdf"))
-    overlap_rate = dba.overlap(yo, mode = DBA_OLAP_RATE)
-    plot(overlap_rate, type = "b", ylab = "# peaks", xlab = "Overlap at least this many peaksets")
-    dev.off()
+                print(paste('Number of overlap peaks by donors', id))
+                peaks_overlap_pdf = str_replace(path, ".csv", "_overlap.pdf")
+                pdf(file = peaks_overlap_pdf)
+                overlap_rate = dba.overlap(yo_contrast, mode = DBA_OLAP_RATE)
+                plot(overlap_rate, type = "b", ylab = "# peaks", xlab = "Overlap at least this many peaksets")
+                dev.off()
+                print(peaks_overlap_pdf)
 
-    # PCA, MA plots
-    pdf(file = str_replace(path, ".csv", "_pca.pdf"))
-    dba.plotPCA(yo)
-    dev.off()
+                print(paste('PCA, MA plots', id))
+                pca_pdf = str_replace(path, '.csv', paste('_', id, '_pca.pdf', sep = ''))
+                pdf(file = pca_pdf)
+                dba.plotPCA(yo_contrast)
+                dev.off()
+                print(pca_pdf)
 
-    pdf(file = str_replace(path, ".csv", "_ma.pdf"))
-    dba.plotMA(yo)
-    dev.off()
+                ma_pdf = str_replace(path, '.csv', paste('_', id, '_ma.pdf', sep = ''))
+                pdf(file = ma_pdf)
+                dba.plotMA(yo_contrast)
+                dev.off()
+                print(ma_pdf)
 
-    # Save difference to resulting csv file
-    db = dba.report(yo)
-    result_csv = str_replace(path, ".csv", "_result.csv")
-    write.table(db, result_csv, sep = ",", row.names = FALSE)
-    print(paste("Saved", result_csv))
-
-    # IMPORTANT: plot difference on the last step as it fails if there is no difference
-    pdf(file = str_replace(path, ".csv", "_difference_histogram.pdf"))
-    plot(yo, contrast = 1)
-    dev.off()
-
-    pdf(file = str_replace(path, ".csv", "_difference_pca.pdf"))
-    dba.plotPCA(yo, contrast = 1)
-    dev.off()
-
-    pdf(file = str_replace(path, ".csv", "_difference.pdf"))
-    dba.plotBox(yo)
-    dev.off()
+                print(paste('Save difference to resulting csv file', id))
+                db = dba.report(yo_contrast)
+                difference_csv = str_replace(path, '.csv', paste('_', id, '_difference.csv', sep = ''))
+                write.table(db, difference_csv, sep = ",", row.names = FALSE)
+                print(difference_csv)
+            }
+        }
+    }
 }
 
-if (! interactive()) {
+# TODO[shpynov] add processing of custom insert sizes
+if (!interactive()) {
     args <- commandArgs(TRUE)
-    if (length(args) != 2) {
-        print("Usage: [executable] diffbind.csv fragment_size", stderr())
+    if (length(args) < 1) {
+        print("Usage: [executable] config.csv", stderr())
         q(status = 1)
     } else {
         do.call(main, as.list(args))
