@@ -35,7 +35,7 @@ def process(coverage_path, sizes_path, id):
 
     print('Processing normalization by reads mapped to peaks')
     sizes_peaks_pm = {row['name']: np.sum(coverage[coverage['name'] == row['name']]['coverage']) / 1000000.0
-                       for _, row in sizes.iterrows()}
+                      for _, row in sizes.iterrows()}
     coverage['sizes_peaks_pm'] = tuple(map(lambda name: sizes_peaks_pm[name], coverage['name']))
 
     print('Sizes RPM: {}'.format(sizes_pm))
@@ -54,6 +54,7 @@ def process(coverage_path, sizes_path, id):
     print('Sizes peaks RPKM: {}'.format(sizes_peaks_pm))
     coverage['rpkm_peaks'] = coverage['rpm_peaks'] / coverage['rpk']
     save_signal(id, coverage, 'rpkm_peaks', 'Saved normalized reads by RPKM reads in peaks signal')
+
 
 def save_signal(id, coverage, signal_type, msg):
     pivot_df = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
