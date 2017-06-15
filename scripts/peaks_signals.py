@@ -40,22 +40,22 @@ def process(coverage_path, sizes_path, id):
 
     print('Sizes RPM: {}'.format(sizes_pm))
     coverage['rpm'] = coverage['coverage'] / coverage['sizes_pm']
-    save_signal(coverage, 'rpm', 'Saved RPM')
+    save_signal(id, coverage, 'rpm', 'Saved RPM')
 
     print('Sizes peaks RPM: {}'.format(sizes_peaks_pm))
     coverage['rpm_peaks'] = coverage['coverage'] / coverage['sizes_peaks_pm']
-    save_signal(coverage, 'rpm_peaks', 'Saved normalized reads by RPM reads in peaks signal')
+    save_signal(id, coverage, 'rpm_peaks', 'Saved normalized reads by RPM reads in peaks signal')
 
     print('Processing RPKM normalization')
     coverage['rpk'] = (coverage['end'] - coverage['start']) / 1000.0
     coverage['rpkm'] = coverage['rpm'] / coverage['rpk']
-    save_signal(coverage, 'rpkm', 'Saved RPKM')
+    save_signal(id, coverage, 'rpkm', 'Saved RPKM')
 
     print('Sizes peaks RPKM: {}'.format(sizes_peaks_pm))
     coverage['rpkm_peaks'] = coverage['rpm_peaks'] / coverage['rpk']
-    save_signal(coverage, 'rpkm_peaks', 'Saved normalized reads by RPKM reads in peaks signal')
+    save_signal(id, coverage, 'rpkm_peaks', 'Saved normalized reads by RPKM reads in peaks signal')
 
-def save_signal(coverage, signal_type, msg):
+def save_signal(id, coverage, signal_type, msg):
     pivot_df = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
                               columns='name', values=signal_type, fill_value=0)
     result_filename = '{}_{}.tsv'.format(id, signal_type)
