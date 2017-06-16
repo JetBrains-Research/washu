@@ -29,6 +29,8 @@ mkdir -p ${TAGS_FOLDER}
 mkdir -p ${COVERAGES_FOLDER}
 
 echo "TAGS INSERT_LENGTH PROCESSED: $TAGS_FOLDER"
+SHIFT=$(($INSERT_LENGTH / 2))
+echo "SHIFT FOR TAGS USED: $SHIFT"
 echo "RESULTS FOLDER: $COVERAGES_FOLDER"
 
 PROCESSED=""
@@ -58,7 +60,7 @@ module load bedtools2
 
 if [[ ! -f ${TAGS} ]]; then
     bedtools bamtobed -i ${FILE} |
-        awk -v OFS='\t' -v F=${INSERT_LENGTH} '{if (\$6 != "-") {print(\$1, \$2+F, \$2+F+1)} else {if (\$3-F>=1) {print(\$1, \$3-F, \$3-F+1)}}}' |
+        awk -v OFS='\t' -v S=${SHIFT} '{if (\$6 != "-") {print(\$1, \$2+S, \$2+S+1)} else {if (\$3-S>=1) {print(\$1, \$3-S, \$3-S+1)}}}' |
         sort -k1,1 -k3,3n -k2,2n > ${TAGS}
 fi
 
