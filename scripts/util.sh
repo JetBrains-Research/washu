@@ -14,8 +14,7 @@ which qsub &>/dev/null || {
         # MacOS cannot handle XXXX template with ".sh" suffix, also --suffix
         # option not available in BSD mktemp, so let's do some hack
         QSUB_FILE_PREFIX=$(mktemp "${TMPDIR:-/tmp/}qsub.XXXXXXXXXXXX")
-        QSUB_FILE="${QSUB_FILE_PREFIX}.sh"
-        echo "QSUB task: ${QSUB_FILE}"
+        QSUB_FILE=$(mktemp "${QSUB_FILE_PREFIX}.sh")
         rm ${QSUB_FILE_PREFIX}
 
         echo "# This file was generated as QSUB MOCK" > $QSUB_FILE
