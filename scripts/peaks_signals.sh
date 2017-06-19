@@ -76,12 +76,13 @@ done
 wait_complete ${TASKS}
 check_logs
 
-# Merge all the coverages files for further python processing
 cd $COVERAGES_FOLDER
-for FILE in $(ls *.tsv | grep -v ${ID}); do
-    NAME=${FILE%%.tsv}
-    cat ${FILE} | awk -v OFS='\t' -v NAME=${NAME} '{print $1,$2,$3,$4,NAME}' >> ${ID}_coverage.tsv
-done
+if [[ ! -f ${ID}_coverage.tsv ]]; then
+    for FILE in $(ls *.tsv | grep -v ${ID}); do
+        NAME=${FILE%%.tsv}
+        cat ${FILE} | awk -v OFS='\t' -v NAME=${NAME} '{print $1,$2,$3,$4,NAME}' >> ${ID}_coverage.tsv
+    done
+fi
 
 # Process libraries sizes
 cd ${TAGS_FOLDER}
