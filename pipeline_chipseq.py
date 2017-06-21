@@ -53,7 +53,7 @@ WORK_DIR = args.path_to_directory
 GENOME = "hg19"
 INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y10OD10/chipseq/indexes", GENOME)
 CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
-READS = 15  # Subsampling to 15mln reads
+
 
 ##################
 # Pipeline start #
@@ -90,7 +90,8 @@ move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"], copy_only=Tru
 run_bash("remove_duplicates.sh", WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_unique", ["*_unique*", "*_metrics.txt", "*duplicates.log"], copy_only=True)
 
-# # Batch subsampling
+# Batch subsampling to 15mln reads
+# READS = 15
 # run_bash("subsample.sh", WORK_DIR, str(READS))
 # WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_{}mln".format(READS), ["*{}*".format(READS)])
 #
@@ -102,11 +103,15 @@ move_forward(WORK_DIR, WORK_DIR + "_unique", ["*_unique*", "*_metrics.txt", "*du
 # Peak calling section #
 ########################
 
-# Example for broad peak calling (https://github.com/taoliu/MACS)
-run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1', '--broad', '--broad-cutoff', 0.1)
+# MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1 in example
+folder = run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1', '--broad', '--broad-cutoff', 0.1)
+run_bash("../bed/macs2_filter_fdr.sh", folder, folder.replace('0.1', '0.05'), 0.1, 0.05, WORK_DIR)
+run_bash("../bed/macs2_filter_fdr.sh", folder, folder.replace('0.1', '0.01'), 0.1, 0.01, WORK_DIR)
 
-# Example for regular peak calling (https://github.com/taoliu/MACS) Q=0.01 in example
-run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1)
+# MACS2 Regular peak calling (https://github.com/taoliu/MACS) Q=0.01 in example
+folder = run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1)
+run_bash("../bed/macs2_filter_fdr.sh", folder, folder.replace('0.1', '0.05'), 0.1, 0.05, WORK_DIR)
+run_bash("../bed/macs2_filter_fdr.sh", folder, folder.replace('0.1', '0.01'), 0.1, 0.01, WORK_DIR)
 
 # MACS1.4 P=1e-5 is default
 # P = 0.00001

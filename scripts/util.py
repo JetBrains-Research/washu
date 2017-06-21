@@ -96,7 +96,7 @@ Defaults for MACS2 broad peak calling:
 # Peak calling params:
 #  --p, --q, --broad, --broad-cutoff
     """
-    folder = '{}_macs_{}'.format(work_dir, name)
+    folder = '{}_macs2_{}'.format(work_dir, name)
     print('Processing', folder)
     if not os.path.exists(folder):
         # -B produces bedgraph for signal
@@ -105,6 +105,7 @@ Defaults for MACS2 broad peak calling:
         run_bash("macs2.sh", work_dir, genome, chrom_sizes, name, *[str(p) for p in params])
         move_forward(work_dir, folder, ['*{}*'.format(name), '*rip.csv'], copy_only=True)
         process_macs2_logs(folder)
+    return folder
 
 
 def effective_genome_fraction(genome, chrom_sizes_path):
