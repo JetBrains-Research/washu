@@ -51,7 +51,7 @@ args = parser.parse_args()
 #################
 WORK_DIR = args.path_to_directory
 GENOME = "hg19"
-INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y10OD10/chipseq/indexes", GENOME)
+INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes", GENOME)
 CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
 
 
