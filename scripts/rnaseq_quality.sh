@@ -31,7 +31,7 @@ do :
 
     # Submit task
     QSUB_ID=$(qsub -v WORK_DIR="$WORK_DIR",TAG="$TAG" $(dirname $0)/rnaseq_quality_task.sh)
-    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
+    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 wait_complete ${TASKS}

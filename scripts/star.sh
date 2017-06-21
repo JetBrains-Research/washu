@@ -47,7 +47,7 @@ mv ${NAME}_Log.out $NAME.star_run.log
 mv ${NAME}_Log.final.out $NAME.star_final.log
 ENDINPUT
 )
-    echo "FILE: $NAME; JOB: ${QSUB_ID}"
+    echo "FILE: $NAME; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 

@@ -36,7 +36,7 @@ module load bedtools2
 bash $(dirname $0)/../bam2bw.sh ${FILE} ${CHROM_SIZES}
 ENDINPUT
 )
-    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
+    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 wait_complete ${TASKS}

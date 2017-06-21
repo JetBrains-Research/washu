@@ -68,7 +68,7 @@ bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted > ${COVERAGE_TSV}
 
 ENDINPUT
 )
-        echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
+        echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
     fi
 done
@@ -112,7 +112,7 @@ python $(dirname $0)/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.tsv ${T
 
 ENDINPUT
 )
-echo "CREATE TABLES JOB: ${QSUB_ID}"
+echo "CREATE TABLES TASK: ${QSUB_ID}"
 wait_complete ${QSUB_ID}
 check_logs
 

@@ -49,7 +49,7 @@ java -jar ${PICARD_TOOLS_JAR} MarkDuplicates REMOVE_DUPLICATES=true INPUT=${FILE
 
 ENDINPUT
 )
-    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
+    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 wait_complete ${TASKS}

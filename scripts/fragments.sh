@@ -37,7 +37,7 @@ samtools view -f66 $FILE | cut -f 9 | sed 's/^-//' > ${NAME}_metrics.txt
 Rscript $(dirname $0)/../R/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
 ENDINPUT
 )
-    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
+    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 

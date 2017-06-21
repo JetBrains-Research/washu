@@ -42,7 +42,7 @@ export _JAVA_OPTIONS="-Xmx30g"
 java -jar /home/oshpynov/zinbra/zinbra-0.2.4.jar analyze --input ${FILE} --reference ${FOLDER}/${GENOME}.2bit --fdr ${Q} --bed ${ID}_peaks.bed
 ENDINPUT
 )
-    echo "FILE: ${FILE}; JOB: ${QSUB_ID}"
+    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done
 wait_complete ${TASKS}
