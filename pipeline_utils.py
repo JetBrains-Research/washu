@@ -20,8 +20,8 @@ class WritableDirectory(argparse.Action):
             raise argparse.ArgumentTypeError("{0} is not a writable directory".format(values))
 
 
-def run_bash(script_file, *args):
-    command = " ".join(["bash", os.path.join(SCRIPTS_PATH, script_file), *args])
+def run_bash(script_file, *params):
+    command = " ".join(["bash", os.path.join(SCRIPTS_PATH, script_file), *[str(p) for p in params]])
     print(command)
     subprocess.run(command, shell=True)
 
