@@ -30,7 +30,7 @@ if [[ ! $CHROMHMM == *.bed ]]; then
     NAME=${CHROMHMM%%.*}
     >&2 echo "ChromHMM markup is in bigBed format, converting to $CHROMHMM.bed"
     if [ ! -f "$CHROMHMM.bed" ]; then
-        which bigBedToBed &>/dev/null || { echo "bigBedToBed not found! Download: http://hgdownload.cse.ucsc.edu/admin/exe/"; exit 1; }
+        which bigBedToBed &>/dev/null || { echo "bigBedToBed not found! Download: http://hgdownload.cse.ucsc.edu/admin/exe/ or 'conda install ucsc-bigbedtobed'"; exit 1; }
         bigBedToBed $FILE $CHROMHMM.bed
     fi
     CHROMHMM=$CHROMHMM.bed
