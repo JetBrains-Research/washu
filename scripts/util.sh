@@ -9,6 +9,9 @@ which module &>/dev/null ||
 which qsub &>/dev/null || {
     qsub()
     {
+        # Wait until less then 4 tasks running
+        while [ `jobs | wc -l` -ge 4 ] ; do sleep 1 ; done
+
         # LOAD args to $CMD
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
         # MacOS cannot handle XXXX template with ".sh" suffix, also --suffix
@@ -24,30 +27,39 @@ which qsub &>/dev/null || {
         echo "$CMD" >> $QSUB_FILE
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
         # Redirect both stderr and stdout to stdout then tee and then to stderr
-        bash $QSUB_FILE 2>&1 | tee "$LOG" 1>&2
+        (bash $QSUB_FILE 2>&1 | tee "$LOG" 1>&2 &)
     }
 }
 
-# Small procedure to wait until all the tasks are finished on the qsub cluster
-# Example of usage: wait_complete $TASKS, where $TASKS is a task ids returned by qsub.
-wait_complete()
-{
-    echo "Waiting for tasks..."
-    for TASK in $@
-    do :
-        echo -n "TASK: $TASK"
-        # The task id is actually the first numbers in the string
-        TASK_ID=$(echo ${TASK} | sed -e "s/\([0-9]*\).*/\1/")
-        if [ ! -z "$TASK_ID" ]; then
-            while qstat ${TASK_ID} &> /dev/null; do
-                echo -n "."
-                sleep 100
-            done;
-        fi
-        echo
-    done
-    echo "Done."
-}
+if which qsub &>/dev/null; then
+    # Small procedure to wait until all the tasks are finished on the qsub cluster
+    # Example of usage: wait_complete $TASKS, where $TASKS is a task ids returned by qsub.
+    wait_complete()
+    {
+        echo "Waiting for tasks..."
+        for TASK in $@
+        do :
+            echo -n "TASK: $TASK"
+            # The task id is actually the first numbers in the string
+            TASK_ID=$(echo ${TASK} | sed -e "s/\([0-9]*\).*/\1/")
+            if [ ! -z "$TASK_ID" ]; then
+                while qstat ${TASK_ID} &> /dev/null; do
+                    echo -n "."
+                    sleep 100
+                done;
+            fi
+            echo
+        done
+        echo "Done."
+    }
+else
+    wait_complete()
+    {
+        echo "Waiting for tasks..."
+        wait
+        echo "Done."
+    }
+fi
 
 # Checks for errors in logs, stops the world
 check_logs()
