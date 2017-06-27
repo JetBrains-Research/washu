@@ -27,7 +27,7 @@ which qsub &>/dev/null || {
         echo "$CMD" >> $QSUB_FILE
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
         # Redirect both stderr and stdout to stdout then tee and then to stderr
-        bash $QSUB_FILE 2>&1 | tee "$LOG" 1>&2 &
+        bash $QSUB_FILE 2>&1 | tee "$LOG" 1>&2
     }
 }
 
