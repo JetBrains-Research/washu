@@ -41,9 +41,13 @@ for (i in 1:length(SCORE_FUNCTIONS)) {
 REMOVE_DUPLICATES = c(TRUE, FALSE)
 INSERT_SIZES = c(125) # Default insertSize
 
-main <- function(path) {
+main <- function(path, insertSize) {
+    if (!missing(insertSize) && ! (insertSize %in% INSERT_SIZES)) {
+        INSERT_SIZES = c(insertSize, INSERT_SIZES)
+    }
     print(paste("DiffBind version", packageVersion("DiffBind")))
     print(paste("Processing file", path))
+
     yo = dba(sampleSheet = path)
     for (insertSize in INSERT_SIZES) {
         for (removeDuplicates in REMOVE_DUPLICATES) {
@@ -104,11 +108,10 @@ main <- function(path) {
     }
 }
 
-# TODO[shpynov] add processing of custom insert sizes
 if (!interactive()) {
     args <- commandArgs(TRUE)
     if (length(args) < 1) {
-        print("Usage: [executable] config.csv", stderr())
+        print("Usage: [executable] config.csv [insertSize]", stderr())
         q(status = 1)
     } else {
         do.call(main, as.list(args))
