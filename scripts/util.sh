@@ -87,7 +87,7 @@ else
 
         # Redirect stdout and error to log file
         bash $QSUB_FILE &>"$LOG" &
-        QSUB_ID=QSUB task: ${QSUB_FILE} $!
+        QSUB_ID="Task: ${QSUB_FILE} PID: $!"
     }
 fi
 
