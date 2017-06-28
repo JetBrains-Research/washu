@@ -68,8 +68,8 @@ else
 
     run_parallel()
     {
-        # Wait until less then 4 tasks running
-        while [ `jobs | wc -l` -ge 4 ] ; do sleep 1 ; done
+        # Wait until less then 8 tasks running
+        while [ `jobs | wc -l` -ge 8 ] ; do sleep 1 ; done
 
         CMD=""
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
