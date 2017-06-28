@@ -54,7 +54,7 @@ do :
     mkdir -p ${TMP_FOLDER}
 
     # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << ENDINPUT
 #!/bin/sh
 #PBS -N rseg_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
@@ -91,7 +91,7 @@ fi
 # Compute Reads in Peaks
 bash $(dirname $0)/../reports/rip.sh ${FILE} ${NAME}_domains.bed
 ENDINPUT
-)
+
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done

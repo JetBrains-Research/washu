@@ -9,9 +9,6 @@ which module &>/dev/null ||
 which qsub &>/dev/null || {
     qsub()
     {
-        # Wait until less then 4 tasks running
-        while [ `jobs | wc -l` -ge 4 ] ; do sleep 1 ; done
-
         # LOAD args to $CMD
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
         # MacOS cannot handle XXXX template with ".sh" suffix, also --suffix
@@ -52,12 +49,45 @@ if which qsub &>/dev/null; then
         done
         echo "Done."
     }
+
+    run_parallel()
+    {
+        # LOAD args to $CMD
+        CMD=""
+        while read -r line; do CMD+=$line; CMD+=$'\n'; done;
+
+        QSUB_ID=$(qsub <<< "$CMD")
+    }
 else
     wait_complete()
     {
         echo "Waiting for tasks..."
         wait
         echo "Done."
+    }
+
+    run_parallel()
+    {
+        # Wait until less then 4 tasks running
+        while [ `jobs | wc -l` -ge 4 ] ; do sleep 1 ; done
+
+        CMD=""
+        while read -r line; do CMD+=$line; CMD+=$'\n'; done;
+        # MacOS cannot handle XXXX template with ".sh" suffix, also --suffix
+        # option not available in BSD mktemp, so let's do some hack
+        QSUB_FILE_PREFIX=$(mktemp "${TMPDIR:-/tmp/}qsub.XXXXXXXXXXXX")
+        QSUB_FILE="${QSUB_FILE_PREFIX}.sh"
+        rm ${QSUB_FILE_PREFIX}
+
+        echo "# This file was generated as QSUB MOCK" > $QSUB_FILE
+        # MOCK for module command
+        echo 'module() { echo "module $@"; } ' >> $QSUB_FILE
+        echo "$CMD" >> $QSUB_FILE
+        LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
+
+        # Redirect stdout and error to log file
+        bash $QSUB_FILE &>"$LOG" &
+        QSUB_ID=QSUB task: ${QSUB_FILE} $!
     }
 fi
 
