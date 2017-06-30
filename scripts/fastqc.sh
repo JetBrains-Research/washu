@@ -35,9 +35,10 @@ for WORK_DIR in ${WORK_DIRS}; do :
 
     mkdir -p "${WORK_DIR}/fastqc"
 
-    for FILE in $(find . -regextype posix-extended -regex '.*\.f.*q(\.gz)?' | sed 's#./##g')
+    for FILE in $(find . -regextype posix-extended -regex '.*\.f.*q(\.gz)?')
     do :
-        NAME=${FILE%%.f*q} # file name without extension
+        FILE_NAME=${FILE##*/}
+        NAME=${FILE_NAME%%.fast*} # file name without extension
 
         # Submit task
         QSUB_ID=$(qsub << ENDINPUT
