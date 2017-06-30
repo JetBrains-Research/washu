@@ -26,7 +26,7 @@ def process(chrom_sizes, peaks):
     print("writing FRiP table")
     write_frips()
 
-    print("writing peaks lenght")
+    print("writing peaks length")
     with open(os.path.join("report", "peaks_length.csv"), "w") as result:
         result.write("track,length\n")
         for i, peak_file in enumerate(peaks):
