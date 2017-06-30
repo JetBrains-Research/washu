@@ -85,7 +85,7 @@ cd ${WORK_DIR}
 # -O|--outdir <path>      Output directory, default is working
 # --helicos               Helicos style defline
 
-echo "fastq-dump --log-level err --dumpbase --gzip --outdir ${OUTDIR}${SPLIT_FILES_OPTION} --helicos ${FILE}"
+fastq-dump --log-level err --dumpbase --gzip --outdir ${OUTDIR}${SPLIT_FILES_OPTION} --helicos ${FILE}
 
 ENDINPUT
 )
