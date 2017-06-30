@@ -75,31 +75,15 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Processing multiqc"
-TASKS=""
 for WORK_DIR in ${WORK_DIRS}; do :
     cd ${WORK_DIR}
 
-    # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
-#!/bin/sh
-#PBS -N multiqc_${NAME}
-#PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=4gb
-#PBS -j oe
-#PBS -o ${WORK_DIR}/${NAME}_multiqc.log
-
-#Options:
-# -f, --force           Overwrite any existing reports
-# -s, --fullnames       Do not clean the sample names (leave as full file name)
-# -o, --outdir TEXT     Create report in the specified output directory.
-multiqc -o "${WORK_DIR}" "${WORK_DIR}/fastqc"
-ENDINPUT
-)
-    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+    echo "Processing multiqc for: ${WORK_DIR}"
+    #Options:
+    # -f, --force           Overwrite any existing reports
+    # -s, --fullnames       Do not clean the sample names (leave as full file name)
+    # -o, --outdir TEXT     Create report in the specified output directory.
+    multiqc -o "${WORK_DIR}" "${WORK_DIR}/fastqc"
 done
-
-wait_complete ${TASKS}
-check_logs
 
 echo "Done. Batch Fastqc: $WORK_DIRS"
