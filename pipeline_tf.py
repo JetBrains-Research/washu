@@ -72,9 +72,14 @@ def cli(out, data):
     run_bash("index_genome.sh", GENOME, INDEXES)
     run_bash("index_bowtie.sh", GENOME, INDEXES)
 
-    # Batch QC & multiqc
+    # Batch QC
     run_bash("fastqc.sh", *data_dirs)
-    # subprocess.run("multiqc " + WORK_DIR, shell=True)
+
+    # Total multiqc:
+    if len(data_dirs) > 1:
+        subprocess.run("multiqc -f -o {} {}".format(WORK_DIR,
+                                                    " ".join(data_dirs)),
+                       shell=True)
 
     # # Batch Bowtie with trim 5 first base pairs
     # run_bash("index_bowtie.sh", GENOME, INDEXES)
