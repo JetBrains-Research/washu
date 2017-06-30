@@ -83,7 +83,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
     # -f, --force           Overwrite any existing reports
     # -s, --fullnames       Do not clean the sample names (leave as full file name)
     # -o, --outdir TEXT     Create report in the specified output directory.
-    multiqc -o "${WORK_DIR}" "${WORK_DIR}/fastqc"
+    multiqc -f -o "${WORK_DIR}" "${WORK_DIR}/fastqc"
 done
 
 echo "Done. Batch Fastqc: $WORK_DIRS"
