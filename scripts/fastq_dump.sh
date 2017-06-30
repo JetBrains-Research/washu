@@ -7,6 +7,13 @@
 #    to <WORK_DIR>/fastq/ directory. If file already exists it will be skipped
 ###########################################################################
 
+which fastq-dump &>/dev/null || {
+    echo "fastq-dump not found! You can install it using:"
+    echo "  conda install -c bioconda sra-tools"
+    echo "For further details see https://www.ncbi.nlm.nih.gov/books/NBK158900/"
+    exit 1
+}
+
 # Load technical stuff, not available in qsub emulation
 if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
@@ -63,7 +70,6 @@ for WORK_DIR in ${WORK_DIRS}; do :
 
 # Loading modules
 # module load fastq-dump
-# conda install -c bioconda sra-tools
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
