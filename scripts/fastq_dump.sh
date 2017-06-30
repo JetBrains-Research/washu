@@ -32,6 +32,9 @@ echo "Batch fastq-dump: ${WORK_DIRS}"
 for WORK_DIR in ${WORK_DIRS}; do :
     cd ${WORK_DIR}
 
+    OUTDIR="${WORK_DIR}/fastq"
+    mkdir -p ${OUTDIR}
+
     WORK_DIR_NAME=${WORK_DIR##*/}
     for FILE in $(find ${WORK_DIR} -name '*.sra' | sort); do :
         SPLIT_FILES_OPTION=""
@@ -45,9 +48,6 @@ for WORK_DIR in ${WORK_DIRS}; do :
             echo "${FILE}: cannot detect whether single or paired reads"
             exit 1
         fi
-
-        OUTDIR="${WORK_DIR}/fastq"
-        mkdir -p ${OUTDIR}
 
         FILE_NAME=${FILE##*/}
         FILE_NAME_WO_EXT=${FILE_NAME%.sra}
