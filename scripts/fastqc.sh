@@ -51,6 +51,10 @@ for WORK_DIR in ${WORK_DIRS}; do :
 # Loading modules
 module load fastqc
 
+# This is necessary because qsub default working dir is user home
+# and our FILE is relative
+cd ${WORK_DIR}
+
 # Options:
 # -o --outdir     Create all output files in the specified output directory.
 #                     Please note that this directory must exist as the program
