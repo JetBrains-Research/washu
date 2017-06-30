@@ -3,9 +3,10 @@
 ###########################################################################
 # Batch fastq-dump:
 #    Accepts list on one or many SRA containing directories. In each <WORK_DIR>
-#    script runs fastq-dump for all its *.sra files and save results
+#    script runs fastq-dump for all its *.sra files and saves results
 #    to <WORK_DIR>/fastq/ directory. If file already exists it will be skipped
 ###########################################################################
+# author roman.chernyatchik@jetbrains.com
 
 which fastq-dump &>/dev/null || {
     echo "fastq-dump not found! You can install it using:"
@@ -20,7 +21,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
 fi
 
 if [ $# -lt 1 ]; then
-    echo "Need at lease one parameter! <WORK_DIR>"
+    echo "Need at least one parameter! <WORK_DIR>"
     exit 1
 fi
 
