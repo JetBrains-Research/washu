@@ -36,7 +36,7 @@ def process(chrom_sizes, peaks):
                 result.write("{},{}\n".format(i, length))
 
 
-    print("writing instersection counts")
+    print("writing intersection counts")
     command = "cat {} | sort -k 1,1 | bedtools genomecov -bg -i - -g {} >{}".format(
         " ".join(peaks), chrom_sizes, os.path.join("report", "counts.bed"))
 
