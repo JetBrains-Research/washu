@@ -46,9 +46,12 @@ def cli(out, data):
     print("Data to process:")
     print(data_table)
 
-    gsm_signals = data_table["signal"].tolist()
-    gsm_input = data_table["input"].tolist()
-    gsm_to_process = sorted(list(set(gsm_input + gsm_signals)))
+    gsm2srx = {}
+    for r in data_table.itertuples():
+        gsm2srx[r.input] = r.input_srx
+        gsm2srx[r.signal] = r.signal_srx
+    gsm_to_process = sorted(gsm2srx.keys())
+    print(gsm_to_process)
 
     # Make dirs:
     data_dirs = [os.path.join(out, gsmid) for gsmid in gsm_to_process]
@@ -59,10 +62,30 @@ def cli(out, data):
     # Pipeline start #
     ##################
 
-    # TODO: Download SRA data:
-    # for gsmid in gsm_to_process:
-    #     # TODO: GSMID -> SRXID -> rsync download
-    #     None
+    # Download SRA data:
+    # 'rsync' here skips file if it already exist
+    for gsmid in gsm_to_process:
+
+        sra_dir = os.path.join(out, gsmid, "sra")
+        os.makedirs(sra_dir, exist_ok=True)
+
+        print("Downloading data to {} ...".format(sra_dir))
+        srxid = gsm2srx[gsmid]
+        url = "rsync://ftp.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByExp/" \
+              "sra/SRX/{}/{}".format(srxid[0:6], srxid)
+
+        # Options:
+        #   -a, --archive            archive mode; equals -rlptgoD (no -H,-A,-X)
+        #   -z, --compress           compress file data during the transfer
+        #   -v, --verbose            increase verbosity
+        #   -i,  --itemize-changes   output a change-summary for all updates
+        #   -t, --times              preserve modification times
+        #   —partial (or -P = —progress —partial): enable partial transmission,
+        #                            but not for local fs
+        #   -r, --recursive          recurse into directories
+        #   -h, --human-readable     output numbers in a human-readable format
+        run("rsync -azvvit --partial-dir=.rsync-partial --human-readable"
+            " --progress {} {}".format(url, sra_dir))
 
     # Fastq-dump SRA data:
     run_bash("fastq_dump.sh", *data_dirs)
@@ -77,9 +100,7 @@ def cli(out, data):
 
     # Total multiqc:
     if len(data_dirs) > 1:
-        subprocess.run("multiqc -f -o {} {}".format(WORK_DIR,
-                                                    " ".join(data_dirs)),
-                       shell=True)
+        run("multiqc", "-f", "-o", WORK_DIR, " ".join(data_dirs))
 
     # # Batch Bowtie with trim 5 first base pairs
     # run_bash("index_bowtie.sh", GENOME, INDEXES)

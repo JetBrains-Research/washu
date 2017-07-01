@@ -26,6 +26,12 @@ def run_bash(script_file, *params):
     subprocess.run(command, shell=True)
 
 
+def run(*params):
+    command = " ".join(*[str(p) for p in params])
+    print(command)
+    subprocess.run(command, shell=True)
+
+
 def move_forward(folder, new_folder, what_to_move, copy_only=False):
     # Necessary for correct copy behavior
     os.chdir(folder)
