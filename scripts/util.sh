@@ -22,6 +22,11 @@ which qsub &>/dev/null || {
         echo 'module() { echo "module $@"; } ' >> $QSUB_FILE
         echo "$CMD" >> $QSUB_FILE
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
+
+        # Log tasks script path to STDERR, STDOUT will be treated as qsub
+        # return value which is supposed to be task name and is handled
+        # by wait_complete
+        echo "Running TASK: ${QSUB_FILE}" 1>&2
         # Redirect both stderr and stdout to stdout then tee and then to stderr
         bash $QSUB_FILE 2>&1 | tee "$LOG" 1>&2
     }
