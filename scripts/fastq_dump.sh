@@ -79,7 +79,7 @@ fi
 # --gzip                  Compress output using gzip
 # -O|--outdir <path>      Output directory, default is working
 
-fastq-dump --log-level err --dumpbase --gzip --outdir ${OUTDIR}\${SPLIT_FILES_OPTION} --helicos ${FILE}
+fastq-dump --log-level err --dumpbase --gzip --outdir ${OUTDIR}\${SPLIT_FILES_OPTION} ${FILE}
 
 ENDINPUT
 )
