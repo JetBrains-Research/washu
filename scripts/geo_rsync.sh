@@ -42,7 +42,7 @@ for item in "${list[@]}"; do
         SRXID="${item%=*}"
 
         URL="rsync://ftp.ncbi.nlm.nih.gov/sra/sra-instant/reads/ByExp/sra/SRX/${SRXID:0:6}/${SRXID}"
-        echo "Downloading: ${URL}"
+        echo "Downloading: ${URL} to ${WORK_DIR}"
         # Options:
         #   -a, --archive            archive mode; equals -rlptgoD (no -H,-A,-X)
         #   -z, --compress           compress file data during the transfer
