@@ -89,7 +89,7 @@ def cli(out, data):
     run_bash("index_bowtie2.sh", GENOME, INDEXES)
 
     # Batch QC
-    run_bash("fastqc.sh", *data_dirs)
+    #TODO run_bash("fastqc.sh", *data_dirs)
 
     # Total multiqc:
     # Use -s options, otherwise tons of "SRRnnn" hard to distinguish
