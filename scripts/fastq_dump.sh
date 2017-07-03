@@ -3,8 +3,9 @@
 ###########################################################################
 # Batch fastq-dump:
 #    Accepts list on one or many SRA containing directories. In each <WORK_DIR>
-#    script runs fastq-dump for all its *.sra files and saves results
-#    to <WORK_DIR>/fastq/ directory. If file already exists it will be skipped
+#    script runs fastq-dump for all its *.sra files to *.fastq.gz and saves
+#    results to <WORK_DIR>/fastq/ directory. If file already exists it will be
+#    skipped.
 #
 #    Ensure tat fastq-dump is installed or install it using:
 #       conda install -c bioconda sra-tools
