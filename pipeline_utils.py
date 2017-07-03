@@ -27,7 +27,7 @@ def run_bash(script_file, *params):
 
 
 def run(*params):
-    command = " ".join(*[str(p) for p in params])
+    command = " ".join([str(p) for p in params])
     print(command)
     subprocess.run(command, shell=True)
 
