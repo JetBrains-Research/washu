@@ -78,10 +78,10 @@ def cli(out, data):
         srxs = gsm2srxs[gsmid]
         for srx in srxs:
             srx_to_dir_list.extend([srx, sra_dir])
-    run_bash("geo_rsync.sh", *srx_to_dir_list)
+    #TODO run_bash("geo_rsync.sh", *srx_to_dir_list)
 
     # Fastq-dump SRA data:
-    run_bash("fastq_dump.sh", *data_dirs)
+    #TODO run_bash("fastq_dump.sh", *data_dirs)
 
     # Prepare genome *.fa and Bowtie indexes
     print("Genomes and indices folder: ", INDEXES)
