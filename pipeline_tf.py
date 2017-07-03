@@ -85,9 +85,15 @@ def cli(out, data):
 
     # Total multiqc:
     if len(data_dirs) > 1:
+        # Use -s options, otherwise tons of "SRRnnn" hard to distinguish
+
+        # -s, --fullnames      Do not clean the sample names (leave as full
+        #                      file name)
+        # -f, --force          Overwrite any existing reports
+        # -o, --outdir TEXT    Create report in the specified output directory.
         run("multiqc", "-f", "-o", WORK_DIR, " ".join(data_dirs))
 
-        # # Batch Bowtie with trim 5 first base pairs
+    # Batch Bowtie with trim 5 first base pairs
         # run_bash("index_bowtie.sh", GENOME, INDEXES)
         # run_bash("bowtie.sh", WORK_DIR, GENOME, INDEXES, "5")
         # WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bams", ["*.bam", "*bowtie*.log"])
