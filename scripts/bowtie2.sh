@@ -7,56 +7,62 @@ if [ -f "$(dirname $0)/util.sh" ]; then
 fi
 
 if [ $# -lt 4 ]; then
-    echo "Need 4 parameters! <WORK_DIR> <GENOME> <INDEXES> <TRIM5>"
+    echo "Need at least 4 parameters! <GENOME> <INDEXES> <TRIM5> <WORK_DIR> [<WORK_DIR>]"
     exit 1
 fi
-WORK_DIR=$1
-GENOME=$2
-INDEXES=$3
-TRIM5=$4
 
-echo "Batch Bowtie2: ${WORK_DIR} ${GENOME} ${INDEXES} ${TRIM5}"
-cd ${WORK_DIR}
+GENOME=$1
+INDEXES=$2
+TRIM5=$3
+WORK_DIRS=${@:4}
 
-# Create soft link to indexes in working directory
-INDEX_FILES=$(find ${INDEXES} -name "*.bt2*")
-for F in ${INDEX_FILES[@]}; do TAG=${F##*/}; ln -s $F $TAG; done
+echo "Batch Bowtie2: ${GENOME} ${INDEXES} ${TRIM5} ${WORK_DIRS}"
 
-
-PROCESSED=""
 TASKS=""
-for FILE in $(find . -name '*.f*q' | sed 's#./##g' | sort)
-do :
-    if $(echo "${PROCESSED[@]}"  | fgrep -q "${FILE}");
-    then
-        echo "$FILE was already processed"
-        continue
-    fi
+PROCESSED=""
 
-    # Assumption: the only difference between paired-end read files is _1 and _2
-    FILE_PAIRED=""
-    if $(echo "${FILE_PAIRED[@]}"  | fgrep -q "_1");
-    then
-        PREFIX=${FILE%%_1.*}
-        SUFFIX=${FILE##*_1}
-        FILE_PAIRED="${PREFIX}_2${SUFFIX}"
-    fi
+for WORK_DIR in ${WORK_DIRS}; do :
+    WORK_DIR_NAME=${WORK_DIR##*/}
+    cd ${WORK_DIR}
 
-    # Setup correct name
-    if [ -f "${FILE_PAIRED}" ]; then
-        echo "PAIRED END reads detected: $FILE and $FILE_PAIRED"
-        # Mark it as already processed
-        PROCESSED="${PROCESSED} ${FILE_PAIRED}"
-        NAME="${PREFIX}${SUFFIX}"
-    else
-        NAME=${FILE%%.f*q}
-    fi
-    ID=${NAME}_${GENOME}
+    # Create soft link to indexes in working directory
+    INDEX_FILES=$(find ${INDEXES} -name "*.bt2*")
+    for F in ${INDEX_FILES[@]}; do TAG=${F##*/}; ln -s $F $TAG; done
 
-    # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+
+    for FILE in $(find . -regextype posix-extended -regex '.*\.f.*q(\.gz)?' | sort)
+    do :
+        if $(echo "${PROCESSED[@]}"  | fgrep -q "${FILE}");
+        then
+            echo "$FILE was already processed"
+            continue
+        fi
+
+        # Assumption: the only difference between paired-end read files is _1 and _2
+        FILE_PAIRED=""
+        if $(echo "${FILE_PAIRED[@]}"  | fgrep -q "_1");
+        then
+            PREFIX=${FILE%%_1.*}
+            SUFFIX=${FILE##*_1}
+            FILE_PAIRED="${PREFIX}_2${SUFFIX}"
+        fi
+
+        # Setup correct name
+        if [ -f "${FILE_PAIRED}" ]; then
+            echo "PAIRED END reads detected: $FILE and $FILE_PAIRED"
+            # Mark it as already processed
+            PROCESSED="${PROCESSED} ${FILE_PAIRED}"
+            NAME="${PREFIX}${SUFFIX}"
+        else
+            NAME=${FILE%%.fast*}
+        fi
+        NAME=${NAME##*/}
+        ID=${NAME}_${GENOME}
+
+        # Submit task
+        QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N bowtie2_${GENOME}_${NAME}
+#PBS -N bowtie2_${GENOME}_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=32gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_bowtie2_${GENOME}.log
@@ -86,17 +92,21 @@ rm ${ID}.sam ${ID}_not_sorted.bam
 
 ENDINPUT
 )
-    if [ -f "${FILE_PAIRED}" ]; then
-        echo "FILE: ${FILE} PAIRED ${FILE_PAIRED}; TASK: ${QSUB_ID}"
-    else
-        echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    fi
-    TASKS="$TASKS $QSUB_ID"
+        if [ -f "${FILE_PAIRED}" ]; then
+            echo "FILE: ${WORK_DIR_NAME}:${FILE} PAIRED ${FILE_PAIRED}; TASK: ${QSUB_ID}"
+        else
+            echo "FILE: ${WORK_DIR_NAME}:${FILE}; TASK: ${QSUB_ID}"
+        fi
+        TASKS="$TASKS $QSUB_ID"
+    done
 done
 wait_complete ${TASKS}
 check_logs
 
 # Cleanup indexes soft link
-rm *.bt2*
+for WORK_DIR in ${WORK_DIRS}; do :
+    cd ${WORK_DIR}
+    rm *.bt2*
+done
 
-echo "Done. Batch Bowtie2: ${WORK_DIR} ${GENOME} ${INDEXES} ${TRIM5}"
+echo "Done. Batch Bowtie2: ${GENOME} ${INDEXES} ${TRIM5} ${WORK_DIRS}"

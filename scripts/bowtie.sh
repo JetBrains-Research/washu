@@ -7,15 +7,15 @@ if [ -f "$(dirname $0)/util.sh" ]; then
 fi
 
 if [ $# -lt 4 ]; then
-    echo "Need 4 parameters! <WORK_DIR> <GENOME> <INDEXES> <TRIM5>"
+    echo "Need 4 parameters! <GENOME> <INDEXES> <TRIM5> <WORK_DIR>"
     exit 1
 fi
-WORK_DIR=$1
-GENOME=$2
-INDEXES=$3
-TRIM5=$4
+GENOME=$1
+INDEXES=$2
+TRIM5=$3
+WORK_DIR=$4
 
-echo "Batch Bowtie: ${WORK_DIR} ${GENOME} ${INDEXES} ${TRIM5}"
+echo "Batch Bowtie: ${GENOME} ${INDEXES} ${TRIM5} ${WORK_DIR}"
 cd ${WORK_DIR}
 
 PROCESSED=""
@@ -115,4 +115,4 @@ if [ -z "${WORK_DIR}/indexes" ]; then
     rm ${WORK_DIR}/indexes
 fi
 
-echo "Done. Batch Bowtie: ${WORK_DIR} ${GENOME} ${INDEXES} ${TRIM5}"
+echo "Done. Batch Bowtie: ${GENOME} ${INDEXES} ${TRIM5} ${WORK_DIR}"
