@@ -5,6 +5,16 @@ import sys
 import pandas as pd
 import subprocess
 
+help_data = """
+Usage: chip_seq_report.py [chrom.sizes] [peaks files]
+
+Script creates report folder with ChIP-seq peaks statistics:    
+ counts_stat.csv - consensus table. Table contains statistics for coverage of all tracks peaks.   
+ frip_table.csv  - table with FRiPs 
+ length.png      - distribution of peaks length 
+
+"""
+
 
 def write_frips():
     files = [file for file in os.listdir(".") if file.endswith("_rip.csv")]
@@ -35,7 +45,6 @@ def process(chrom_sizes, peaks):
                 length = int(parts[2]) - int(parts[1])
                 result.write("{},{}\n".format(i, length))
 
-
     print("writing intersection counts")
     command = "cat {} | sort -k 1,1 | bedtools genomecov -bg -i - -g {} >{}".format(
         " ".join(peaks), chrom_sizes, os.path.join("report", "counts.bed"))
@@ -51,22 +60,18 @@ def process(chrom_sizes, peaks):
 
         counts[count - 1] += length
 
-
     s = sum(counts)
 
     with open(os.path.join("report", "counts_stat.csv"), "w") as result:
         for i in range(len(counts)):
-            result.write("{},{},{}\n".format(i+1, float(counts[i]) / s, counts[i]))
+            result.write("{},{},{}\n".format(i + 1, float(counts[i]) / s, counts[i]))
 
     make_plots_script()
 
     print("done")
 
 
-def make_plots_script():
-    script_name = "make_plots.r"
-    with open(os.path.join("report", script_name), "w") as plots:
-        plots.write("""
+r_file_text = """
 
 require("ggplot2")
 
@@ -81,7 +86,13 @@ plt2 = ggplot(data.frame(consensus.lengths = cons.lengths), aes(x="", y=consensu
     geom_bar(width=1, stat = "Identity") + coord_polar("y", start = 0) + ggtitle("Consensus by length")
 ggsave(filename = "./consensus.png", plot = plt2)
 
-""")
+"""
+
+
+def make_plots_script():
+    script_name = "make_plots.r"
+    with open(os.path.join("report", script_name), "w") as plots:
+        plots.write(r_file_text)
     p = subprocess.Popen(["Rscript", script_name], cwd="report")
     p.wait()
 
@@ -91,16 +102,11 @@ def read_all_lines(peak_file):
         return f.readlines()
 
 
-
-def usage():
-    print("Usage: chip_seq_report.py [chrom.sizes] [peaks files]")
-
-
 def main():
     args = sys.argv
 
     if len(args) < 2:
-        usage()
+        print(help_data)
         sys.exit(1)
     process(args[1], args[2:])
 
