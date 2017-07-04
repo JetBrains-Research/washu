@@ -124,53 +124,63 @@ def cli(out, data):
     if len(data_dirs) > 1:
         run("multiqc", "-f", "-o", out, " ".join(data_dirs + bams_dirs))
 
-    # Process insert size of BAM visualization
+    #TODO: merge all SRR* bams to one file
+
+    exit(-1)
+    # # Process insert size of BAM visualization
     # run_bash("fragments.sh", *bams_dirs)
-
-    # Batch BigWig visualization
-    # run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
-    # move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"],
-    #              copy_only=True)
     #
-    # # Batch RPKM visualization
-    # run_bash("rpkm.sh", WORK_DIR)
-    # move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"],
-    #              copy_only=True)
+    # #TODO: qsub-vectorize:
+    # for data_dir in data_dirs:
+    #     # Batch BigWig visualization
+    #     run_bash("bigwig.sh", data_dir, CHROM_SIZES)
+    #     move_forward(data_dir, data_dir + "_bws", ["*.bw", "*.bdg", "*bw.log"],
+    #                  copy_only=True)
     #
-    # # Remove duplicates
-    # run_bash("remove_duplicates.sh", WORK_DIR)
-    # move_forward(WORK_DIR, WORK_DIR + "_unique",
-    #              ["*_unique*", "*_metrics.txt", "*duplicates.log"],
-    #              copy_only=True)
+    #     # Batch RPKM visualization
+    #     run_bash("rpkm.sh", data_dir)
+    #     move_forward(data_dir, data_dir + "_rpkms", ["*.bw", "*rpkm.log"],
+    #                  copy_only=True)
     #
-    # # Batch subsampling to 15mln reads
-    # # READS = 15
-    # # run_bash("subsample.sh", WORK_DIR, str(READS))
-    # # WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_{}mln".format(READS), ["*{}*".format(READS)])
-    # #
-    # # # Batch BigWig visualization
-    # # run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
-    # # move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
+    #     # Remove duplicates
+    #     run_bash("remove_duplicates.sh", data_dir)
+    #     move_forward(data_dir, data_dir + "_unique",
+    #                  ["*_unique*", "*_metrics.txt", "*duplicates.log"],
+    #                  copy_only=True)
     #
-    # ########################
-    # # Peak calling section #
-    # ########################
+    #     # Batch subsampling to 15mln reads
+    #     # READS = 15
+    #     # run_bash("subsample.sh", WORK_DIR, str(READS))
+    #     # WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_{}mln".format(READS), ["*{}*".format(READS)])
+    #     #
+    #     # # Batch BigWig visualization
+    #     # run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
+    #     # move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
     #
-    # # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1 in example
-    # folder = run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'broad_0.1', '--broad',
-    #                    '--broad-cutoff', 0.1)
-    # run_bash("../bed/macs2_filter_fdr.sh", folder,
-    #          folder.replace('0.1', '0.05'), 0.1, 0.05, WORK_DIR)
-    # run_bash("../bed/macs2_filter_fdr.sh", folder,
-    #          folder.replace('0.1', '0.01'), 0.1, 0.01, WORK_DIR)
+    #     ########################
+    #     # Peak calling section #
+    #     ########################
     #
-    # # MACS2 Regular peak calling (https://github.com/taoliu/MACS) Q=0.01 in example
-    # folder = run_macs2(WORK_DIR, GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1)
-    # run_bash("../bed/macs2_filter_fdr.sh", folder,
-    #          folder.replace('0.1', '0.05'), 0.1, 0.05, WORK_DIR)
-    # run_bash("../bed/macs2_filter_fdr.sh", folder,
-    #          folder.replace('0.1', '0.01'), 0.1, 0.01, WORK_DIR)
-
+    #     #TODO: in order to help util.py find proper input please create a
+    #     #TODO: symlink: GEO$signal_bam$/$corresponding_input$.bam -> GEO$input$.bam
+    #
+    #     # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1 in example
+    #     # folder = run_macs2(data_dir, GENOME, CHROM_SIZES, 'broad_0.1', '--broad',
+    #     #                    '--broad-cutoff', 0.1)
+    #     # run_bash("../bed/macs2_filter_fdr.sh", folder,
+    #     #          folder.replace('0.1', '0.05'), 0.1, 0.05, data_dir)
+    #     # run_bash("../bed/macs2_filter_fdr.sh", folder,
+    #     #          folder.replace('0.1', '0.01'), 0.1, 0.01, data_dir)
+    #
+    #     # MACS2 Regular peak calling (https://github.com/taoliu/MACS) Q=0.01 in example
+    #     folder = run_macs2(data_dir, GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1)
+    #     run_bash("../bed/macs2_filter_fdr.sh", folder,
+    #              folder.replace('0.1', '0.05'), 0.1, 0.05, data_dir)
+    #     run_bash("../bed/macs2_filter_fdr.sh", folder,
+    #              folder.replace('0.1', '0.01'), 0.1, 0.01, data_dir)
+    #
+    #     #TODO: Encode pipeline suggest using SPP aligner for TF data
+#
 
 if __name__ == '__main__':
     cli()
