@@ -11,7 +11,8 @@ Usage: chip_seq_report.py [chrom.sizes] [peaks files]
 Script creates report folder with ChIP-seq peaks statistics:    
  counts_stat.csv - consensus table. Table contains statistics for coverage of all tracks peaks.   
  frip_table.csv  - table with FRiPs 
- length.png      - distribution of peaks length 
+ length.png      - distribution of peaks length
+ jaccard.csv     - jaccard statistics for all pairs of peaks
 
 """
 
@@ -37,6 +38,43 @@ def process(chrom_sizes, peaks):
     write_frips()
 
     print("writing peaks length")
+    write_peak_length(peaks)
+
+    print("writing intersection counts")
+    count_intersection(chrom_sizes, peaks)
+
+    print("writing jaccard matrix")
+    with open(os.path.join("report", "jaccard.csv"), "w") as result:
+        result.write("f1,f2,jaccard\n")
+        for p1 in peaks:
+            for p2 in peaks:
+                output = subprocess.check_output("bedtools jaccard -a {} -b {}".format(p1, p2), shell=True)
+                line = output.split("\n")[1]
+                result.write("{},{},{}\n".format(p1, p2, float(line.split("\t")[2])))
+
+    make_plots_script()
+
+    print("done")
+
+
+def count_intersection(chrom_sizes, peaks):
+    command = "cat {} | sort -k 1,1 | bedtools genomecov -bg -i - -g {} >{}".format(
+        " ".join(peaks), chrom_sizes, os.path.join("report", "counts.bed"))
+    os.system(command)
+    counts = [0] * len(peaks)
+    for line in read_all_lines(os.path.join("report", "counts.bed")):
+        parts = line.split("\t")
+        count = int(parts[3])
+        length = int(parts[2]) - int(parts[1])
+
+        counts[count - 1] += length
+    s = sum(counts)
+    with open(os.path.join("report", "counts_stat.csv"), "w") as result:
+        for i in range(len(counts)):
+            result.write("{},{},{}\n".format(i + 1, float(counts[i]) / s, counts[i]))
+
+
+def write_peak_length(peaks):
     with open(os.path.join("report", "peaks_length.csv"), "w") as result:
         result.write("track,length\n")
         for i, peak_file in enumerate(peaks):
@@ -44,31 +82,6 @@ def process(chrom_sizes, peaks):
                 parts = line.split("\t")
                 length = int(parts[2]) - int(parts[1])
                 result.write("{},{}\n".format(i, length))
-
-    print("writing intersection counts")
-    command = "cat {} | sort -k 1,1 | bedtools genomecov -bg -i - -g {} >{}".format(
-        " ".join(peaks), chrom_sizes, os.path.join("report", "counts.bed"))
-
-    os.system(command)
-
-    counts = [0] * len(peaks)
-
-    for line in read_all_lines(os.path.join("report", "counts.bed")):
-        parts = line.split("\t")
-        count = int(parts[3])
-        length = int(parts[2]) - int(parts[1])
-
-        counts[count - 1] += length
-
-    s = sum(counts)
-
-    with open(os.path.join("report", "counts_stat.csv"), "w") as result:
-        for i in range(len(counts)):
-            result.write("{},{},{}\n".format(i + 1, float(counts[i]) / s, counts[i]))
-
-    make_plots_script()
-
-    print("done")
 
 
 r_file_text = """
