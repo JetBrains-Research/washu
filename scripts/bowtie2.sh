@@ -29,7 +29,6 @@ for WORK_DIR in ${WORK_DIRS}; do :
     INDEX_FILES=$(find ${INDEXES} -name "*.bt2*")
     for F in ${INDEX_FILES[@]}; do TAG=${F##*/}; ln -s $F $TAG; done
 
-
     for FILE in $(find . -regextype posix-extended -regex '.*\.f.*q(\.gz)?' | sort)
     do :
         if $(echo "${PROCESSED[@]}"  | fgrep -q "${FILE}");
@@ -75,6 +74,20 @@ module load samtools
 cd ${WORK_DIR}
 
 # Bowtie2 command line options
+# bowtie2 [options]* -x <bt2-idx> {-1 <m1> -2 <m2> | -U <r> | --interleaved <i>} [-S <sam>]
+#
+#  <bt2-idx>  Index filename prefix (minus trailing .X.bt2).
+#             NOTE: Bowtie 1 and Bowtie 2 indexes are not compatible.
+#  <m1>       Files with #1 mates, paired with files in <m2>.
+#             Could be gzip'ed (extension: .gz) or bzip2'ed (extension: .bz2).
+#  <m2>       Files with #2 mates, paired with files in <m1>.
+#             Could be gzip'ed (extension: .gz) or bzip2'ed (extension: .bz2).
+#  <r>        Files with unpaired reads.
+#             Could be gzip'ed (extension: .gz) or bzip2'ed (extension: .bz2).
+#  <i>        Files with interleaved paired-end FASTQ reads
+#             Could be gzip'ed (extension: .gz) or bzip2'ed (extension: .bz2).
+#  <sam>      File for SAM output (default: stdout)
+#
 # -p/--threads <int> number of alignment threads to launch (1)
 # -5/--trim5 <int>   trim <int> bases from 5'/left end of reads (0)
 # --sensitive            -D 15 -R 2 -N 0 -L 22 -i S,1,1.15 (default)
@@ -82,7 +95,7 @@ cd ${WORK_DIR}
 if [ -f "${FILE_PAIRED}" ]; then
     bowtie2 -p 4 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED}
 else
-    bowtie2 -p 4 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} ${FILE}
+    bowtie2 -p 4 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -U ${FILE}
 fi
 samtools view -bS -q 10 ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort -@ 4 ${ID}_not_sorted.bam -o ${ID}.bam
