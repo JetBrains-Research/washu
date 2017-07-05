@@ -93,10 +93,11 @@ plt = ggplot(dt, aes(length)) + scale_x_log10() + geom_histogram(bins=40) + face
 ggsave(filename="length.png", plot=plt)
 
 consensus.df = read.table("./counts.bed", header = FALSE)
-consensus = min(consensus.df$V4):max(consensus.df$V4)
-cons.lengths = sapply(consensus, function(x) with(consensus.df[consensus.df$V4 == x,], sum(V3 - V2)))
-plt2 = ggplot(data.frame(consensus.lengths = cons.lengths), aes(x="", y=consensus.lengths, fill=consensus)) + 
-    geom_bar(width=1, stat = "Identity") + coord_polar("y", start = 0) + ggtitle("Consensus by length")
+consensus.scores = sapply(strsplit(as.character(consensus.df$V4), split = "\\|"), length)
+consensus = min(consensus.scores):max(consensus.scores)
+cons.numbers = sapply(consensus, function(x) sum(consensus.scores == x))
+plt2 = ggplot(data.frame(consensus.peaks = cons.numbers), aes(x="", y=consensus.peaks, fill=consensus)) + 
+    geom_bar(width=1, stat = "Identity") + coord_polar("y", start = 0) + ggtitle("Consensus by peaks")
 ggsave(filename = "./consensus.png", plot = plt2)
 
 """
