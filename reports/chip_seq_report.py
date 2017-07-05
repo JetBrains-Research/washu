@@ -41,7 +41,7 @@ def process(chrom_sizes, peaks):
     write_peak_length(peaks)
 
     print("writing intersection counts")
-    count_intersection(chrom_sizes, peaks)
+    count_intersection(peaks)
 
     print("writing jaccard matrix")
     with open(os.path.join("report", "jaccard.csv"), "w") as result:
@@ -57,17 +57,16 @@ def process(chrom_sizes, peaks):
     print("done")
 
 
-def count_intersection(chrom_sizes, peaks):
-    command = "cat {} | sort -k 1,1 | bedtools genomecov -bg -i - -g {} >{}".format(
-        " ".join(peaks), chrom_sizes, os.path.join("report", "counts.bed"))
+def count_intersection(peaks):
+    command = "bash /mnt/stripe/washu/bed/union.sh {} >{}".format(
+        " ".join(peaks), os.path.join("report", "counts.bed"))
     os.system(command)
     counts = [0] * len(peaks)
     for line in read_all_lines(os.path.join("report", "counts.bed")):
         parts = line.split("\t")
-        count = int(parts[3])
-        length = int(parts[2]) - int(parts[1])
+        count = len(parts[3].split("|"))
 
-        counts[count - 1] += length
+        counts[count - 1] += 1
     s = sum(counts)
     with open(os.path.join("report", "counts_stat.csv"), "w") as result:
         for i in range(len(counts)):
