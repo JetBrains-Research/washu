@@ -27,7 +27,7 @@ done
 
 SORTED=$(mktemp)
 sort -k1,1 -k2,2n ${TMP} > ${SORTED}
-bedtools merge -i ${SORTED} -c 4 -o collapse -delim "|"
+bedtools merge -i ${SORTED} -c 4 -o distinct -delim "|"
 
 # Cleanup
 rm ${TMP} ${SORTED}
