@@ -4,6 +4,7 @@ import os
 import sys
 import pandas as pd
 import subprocess
+import tempfile
 
 help_data = """
 Usage: chip_seq_report.py [chrom.sizes] [peaks files]
@@ -44,17 +45,33 @@ def process(chrom_sizes, peaks):
     count_intersection(peaks)
 
     print("writing jaccard matrix")
-    with open(os.path.join("report", "jaccard.csv"), "w") as result:
-        result.write("f1,f2,jaccard\n")
-        for p1 in peaks:
-            for p2 in peaks:
-                output = subprocess.check_output("bedtools jaccard -a {} -b {}".format(p1, p2), shell=True)
-                line = output.split("\n")[1]
-                result.write("{},{},{}\n".format(p1, p2, float(line.split("\t")[2])))
+    count_jaccard(chrom_sizes, peaks)
 
     make_plots_script()
 
     print("done")
+
+
+def count_jaccard(chrom_sizes, peaks):
+    temp_dir = tempfile.mkdtemp(suffix=".tmp", dir="./report")
+    genome_sorted = os.path.join(temp_dir, "chromosome_sizes")
+    os.system("sort -k 1,1 <{} >{}".format(
+        chrom_sizes, genome_sorted))
+
+    first_file = os.path.join(temp_dir, "first.bed")
+    second_file = os.path.join(temp_dir, "second.bed")
+
+    with open(os.path.join("report", "jaccard.csv"), "w") as result:
+        result.write("f1,f2,jaccard\n")
+        for p1 in peaks:
+            for p2 in peaks:
+                os.system("sort -k1,1 -k2,2n {} > {}".format(p1, first_file))
+                os.system("sort -k1,1 -k2,2n {} > {}".format(p2, second_file))
+
+                output = subprocess.check_output("bedtools jaccard -g {} -a {} -b {}"
+                                                 .format(genome_sorted, first_file, second_file), shell=True)
+                line = output.split("\n")[1]
+                result.write("{},{},{}\n".format(p1, p2, float(line.split("\t")[2])))
 
 
 def count_intersection(peaks):
