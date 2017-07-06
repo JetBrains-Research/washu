@@ -97,7 +97,7 @@ def write_peak_length(peaks):
             for line in read_all_lines(peak_file):
                 parts = line.split("\t")
                 length = int(parts[2]) - int(parts[1])
-                result.write("{},{}\n".format(i, length))
+                result.write("{},{}\n".format(peak_file, length))
 
 
 r_file_text = """
