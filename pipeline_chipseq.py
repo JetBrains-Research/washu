@@ -68,7 +68,7 @@ subprocess.run("multiqc " + WORK_DIR, shell=True)
 
 # Batch Bowtie with trim 5 first base pairs
 run_bash("index_bowtie.sh", GENOME, INDEXES)
-run_bash("bowtie.sh", WORK_DIR, GENOME, INDEXES, "5")
+run_bash("bowtie.sh", GENOME, INDEXES, "5", WORK_DIR)
 WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bams", ["*.bam", "*bowtie*.log"])
 # multiqc is able to process Bowtie report
 subprocess.run("multiqc " + WORK_DIR, shell=True)
