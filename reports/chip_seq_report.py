@@ -3,6 +3,7 @@
 import os
 import sys
 import pandas as pd
+import shutil
 import subprocess
 import tempfile
 
@@ -72,6 +73,8 @@ def count_jaccard(chrom_sizes, peaks):
                                                  .format(genome_sorted, first_file, second_file), shell=True)
                 line = output.split("\n")[1]
                 result.write("{},{},{}\n".format(p1, p2, float(line.split("\t")[2])))
+
+    shutil.rmtree(temp_dir)
 
 
 def count_intersection(peaks):
