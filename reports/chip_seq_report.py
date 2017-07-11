@@ -115,8 +115,8 @@ consensus.df = read.table("./counts.bed", header = FALSE)
 consensus.scores = sapply(strsplit(as.character(consensus.df$V4), split = "\\\\|"), length)
 consensus = min(consensus.scores):max(consensus.scores)
 cons.numbers = sapply(consensus, function(x) sum(consensus.scores == x))
-plt2 = ggplot(data.frame(consensus.peaks = cons.numbers), aes(x="", y=consensus.peaks, fill=consensus)) + 
-    geom_bar(width=1, stat = "Identity") + coord_polar("y", start = 0) + ggtitle("Consensus by peaks")
+plt2 = ggplot(data.frame(consensus = consensus, peaks = cumsum(cons.numbers)), aes(consensus, peaks)) +
+    geom_line() + ggtitle("Consensus by peaks")
 ggsave(filename = "./consensus.png", plot = plt2)
 
 """
