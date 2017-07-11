@@ -103,7 +103,7 @@ Defaults for MACS2 broad peak calling:
         if os.path.exists(chrom_sizes):
             params += ('-B',)
         run_bash("macs2.sh", work_dir, genome, chrom_sizes, name, *[str(p) for p in params])
-        move_forward(work_dir, folder, ['*{}*'.format(name), '*rip.csv'], copy_only=True)
+        move_forward(work_dir, folder, ['*{}*'.format(name), '*rip.csv', '*_signal.bdg', '*_signal.bw'], copy_only=True)
         process_macs2_logs(folder)
     return folder
 
