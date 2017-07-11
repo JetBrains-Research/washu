@@ -6,7 +6,7 @@
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <READS_DIR> <PEAKS_DIR>"
     echo "Example: "
-    echo "  bash diffbind_config.sh k4me1_10vs10_reseq_bams k4me1_10vs10_reseq_bams_macs_broad_0.1"
+    echo "  bash diffbind_config.sh k4me3_20vs20_bams k4me3_20vs20_bams_macs2_broad_0.1"
     exit 1
 fi
 
@@ -56,8 +56,8 @@ echo "SampleID,Tissue,Factor,Condition,Replicate,bamReads,ControlID,bamControl,P
 for R in $READS_FILES; do
     >&2 echo "READ: $R"
     FNAME=${R##*/}
-    # Should be changed for particular naming scheme
-    SAMPLE=${FNAME%%_R1_hg19.bam}
+    # Assume name pattern .D[0-9]+_.*
+    SAMPLE=${FNAME%%_*.bam}
     >&2 echo "SAMPLE: $SAMPLE"
     CONDITION=${SAMPLE%%D*}
     >&2 echo "CONDITION: $CONDITION"
@@ -65,9 +65,9 @@ for R in $READS_FILES; do
     >&2 echo "REPLICATE: $REPLICATE"
     READ=$(ls $READS_DIR/${SAMPLE}*.bam)
     >&2 echo "READ: $READ"
-    CONTROL=$(ls $READS_DIR/${CONDITION}*input*.bam)
-    >&2 echo "CONTROL: $CONTROL"
+    INPUT=$(python $(dirname $0)/../scripts/util.py find_input ${R})
+    >&2 echo "INPUT: $INPUT"
     PEAK=$(ls $PEAKS_DIR/${SAMPLE}*.xls)
     >&2 echo "PEAK: $PEAK"
-    echo "$SAMPLE,CD14,Age,$CONDITION,$REPLICATE,$READ,${CONDITION}_pooled,$CONTROL,${PEAK},macs"
+    echo "$SAMPLE,CD14,Age,$CONDITION,$REPLICATE,$READ,${CONDITION}_input,$INPUT,${PEAK},macs"
 done
