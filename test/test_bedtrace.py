@@ -32,10 +32,10 @@ class BedTrace(unittest.TestCase):
         self.assertIsNone(u.path)
         u.compute()
         self.assertIsNotNone(u.path)
-        self.assertEqual("""chr1	0	100	1
-chr1	150	500	2|1|1
-chr1	600	750	1|2
-""", Path(u.path).read_text())
+        self.assertEqual("""chr1	0	100	1_A.bed
+chr1	150	500	1_A.bed|2_B.bed
+chr1	600	750	1_A.bed|2_B.bed
+""", Path(u.path).read_text().replace(TEST_DATA + '/', ''))
 
     def test_intersect(self):
         i = intersect(Bed(TEST_DATA + '/A.bed'), Bed(TEST_DATA + '/B.bed'))
@@ -46,13 +46,13 @@ chr1	600	750	1|2
 chr1	600	750
 """, Path(i.path).read_text())
 
-        def test_minus(self):
-            m = minus(Bed(TEST_DATA + '/A.bed'), Bed(TEST_DATA + '/B.bed'))
-            self.assertIsNone(m.path)
-            m.compute()
-            self.assertIsNotNone(m.path)
-            self.assertEqual("""chr1	0	100
-    """, Path(m.path).read_text())
+    def test_minus(self):
+        m = minus(Bed(TEST_DATA + '/A.bed'), Bed(TEST_DATA + '/B.bed'))
+        self.assertIsNone(m.path)
+        m.compute()
+        self.assertIsNotNone(m.path)
+        self.assertEqual("""chr1	0	100
+""", Path(m.path).read_text())
 
     def test_count(self):
         self.assertEqual(4, Bed(TEST_DATA + '/A.bed').count())
@@ -113,7 +113,6 @@ chr1	10571239	10571874	4.94096
         self.assertEqual("""chr1	92780966	92781404	5.47439
 chr1	10571239	10571874	4.94096
 """, Path(f).read_text())
-
 
     @classmethod
     def tearDownClass(cls):
