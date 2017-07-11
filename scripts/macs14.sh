@@ -19,7 +19,7 @@ P=$3
 
 echo "Batch macs14: ${WORK_DIR} ${GENOME} ${P}"
 
-SPECIES=$(macs_species $GENOME)
+SPECIES=$(python $(dirname $0)/util.py macs_species ${GENOME})
 
 cd ${WORK_DIR}
 

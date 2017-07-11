@@ -16,6 +16,9 @@ Usage:
 python util.py find_input <file>
     Finds input given the file name. Heuristics: among all the files within folder find file with "input" substring and
     most common subsequence with initial file.
+    
+python util.py macs_species <genome>
+    Converts UCSC genome name to MACS. 
 
 python util.py effective_genome_fraction <genome> <chrom.sizes.path>
     Computes effective genome size, required for SICER.
@@ -78,6 +81,35 @@ def find_input(bam):
         return ''
 
 
+def macs_species(genome):
+    'Convert genome to macs2 species encoding'
+    if re.match('^hg[0-9]+$', genome):
+        return 'hs'
+    elif re.match('^mm[0-9]+$', genome):
+        return 'mm'
+    raise Exception('Unknown species {}'.format(genome))
+
+
+def effective_genome_fraction(genome, chrom_sizes_path):
+    """From MACS2 documentation:
+    The default hs 2.7e9 is recommended for UCSC human hg18 assembly.
+    Here are all precompiled parameters for effective genome size:
+    hs: 2.7e9
+    mm: 1.87e9
+    ce: 9e7
+    dm: 1.2e8"""
+    chrom_length = int(run([['cat', chrom_sizes_path],
+                            ['grep', '-v', 'chr_'],
+                            ['awk', '{ L+=$2 } END { print L }']])[0].decode('utf-8').strip())
+    if genome.startswith('mm'):
+        size = 1.87e9
+    elif genome.startswith('hg'):
+        size = 2.7e9
+    else:
+        raise Exception('Unknown species {}'.format(genome))
+    return size / chrom_length
+
+
 def run_macs2(work_dir, genome, chrom_sizes, name, *params):
     """
 Defaults for MACS2 broad peak calling:
@@ -108,26 +140,6 @@ Defaults for MACS2 broad peak calling:
     return folder
 
 
-def effective_genome_fraction(genome, chrom_sizes_path):
-    """From MACS2 documentation:
-    The default hs 2.7e9 is recommended for UCSC human hg18 assembly.
-    Here are all precompiled parameters for effective genome size:
-    hs: 2.7e9
-    mm: 1.87e9
-    ce: 9e7
-    dm: 1.2e8"""
-    chrom_length = int(run([['cat', chrom_sizes_path],
-                            ['grep', '-v', 'chr_'],
-                            ['awk', '{ L+=$2 } END { print L }']])[0].decode('utf-8').strip())
-    if genome.startswith('mm'):
-        size = 1.87e9
-    elif genome.startswith('hg'):
-        size = 2.7e9
-    else:
-        raise Exception('Unknown species {}'.format(genome))
-    return size / chrom_length
-
-
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
@@ -136,11 +148,13 @@ def main():
         if o in ("-h", "--help"):
             usage()
             return
-    # find_input option
+
     if len(args) == 2 and args[0] == 'find_input':
         print(find_input(args[1]))
 
-    # effective_genome_fraction option
+    if len(args) == 2 and args[0] == 'macs_species':
+        print(macs_species(args[1]))
+
     if len(args) == 3 and args[0] == 'effective_genome_fraction':
         print(effective_genome_fraction(args[1], args[2]))
 

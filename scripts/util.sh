@@ -105,14 +105,3 @@ check_logs()
         exit 1
     fi
 }
-
-# Convert genome to macs2 species encoding
-macs_species()
-{
-    GENOME=$1
-    # Convert Genome build to macs2 species
-    [[ ${GENOME} =~ ^hg[0-9]+$ ]] && SPECIES="hs"
-    [[ ${GENOME} =~ ^mm[0-9]+$ ]] && SPECIES="mm"
-    [[ -z "${SPECIES}" ]] && echo "Unknown species for macs: ${GENOME}" && exit 1
-    echo "${SPECIES}"
-}

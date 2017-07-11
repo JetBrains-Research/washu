@@ -26,7 +26,7 @@ if [ ! -f ${CHROM_SIZES} ]; then
     echo "chrom.sizes file not specified, no signal"
 fi
 
-SPECIES=$(macs_species $GENOME)
+SPECIES=$(python $(dirname $0)/util.py macs_species ${GENOME})
 
 cd ${WORK_DIR}
 
