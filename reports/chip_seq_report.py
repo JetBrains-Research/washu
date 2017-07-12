@@ -116,7 +116,7 @@ consensus.scores = sapply(strsplit(as.character(consensus.df$V4), split = "\\\\|
 consensus = min(consensus.scores):max(consensus.scores)
 cons.numbers = sapply(consensus, function(x) sum(consensus.scores == x))
 plt2 = ggplot(data.frame(consensus = consensus, peaks = cumsum(cons.numbers)), aes(consensus, peaks)) +
-    geom_line() + ggtitle("Consensus by peaks")
+    geom_line() + ylim(0, sum(cons.numbers)) + ggtitle("Consensus by peaks")
 ggsave(filename = "./consensus.png", plot = plt2)
 
 """
