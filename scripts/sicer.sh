@@ -16,9 +16,17 @@ if [ -f "$(dirname $0)/util.sh" ]; then
 fi
 
 if [ $# -lt 4 ]; then
-    echo "Need 4 parameters! <work_dir> <genome> <chrom.sizes> <FDR>"
+    echo "Need at least 4 parameters! <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)]"
     exit 1
 fi
+
+WINDOW_SIZE=200
+FRAGMENT_SIZE=150
+GAP_SIZE=600
+
+if [ $# -ge 5 ]; then WINDOW_SIZE=$5 ; fi
+if [ $# -ge 6 ]; then FRAGMENT_SIZE=$6 ; fi
+if [ $# -ge 7 ]; then GAP_SIZE=$7 ; fi
 
 WORK_DIR=$1
 GENOME=$2
@@ -92,7 +100,7 @@ cd ${INPUT_FOLDER}
 #   fragment size           = 150
 #   gap size (bp)           = 600
 
-SICER.sh ${INPUT_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUT_FOLDER} ${GENOME} 1 200 150 ${EFFECTIVE_GENOME_FRACTION} 600 ${FDR}
+SICER.sh ${INPUT_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
 cp -f ${OUT_FOLDER}/* ${WORK_DIR}
 
 # Output files:
