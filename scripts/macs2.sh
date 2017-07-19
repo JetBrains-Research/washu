@@ -76,6 +76,9 @@ done
 wait_complete ${TASKS}
 check_logs
 
+# Cleanup BedGraph files
+rm *.bdg
+
 # Create pdf reports
 module load R
 MODELS=$(ls *.r); for M in ${MODELS[@]}; do Rscript $M; done
