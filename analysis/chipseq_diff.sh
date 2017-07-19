@@ -92,7 +92,7 @@ if [ ! -d $DIFFBIND ]; then
 # This is necessary because qsub default working dir is user home
 cd ${DIFFBIND}
 module load R
-Rscript $(dirname $0)/diffbind.R ${NAME}.csv
+Rscript $(dirname $0)/../R/diffbind.R ${NAME}.csv
 ENDINPUT
 )
     wait_complete "$QSUB_ID"

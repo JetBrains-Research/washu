@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Script to prepare configuration csv for diffbind
+# Script to prepare configuration csv for differential peak calling in diffbind format
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
 
->&2 echo "diffbind_config: $@"
+>&2 echo "diff_config: $@"
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <READS_DIR> <PEAKS_DIR>"
     echo "Example: "
