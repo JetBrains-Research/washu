@@ -5,8 +5,8 @@
 >&2 echo "diff_config: $@"
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <READS_DIR> <PEAKS_DIR>"
-    echo "Example: "
-    echo "  bash diffbind_config.sh k4me3_20vs20_bams k4me3_20vs20_bams_macs2_broad_0.1"
+    echo "Example params:"
+    echo "  k4me3_20vs20_bams k4me3_20vs20_bams_macs2_broad_0.1"
     exit 1
 fi
 
