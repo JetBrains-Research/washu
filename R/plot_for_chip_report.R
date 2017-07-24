@@ -21,16 +21,16 @@ read_all <- function(file_name, header = T) {
 
 merged <- read_all("peaks_length.csv")
 
-ggplot(merged, aes(track, length, colour=tool)) + geom_boxplot() + scale_y_log10() + facet_grid(. ~ tool)
+my_plot <- ggplot(merged, aes(track, length, colour=tool)) + geom_boxplot() + scale_y_log10() + facet_grid(. ~ tool)
 
-ggsave("peaks_length.png")
+ggsave("peaks_length.png", plot=my_plot)
 
 merged <- read_all("frip_table.csv")
 
-ggplot(merged, aes(tool, peaks)) + geom_jitter(aes(colour=tool))
+my_plot <- ggplot(merged, aes(tool, peaks)) + geom_jitter(aes(colour=tool))
 
-ggsave("peaks_number.png")
+ggsave("peaks_number.png", plot=my_plot)
 
-ggplot(merged, aes(tool, frip)) + geom_jitter(aes(colour=tool))
+my_plot <- ggplot(merged, aes(tool, frip)) + geom_jitter(aes(colour=tool))
 
-ggsave("frip.png")
+ggsave("frip.png", plot=my_plot)
