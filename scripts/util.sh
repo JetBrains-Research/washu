@@ -54,12 +54,15 @@ if which qsub &>/dev/null; then
         echo "Done."
     }
 
+    # Use function to get rid of command substitution.
+    # Command substitution not works well with parallel execution.
     run_parallel()
     {
         # LOAD args to $CMD
         CMD=""
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
 
+        # Return through global variable here, because we can't use command substitution.
         QSUB_ID=$(qsub <<< "$CMD")
     }
 else
@@ -73,7 +76,7 @@ else
     run_parallel()
     {
         # Wait until less then 8 tasks running
-        while [ `jobs | wc -l` -ge 8 ] ; do sleep 1 ; done
+        while [ $(jobs | wc -l) -ge 8 ] ; do sleep 1 ; done
 
         CMD=""
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
