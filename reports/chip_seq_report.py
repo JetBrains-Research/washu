@@ -71,7 +71,7 @@ def count_jaccard(chrom_sizes, peaks):
 
                 output = subprocess.check_output("bedtools jaccard -g {} -a {} -b {}"
                                                  .format(genome_sorted, first_file, second_file), shell=True)
-                line = output.split("\n")[1]
+                line = output.decode().split("\n")[1]
                 result.write("{},{},{}\n".format(p1, p2, float(line.split("\t")[2])))
 
     shutil.rmtree(temp_dir)
