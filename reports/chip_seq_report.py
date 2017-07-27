@@ -78,8 +78,9 @@ def count_jaccard(chrom_sizes, peaks):
 
 
 def count_intersection(peaks):
-    command = "bash /mnt/stripe/washu/bed/union.sh {} >{}".format(
-        " ".join(peaks), os.path.join("report", "counts.bed"))
+    union_sh = os.path.realpath(os.path.join(os.path.dirname(__file__), '../bed/union.sh'))
+    command = "bash {} {} >{}".format(
+        union_sh, " ".join(peaks), os.path.join("report", "counts.bed"))
     os.system(command)
     counts = [0] * len(peaks)
     for line in read_all_lines(os.path.join("report", "counts.bed")):
