@@ -56,7 +56,8 @@ else
         --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --bed ${ID}_peaks.bed
 fi
 
-
+# Compute Reads in Peaks
+bash $(dirname $0)/../reports/rip.sh ${FILE} ${ID}_peaks.bed
 ENDINPUT
 )
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
