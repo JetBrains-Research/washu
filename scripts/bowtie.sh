@@ -44,7 +44,7 @@ do :
 
     # Assumption: the only difference between paired-end read files is _1 and _2
     FILE_PAIRED=""
-    if $(echo "${FILE_PAIRED[@]}"  | fgrep -q "_1");
+    if $(echo "${FILE}"  | fgrep -q "_1");
     then
         PREFIX=${FILE%%_1.*}
         SUFFIX=${FILE##*_1}
