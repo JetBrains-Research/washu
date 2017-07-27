@@ -40,9 +40,9 @@ for WORK_DIR in ${WORK_DIRS}; do :
         FILE_NAME_WO_EXT=${FILE_NAME%.sra}
 
         FASTQ_FILE_PREFIX="${OUTDIR}/${FILE_NAME_WO_EXT}"
-        if [ -f "${FASTQ_FILE_PREFIX}.fastq.gz" ] ||
-         ( [ -f "${FASTQ_FILE_PREFIX}_1.fastq.gz" ] &&
-         [ -f "${FASTQ_FILE_PREFIX}_2.fastq.gz" ]); then
+        if [ -f "${FASTQ_FILE_PREFIX}.fastq" ] ||
+         ( [ -f "${FASTQ_FILE_PREFIX}_1.fastq" ] &&
+         [ -f "${FASTQ_FILE_PREFIX}_2.fastq" ]); then
             echo "  $FILE_NAME was already processed"
             continue
         fi
@@ -80,7 +80,7 @@ fi
 # --gzip                  Compress output using gzip
 # -O|--outdir <path>      Output directory, default is working
 
-fastq-dump --log-level err --dumpbase --gzip --outdir ${OUTDIR}\${SPLIT_FILES_OPTION} ${FILE}
+fastq-dump --log-level err --dumpbase --outdir ${OUTDIR}\${SPLIT_FILES_OPTION} ${FILE}
 
 ENDINPUT
 )
