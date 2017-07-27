@@ -41,7 +41,8 @@ module load java
 # PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
 # There is insufficient memory for the Java Runtime Environment to continue.
 export _JAVA_OPTIONS="-Xmx30g"
-java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze --input ${FILE} --reference ${FOLDER}/${GENOME}.2bit --fdr ${Q} --bed ${ID}_peaks.bed
+java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -c ${FILE} \
+    --chrom.sizes ${FOLDER}/${GENOME}.chrom.sizes --fdr ${Q} --bed ${ID}_peaks.bed
 ENDINPUT
 )
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
@@ -50,4 +51,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch zinbra: ${WORK_DIR} ${GENOME} ${FOLDER} ${Q}"
+echo "Done. Batch zinbra: ${ZINBRA_JAR_PATH} ${WORK_DIR} ${GENOME} ${FOLDER} ${Q}"
