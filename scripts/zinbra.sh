@@ -7,15 +7,17 @@ if [ -f "$(dirname $0)/util.sh" ]; then
 fi
 
 if [ $# -lt 4 ]; then
-    echo "Need 4 parameters! <WORK_DIR> <GENOME> <FOLDER> <Q>"
+    echo "Need 5 parameters! <ZINBRA_JAR_PATH> <WORK_DIR> <GENOME> <FOLDER> <Q>"
     exit 1
 fi
-WORK_DIR=$1
-GENOME=$2
-FOLDER=$3
-Q=$4
 
-echo "Batch zinbra: ${WORK_DIR} ${GENOME} ${FOLDER} ${Q}"
+ZINBRA_JAR_PATH=$1
+WORK_DIR=$2
+GENOME=$3
+FOLDER=$4
+Q=$5
+
+echo "Batch zinbra: ${ZINBRA_JAR_PATH} ${WORK_DIR} ${GENOME} ${FOLDER} ${Q}"
 cd ${WORK_DIR}
 
 TASKS=""
@@ -39,7 +41,7 @@ module load java
 # PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
 # There is insufficient memory for the Java Runtime Environment to continue.
 export _JAVA_OPTIONS="-Xmx30g"
-java -jar /home/oshpynov/zinbra/zinbra-0.2.4.jar analyze --input ${FILE} --reference ${FOLDER}/${GENOME}.2bit --fdr ${Q} --bed ${ID}_peaks.bed
+java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.Zinbra analyze --input ${FILE} --reference ${FOLDER}/${GENOME}.2bit --fdr ${Q} --bed ${ID}_peaks.bed
 ENDINPUT
 )
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
