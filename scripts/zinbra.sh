@@ -21,7 +21,7 @@ echo "Batch zinbra: ${ZINBRA_JAR_PATH} ${WORK_DIR} ${GENOME} ${FOLDER} ${Q}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -name '*.bam' | sed 's#./##g')
+for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
 do :
     NAME=${FILE%%.bam} # file name without extension
     ID=${NAME}_${GENOME}_${Q}
