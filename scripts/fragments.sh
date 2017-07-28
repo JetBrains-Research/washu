@@ -17,11 +17,11 @@ cd ${WORK_DIR}
 
 TASKS=""
 for FILE in $(find . -type f -name '*.bam' | sed 's#./##g')
-do :
-    NAME=${FILE%%.bam} # file name without extension
+    do :
+        NAME=${FILE%%.bam} # file name without extension
 
-    # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+        # Submit task
+        QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
 #PBS -N fragments_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=8gb
@@ -30,16 +30,18 @@ do :
 
 # Loading modules
 module load samtools
-module load R
 
 cd ${WORK_DIR}
 samtools view -f66 $FILE | cut -f 9 | sed 's/^-//' > ${NAME}_metrics.txt
+
+module unload samtools # unload samtools, because it conflicts with R at the moment
+module load R
 Rscript $(dirname $0)/../R/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
 ENDINPUT
 )
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
-done
+        TASKS="$TASKS $QSUB_ID"
+    done
 
 wait_complete ${TASKS}
 check_logs
