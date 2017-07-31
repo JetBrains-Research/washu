@@ -4,7 +4,12 @@
 # author: oleg.shpynov@jetbrains.com
 
 # Check tools
-which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
+which bedtools &>/dev/null || {
+    echo "bedtools not found! You can install it using:"
+    echo "  conda install -c bioconda bedtools"
+    echo "For further details see http://code.google.com/p/bedtools"
+    exit 1;
+   }
 
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <BAM> <chrom.sizes>"
