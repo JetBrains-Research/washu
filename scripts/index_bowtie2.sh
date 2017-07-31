@@ -28,7 +28,7 @@ module load bowtie2
 
 # This is necessary because qsub default working dir is user home
 cd ${FOLDER}
-bowtie2-build $(find . -type f -name "*.fa" | sed 's#./##g' | paste -sd "," -) ${GENOME}
+bowtie2-build $(find . -type f -name "*.fa" | sed 's#\./##g' | paste -sd "," -) ${GENOME}
 ENDINPUT
 )
     wait_complete ${QSUB_ID}

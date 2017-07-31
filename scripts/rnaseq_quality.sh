@@ -25,7 +25,7 @@ echo "Batch rna-seq quality: ${WORK_DIR}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -type f -name '*.bam' | sed 's#./##g' | grep -vE ".tr.")
+for FILE in $(find . -type f -name '*.bam' | sed 's#\./##g' | grep -vE ".tr.")
 do :
     TAG=${FILE%%.bam} # file name without extension
 

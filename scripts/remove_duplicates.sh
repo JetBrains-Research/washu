@@ -25,7 +25,7 @@ cd ${WORK_DIR}
 PROCESSED=""
 TASKS=""
 
-for FILE in $(find . -name '*.bam' | sed 's#./##g')
+for FILE in $(find . -name '*.bam' | sed 's#\./##g')
 do :
     NAME=${FILE%%.bam}
     UNIQUE_BAM=${NAME}_unique.bam

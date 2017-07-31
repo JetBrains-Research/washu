@@ -22,7 +22,7 @@ if [[ ! -d ${PEAKS_FOLDER} ]]; then
 fi
 mkdir -p ${OUTPUT_FOLDER}
 
-for F in $(find ${PEAKS_FOLDER} -name '*.xls'| sed 's#./##g' | grep -v input); do
+for F in $(find ${PEAKS_FOLDER} -name '*.xls'| sed 's#\./##g' | grep -v input); do
     echo $F
     cat $F | grep -E '#|name' > ${OUTPUT_FOLDER}/$F
     cat $F | grep -v -E '#|name' | sort -k8,8gr | head -$N >> ${OUTPUT_FOLDER}/$F

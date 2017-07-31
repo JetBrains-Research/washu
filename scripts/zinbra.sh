@@ -21,7 +21,7 @@ echo "Batch zinbra: ${ZINBRA_JAR_PATH} ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${Q}
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
+for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
     INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE}: control file: ${INPUT}"

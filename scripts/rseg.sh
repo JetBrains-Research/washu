@@ -41,7 +41,7 @@ if [[ ! -f ${DEADZONES} ]]; then
 fi
 
 TASKS=""
-for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -v 'input')
+for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
     NAME=${FILE%%.bam} # file name without extension
     FILE_BED=${NAME}.bed
