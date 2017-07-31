@@ -56,6 +56,7 @@ else
         --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --bed ${ID}_peaks.bed
 fi
 
+module load bedtools2
 # Compute Reads in Peaks
 bash $(dirname $0)/../reports/rip.sh ${FILE} ${ID}_peaks.bed
 ENDINPUT
