@@ -18,8 +18,7 @@ WORK_DIR=$1
 GENOME=$2
 CHROM_SIZES=$3
 SUFFIX=$4
-shift 4
-PARAMS=$@
+PARAMS=${@:5}
 
 echo "Batch macs2: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${SUFFIX} ${PARAMS}"
 if [ ! -f ${CHROM_SIZES} ]; then
