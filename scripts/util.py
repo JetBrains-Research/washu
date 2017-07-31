@@ -1,11 +1,21 @@
 #!/usr/bin/env python
+import os
+import sys
+
+#################################################################
+# Add project root folder to load path
+this_file_path = os.path.realpath(__file__)
+project_root_path \
+    = os.path.abspath(os.path.join(os.path.dirname(this_file_path), os.pardir))
+sys.path.insert(0, project_root_path)
+#################################################################
+
 from pipeline_utils import run_bash, move_forward
 from reports.macs2_logs import process_macs2_logs
 
 __author__ = 'oleg.shpynov@jetbrains.com'
 
 import getopt
-import os
 import re
 import sys
 from bed.bedtrace import run
@@ -160,4 +170,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
