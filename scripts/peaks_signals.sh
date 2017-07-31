@@ -41,7 +41,7 @@ echo "Create BED3 regions file ${REGIONS3}"
 cat ${REGIONS} | awk -v OFS='\t' '{print($1,$2,$3)}' | sort -k1,1 -k3,3n -k2,2n > ${REGIONS3}
 
 cd ${WORK_DIR}
-for FILE in $(find . -name '*.bam' | sed 's#./##g' | sort)
+for FILE in $(find . -name '*.bam' | sed 's#\./##g' | sort)
 do :
     NAME=${FILE%%.bam}
     TAGS=${TAGS_FOLDER}/${NAME}.tag
@@ -64,7 +64,7 @@ if [[ ! -f ${TAGS} ]]; then
         sort -k1,1 -k3,3n -k2,2n > ${TAGS}
 fi
 
-bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted > ${COVERAGE_TSV}
+    bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted > ${COVERAGE_TSV}
 
 ENDINPUT
 )
@@ -87,7 +87,7 @@ fi
 # Process libraries sizes
 cd ${TAGS_FOLDER}
 if [[ ! -f sizes.tsv ]]; then
-    for FILE in $(find . -name '*.tag' | sed 's#./##g' | sort)
+    for FILE in $(find . -name '*.tag' | sed 's#\./##g' | sort)
     do :
         NAME=${FILE%%.tag}
         LINES=$(cat $FILE | wc -l)
