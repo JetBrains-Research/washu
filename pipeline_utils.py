@@ -7,7 +7,9 @@ import shutil
 
 from glob import glob
 
-SCRIPTS_PATH = "~/work/washu/scripts/"
+SCRIPTS_PATH \
+    = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                   "scripts"))
 
 
 class WritableDirectory(argparse.Action):
@@ -23,7 +25,7 @@ class WritableDirectory(argparse.Action):
 def run_bash(script_file, *params):
     command = " ".join(["bash", os.path.join(SCRIPTS_PATH, script_file), *[str(p) for p in params]])
     print(command)
-    subprocess.run(command, shell=True)
+        subprocess.run(command, shell=True)
 
 
 def run(*params):
