@@ -29,14 +29,18 @@ def process(coverage_path, sizes_path, id):
     print('Saved raw signal to {}'.format(raw_signal))
 
     print('Processing normalization by all library mapped reads')
-    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'))
-    sizes_pm = {row['name']: row['size'] / 1000000.0 for _, row in sizes.iterrows()}
-    coverage['sizes_pm'] = tuple(map(lambda name: sizes_pm[name], coverage['name']))
+    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'sizes_pm'),
+                        index_col='name')
+    sizes_pm = sizes / 1000000
+    coverage = pd.merge(coverage, sizes_pm, left_on="name", how='left',
+                        right_index=True)
 
     print('Processing normalization by reads mapped to peaks')
-    sizes_peaks_pm = {row['name']: np.sum(coverage[coverage['name'] == row['name']]['coverage']) / 1000000.0
-                      for _, row in sizes.iterrows()}
-    coverage['sizes_peaks_pm'] = tuple(map(lambda name: sizes_peaks_pm[name], coverage['name']))
+    sizes_peaks_pm = coverage.groupby(["name"])\
+        .agg({'coverage': 'sum'})\
+        .rename(columns={'coverage': "sizes_peaks_pm"}) / 1000000
+    coverage = pd.merge(coverage, sizes_peaks_pm, left_on="name", how='left',
+                        right_index=True)
 
     print('Sizes RPM: {}'.format(sizes_pm))
     coverage['rpm'] = coverage['coverage'] / coverage['sizes_pm']
@@ -51,7 +55,7 @@ def process(coverage_path, sizes_path, id):
     coverage['rpkm'] = coverage['rpm'] / coverage['rpk']
     save_signal(id, coverage, 'rpkm', 'Saved RPKM')
 
-    print('Sizes peaks RPKM: {}'.format(sizes_peaks_pm))
+    print('Processing RPKM_PEAKS normalization')
     coverage['rpkm_peaks'] = coverage['rpm_peaks'] / coverage['rpk']
     save_signal(id, coverage, 'rpkm_peaks', 'Saved normalized reads by RPKM reads in peaks signal')
 
