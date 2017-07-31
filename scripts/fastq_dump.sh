@@ -84,7 +84,7 @@ fastq-dump --log-level err --dumpbase --outdir ${OUTDIR}\${SPLIT_FILES_OPTION} $
 
 ENDINPUT
 )
-        echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
+        echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
     done
 done

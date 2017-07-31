@@ -106,9 +106,9 @@ rm ${ID}.sam ${ID}_not_sorted.bam
 ENDINPUT
 )
         if [ -f "${FILE_PAIRED}" ]; then
-            echo "FILE: ${WORK_DIR_NAME}:${FILE} PAIRED ${FILE_PAIRED}; TASK: ${QSUB_ID}"
+            echo "FILE: ${WORK_DIR_NAME}/${FILE} PAIRED ${FILE_PAIRED}; TASK: ${QSUB_ID}"
         else
-            echo "FILE: ${WORK_DIR_NAME}:${FILE}; TASK: ${QSUB_ID}"
+            echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         fi
         TASKS="$TASKS $QSUB_ID"
     done
