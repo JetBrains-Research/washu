@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-which bamCoverage &>/dev/null || { echo "Deeptools bamCoverage not found! Install: <http://deeptools.readthedocs.io/en/latest/content/installation.html>"; exit 1; }
+which bamCoverage &>/dev/null || {
+    echo "deeptools not found! You can install it using:"
+    echo "  conda install -c bioconda deeptools"
+    echo "For further details see http://deeptools.readthedocs.io/en/latest/content/installation.html"
+    exit 1;
+}
 
 # Load technical stuff, not available in qsub emulation
 if [ -f "$(dirname $0)/util.sh" ]; then
@@ -19,7 +24,7 @@ echo "Batch RPKM: ${WORK_DIR}"
 cd ${WORK_DIR}
 
 TASKS=""
-for FILE in $(find . -name '*.bam' | sed 's#./##g' | grep -vE ".tr")
+for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -vE ".tr")
 do :
     NAME=${FILE%%.bam} # file name without extension
 
