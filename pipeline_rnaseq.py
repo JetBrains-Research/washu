@@ -41,7 +41,7 @@ run_bash("rnaseq_quality.sh", WORK_DIR)
 WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_quality",
                         ["*.rnastat", "rnaseq_quality.*"], copy_only=True)
 
-run_bash("bigwig.sh", WORK_DIR, CHROMSIZES)
+run_bash("bigwig.sh", CHROMSIZES, WORK_DIR)
 WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bws",
                         ["*.bw", "*.bw.log", "*.bdg"], copy_only=True)
 

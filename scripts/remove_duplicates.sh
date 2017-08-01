@@ -7,34 +7,39 @@ if [[ ! -f "${PICARD_TOOLS_JAR}" ]]; then
     echo "Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"; exit 1;
 fi
 
+#TODO: vectorize
+
 # Load technical stuff, not available in qsub emulation
 if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
 if [ $# -lt 1 ]; then
-    echo "Need 1 parameters! <WORK_DIR>"
+    echo "Need at least 1 parameter! <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
 
-WORK_DIR=$1
+WORK_DIRS=$@
 
-echo "Batch remove duplicates: ${WORK_DIR}"
-cd ${WORK_DIR}
+echo "Batch remove duplicates: ${WORK_DIRS}"
 
 PROCESSED=""
 TASKS=""
 
-for FILE in $(find . -name '*.bam' | sed 's#\./##g')
-do :
-    NAME=${FILE%%.bam}
-    UNIQUE_BAM=${NAME}_unique.bam
-    METRICS=${NAME}_metrics.txt
+for WORK_DIR in ${WORK_DIRS}; do
+    WORK_DIR_NAME=${WORK_DIR##*/}
+    cd ${WORK_DIR}
 
-    # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+    for FILE in $(find . -name '*.bam' | sed 's#\./##g')
+    do :
+        NAME=${FILE%%.bam}
+        UNIQUE_BAM=${NAME}_unique.bam
+        METRICS=${NAME}_metrics.txt
+
+        # Submit task
+        QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N unique_${NAME}
+#PBS -N unique_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=32gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_unique.log
@@ -49,10 +54,11 @@ java -jar ${PICARD_TOOLS_JAR} MarkDuplicates REMOVE_DUPLICATES=true INPUT=${FILE
 
 ENDINPUT
 )
-    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+        echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
+        TASKS="$TASKS $QSUB_ID"
+    done
 done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch remove duplicates: ${WORK_DIR}"
+echo "Done. Batch remove duplicates: ${WORK_DIRS}"

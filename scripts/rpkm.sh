@@ -14,24 +14,27 @@ if [ -f "$(dirname $0)/util.sh" ]; then
 fi
 
 if [ $# -lt 1 ]; then
-    echo "Need 1 parameter! <WORK_DIR>"
+    echo "Need at least 1 parameter! <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
-WORK_DIR=$1
+WORK_DIRS=$@
 
 
-echo "Batch RPKM: ${WORK_DIR}"
-cd ${WORK_DIR}
+echo "Batch RPKM: ${WORK_DIRS}"
 
 TASKS=""
-for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -vE ".tr")
-do :
-    NAME=${FILE%%.bam} # file name without extension
+for WORK_DIR in ${WORK_DIRS}; do
+    WORK_DIR_NAME=${WORK_DIR##*/}
+    cd ${WORK_DIR}
 
-    # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+    for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -vE ".tr")
+    do :
+        NAME=${FILE%%.bam} # file name without extension
+
+        # Submit task
+        QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N rpkm_${NAME}
+#PBS -N rpkm_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=64gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_rpkm.log
@@ -48,10 +51,11 @@ fi
 bamCoverage --bam ${FILE} --outFileName ${NAME}_rpkm.bw --outFileFormat bigwig --ignoreDuplicates --normalizeUsingRPKM
 ENDINPUT
 )
-    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+        echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
+        TASKS="$TASKS $QSUB_ID"
+    done
 done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch RPKM: ${WORK_DIR}"
+echo "Done. Batch RPKM: ${WORK_DIRS}"

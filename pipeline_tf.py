@@ -39,7 +39,8 @@ def cli(out, data):
     # Data table
     data_table = pd.read_csv(data, sep="\t")
 
-    # TODO: >>>>>>
+    # TODO: clean-up when pipeline will be finished
+    # TODO >>>>>>
     data_table = data_table.iloc[[0, 1], :]
     # TODO: <<<<<
 
@@ -125,20 +126,21 @@ def cli(out, data):
     # Process insert size of BAM visualization
     # run_bash("fragments.sh", *bams_dirs)
 
-    # TODO: qsub-vectorize:
+    # Batch BigWig visualization
+    run_bash("bigwig.sh", CHROM_SIZES, *bams_dirs)
     for bams_dir in bams_dirs:
-        # Batch BigWig visualization
-        run_bash("bigwig.sh", bams_dir, CHROM_SIZES)
         move_forward(bams_dir, bams_dir + "_bws", ["*.bw", "*.bdg", "*bw.log"],
                      copy_only=True)
 
-        # Batch RPKM visualization
-        run_bash("rpkm.sh", bams_dir)
+    # Batch RPKM visualization
+    run_bash("rpkm.sh", *bams_dirs)
+    for bams_dir in bams_dirs:
         move_forward(bams_dir, bams_dir + "_rpkms", ["*.bw", "*rpkm.log"],
                      copy_only=True)
 
-        # Remove duplicates
-        run_bash("remove_duplicates.sh", bams_dir)
+    # Remove duplicates
+    run_bash("remove_duplicates.sh", *bams_dirs)
+    for bams_dir in bams_dirs:
         move_forward(bams_dir, bams_dir + "_unique",
                      ["*_unique*", "*_metrics.txt", "*duplicates.log"],
                      copy_only=True)
@@ -146,7 +148,6 @@ def cli(out, data):
     # Call PEAKS:
     files_to_cleanup = []
     try:
-        # TODO: vectorize QSUB MACS2 script:
         for r in data_table.itertuples():
             gsmid_signal = r.signal
             gsmid_input = r.input
@@ -167,6 +168,7 @@ def cli(out, data):
             ########################
             # Peak calling section #
             ########################
+            # TODO: Vectorize QSUB MACS2 script:
 
             # MACS2 Regular peak calling (https://github.com/taoliu/MACS)
             # Q=0.01 in example

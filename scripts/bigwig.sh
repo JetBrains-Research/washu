@@ -6,25 +6,30 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+BAM2BW_SH=$(abspath "$(dirname $0)/../bam2bw.sh")
+
 if [ $# -lt 2 ]; then
-    echo "Need 2 parameters! <WORK_DIR> <CHROM_SIZES>"
+    echo "Need at least 2 parameters! <CHROM_SIZES> <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
-WORK_DIR=$1
-CHROM_SIZES=$2
+CHROM_SIZES=$1
+WORK_DIRS=${@:2}
 
-echo "Batch BigWig: ${WORK_DIR} ${CHROM_SIZES}"
-cd ${WORK_DIR}
+echo "Batch BigWig: ${CHROM_SIZES} ${WORK_DIRS}"
 
 TASKS=""
-for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -vE ".tr")
-do :
-    NAME=${FILE%%.bam} # file name without extension
+for WORK_DIR in ${WORK_DIRS}; do
+    WORK_DIR_NAME=${WORK_DIR##*/}
+    cd ${WORK_DIR}
 
-    # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+    for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -vE ".tr")
+    do :
+        NAME=${FILE%%.bam} # file name without extension
+
+        # Submit task
+        QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N bw_${NAME}
+#PBS -N bw_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_bw.log
@@ -33,13 +38,14 @@ do :
 cd ${WORK_DIR}
 
 module load bedtools2
-bash $(dirname $0)/../bam2bw.sh ${FILE} ${CHROM_SIZES}
+bash ${BAM2BW_SH} ${FILE} ${CHROM_SIZES}
 ENDINPUT
 )
-    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+        echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
+        TASKS="$TASKS $QSUB_ID"
+    done
 done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch BigWig: ${WORK_DIR} ${CHROM_SIZES}"
+echo "Done. Batch BigWig: ${CHROM_SIZES} ${WORK_DIRS}"

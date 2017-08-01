@@ -79,7 +79,7 @@ process_bowtie_logs(WORK_DIR)
 run_bash("fragments.sh", WORK_DIR)
 
 # Batch BigWig visualization
-run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
+run_bash("bigwig.sh", CHROM_SIZES, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 
 # Batch RPKM visualization
@@ -96,7 +96,7 @@ move_forward(WORK_DIR, WORK_DIR + "_unique", ["*_unique*", "*_metrics.txt", "*du
 # WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_{}mln".format(READS), ["*{}*".format(READS)])
 #
 # # Batch BigWig visualization
-# run_bash("bigwig.sh", WORK_DIR, CHROM_SIZES)
+# run_bash("bigwig.sh", CHROM_SIZES, WORK_DIR)
 # move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
 
 ########################

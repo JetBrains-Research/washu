@@ -64,7 +64,9 @@ if [[ ! -f ${TAGS} ]]; then
         sort -k1,1 -k3,3n -k2,2n > ${TAGS}
 fi
 
+if [[ ! -f ${COVERAGE_TSV} ]]; then
     bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted > ${COVERAGE_TSV}
+fi
 
 ENDINPUT
 )
