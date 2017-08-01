@@ -56,6 +56,16 @@ export PYTHONPATH="<PATH_TO_REPOSITORY>:$PYTHONPATH"
 # Enable 3rd party tools
 export PATH="<TOOL1>:<TOOL2>:...:<TOOL_N>:$PATH"
 ```
+Docker
+--------------------
+There is a Docker configuration with all the necessary tools for pipeline.
+```bash
+# Build Docker
+docker build -t washu .
+# Launch tests with Teamcity tests runner
+docker run -v <path_to_washu_project>:/washu -t -i washu /bin/bash -c "source activate py3.5 && pip install teamcity-messages && cd /washu && bash testme.sh"
+```
+
 Data standards and pipelines
 --------------
 * ENCODE data [standards](https://www.encodeproject.org/data-standards/)
