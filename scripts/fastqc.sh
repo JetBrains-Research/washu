@@ -32,6 +32,7 @@ echo "Batch Fastqc: ${WORK_DIRS}"
 TASKS=""
 for WORK_DIR in ${WORK_DIRS}; do :
     cd ${WORK_DIR}
+    WORK_DIR_NAME=${WORK_DIR##*/}
 
     mkdir -p "${WORK_DIR}/fastqc"
 
@@ -43,7 +44,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         # Submit task
         QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
-#PBS -N fastqc_${NAME}
+#PBS -N fastqc_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=4gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_fastqc.log
@@ -72,7 +73,7 @@ cd ${WORK_DIR}
 fastqc --outdir "${WORK_DIR}/fastqc" "${FILE}"
 ENDINPUT
 )
-        echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
+        echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
     done
 done
