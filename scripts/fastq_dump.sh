@@ -7,7 +7,7 @@
 #    results to <WORK_DIR>/fastq/ directory. If file already exists it will be
 #    skipped.
 #
-#    Ensure tat fastq-dump is installed or install it using:
+#    Ensure that fastq-dump is installed or install it using:
 #       conda install -c bioconda sra-tools
 #    For further details see https://www.ncbi.nlm.nih.gov/books/NBK158900
 ###########################################################################
