@@ -19,7 +19,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
 fi
 
 if [ $# -lt 1 ]; then
-    echo "Need at least one parameter! <WORK_DIR>"
+    echo "Need at least one parameter! <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
 
@@ -35,7 +35,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
     mkdir -p ${OUTDIR}
 
     WORK_DIR_NAME=${WORK_DIR##*/}
-    for FILE in $(find ${WORK_DIR} -name '*.sra' | sort); do :
+    for FILE in $(find . -name '*.sra' | sed 's#\./##g' | sort); do :
         FILE_NAME=${FILE##*/}
         FILE_NAME_WO_EXT=${FILE_NAME%.sra}
 
