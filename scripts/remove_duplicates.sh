@@ -1,13 +1,7 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-PICARD_TOOLS_JAR=~/picard.jar
-# Check Picard tools
-if [[ ! -f "${PICARD_TOOLS_JAR}" ]]; then
-    echo "Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"; exit 1;
-fi
-
-#TODO: vectorize
+#TODO[roman]: vectorize
 
 # Load technical stuff, not available in qsub emulation
 if [ -f "$(dirname $0)/util.sh" ]; then
@@ -15,13 +9,18 @@ if [ -f "$(dirname $0)/util.sh" ]; then
 fi
 
 if [ $# -lt 1 ]; then
-    echo "Need at least 1 parameter! <WORK_DIR> [<WORK_DIR>]*"
+    echo "Need at least 2 parameters! <PICARD_TOOLS_JAR> <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
 
-WORK_DIRS=$@
+# Check Picard tools
+PICARD_TOOLS_JAR=$1
+if [[ ! -f "${PICARD_TOOLS_JAR}" ]]; then
+    echo "Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"; exit 1;
+fi
+WORK_DIRS=${@:2}
 
-echo "Batch remove duplicates: ${WORK_DIRS}"
+echo "Batch remove duplicates: ${PICARD_TOOLS_JAR} ${WORK_DIRS}"
 
 PROCESSED=""
 TASKS=""
@@ -61,4 +60,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch remove duplicates: ${WORK_DIRS}"
+echo "Done. Batch remove duplicates: ${PICARD_TOOLS_JAR} ${WORK_DIRS}"

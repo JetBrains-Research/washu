@@ -63,7 +63,7 @@ There is a Docker configuration with all the necessary tools for pipeline.
 # Build Docker
 docker build -t washu .
 # Launch tests with Teamcity tests runner
-docker run -v <path_to_washu_project>:/washu -t -i washu /bin/bash -c "source activate py3.5 && pip install teamcity-messages && cd /washu && bash testme.sh"
+docker run -v <path_to_washu_project>:/washu -t -i washu /bin/bash -c "source activate py3.5 && cd /washu && bash testme.sh"
 ```
 
 Data standards and pipelines

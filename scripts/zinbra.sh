@@ -12,6 +12,9 @@ if [ $# -lt 5 ]; then
 fi
 
 ZINBRA_JAR_PATH=$1
+if [[ ! -f "${ZINBRA_JAR_PATH}" ]]; then
+    echo "ZINBRA not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"; exit 1;
+fi
 WORK_DIR=$2
 GENOME=$3
 CHROM_SIZES=$4

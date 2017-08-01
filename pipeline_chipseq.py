@@ -53,7 +53,7 @@ WORK_DIR = args.path_to_directory
 GENOME = "hg19"
 INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes", GENOME)
 CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
-
+PICARD_TOOLS = os.path.join("~", "picard.jar")
 
 ##################
 # Pipeline start #
@@ -87,7 +87,7 @@ run_bash("rpkm.sh", WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"], copy_only=True)
 
 # Remove duplicates
-run_bash("remove_duplicates.sh", WORK_DIR)
+run_bash("remove_duplicates.sh", PICARD_TOOLS, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_unique", ["*_unique*", "*_metrics.txt", "*duplicates.log"], copy_only=True)
 
 # Batch subsampling to 15mln reads
