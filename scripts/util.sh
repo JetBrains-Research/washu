@@ -119,10 +119,9 @@ function abspath() {
 # Checks for errors in logs, stops the world
 check_logs()
 {
-    ERRORS=`find . -name "*.log" | xargs grep -i -e "err"`
+    ERRORS=`find . -name "*.log" | xargs grep -i -e "error"`
     if [ ! -z "$ERRORS" ]; then
         echo "ERRORS found"
         echo "$ERRORS"
-        exit 1
     fi
 }
