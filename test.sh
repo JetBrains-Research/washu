@@ -61,6 +61,8 @@ BEDCLIP=$(which bedClip)
 echo "bedClip: $BEDCLIP"
 MULTIQC=$(which multiqc)
 echo "multiqc: $MULTIQC"
+BAMCOVERAGE=$(which bamCoverage)
+echo "bamcoverage: $BAMCOVERAGE"
 if [ ! -f ~/picard.jar ]; then
     echo "Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"
 fi
