@@ -20,18 +20,19 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 >&2 echo "metapeaks: $@"
 
 SORTED_FILES=()
-PEAKS=()
+PEAKS=""
+T=$'\t'
 for F in $@
 do
     NPEAKS=$(cat $F | wc -l)
-    PEAKS+=("$NPEAKS")
+    PEAKS="$PEAKS$T$NPEAKS"
     # Folder with source file be read-only, use temp file
     SORTED=$(mktemp)
     sort -k1,1 -k2,2n $F > ${SORTED}
     SORTED_FILES+=("$SORTED")
 done
 
-echo "PEAKS: ${PEAKS[@]}"
+echo "PEAKS:${PEAKS[@]}"
 
 range=$(seq -s, 6 1 $(($# + 5)))
 

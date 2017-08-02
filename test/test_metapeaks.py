@@ -18,7 +18,7 @@ class MetapeaksTest(unittest.TestCase):
     def test_metapeaks(self):
         ps = subprocess.Popen(['bash', METAPEAKS_SH, TEST_DATA + '/A.bed', TEST_DATA + '/B.bed', TEST_DATA + '/C.bed'],
                               stdout=subprocess.PIPE)
-        self.assertEqual("""PEAKS:        4        2        5
+        self.assertEqual("""PEAKS:\t4\t2\t5
 0 0 1	1
 1 0 1	1
 1 1 0	1
