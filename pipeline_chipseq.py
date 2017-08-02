@@ -61,9 +61,8 @@ PICARD_TOOLS = os.path.join("~", "picard.jar")
 print("Genomes and indices folder: ", INDEXES)
 run_bash("index_genome.sh", GENOME, INDEXES)
 
-# Batch QC & multiqc
+# Batch QC
 run_bash("fastqc.sh", WORK_DIR)
-subprocess.run("multiqc " + WORK_DIR, shell=True)
 
 # Batch Bowtie with trim 5 first base pairs
 run_bash("index_bowtie.sh", GENOME, INDEXES)
