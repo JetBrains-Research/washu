@@ -70,4 +70,4 @@ fi
 echo
 
 # Launch all the tests
-python -m unittest discover test
+python -m teamcity.unittestpy discover test/

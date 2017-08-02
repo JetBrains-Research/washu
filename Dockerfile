@@ -24,10 +24,9 @@ RUN conda create -n py3.5 python=3.5
 RUN source activate py3.5 &&\
     conda install --channel bioconda fastqc bwa bowtie bowtie2 star samtools bedtools \
     deeptools sra-tools rseg ucsc-bedgraphtobigwig ucsc-bedclip &&\
-    conda install --channel conda-forge matplotlib-venn && conda install --channel r r && conda install pandas numpy
-RUN pip install multiqc
+    conda install --channel conda-forge matplotlib-venn && conda install --channel r r && conda install pandas numpy &&\
+    pip install multiqc teamcity-messages
 
-RUN pip install teamcity-messages
 
 RUN groupadd -r washu && useradd -ms /bin/bash -g washu user
 WORKDIR /home/user
