@@ -18,7 +18,7 @@ echo "Compute FRIPs for READS_FOLDER: $READS_FOLDER; PEAKS_FOLDER: $PEAKS_FOLDER
 cd ${PEAKS_FOLDER}
 for F in $(ls *.*Peak | grep -v gapped); do
     NAME=${F%%_broad*} # filter if broad peaks
-    NAME=${F%%_q0.*}   # filter suffix if narrow peaks
+    NAME=${NAME%%_q0.*}   # filter suffix if narrow peaks
 	BAM=${READS_FOLDER}/${NAME}*.bam
 	bash $(dirname $0)/../reports/rip.sh ${BAM} ${F}
 done
