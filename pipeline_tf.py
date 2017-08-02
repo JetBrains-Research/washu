@@ -22,7 +22,7 @@ from reports.peaks_logs import process_peaks_logs
               type=click.Path(resolve_path=True, file_okay=False),
               help="Output dir (default: .)")
 def cli(out, data):
-    """ Download SRA data & call peaks
+    """ For given descriptor table download SRA data & call peaks
 
     \b
     VALUE is one of:
@@ -170,6 +170,17 @@ def cli(out, data):
             ########################
             # TODO: Vectorize QSUB MACS2 script:
 
+            # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1
+            #  in example
+            folder = run_macs2(bams_dir_signal, GENOME, CHROM_SIZES,
+                               'broad_0.1', '--broad', '--broad-cutoff', 0.1)
+            # Bedtools is necessary for filter script
+            subprocess.run('module load bedtools2', shell=True)
+            run_bash('../bed/macs2_filter_fdr.sh', folder,
+                     folder.replace('0.1', '0.05'), 0.1, 0.05, bams_dir_signal)
+            run_bash('../bed/macs2_filter_fdr.sh', folder,
+                     folder.replace('0.1', '0.01'), 0.1, 0.01, bams_dir_signal)
+
             # MACS2 Regular peak calling (https://github.com/taoliu/MACS)
             # Q=0.01 in example
             folder = run_macs2(bams_dir_signal, GENOME, CHROM_SIZES, 'q0.1',
@@ -184,7 +195,7 @@ def cli(out, data):
             try:
                 os.remove(f)
                 print("* deleted: ", f)
-            except:
+            except OSError:
                 print("Error while deleting '{}'".format(f), sys.exc_info()[0])
 
 if __name__ == '__main__':
