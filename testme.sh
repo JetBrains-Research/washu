@@ -61,15 +61,13 @@ BEDCLIP=$(which bedClip)
 echo "bedClip: $BEDCLIP"
 MULTIQC=$(which multiqc)
 echo "multiqc: $MULTIQC"
-if [[ ! -f "~/picard.jar" ]]; then
+if [ ! -f ~/picard.jar ]; then
     echo "Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"
 fi
-if [[ ! -f "~/zinbra-0.4.0.jar" ]]; then
+if [ ! -f ~/zinbra.jar ]; then
     echo "Zinbra not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"
 fi
-
 echo
-
 
 # Launch all the tests
 python -m unittest discover test
