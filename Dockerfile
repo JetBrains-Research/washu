@@ -37,4 +37,6 @@ RUN cd ~ && wget -q https://github.com/broadinstitute/picard/releases/download/2
 
 # Download ZINBRA
 RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/download/v0.4.0/zinbra-0.4.0.jar -O zinbra.jar
+# Alternative CI link
+# https://teamcity.jetbrains.com/repository/download/Epigenome_Zinbra/lastPinned/zinbra-0.4.0.jar?guest=1
 
