@@ -60,7 +60,6 @@ PICARD_TOOLS = os.path.join("~", "picard.jar")
 ##################
 print("Genomes and indices folder: ", INDEXES)
 run_bash("index_genome.sh", GENOME, INDEXES)
-run_bash("index_bowtie.sh", GENOME, INDEXES)
 
 # Batch QC & multiqc
 run_bash("fastqc.sh", WORK_DIR)
