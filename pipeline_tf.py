@@ -110,7 +110,7 @@ def cli(out, data):
     bams_dirs = []
     for data_dir in data_dirs:
         bams_dir = data_dir + "_bams"
-        bams_dirs.append(data_dir)
+        bams_dirs.append(bams_dir)
         move_forward(data_dir, bams_dir, ["*.bam", "*bowtie*.log"])
 
         # multiqc is able to process Bowtie report
