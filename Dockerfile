@@ -27,10 +27,10 @@ RUN source activate py3.5 &&\
     conda install --channel conda-forge matplotlib-venn && conda install --channel r r && conda install pandas numpy &&\
     pip install multiqc teamcity-messages
 
-
-RUN groupadd -r washu && useradd -ms /bin/bash -g washu user
-WORKDIR /home/user
-USER user
+# Workaround for TeamCity CI, temp folders are created with root permissions, unacessible for USER
+#RUN groupadd -r washu && useradd -ms /bin/bash -g washu user
+#WORKDIR /home/user
+# USER user
 
 # Download Picard tools
 RUN cd ~ && wget -q https://github.com/broadinstitute/picard/releases/download/2.10.6/picard.jar
