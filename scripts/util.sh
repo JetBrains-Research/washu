@@ -28,7 +28,7 @@ which qsub &>/dev/null || {
         # by wait_complete
         echo "Running TASK: ${QSUB_FILE}" 1>&2
         # Redirect both stderr and stdout to stdout then tee and then to stderr
-        bash $QSUB_FILE 2>&1 | tee "$LOG" 1>&2
+        bash $QSUB_FILE &> "$LOG"
     }
 }
 
