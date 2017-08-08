@@ -39,6 +39,11 @@ cd ${WORK_DIR}
 EFFECTIVE_GENOME_FRACTION=$(python $(dirname $0)/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
 echo "EFFECTIVE_GENOME_FRACTION: ${EFFECTIVE_GENOME_FRACTION}"
 
+if [ -z "${EFFECTIVE_GENOME_FRACTION}" ]; then
+    echo "EFFECTIVE_GENOME_FRACTION is not determined"
+    exit 1
+fi
+
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
@@ -99,6 +104,9 @@ cd ${INPUT_FOLDER}
 #   window size (bp)        = 200
 #   fragment size           = 150
 #   gap size (bp)           = 600
+
+
+echo "SICER.sh ${INPUT_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}"
 
 SICER.sh ${INPUT_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
 cp -f ${OUT_FOLDER}/* ${WORK_DIR}
