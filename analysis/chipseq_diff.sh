@@ -208,15 +208,22 @@ ENDINPUT
 fi
 
 
+# Check MACS2 for shift values
+macs2_shift() {
+    echo $(cat $1 | grep "# d =" | sed 's/.*# d = //g')
+}
+
+# TODO[shpynov] same as in peaks_signal.sh
 bams_to_tags() {
     OUT=$1
+    SHIFT=$(($2 / 2))
     # Shift arguments
     shift 1
     for F in $@; do
         >&2 echo $F
         bedtools bamtobed -i ${F} |
-            grep -v 'chrU' | grep -v 'random' |
-            awk '{if ($6=="-") {print($1, $3-1, $6)} else {print($1, $2, $6)}}' >> $OUT
+        awk -v OFS='\t' -v S=${SHIFT} '{if (\$6 != "-") {print(\$1, \$2+S, \$2+S+1)} else {if (\$3-S>=1) {print(\$1, \$3-S, \$3-S+1)}}}' |
+        sort -k1,1 -k3,3n -k2,2n > ${OUT}
     done
 }
 
@@ -235,11 +242,16 @@ maxTrainingSeqNum 10000
 minFoldChange    3
 minRegionDist    1000
 CONFIG
+    SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
+    echo "SHIFT Y: $SHIFT_Y"
+    SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
+    echo "SHIFT O: $SHIFT_O"
+
     >&2 echo "Processing Y Tags";
-    bams_to_tags Y_tags.tag $READS_Y
+    bams_to_tags Y_tags.tag $READS_Y $SHIFT_Y
 
     >&2 echo "Processing O Tags";
-    bams_to_tags O_tags.tag $READS_O
+    bams_to_tags O_tags.tag $READS_O $SHIFT_O
 
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
@@ -272,10 +284,6 @@ bams_to_reads() {
     done
 }
 
-macs2_shift() {
-    echo $(cat $1 | grep "# d =" | sed 's/.*# d = //g')
-}
-
 # MANorm
 MANORM="${PREFIX}_manorm"
 echo
@@ -300,12 +308,6 @@ if [ ! -d $MANORM ]; then
     bams_to_reads Y_reads.bed $READS_Y
     >&2 echo "Processing O Pooled Reads";
     bams_to_reads O_reads.bed $READS_O
-
-    # Check MACS2 for shift values
-    SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
-    echo "SHIFT Y: $SHIFT_Y"
-    SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
-    echo "SHIFT O: $SHIFT_O"
 
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
