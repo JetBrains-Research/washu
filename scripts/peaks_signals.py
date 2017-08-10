@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# See scripts/peaks_signals.sh for data preprocessing
+# See parallel/peaks_signals.sh for data preprocessing
 #
 # Author: oleg.shpynov@jetbrains.com
 

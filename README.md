@@ -3,13 +3,15 @@ Technical pipelines for ChIP-Seq, RNA-Seq, RRBS processing on Portable Batch Sys
 
 Project
 -------
-* `/R`          - R scripts
-* `/analysis`   - Downstream analysis, e.g. replicated ChIP-Seq comparison
-* `/bed`        - Scripts for bed files manipulation - intersection, ChromHMM enrichment, etc.
-* `/reports`    - Scripts to generate report by logs (bowtie, macs2, etc) 
+
+* `/bed`        - BED files manipulations - intersection, ChromHMM enrichment, etc.
 * `/notebooks`  - Jupiter notebooks
-* `/scripts`    - Various scripts for execution of PBS greed using `qsub` queue management
+* `/parallel`   - Scripts for parallel execution of PBS greed using `qsub` queue management
+* `/R`          - R scripts
+* `/reports`    - Scripts to generate report by logs (bowtie, macs2, etc) 
+* `/scripts`    - Downstream analysis, e.g. replicated ChIP-Seq comparison and other various scripts
 * `/test`       - Tests
+* `/tex`        - Latex presentation for the `pipeline_chipseq.py`
 * `/uscs`       - Prepared custom tracks for UCSC genome [browser](https://genome.ucsc.edu/)
 * `/web`        - Create web server with tracks and peaks powered by [Biodalliance](http://www.biodalliance.org/) genome browser
 

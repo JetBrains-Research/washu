@@ -36,7 +36,7 @@ FDR=$4
 echo "Batch sicer: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${FDR}"
 cd ${WORK_DIR}
 
-EFFECTIVE_GENOME_FRACTION=$(python $(dirname $0)/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
+EFFECTIVE_GENOME_FRACTION=$(python $(dirname $0)/../scripts/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
 echo "EFFECTIVE_GENOME_FRACTION: ${EFFECTIVE_GENOME_FRACTION}"
 
 if [ -z "${EFFECTIVE_GENOME_FRACTION}" ]; then
@@ -50,7 +50,7 @@ do :
     NAME=${FILE%%.bam} # file name without extension
     FILE_BED=${NAME}.bed
 
-    INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python $(dirname $0)/../scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
     if [ ! -f "${INPUT}" ]; then
         echo "SICER requires control"

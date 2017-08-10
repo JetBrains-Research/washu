@@ -14,7 +14,7 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
 # Load cluster stuff
-source $(dirname $0)/../scripts/util.sh
+source $(dirname $0)/../parallel/util.sh
 
 ################################################################################
 # Configuration start ##########################################################

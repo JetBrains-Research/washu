@@ -26,7 +26,7 @@ cd ${WORK_DIR}
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
-    INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python $(dirname $0)/../scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE}: control file: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension

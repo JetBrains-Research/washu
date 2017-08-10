@@ -32,17 +32,3 @@ if [ ! -f "${GENOME}.chrom.sizes" ]; then
     wget http://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/bigZips/${GENOME}.chrom.sizes
     chmod a+r *
 fi
-
-# NOTE[shpynov]: be careful, since full fa reference can be used for bowtie indexes by mistake,
-# which leads to huge multimapped fraction (>99%) in real cases.
-#
-# Easiest way to obtain full fa file is download 2bit and convert
-#echo "Check fa reference"
-#if [ ! -f "${GENOME}.fa" ]; then
-#    echo "Downloading 2bit reference"
-#    wget http://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/bigZips/${GENOME}.2bit
-#    chmod a+r *
-#    echo "Convert 2bit to fa reference"
-#    ~/twoBitToFa/twoBitToFa ${GENOME}.2bit ${GENOME}.fa
-#    chmod a+r *
-#fi

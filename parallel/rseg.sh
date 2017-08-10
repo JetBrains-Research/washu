@@ -46,7 +46,7 @@ do :
     NAME=${FILE%%.bam} # file name without extension
     FILE_BED=${NAME}.bed
 
-    INPUT=$(python $(dirname $0)/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python $(dirname $0)/../scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
     INPUT_BED=${INPUT%%.bam}.bed
 

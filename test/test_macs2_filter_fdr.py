@@ -1,11 +1,8 @@
-import unittest
 import os
-
 import shutil
+import unittest
 
 from bed.bedtrace import run
-from scripts.util import lcs
-from scripts.util import find_input
 
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/macs2_filter_fdr'
 MACS2_FILTER_FDR_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/macs2_filter_fdr.sh'

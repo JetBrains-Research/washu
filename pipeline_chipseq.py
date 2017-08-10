@@ -37,8 +37,8 @@ NOTE: python3 required
 
 author oleg.shpynov@jetbrains.com
 """
-from reports.bowtie_logs import process_bowtie_logs
 from pipeline_utils import *
+from reports.bowtie_logs import process_bowtie_logs
 from reports.peaks_logs import process_peaks_logs
 from scripts.util import run_macs2
 

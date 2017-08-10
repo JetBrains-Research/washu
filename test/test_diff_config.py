@@ -4,7 +4,7 @@ import unittest
 from bed.bedtrace import run
 
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/diff_config'
-DIFF_CONFIG_SH = os.path.dirname(os.path.abspath(__file__)) + '/../analysis/diff_config.sh'
+DIFF_CONFIG_SH = os.path.dirname(os.path.abspath(__file__)) + '/../scripts/diff_config.sh'
 
 
 class DiffConfigTest(unittest.TestCase):

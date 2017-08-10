@@ -8,9 +8,8 @@ import click
 import pandas as pd
 
 from pipeline_utils import *
-from scripts.util import run_macs2
 from reports.bowtie_logs import process_bowtie_logs
-from reports.peaks_logs import process_peaks_logs
+from scripts.util import run_macs2
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
@@ -102,7 +101,6 @@ def cli(out, data):
     #
     #  * batch Bowtie with trim 5 first base pairs
     run_bash("bowtie2.sh", GENOME, INDEXES, "5", *data_dirs)
-    #run_bash("bowtie.sh", GENOME, INDEXES, "5", *data_dirs)
 
     # Merge TF SRR*.bam files to one
     run_bash("samtools_merge.sh", GENOME, *data_dirs)
