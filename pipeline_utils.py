@@ -7,9 +7,7 @@ import shutil
 
 from glob import glob
 
-SCRIPTS_PATH \
-    = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                   "scripts"))
+PARALLEL_SCRIPTS_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "parallel"))
 
 
 class WritableDirectory(argparse.Action):
@@ -22,8 +20,8 @@ class WritableDirectory(argparse.Action):
             raise argparse.ArgumentTypeError("{0} is not a writable directory".format(values))
 
 
-def run_bash(script_file, *params):
-    command = " ".join(["bash", os.path.join(SCRIPTS_PATH, script_file), *[str(p) for p in params]])
+def run_bash(script, *params):
+    command = " ".join(["bash", os.path.join(PARALLEL_SCRIPTS_PATH, script), *[str(p) for p in params]])
     print(command)
     subprocess.run(command, shell=True)
 
