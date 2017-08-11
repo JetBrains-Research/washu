@@ -5,12 +5,15 @@ USER root
 RUN ln -snf /bin/bash /bin/sh
 RUN apt-get update
 RUN apt-get install --yes build-essential libgl1-mesa-dev bc
+# GNU AWK requered for proper scripts work.
+RUN apt-get install --yes gawk
 
 # Hack to enable MACS2 in another conda environment
 RUN conda install --channel bioconda macs2
 RUN ln -sf $(which macs2) /usr/local/bin/macs2
 
 # SICER
+RUN pip install scipy
 RUN cd /tmp && wget http://home.gwu.edu/~wpeng/SICER_V1.1.tgz && tar xvf SICER_V1.1.tgz && mv SICER_V1.1 /opt
 # Please refer to README for installation instructions, modify scripts, i.e.
 RUN sed -i 's#/home/data/SICER1.1#/opt/SICER_V1.1#g' /opt/SICER_V1.1/SICER/SICER.sh
