@@ -9,7 +9,7 @@ Project
 * `/parallel`   - Scripts for parallel execution of PBS greed using `qsub` queue management
 * `/R`          - R scripts
 * `/reports`    - Scripts to generate report by logs (bowtie, macs2, etc) 
-* `/scripts`    - Downstream analysis, e.g. replicated ChIP-Seq comparison and other various scripts
+* `/scripts`    - Visualization, downstream analysis, e.g. replicated ChIP-Seq comparison, etc.
 * `/test`       - Tests
 * `/tex`        - Latex presentation for the `pipeline_chipseq.py`
 * `/uscs`       - Prepared custom tracks for UCSC genome [browser](https://genome.ucsc.edu/)
@@ -43,7 +43,7 @@ Pipelines
 ---------
 * `pipeline_chipseq.py`         - Pipeline for batch ULI-ChIP-Seq processing, including QC, alignment, peak calling
 * `pipeline_utils.py`           - Pipeline for batch RNA-Seq data processing
-* `analysis/chipseq_diff.sh`    - Pipeline for replicated ChIP-Seq comparison using MACS2, [DiffBind](http://www.nature.com/nature/journal/v481/n7381/full/nature10730.html), 
+* `scripts/chipseq_diff.sh`     - Pipeline for replicated ChIP-Seq comparison using MACS2, [DiffBind](http://www.nature.com/nature/journal/v481/n7381/full/nature10730.html), 
 [ChIPDiff](https://academic.oup.com/bioinformatics/article/24/20/2344/258202/An-HMM-approach-to-genome-wide-identification-of), 
 [MANorm](https://www.ncbi.nlm.nih.gov/pubmed/22424423)
 
@@ -58,6 +58,7 @@ export PYTHONPATH="<PATH_TO_REPOSITORY>:$PYTHONPATH"
 # Enable 3rd party tools
 export PATH="<TOOL1>:<TOOL2>:...:<TOOL_N>:$PATH"
 ```
+
 Docker
 --------------------
 There is a Docker configuration with all the necessary tools for pipeline.

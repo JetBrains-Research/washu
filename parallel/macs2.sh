@@ -58,7 +58,7 @@ if [ -f "${INPUT}" ]; then
     if [ -f "${CHROM_SIZES}" ]; then
         echo "Create fold enrichment signal track for ${FILE} and ${INPUT}"
         macs2 bdgcmp -t ${ID}_treat_pileup.bdg -c ${ID}_control_lambda.bdg -o ${NAME}_signal.bdg -m FE
-        bash $(dirname $0)/../bdg2bw.sh ${NAME}_signal.bdg ${CHROM_SIZES}
+        bash $(dirname $0)/../scripts/bdg2bw.sh ${NAME}_signal.bdg ${CHROM_SIZES}
     fi
 else
     echo "${FILE}: no control file"

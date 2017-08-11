@@ -6,8 +6,6 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
-BAM2BW_SH=$(abspath "$(dirname $0)/../bam2bw.sh")
-
 if [ $# -lt 2 ]; then
     echo "Need at least 2 parameters! <CHROM_SIZES> <WORK_DIR> [<WORK_DIR>]*"
     exit 1
@@ -38,7 +36,7 @@ for WORK_DIR in ${WORK_DIRS}; do
 cd ${WORK_DIR}
 
 module load bedtools2
-bash ${BAM2BW_SH} ${FILE} ${CHROM_SIZES}
+bash $(dirname $0)/../scripts/bam2bw.sh ${FILE} ${CHROM_SIZES}
 ENDINPUT
 )
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
