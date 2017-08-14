@@ -6,6 +6,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch bowtie $@"
 if [ $# -lt 4 ]; then
     echo "Need 4 parameters! <GENOME> <INDEXES> <TRIM5> <WORK_DIR> [<WORK_DIR>]"
     exit 1
@@ -15,8 +16,6 @@ GENOME=$1
 INDEXES=$2
 TRIM5=$3
 WORK_DIRS=${@:4}
-
-echo "Batch Bowtie: ${GENOME} ${INDEXES} ${TRIM5} ${WORK_DIRS}"
 
 TASKS=""
 PROCESSED=""
@@ -128,4 +127,4 @@ for WORK_DIR in ${WORK_DIRS}; do :
     fi
 done
 
-echo "Done. Batch Bowtie: ${GENOME} ${INDEXES} ${TRIM5} ${WORK_DIRS}"
+>&2 echo "Done. Batch bowtie $@"

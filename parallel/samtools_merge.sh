@@ -13,6 +13,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch samtools-merge $@"
 if [ $# -lt 1 ]; then
     echo "Need at least one parameter! <GENOME> <WORK_DIR> [<WORK_DIR>]*"
     exit 1
@@ -20,7 +21,6 @@ fi
 GENOME=$1
 WORK_DIRS=${@:2}
 
-echo "Batch samtools merge: ${WORK_DIRS}"
 
 TASKS=""
 for WORK_DIR in ${WORK_DIRS}; do
@@ -77,4 +77,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch samtools merge: $WORK_DIRS"
+>&2 echo "Done. Batch samtools-merge $@"

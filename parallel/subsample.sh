@@ -6,6 +6,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch subsample $@"
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <WORK_DIR> <READS>"
     exit 1
@@ -13,7 +14,6 @@ fi
 WORK_DIR=$1
 READS=$2
 
-echo "Batch subsampling: ${WORK_DIR} ${READS}"
 cd ${WORK_DIR}
 
 TASKS=""
@@ -54,4 +54,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch subsampling: ${WORK_DIR} ${READS}"
+>&2 echo "Done. Batch subsample $@"

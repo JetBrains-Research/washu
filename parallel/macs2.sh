@@ -8,6 +8,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch macs2 $@"
 if [ $# -lt 5 ]; then
     echo "Need 5 parameters! <work_dir> <genome> <chrom.sizes> <suffix> <params>"
     echo "if <chrom.sizes> file not specified (NONE), no signal will be created"
@@ -20,7 +21,6 @@ CHROM_SIZES=$3
 SUFFIX=$4
 PARAMS=${@:5}
 
-echo "Batch macs2: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${SUFFIX} ${PARAMS}"
 if [ ! -f ${CHROM_SIZES} ]; then
     echo "chrom.sizes file not specified, no signal"
 fi
@@ -82,4 +82,4 @@ rm *.bdg
 module load R
 MODELS=$(ls *.r); for M in ${MODELS[@]}; do Rscript $M; done
 
-echo "DONE. Batch macs2: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${SUFFIX} ${PARAMS}"
+>&2 echo "Done. Batch macs2 $@"

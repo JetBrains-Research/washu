@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
+# Load technical stuff, not available in qsub emulation
+if [ -f "$(dirname $0)/util.sh" ]; then
+    source "$(dirname $0)/util.sh"
+fi
+
+>&2 echo "index-genome $@"
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <GENOME> <FOLDER>"
     exit 1
@@ -8,12 +14,7 @@ fi
 GENOME=$1
 FOLDER=$2
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
 
-echo "Processing genome $GENOME"
 if [ ! -d "$FOLDER" ]; then
     mkdir -p ${FOLDER}
 fi
@@ -32,3 +33,5 @@ if [ ! -f "${GENOME}.chrom.sizes" ]; then
     wget http://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/bigZips/${GENOME}.chrom.sizes
     chmod a+r *
 fi
+
+>&2 echo "Done. index-genome $@"

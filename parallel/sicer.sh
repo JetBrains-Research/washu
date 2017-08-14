@@ -15,6 +15,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch sicer $@"
 if [ $# -lt 4 ]; then
     echo "Need at least 4 parameters! <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)]"
     exit 1
@@ -33,7 +34,6 @@ GENOME=$2
 CHROM_SIZES=$3
 FDR=$4
 
-echo "Batch sicer: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${FDR}"
 cd ${WORK_DIR}
 
 EFFECTIVE_GENOME_FRACTION=$(python $(dirname $0)/../scripts/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
@@ -134,4 +134,4 @@ check_logs
 
 # Cleanup
 rm -r ${WORK_DIR}/sicer_tmp
-echo "Done. Batch sicer: ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${FDR}"
+>&2 echo "Done. Batch sicer $@"

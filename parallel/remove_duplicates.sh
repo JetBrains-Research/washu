@@ -8,6 +8,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch remove_duplicates $@"
 if [ $# -lt 1 ]; then
     echo "Need at least 2 parameters! <PICARD_TOOLS_JAR> <WORK_DIR> [<WORK_DIR>]*"
     exit 1
@@ -19,8 +20,6 @@ if [[ ! -f "${PICARD_TOOLS_JAR}" ]]; then
     echo "Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"; exit 1;
 fi
 WORK_DIRS=${@:2}
-
-echo "Batch remove duplicates: ${PICARD_TOOLS_JAR} ${WORK_DIRS}"
 
 PROCESSED=""
 TASKS=""
@@ -60,4 +59,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch remove duplicates: ${PICARD_TOOLS_JAR} ${WORK_DIRS}"
+>&2 echo "Done. Batch remove_duplicates $@"

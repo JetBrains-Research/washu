@@ -7,11 +7,11 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch peaks_signals $@"
 if [ $# -lt 4 ]; then
     echo "Need 4 parameters! <WORK_DIR_WITH_BAMS> <INSERT_LENGTH> <REGIONS> <ID>"
     exit 1
 fi
-echo "Batch peaks_signals: $@"
 
 WORK_DIR=$1
 INSERT_LENGTH=$2
@@ -119,4 +119,4 @@ echo "CREATE TABLES TASK: ${QSUB_ID}"
 wait_complete ${QSUB_ID}
 check_logs
 
-echo "Done. Batch peaks_signals: $@"
+>&2 echo "Done. Batch peaks_signals $@"

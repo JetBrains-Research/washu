@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # original rna-seq quality script by Alex Predeus
 # modified by zayats1812@mail.ru
+# TODO: fix hardcoded!
 
 # Load technical stuff, not available in qsub emulation
 if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch rnaseq-quality $@"
 if [ $# -lt 1 ]; then
     echo "Need 1 parameter! <WORK_DIR>"
     exit 1
@@ -18,9 +20,6 @@ REFFLAT="/scratch/artyomov_lab_aging/indexes/hg19/hg19.refFlat.txt"
 GENOME="/scratch/artyomov_lab_aging/indexes/hg19/GRCh37.p13.genome.fa"
 
 PICARD="/home/kzaytsev/epiProject/tools/picardTools/picard-tools-2.4.1/picard.jar"
-
-
-echo "Batch rna-seq quality: ${WORK_DIR}"
 
 cd ${WORK_DIR}
 

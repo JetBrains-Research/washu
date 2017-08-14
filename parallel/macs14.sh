@@ -8,6 +8,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch macs14 $@"
 if [ $# -lt 3 ]; then
     echo "Need 3 parameters! <work_dir> <genome> <p>"
     exit 1
@@ -16,8 +17,6 @@ fi
 WORK_DIR=$1
 GENOME=$2
 P=$3
-
-echo "Batch macs14: ${WORK_DIR} ${GENOME} ${P}"
 
 SPECIES=$(python $(dirname $0)/../scripts/util.py macs_species ${GENOME})
 
@@ -65,4 +64,4 @@ check_logs
 # Create pdf reports
 MODELS=$(ls *.r); for M in ${MODELS[@]}; do Rscript $M; done
 
-echo "Batch macs14: ${WORK_DIR} ${GENOME} ${P}"
+>&2 echo "Done. Batch macs14 $@"

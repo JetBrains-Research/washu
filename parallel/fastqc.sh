@@ -21,13 +21,12 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch fastqc $@"
 if [ $# -lt 1 ]; then
     echo "Need at least one parameter! <WORK_DIR>"
     exit 1
 fi
 WORK_DIRS="$@"
-
-echo "Batch Fastqc: ${WORK_DIRS}"
 
 TASKS=""
 for WORK_DIR in ${WORK_DIRS}; do :
@@ -91,5 +90,4 @@ for WORK_DIR in ${WORK_DIRS}; do :
     # -o, --outdir TEXT     Create report in the specified output directory.
     multiqc -f -o "${WORK_DIR}" "${WORK_DIR}/fastqc"
 done
-
-echo "Done. Batch Fastqc: $WORK_DIRS"
+>&2 echo "Done. Batch fastqc $@"

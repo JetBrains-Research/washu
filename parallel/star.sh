@@ -6,6 +6,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch star $@"
 if [ $# -lt 3 ]; then
     echo "Need 3 parameter! <WORK_DIR> <STAR_REF> <READ_FILES>"
     exit 1
@@ -13,7 +14,6 @@ fi
 WORK_DIR=$1
 REF="$2/human_star_100"
 READ_FILES=($3)
-echo "Batch STAR: ${WORK_DIR}"
 cd ${WORK_DIR}
 
 TASKS=""
@@ -58,3 +58,5 @@ rm *_Log.progress.out
 rm Log.out
 rm *_SJ.out.tab
 rm -rf _STARtmp
+
+>&2 echo "Done. Batch star $@"

@@ -13,14 +13,13 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch rpkm $@"
 if [ $# -lt 1 ]; then
     echo "Need at least 1 parameter! <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
 WORK_DIRS=$@
 
-
-echo "Batch RPKM: ${WORK_DIRS}"
 
 TASKS=""
 for WORK_DIR in ${WORK_DIRS}; do
@@ -58,4 +57,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch RPKM: ${WORK_DIRS}"
+>&2 echo "Done. Batch rpkm $@"

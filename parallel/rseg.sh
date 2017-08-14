@@ -8,6 +8,7 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch rseg $@"
 if [ $# -lt 3 ]; then
     echo "Need 3 parameters! <work_dir> <genome> <chrom.sizes>"
     exit 1
@@ -17,7 +18,6 @@ WORK_DIR=$1
 GENOME=$2
 CHROM_SIZES=$3
 
-echo "Batch rseg: ${WORK_DIR} ${GENOME} ${CHROM_SIZES}"
 cd ${WORK_DIR}
 
 echo "Prepare chrom_sized.bed"
@@ -100,4 +100,4 @@ check_logs
 
 # Cleanup
 rm -r ${WORK_DIR}/rseg_tmp
-echo "Done. Batch rseg: ${WORK_DIR} ${GENOME} ${CHROM_SIZES}"
+>&2 echo "Done. Batch rseg $@"

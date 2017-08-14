@@ -6,21 +6,21 @@ if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch zinbra $@"
 if [ $# -lt 5 ]; then
-    echo "Need 5 parameters! <ZINBRA_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q>"
+    echo "Need >= 5 parameters! <ZINBRA_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q>"
     exit 1
 fi
 
 ZINBRA_JAR_PATH=$1
 if [[ ! -f "${ZINBRA_JAR_PATH}" ]]; then
-    echo "ZINBRA not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"; exit 1;
+    >&2 echo "ZINBRA not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"; exit 1;
 fi
 WORK_DIR=$2
 GENOME=$3
 CHROM_SIZES=$4
 Q=$5
 
-echo "Batch zinbra: ${ZINBRA_JAR_PATH} ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${Q}"
 cd ${WORK_DIR}
 
 TASKS=""
@@ -70,4 +70,4 @@ done
 wait_complete ${TASKS}
 check_logs
 
-echo "Done. Batch zinbra: ${ZINBRA_JAR_PATH} ${WORK_DIR} ${GENOME} ${CHROM_SIZES} ${Q}"
+>&2 echo "Done. Batch zinbra $@"

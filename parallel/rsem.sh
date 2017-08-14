@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # author zayats1812@mail.ru
+# TODO: fix hardcoded!
 
 # Load technical stuff, not available in qsub emulation
 if [ -f "$(dirname $0)/util.sh" ]; then
     source "$(dirname $0)/util.sh"
 fi
 
+>&2 echo "Batch rsem $@"
 if [ $# -lt 1 ]; then
     echo "Need 1 parameter! <WORK_DIR>"
     exit 1
@@ -15,8 +17,6 @@ WORK_DIR=$1
 REF="$2/human_rsem_100/human_rsem_100"
 RSEMPATH="/home/kzaytsev/rna_seq_pipeline/tools/RSEM-1.2.31"
 
-
-echo "Batch RSEM: ${WORK_DIR} ${REF}"
 
 cd ${WORK_DIR}
 
@@ -46,4 +46,4 @@ wait_complete ${TASKS}
 module load R
 Rscript $(dirname $0)/../R/gather.R
 
-echo "Done. Batch RSEM: ${WORK_DIR} ${REF}"
+>&2 echo "Done. Batch rsem $@"
