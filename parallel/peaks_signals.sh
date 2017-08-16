@@ -80,7 +80,7 @@ check_logs
 
 cd $COVERAGES_FOLDER
 if [[ ! -f ${ID}_coverage.tsv ]]; then
-    for FILE in $(ls *.tsv | grep -v ${ID}); do
+    for FILE in $(ls *.tsv | grep -v ${ID}_coverage.tsv); do
         NAME=${FILE%%.tsv}
         cat ${FILE} | awk -v OFS='\t' -v NAME=${NAME} '{print $1,$2,$3,$4,NAME}' >> ${ID}_coverage.tsv
     done
