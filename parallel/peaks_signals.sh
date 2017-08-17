@@ -28,9 +28,8 @@ COVERAGES_FOLDER=${WORK_DIR}/coverages_${INSERT_LENGTH}/${ID}
 mkdir -p ${TAGS_FOLDER}
 mkdir -p ${COVERAGES_FOLDER}
 
-echo "TAGS INSERT_LENGTH PROCESSED: $TAGS_FOLDER"
-SHIFT=$(($INSERT_LENGTH / 2))
-echo "SHIFT FOR TAGS USED: $SHIFT"
+echo "TAGS PROCESSED: $TAGS_FOLDER"
+echo "INSERT SIZE FOR TAGS USED: $INSERT_LENGTH"
 echo "RESULTS FOLDER: $COVERAGES_FOLDER"
 
 PROCESSED=""
@@ -59,9 +58,7 @@ cd ${WORK_DIR}
 module load bedtools2
 
 if [[ ! -f ${TAGS} ]]; then
-    bedtools bamtobed -i ${FILE} |
-        awk -v OFS='\t' -v S=${SHIFT} '{if (\$6 != "-") {print(\$1, \$2+S, \$2+S+1)} else {if (\$3-S>=1) {print(\$1, \$3-S, \$3-S+1)}}}' |
-        sort -k1,1 -k3,3n -k2,2n > ${TAGS}
+    bash $(dirname $0)/../scripts/bam2tags.sh ${FILE} $INSERT_LENGTH > ${TAGS}
 fi
 
 if [[ ! -f ${COVERAGE_TSV} ]]; then

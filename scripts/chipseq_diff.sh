@@ -169,7 +169,7 @@ ENDINPUT
 )
     wait_complete "$QSUB_ID1 $QSUB_ID2"
     check_logs
-    bash ~/work/washu/bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
+    bash $(dirname $0)/../bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
 fi
 
 macs2_total_tags_control() {
@@ -213,20 +213,6 @@ macs2_shift() {
     echo $(cat $1 | grep "# d =" | sed 's/.*# d = //g')
 }
 
-# TODO[shpynov] same as in peaks_signal.sh
-bams_to_tags() {
-    OUT=$1
-    SHIFT=$(($2 / 2))
-    # Shift arguments
-    shift 1
-    for F in $@; do
-        >&2 echo $F
-        bedtools bamtobed -i ${F} |
-        awk -v OFS='\t' -v S=${SHIFT} '{if (\$6 != "-") {print(\$1, \$2+S, \$2+S+1)} else {if (\$3-S>=1) {print(\$1, \$3-S, \$3-S+1)}}}' |
-        sort -k1,1 -k3,3n -k2,2n > ${OUT}
-    done
-}
-
 CHIPDIFF="${PREFIX}_chipdiff"
 echo
 echo "Processing $CHIPDIFF"
@@ -242,16 +228,22 @@ maxTrainingSeqNum 10000
 minFoldChange    3
 minRegionDist    1000
 CONFIG
-    SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
-    echo "SHIFT Y: $SHIFT_Y"
-    SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
-    echo "SHIFT O: $SHIFT_O"
 
     >&2 echo "Processing Y Tags";
-    bams_to_tags Y_tags.tag $READS_Y $SHIFT_Y
+    SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
+    echo "SHIFT Y: $SHIFT_Y"
+    for F in ${READS_Y}; do
+        >&2 echo $F
+        bash $(dirname $0)/../scripts/bam2tags.sh $F $SHIFT_Y >> Y_tags.tag
+    done
 
     >&2 echo "Processing O Tags";
-    bams_to_tags O_tags.tag $READS_O $SHIFT_O
+    SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
+    echo "SHIFT O: $SHIFT_O"
+    for F in ${READS_O}; do
+        >&2 echo $F
+        bash $(dirname $0)/../scripts/bam2tags.sh $F $SHIFT_O >> O_tags.tag
+    done
 
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
@@ -276,9 +268,7 @@ fi
 
 bams_to_reads() {
     OUT=$1
-    # Shift arguments
-    shift 1
-    for F in $@; do
+    for F in ${@:1}; do
         >&2 echo $F
         bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $3, $6}' >> $OUT
     done
@@ -318,11 +308,11 @@ if [ ! -d $MANORM ]; then
 # This is necessary because qsub default working dir is user home
 cd ${MANORM}
 
-sort -k1,1 -k2,2n -o Y_reads_sorted.bed Y_reads.bed
-sort -k1,1 -k2,2n -o O_reads_sorted.bed O_reads.bed
+sort -k1,1 -k2,2n Y_reads.bed > Y_reads_sorted.bed
+sort -k1,1 -k2,2n O_reads.bed > O_reads_sorted.bed
 
-sort -k1,1 -k2,2n -o Y_peaks_sorted.bed Y_peaks.bed
-sort -k1,1 -k2,2n -o O_peaks_sorted.bed O_peaks.bed
+sort -k1,1 -k2,2n Y_peaks.bed > Y_peaks_sorted.bed
+sort -k1,1 -k2,2n O_peaks.bed > O_peaks_sorted.bed
 
 # Load required modules
 module load R
