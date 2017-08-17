@@ -10,7 +10,7 @@ which bedtools &>/dev/null || {
     echo "For further details see http://code.google.com/p/bedtools"
     exit 1;
    }
-
+>&2 echo "bam2bw $@"
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <BAM> <chrom.sizes>"
     exit 1
