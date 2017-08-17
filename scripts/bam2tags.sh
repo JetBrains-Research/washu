@@ -21,5 +21,5 @@ SHIFT=$(($INSERT_SIZE / 2))
 
 bedtools bamtobed -i ${BAM} |\
     awk -v OFS='\t' -v S=${SHIFT} \
-    '{if (\$6 != "-") {print(\$1, \$2+S, \$2+S+1)} else {if (\$3-S>=1) {print(\$1, \$3-S, \$3-S+1)}}}' |\
+    '{if ($6 != "-") {print($1, $2+S, $2+S+1)} else {if ($3-S>=1) {print($1, $3-S, $3-S+1)}}}' |\
     sort -k1,1 -k3,3n -k2,2n
