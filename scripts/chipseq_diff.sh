@@ -97,8 +97,8 @@ ENDINPUT
     cat ${NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
         awk -v OFS='\t' '$9 < 0 {print $0}' | sort -k10,10g > ${NAME}_cond2.bed
     # Save ${NAME} results to simple BED3 format
-    awk -v OFS='\t' '{ print $1,$2,$3}' ${NAME}_cond1.bed > ${NAME}_cond1.bed3
-    awk -v OFS='\t' '{ print $1,$2,$3}' ${NAME}_cond2.bed > ${NAME}_cond2.bed3
+    awk -v OFS='\t' '{print $1,$2,$3}' ${NAME}_cond1.bed > ${NAME}_cond1.bed3
+    awk -v OFS='\t' '{print $1,$2,$3}' ${NAME}_cond2.bed > ${NAME}_cond2.bed3
 fi
 
 MACS_POOLED_Y_VS_O="${PREFIX}_macs_pooled_Y_vs_O"
@@ -229,7 +229,7 @@ minFoldChange    3
 minRegionDist    1000
 CONFIG
 
-    >&2 echo "Processing Y Tags";
+    >&2 echo "Processing Y Tags"
     SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
     echo "SHIFT Y: $SHIFT_Y"
     for F in ${READS_Y}; do
@@ -237,7 +237,7 @@ CONFIG
         bash $(dirname $0)/../scripts/bam2tags.sh $F $SHIFT_Y >> Y_tags.tag
     done
 
-    >&2 echo "Processing O Tags";
+    >&2 echo "Processing O Tags"
     SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
     echo "SHIFT O: $SHIFT_O"
     for F in ${READS_O}; do
@@ -254,25 +254,18 @@ CONFIG
 # This is necessary because qsub default working dir is user home
 cd ${CHIPDIFF}
 
-sort -k1,1 -k2,2n -o Y_tags_sorted.tag Y_tags.tag
-sort -k1,1 -k2,2n -o O_tags_sorted.tag O_tags.tag
+# Inplace sort
+sort -k1,1 -k2,2n -o Y_tags.tag Y_tags.tag
+sort -k1,1 -k2,2n -o O_tags.tag O_tags.tag
 
-ChIPDiff Y_tags_sorted.tag O_tags_sorted.tag $CHROM_SIZES config.txt ${NAME}_3
-cat ${NAME}_3.region | awk -v OFS='\t' '$4=="-" {print $1,$2,$3}' > ${NAME}_3_cond1.bed
-cat ${NAME}_3.region | awk -v OFS='\t' '$4=="+" {print $1,$2,$3}' < ${NAME}_3_cond2.bed
+ChIPDiff Y_tags.tag O_tags.tag $CHROM_SIZES config.txt ${NAME}_3
+cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="-" {print \$1,\$2,\$3}' > ${NAME}_3_cond1.bed
+cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="+" {print \$1,\$2,\$3}' < ${NAME}_3_cond2.bed
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
 fi
 
-
-bams_to_reads() {
-    OUT=$1
-    for F in ${@:1}; do
-        >&2 echo $F
-        bedtools bamtobed -i ${F} | grep -E "chr[0-9]+|chrX" | awk '{print $1, $2, $3, $6}' >> $OUT
-    done
-}
 
 # MANorm
 MANORM="${PREFIX}_manorm"
@@ -294,10 +287,16 @@ if [ ! -d $MANORM ]; then
     cp ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.broadPeak ${MANORM}/Y_peaks.bed
     cp ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.broadPeak ${MANORM}/O_peaks.bed
 
-    >&2 echo "Processing Y Pooled Reads";
-    bams_to_reads Y_reads.bed $READS_Y
-    >&2 echo "Processing O Pooled Reads";
-    bams_to_reads O_reads.bed $READS_O
+    >&2 echo "Processing Y Pooled Reads"
+    for F in ${READS_Y}; do
+        >&2 echo $F
+        bedtools bamtobed -i $F | awk -v OFS='\t' '{print $1,$2,$3,$6}' >> Y_reads.bed
+    done
+    >&2 echo "Processing O Pooled Reads"
+    for F in ${READS_O}; do
+        >&2 echo $F
+        bedtools bamtobed -i $F | awk -v OFS='\t' '{print $1,$2,$3,$6}' >> O_reads.bed
+    done
 
     QSUB_ID=$(qsub << ENDINPUT
 #!/bin/sh
@@ -308,17 +307,18 @@ if [ ! -d $MANORM ]; then
 # This is necessary because qsub default working dir is user home
 cd ${MANORM}
 
-sort -k1,1 -k2,2n Y_reads.bed > Y_reads_sorted.bed
-sort -k1,1 -k2,2n O_reads.bed > O_reads_sorted.bed
+# Sort inplace
+sort -k1,1 -k2,2n -o Y_reads.bed Y_reads.bed
+sort -k1,1 -k2,2n -o Y_peaks.bed Y_peaks.bed
 
-sort -k1,1 -k2,2n Y_peaks.bed > Y_peaks_sorted.bed
-sort -k1,1 -k2,2n O_peaks.bed > O_peaks_sorted.bed
+sort -k1,1 -k2,2n -o O_reads.bed O_reads.bed
+sort -k1,1 -k2,2n -o O_peaks.bed O_peaks.bed
 
 # Load required modules
 module load R
 module load bedtools2
 
-bash ${MANORM}/MAnorm.sh Y_peaks_sorted.bed O_peaks_sorted.bed Y_reads_sorted.bed O_reads_sorted.bed $SHIFT_Y $SHIFT_O
+bash ${MANORM}/MAnorm.sh Y_peaks.bed O_peaks.bed Y_reads.bed O_reads.bed $SHIFT_Y $SHIFT_O
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
