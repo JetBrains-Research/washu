@@ -29,7 +29,7 @@ PEAKS=$(wc -l ${PEAKS_FILE_SORTED} | awk '{print $1}')
 
 # Compute number of reads, intersecting with peaks
 intersectBed -a ${PILEUP_BED} -b ${PEAKS_FILE_SORTED} -c -f 0.20 > ${INTERSECT_BED}
-RIP=$(awk '{sum += $7} END {print sum}' ${INTERSECT_BED})
+RIP=$(awk '{sum += $4} END {print sum}' ${INTERSECT_BED})
 
 # Show result
 echo "file,peaks_file,reads,peaks,rip" > ${RIP_FILE}
