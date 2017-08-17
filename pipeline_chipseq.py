@@ -41,6 +41,8 @@ from pipeline_utils import *
 from reports.bowtie_logs import process_bowtie_logs
 from reports.peaks_logs import process_peaks_logs
 from scripts.util import run_macs2
+import glob
+
 
 parser = argparse.ArgumentParser(description='ULI ChIP-Seq data pipeline')
 parser.add_argument('path_to_directory', action=WritableDirectory, type=str,

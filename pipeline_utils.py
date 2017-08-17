@@ -35,7 +35,8 @@ def run(*params):
 def move_forward(folder, new_folder, what_to_move, copy_only=False):
     # Necessary for correct copy behavior
     os.chdir(folder)
-    os.mkdir(new_folder)
+    if not os.path.exists(new_folder):
+        os.mkdir(new_folder)
     for pattern in itertools.chain.from_iterable(map(glob, what_to_move)):
         shutil.move(pattern, new_folder)
     if not copy_only:
