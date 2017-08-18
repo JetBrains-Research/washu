@@ -9,7 +9,7 @@ docker run -v /mnt/stripe/washu:/washu -v /mnt/stripe/chip-seq-pipeline-test-dat
 
 In Docker run command.
 
-source activate py3.5 & python /washu/test_pipeline_chipseq.py
+source activate py3.5 && python /washu/test_pipeline_chipseq.py
 
 """
 
