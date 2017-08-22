@@ -25,6 +25,7 @@ ENV PATH $PATH:/opt/SICER_V1.1/SICER
 RUN conda create -n samtools --channel bioconda samtools
 RUN conda create -n bedtools --channel bioconda bedtools
 RUN conda create -n r --channel r r
+RUN conda create -n bowtie --channel bioconda bowtie
 
 # Install env py3.5
 RUN conda create -n py3.5 python=3.5
@@ -47,9 +48,6 @@ RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/downlo
 # Alternative CI link
 # https://teamcity.jetbrains.com/repository/download/Epigenome_Zinbra/lastPinned/zinbra-0.4.0.jar?guest=1
 
-RUN cd /tmp && wget -q https://github.com/BenLangmead/bowtie/releases/download/v1.2.1.1/bowtie-1.2.1.1-linux-x86_64.zip \
-            && unzip -q bowtie-1.2.1.1-linux-x86_64.zip -d /opt/
-
 # Create module command alias
 COPY ./scripts/module.sh /opt/
 # We need this for "which module" command
@@ -57,3 +55,5 @@ RUN ln -s /bin/echo /usr/bin/module
 RUN echo "module() { source /opt/module.sh $@; }" >>/root/.bashrc && \
     echo "export -f module" >>/root/.bashrc
 
+# Temporary fix for tests
+ENV PATH=$PATH:/opt/conda/envs/bedtools/bin/

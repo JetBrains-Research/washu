@@ -13,7 +13,7 @@ elif [ "bedtools2" == $2 ]; then
 elif [ "R" == $2 ]; then
     which R &>/dev/null || export PATH=$PATH:/opt/conda/envs/r/bin/
 elif [ "bowtie" == $2 ]; then
-    which bowtie &>/dev/null || export PATH=$PATH:/opt/bowtie-1.2.1.1/
+    which bowtie &>/dev/null || export PATH=$PATH:/opt/conda/envs/bowtie/bin/
 else
     echo "ERROR: Unsupported module $2"
 fi
