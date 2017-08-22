@@ -23,7 +23,7 @@ class WritableDirectory(argparse.Action):
 def run_bash(script, *params):
     command = " ".join(["bash", os.path.join(PARALLEL_SCRIPTS_PATH, script), *[str(p) for p in params]])
     print(command)
-    subprocess.run(command, shell=True)
+    subprocess.run(command, shell=True, check=True)
 
 
 def run(*params):

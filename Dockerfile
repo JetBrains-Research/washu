@@ -4,13 +4,13 @@ USER root
 # Fix default shell for CONDA source activate command.
 RUN ln -snf /bin/bash /bin/sh
 RUN apt-get update
-RUN apt-get install --yes build-essential libgl1-mesa-dev bc
+RUN apt-get install --yes build-essential libgl1-mesa-dev bc unzip
 # GNU AWK requered for proper scripts work.
 RUN apt-get install --yes gawk
 
 # Hack to enable MACS2 in another conda environment
-RUN conda install --channel bioconda macs2
-RUN ln -sf $(which macs2) /usr/local/bin/macs2
+RUN conda create -n macs2 --channel bioconda macs2
+RUN ln -sf /opt/conda/envs/macs2/bin/macs2 /usr/local/bin/macs2
 
 # SICER
 RUN pip install scipy
@@ -22,12 +22,16 @@ RUN sed -i 's#python#python2#g' /opt/SICER_V1.1/SICER/SICER.sh
 RUN chmod a+x /opt/SICER_V1.1/SICER/SICER.sh
 ENV PATH $PATH:/opt/SICER_V1.1/SICER
 
+RUN conda create -n samtools --channel bioconda samtools
+RUN conda create -n bedtools --channel bioconda bedtools
+RUN conda create -n r --channel r r
+
 # Install env py3.5
 RUN conda create -n py3.5 python=3.5
 RUN source activate py3.5 &&\
-    conda install --channel bioconda fastqc bwa bowtie bowtie2 star samtools bedtools \
+    conda install --channel bioconda fastqc bwa bowtie2 star \
     deeptools sra-tools rseg ucsc-bedgraphtobigwig ucsc-bedclip &&\
-    conda install --channel conda-forge matplotlib-venn && conda install --channel r r && conda install pandas numpy &&\
+    conda install --channel conda-forge matplotlib-venn && conda install pandas numpy &&\
     pip install multiqc teamcity-messages
 
 # Workaround for TeamCity CI, temp folders are created with root permissions, unacessible for USER
@@ -42,4 +46,14 @@ RUN cd ~ && wget -q https://github.com/broadinstitute/picard/releases/download/2
 RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/download/v0.4.0/zinbra-0.4.0.jar -O zinbra.jar
 # Alternative CI link
 # https://teamcity.jetbrains.com/repository/download/Epigenome_Zinbra/lastPinned/zinbra-0.4.0.jar?guest=1
+
+RUN cd /tmp && wget -q https://github.com/BenLangmead/bowtie/releases/download/v1.2.1.1/bowtie-1.2.1.1-linux-x86_64.zip \
+            && unzip -q bowtie-1.2.1.1-linux-x86_64.zip -d /opt/
+
+# Create module command alias
+COPY ./scripts/module.sh /opt/
+# We need this for "which module" command
+RUN ln -s /bin/echo /usr/bin/module
+RUN echo "module() { source /opt/module.sh $@; }" >>/root/.bashrc && \
+    echo "export -f module" >>/root/.bashrc
 

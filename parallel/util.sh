@@ -18,8 +18,10 @@ which qsub &>/dev/null || {
         rm ${QSUB_FILE_PREFIX}
 
         echo "# This file was generated as QSUB MOCK" > $QSUB_FILE
+
         # MOCK for module command
-        echo 'module() { echo "module $@"; } ' >> $QSUB_FILE
+        echo 'which module &>/dev/null || module() { echo "module $@"; }' >> $QSUB_FILE
+
         echo "$CMD" >> $QSUB_FILE
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
 
