@@ -14,7 +14,18 @@ elif [ "R" == $2 ]; then
     which R &>/dev/null || export PATH=$PATH:/opt/conda/envs/r/bin/
 elif [ "bowtie" == $2 ]; then
     which bowtie &>/dev/null || export PATH=$PATH:/opt/conda/envs/bowtie/bin/
+elif [ "fastqc" == $2 ]; then
+    which java &>/dev/null || {
+        export PATH=$PATH:/opt/fastqc/:/opt/conda/envs/java/bin/ ;
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/envs/java/lib/:/opt/conda/envs/java/jre/lib/amd64/
+    }
+elif [ "java" == $2 ]; then
+    which java &>/dev/null || {
+        export PATH=$PATH:/opt/conda/envs/java/bin/
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/envs/java/lib/:/opt/conda/envs/java/jre/lib/amd64/
+    }
 else
     echo "ERROR: Unsupported module $2"
+    exit 1
 fi
 

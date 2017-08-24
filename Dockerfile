@@ -26,11 +26,12 @@ RUN conda create -n samtools --channel bioconda samtools
 RUN conda create -n bedtools --channel bioconda bedtools
 RUN conda create -n r --channel r r
 RUN conda create -n bowtie --channel bioconda bowtie
+RUN conda create -n java --channel bioconda fastqc
 
 # Install env py3.5
 RUN conda create -n py3.5 python=3.5
 RUN source activate py3.5 &&\
-    conda install --channel bioconda fastqc bwa bowtie2 star \
+    conda install --channel bioconda bwa bowtie2 star \
     deeptools sra-tools rseg ucsc-bedgraphtobigwig ucsc-bedclip &&\
     conda install --channel conda-forge matplotlib-venn && conda install pandas numpy &&\
     pip install multiqc teamcity-messages
@@ -48,12 +49,16 @@ RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/downlo
 # Alternative CI link
 # https://teamcity.jetbrains.com/repository/download/Epigenome_Zinbra/lastPinned/zinbra-0.4.0.jar?guest=1
 
+# To prevent problems with Java interfierence just move execuble to emulate module
+RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
+
 # Create module command alias
 COPY ./scripts/module.sh /opt/
+COPY ./scripts/qsub.sh /opt/
+RUN ln -s /opt/qsub.sh /usr/bin/qsub
 # We need this for "which module" command
 RUN ln -s /bin/echo /usr/bin/module
 RUN echo "module() { source /opt/module.sh $@; }" >>/root/.bashrc && \
     echo "export -f module" >>/root/.bashrc
 
-# Temporary fix for tests
 ENV PATH=$PATH:/opt/conda/envs/bedtools/bin/
