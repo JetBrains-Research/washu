@@ -3,10 +3,9 @@
 
 which macs14 &>/dev/null || { echo "MACS14 not found! Download MACS14: <http://liulab.dfci.harvard.edu/MACS/00README.html>"; exit 1; }
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch macs14 $@"
 if [ $# -lt 3 ]; then
@@ -18,14 +17,14 @@ WORK_DIR=$1
 GENOME=$2
 P=$3
 
-SPECIES=$(python $(dirname $0)/../scripts/util.py macs_species ${GENOME})
+SPECIES=$(python ${SCRIPT_DIR}/scripts/util.py macs_species ${GENOME})
 
 cd ${WORK_DIR}
 
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
-    INPUT=$(python $(dirname $0)/../scripts/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE}: control file: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
@@ -52,7 +51,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash $(dirname $0)/../reports/rip.sh ${FILE} ${ID}*.narrowPeak
+bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}*.narrowPeak
 ENDINPUT
 )
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

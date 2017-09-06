@@ -10,6 +10,11 @@ which bedtools &>/dev/null || {
     echo "For further details see http://code.google.com/p/bedtools"
     exit 1;
    }
+
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
+
 >&2 echo "bam2bw $@"
 if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <BAM> <chrom.sizes>"
@@ -26,4 +31,4 @@ fi
 
 NAME=${BAM%%.bam}
 bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${NAME}.bdg
-bash $(dirname $0)/bdg2bw.sh ${NAME}.bdg ${CHROM_SIZES}
+bash "${SCRIPT_DIR}/scripts/bdg2bw.sh" ${NAME}.bdg ${CHROM_SIZES}

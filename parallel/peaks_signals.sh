@@ -2,10 +2,9 @@
 # Script to create _pileup.bed files for BAM alignment to compute reads coverage.
 # author oleg.shpynov@jetbrains.com
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch peaks_signals $@"
 if [ $# -lt 4 ]; then
@@ -58,7 +57,7 @@ cd ${WORK_DIR}
 module load bedtools2
 
 if [[ ! -f ${TAGS} ]]; then
-    bash $(dirname $0)/../scripts/bam2tags.sh ${FILE} $INSERT_LENGTH > ${TAGS}
+    bash ${SCRIPT_DIR}/scripts/bam2tags.sh ${FILE} $INSERT_LENGTH > ${TAGS}
 fi
 
 if [[ ! -f ${COVERAGE_TSV} ]]; then
@@ -108,7 +107,7 @@ then
     source activate py3.5
 fi
 
-python $(dirname $0)/../scripts/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.tsv ${TAGS_FOLDER}/sizes.tsv $ID
+python ${SCRIPT_DIR}/scripts/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.tsv ${TAGS_FOLDER}/sizes.tsv $ID
 
 ENDINPUT
 )

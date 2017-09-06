@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch bigwig $@"
 if [ $# -lt 2 ]; then
@@ -35,7 +34,7 @@ for WORK_DIR in ${WORK_DIRS}; do
 cd ${WORK_DIR}
 
 module load bedtools2
-bash $(dirname $0)/../scripts/bam2bw.sh ${FILE} ${CHROM_SIZES}
+echo bash ${SCRIPT_DIR}/scripts/bam2bw.sh ${FILE} ${CHROM_SIZES}
 ENDINPUT
 )
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"

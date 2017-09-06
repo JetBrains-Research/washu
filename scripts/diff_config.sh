@@ -2,10 +2,9 @@
 # Script to prepare configuration csv for differential peak calling in diffbind format
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "diff_config: $@"
 if [ $# -lt 2 ]; then
@@ -49,7 +48,7 @@ for R in ${READS_FILES}; do
     >&2 echo "REPLICATE: $REPLICATE"
     READ=$(ls ${READS_DIR}/${SAMPLE}*.bam)
     >&2 echo "READ: $READ"
-    INPUT=$(python $(dirname $0)/../scripts/util.py find_input ${R})
+    INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${R})
     >&2 echo "INPUT: $INPUT"
     PEAK=$(ls ${PEAKS_DIR}/${SAMPLE}*.xls)
     >&2 echo "PEAK: $PEAK"

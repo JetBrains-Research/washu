@@ -3,10 +3,9 @@
 
 which macs2 &>/dev/null || { echo "MACS2 not found! Download MACS2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch macs2 $@"
 if [ $# -lt 5 ]; then
@@ -25,7 +24,7 @@ if [ ! -f ${CHROM_SIZES} ]; then
     echo "chrom.sizes file not specified, no signal"
 fi
 
-SPECIES=$(python $(dirname $0)/../scripts/util.py macs_species ${GENOME})
+SPECIES=$(python ${SCRIPT_DIR}/scripts/util.py macs_species ${GENOME})
 
 TASKS=""
 for WORK_DIR in ${WORK_DIRS}; do :
@@ -35,7 +34,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
 
     for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
     do :
-        INPUT=$(python $(dirname $0)/../scripts/util.py find_input ${WORK_DIR}/${FILE})
+        INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
         echo "${FILE}: control file: ${INPUT}"
 
         NAME=${FILE%%.bam} # file name without extension
@@ -61,7 +60,7 @@ if [ -f "${INPUT}" ]; then
     if [ -f "${CHROM_SIZES}" ]; then
         echo "Create fold enrichment signal track for ${FILE} and ${INPUT}"
         macs2 bdgcmp -t ${ID}_treat_pileup.bdg -c ${ID}_control_lambda.bdg -o ${NAME}_signal.bdg -m FE
-        bash $(dirname $0)/../scripts/bdg2bw.sh ${NAME}_signal.bdg ${CHROM_SIZES}
+        bash ${SCRIPT_DIR}/scripts/bdg2bw.sh ${NAME}_signal.bdg ${CHROM_SIZES}
     fi
 else
     echo "${FILE}: no control file"
@@ -69,7 +68,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash $(dirname $0)/../reports/rip.sh ${FILE} ${ID}*.*Peak
+bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}*.*Peak
 ENDINPUT
 
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"

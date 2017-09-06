@@ -136,6 +136,11 @@ function expand_path() {
     echo "${PHYS_DIR}/${TARGET_FILE}"
 }
 
+PROJECT_ROOT_DIR="$(expand_path "$(dirname $0)/..")"
+project_root_dir() {
+    echo ${PROJECT_ROOT_DIR}
+}
+
 # Checks for errors in logs, stops the world
 check_logs()
 {

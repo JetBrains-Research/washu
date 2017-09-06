@@ -2,10 +2,9 @@
 # author zayats1812@mail.ru
 # TODO: fix hardcoded!
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch rsem $@"
 if [ $# -lt 1 ]; then
@@ -44,6 +43,6 @@ ENDINPUT
 done
 wait_complete ${TASKS}
 module load R
-Rscript $(dirname $0)/../R/gather.R
+Rscript ${SCRIPT_DIR}/R/gather.R
 
 >&2 echo "Done. Batch rsem $@"

@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # author zayats1812@mail.ru
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch fragments $@"
 if [ $# -lt 1 ]; then
@@ -39,7 +38,7 @@ samtools view -f66 $FILE | cut -f 9 | sed 's/^-//' > ${NAME}_metrics.txt
 
 module unload samtools # unload samtools, because it conflicts with R at the moment
 module load R
-Rscript $(dirname $0)/../R/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
+Rscript ${SCRIPT_DIR}/R/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
 ENDINPUT
 )
         echo "FILE: ${WORK_DIR_NAME}:${FILE}; TASK: ${QSUB_ID}"

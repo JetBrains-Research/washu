@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch zinbra $@"
 if [ $# -lt 5 ]; then
@@ -30,7 +29,7 @@ cd ${WORK_DIR}
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
-    INPUT=$(python $(dirname $0)/../scripts/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE}: control file: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
@@ -67,7 +66,7 @@ fi
 
 module load bedtools2
 # Compute Reads in Peaks
-bash $(dirname $0)/../reports/rip.sh ${FILE} ${ID}_peaks.bed
+bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}_peaks.bed
 ENDINPUT
 )
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

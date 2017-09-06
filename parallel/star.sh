@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 # author zayats1812@mail.ru
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
 
 >&2 echo "Batch star $@"
 if [ $# -lt 3 ]; then

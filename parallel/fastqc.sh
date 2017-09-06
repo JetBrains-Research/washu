@@ -16,10 +16,8 @@ which multiqc &>/dev/null || {
     exit 1
 }
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
 
 >&2 echo "Batch fastqc $@"
 if [ $# -lt 1 ]; then

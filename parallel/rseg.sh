@@ -3,10 +3,9 @@
 
 which rseg &>/dev/null || { echo "rseg not found! Download rseg: <http://smithlabresearch.org/software/rseg/>"; exit 1; }
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch rseg $@"
 if [ $# -lt 3 ]; then
@@ -46,7 +45,7 @@ do :
     NAME=${FILE%%.bam} # file name without extension
     FILE_BED=${NAME}.bed
 
-    INPUT=$(python $(dirname $0)/../scripts/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
     INPUT_BED=${INPUT%%.bam}.bed
 
@@ -89,7 +88,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash $(dirname $0)/../reports/rip.sh ${FILE} ${NAME}_domains.bed
+bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${NAME}_domains.bed
 ENDINPUT
 
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

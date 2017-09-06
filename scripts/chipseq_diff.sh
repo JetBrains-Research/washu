@@ -13,8 +13,9 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
-# Load cluster stuff
+# Load technical stuff
 source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 ################################################################################
 # Configuration start ##########################################################
@@ -86,7 +87,7 @@ if [ ! -d $DIFFBIND ]; then
 # This is necessary because qsub default working dir is user home
 cd ${DIFFBIND}
 module load R
-Rscript $(dirname $0)/../R/diffbind.R ${NAME}.csv
+Rscript ${SCRIPT_DIR}/R/diffbind.R ${NAME}.csv
 ENDINPUT
 )
     wait_complete "$QSUB_ID"
@@ -169,7 +170,7 @@ ENDINPUT
 )
     wait_complete "$QSUB_ID1 $QSUB_ID2"
     check_logs
-    bash $(dirname $0)/../bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
+    bash ${SCRIPT_DIR}/bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
 fi
 
 macs2_total_tags_control() {
@@ -234,7 +235,7 @@ CONFIG
     echo "SHIFT Y: $SHIFT_Y"
     for F in ${READS_Y}; do
         >&2 echo $F
-        bash $(dirname $0)/../scripts/bam2tags.sh $F $SHIFT_Y >> Y_tags.tag
+        bash ${SCRIPT_DIR}/scripts/bam2tags.sh $F $SHIFT_Y >> Y_tags.tag
     done
 
     >&2 echo "Processing O Tags"
@@ -242,7 +243,7 @@ CONFIG
     echo "SHIFT O: $SHIFT_O"
     for F in ${READS_O}; do
         >&2 echo $F
-        bash $(dirname $0)/../scripts/bam2tags.sh $F $SHIFT_O >> O_tags.tag
+        bash ${SCRIPT_DIR}/scripts/bam2tags.sh $F $SHIFT_O >> O_tags.tag
     done
 
     QSUB_ID=$(qsub << ENDINPUT

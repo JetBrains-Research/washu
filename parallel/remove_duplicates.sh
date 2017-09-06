@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-#TODO[roman]: vectorize
-
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
 
 >&2 echo "Batch remove_duplicates $@"
 if [ $# -lt 1 ]; then

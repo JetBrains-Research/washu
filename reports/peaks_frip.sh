@@ -4,6 +4,10 @@
 
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
+
 >&2 echo "peaks_frip.sh: $@"
 
 if [ $# -lt 2 ]; then
@@ -20,6 +24,6 @@ for F in $(ls *.*Peak | grep -v gapped); do
     NAME=${F%%_broad*} # filter if broad peaks
     NAME=${NAME%%_q0.*}   # filter suffix if narrow peaks
 	BAM=${READS_FOLDER}/${NAME}*.bam
-	bash $(dirname $0)/../reports/rip.sh ${BAM} ${F}
+	bash ${SCRIPT_DIR}/reports/rip.sh ${BAM} ${F}
 done
-python $(dirname $0)/../reports/peaks_logs.py ${PEAKS_FOLDER}
+python ${SCRIPT_DIR}/reports/peaks_logs.py ${PEAKS_FOLDER}

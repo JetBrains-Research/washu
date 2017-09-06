@@ -8,10 +8,8 @@
 ###########################################################################
 # author roman.chernyatchik@jetbrains.com
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
 
 >&2 echo "Batch samtools-merge $@"
 if [ $# -lt 1 ]; then

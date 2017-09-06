@@ -10,10 +10,9 @@ which SICER.sh &>/dev/null || {
     exit 1
 }
 
-# Load technical stuff, not available in qsub emulation
-if [ -f "$(dirname $0)/util.sh" ]; then
-    source "$(dirname $0)/util.sh"
-fi
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch sicer $@"
 if [ $# -lt 4 ]; then
@@ -36,7 +35,7 @@ FDR=$4
 
 cd ${WORK_DIR}
 
-EFFECTIVE_GENOME_FRACTION=$(python $(dirname $0)/../scripts/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
+EFFECTIVE_GENOME_FRACTION=$(python ${SCRIPT_DIR}/scripts/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
 echo "EFFECTIVE_GENOME_FRACTION: ${EFFECTIVE_GENOME_FRACTION}"
 
 if [ -z "${EFFECTIVE_GENOME_FRACTION}" ]; then
@@ -50,7 +49,7 @@ do :
     NAME=${FILE%%.bam} # file name without extension
     FILE_BED=${NAME}.bed
 
-    INPUT=$(python $(dirname $0)/../scripts/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
     if [ ! -f "${INPUT}" ]; then
         echo "SICER requires control"
@@ -123,7 +122,7 @@ cp -f ${OUT_FOLDER}/* ${WORK_DIR}
 cd ${WORK_DIR}
 
 # Compute Reads in Peaks
-bash $(dirname $0)/../reports/rip.sh ${FILE} ${NAME}*island.bed
+bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${NAME}*island.bed
 ENDINPUT
 
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
