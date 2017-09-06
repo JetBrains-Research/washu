@@ -34,7 +34,7 @@ for WORK_DIR in ${WORK_DIRS}; do
 cd ${WORK_DIR}
 
 module load bedtools2
-echo bash ${SCRIPT_DIR}/scripts/bam2bw.sh ${FILE} ${CHROM_SIZES}
+bash ${SCRIPT_DIR}/scripts/bam2bw.sh ${FILE} ${CHROM_SIZES}
 ENDINPUT
 )
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
