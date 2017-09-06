@@ -146,6 +146,8 @@ def cli(out, data):
     # Call PEAKS:
     files_to_cleanup = []
     try:
+        # let's link signal bams with corresponding input:
+        bams_dirs_for_peakcalling = []
         for r in data_table.itertuples():
             gsmid_signal = r.signal
             gsmid_input = r.input
@@ -163,40 +165,38 @@ def cli(out, data):
                 run("ln", "-s", os.path.join(bams_dir_input, f), f_link)
                 files_to_cleanup.append(f_link)
 
-            ########################
-            # Peak calling section #
-            ########################
-            # TODO: Vectorize QSUB MACS2 script:
+            bams_dirs_for_peakcalling.append(bams_dir_signal)
 
-            # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1
-            #  in example
-            peaks_dirs = run_macs2(
-                GENOME, CHROM_SIZES,
-                'broad_0.1', '--broad', '--broad-cutoff', 0.1,
-                work_dirs=[bams_dir_signal])
+        ########################
+        # Peak calling section #
+        ########################
+        # Bedtools is necessary for filter script
+        subprocess.run('module load bedtools2', shell=True)
 
-            # Bedtools is necessary for filter script
-            subprocess.run('module load bedtools2', shell=True)
-            for peaks_dir in peaks_dirs:
-                run_bash('../bed/macs2_filter_fdr.sh', peaks_dir,
-                         peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
-                         bams_dir_signal)
-                run_bash('../bed/macs2_filter_fdr.sh', peaks_dir,
-                         peaks_dir.replace('0.1', '0.01'), 0.1, 0.01,
-                         bams_dir_signal)
+        # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1
+        #  in example
+        peaks_dirs = run_macs2(GENOME, CHROM_SIZES,
+                               'broad_0.1', '--broad', '--broad-cutoff', 0.1,
+                               work_dirs=bams_dirs_for_peakcalling)
+        for peaks_dir in peaks_dirs:
+            run_bash('../bed/macs2_filter_fdr.sh', peaks_dir,
+                     peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
+                     bams_dir_signal)
+            run_bash('../bed/macs2_filter_fdr.sh', peaks_dir,
+                     peaks_dir.replace('0.1', '0.01'), 0.1, 0.01,
+                     bams_dir_signal)
 
-            # # MACS2 Regular peak calling (https://github.com/taoliu/MACS)
-            # # Q=0.01 in example
-            peaks_dirs = run_macs2(
-                GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1,
-                work_dirs=[bams_dir_signal])
-            for peaks_dir in peaks_dirs:
-                run_bash("../bed/macs2_filter_fdr.sh", peaks_dir,
-                         peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
-                         bams_dir_signal)
-                run_bash("../bed/macs2_filter_fdr.sh", peaks_dir,
-                         peaks_dir.replace('0.1', '0.01'), 0.1, 0.01,
-                         bams_dir_signal)
+        # # MACS2 Regular peak calling (https://github.com/taoliu/MACS)
+        # # Q=0.01 in example
+        peaks_dirs = run_macs2(GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1,
+                               work_dirs=bams_dirs_for_peakcalling)
+        for peaks_dir in peaks_dirs:
+            run_bash("../bed/macs2_filter_fdr.sh", peaks_dir,
+                     peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
+                     bams_dir_signal)
+            run_bash("../bed/macs2_filter_fdr.sh", peaks_dir,
+                     peaks_dir.replace('0.1', '0.01'), 0.1, 0.01,
+                     bams_dir_signal)
     finally:
         for f in files_to_cleanup:
             print("Cleanup:")
