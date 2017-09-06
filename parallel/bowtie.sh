@@ -63,11 +63,12 @@ for WORK_DIR in ${WORK_DIRS}; do :
         fi
         NAME="${NAME##*/}" # if relative path - trim folders
         ID=${NAME}_${GENOME}
+        BAM_NAME="${ID}.bam"
 
-        echo "ID=${ID}"
-        echo "wd=${WORK_DIR}"
-        echo "fp=${FILE_PAIRED}"
-        echo "file=${FILE}"
+        if [ -f "${BAM_NAME}" ]; then
+            echo "   [Skipped]: ${WORK_DIR}/${BAM_NAME} already exists."
+            continue
+        fi
 
         # Submit task
         QSUB_ID=$(qsub << ENDINPUT
@@ -100,7 +101,7 @@ else
     bowtie -p 4 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} ${FILE} ${ID}.sam
 fi
 samtools view -bS ${ID}.sam -o ${ID}_not_sorted.bam
-samtools sort ${ID}_not_sorted.bam -o ${ID}.bam
+samtools sort ${ID}_not_sorted.bam -o ${BAM_NAME}.bam
 
 # Cleanup
 rm ${ID}.sam ${ID}_not_sorted.bam

@@ -54,6 +54,12 @@ for WORK_DIR in ${WORK_DIRS}; do :
         fi
         NAME=${NAME##*/}
         ID=${NAME}_${GENOME}
+        BAM_NAME="${ID}.bam"
+
+        if [ -f "${BAM_NAME}" ]; then
+            echo "   [Skipped]: ${WORK_DIR}/${BAM_NAME} already exists."
+            continue
+        fi
 
         # Submit task
         QSUB_ID=$(qsub << ENDINPUT
@@ -95,7 +101,7 @@ else
     bowtie2 -p 4 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -U ${FILE}
 fi
 samtools view -bS -q 10 ${ID}.sam -o ${ID}_not_sorted.bam
-samtools sort -@ 4 ${ID}_not_sorted.bam -o ${ID}.bam
+samtools sort -@ 4 ${ID}_not_sorted.bam -o ${BAM_NAME}
 
 # Cleanup
 rm ${ID}.sam ${ID}_not_sorted.bam

@@ -41,7 +41,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         if [ -f "${FASTQ_FILE_PREFIX}.fastq" ] ||
          ( [ -f "${FASTQ_FILE_PREFIX}_1.fastq" ] &&
          [ -f "${FASTQ_FILE_PREFIX}_2.fastq" ]); then
-            echo "  $FILE_NAME was already processed"
+            echo "   [Skipped]: $FILE_NAME was already processed"
             continue
         fi
 
