@@ -2,3 +2,5 @@
 .idea/
 .Rproj.user
 **/*.iml
+__pycache__
+notebooks/.ipynb_checkpoints/
