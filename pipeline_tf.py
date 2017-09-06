@@ -170,23 +170,33 @@ def cli(out, data):
 
             # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1
             #  in example
-            folder = run_macs2(bams_dir_signal, GENOME, CHROM_SIZES,
-                               'broad_0.1', '--broad', '--broad-cutoff', 0.1)
+            peaks_dirs = run_macs2(
+                GENOME, CHROM_SIZES,
+                'broad_0.1', '--broad', '--broad-cutoff', 0.1,
+                work_dirs=[bams_dir_signal])
+
             # Bedtools is necessary for filter script
             subprocess.run('module load bedtools2', shell=True)
-            run_bash('../bed/macs2_filter_fdr.sh', folder,
-                     folder.replace('0.1', '0.05'), 0.1, 0.05, bams_dir_signal)
-            run_bash('../bed/macs2_filter_fdr.sh', folder,
-                     folder.replace('0.1', '0.01'), 0.1, 0.01, bams_dir_signal)
+            for peaks_dir in peaks_dirs:
+                run_bash('../bed/macs2_filter_fdr.sh', peaks_dir,
+                         peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
+                         bams_dir_signal)
+                run_bash('../bed/macs2_filter_fdr.sh', peaks_dir,
+                         peaks_dir.replace('0.1', '0.01'), 0.1, 0.01,
+                         bams_dir_signal)
 
-            # MACS2 Regular peak calling (https://github.com/taoliu/MACS)
-            # Q=0.01 in example
-            folder = run_macs2(bams_dir_signal, GENOME, CHROM_SIZES, 'q0.1',
-                               '-q', 0.1)
-            run_bash("../bed/macs2_filter_fdr.sh", folder,
-                     folder.replace('0.1', '0.05'), 0.1, 0.05, bams_dir_signal)
-            run_bash("../bed/macs2_filter_fdr.sh", folder,
-                     folder.replace('0.1', '0.01'), 0.1, 0.01, bams_dir_signal)
+            # # MACS2 Regular peak calling (https://github.com/taoliu/MACS)
+            # # Q=0.01 in example
+            peaks_dirs = run_macs2(
+                GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1,
+                work_dirs=[bams_dir_signal])
+            for peaks_dir in peaks_dirs:
+                run_bash("../bed/macs2_filter_fdr.sh", peaks_dir,
+                         peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
+                         bams_dir_signal)
+                run_bash("../bed/macs2_filter_fdr.sh", peaks_dir,
+                         peaks_dir.replace('0.1', '0.01'), 0.1, 0.01,
+                         bams_dir_signal)
     finally:
         for f in files_to_cleanup:
             print("Cleanup:")

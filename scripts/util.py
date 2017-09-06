@@ -120,7 +120,7 @@ def effective_genome_fraction(genome, chrom_sizes_path):
     return size / chrom_length
 
 
-def run_macs2(work_dir, genome, chrom_sizes, name, *params):
+def run_macs2(genome, chrom_sizes, name, *params, work_dirs):
     """
 Defaults for MACS2 broad peak calling:
 # effective genome size = 2.70e+09
@@ -138,16 +138,40 @@ Defaults for MACS2 broad peak calling:
 # Peak calling params:
 #  --p, --q, --broad, --broad-cutoff
     """
-    folder = '{}_macs2_{}'.format(work_dir, name)
-    print('Processing', folder)
-    if not os.path.exists(folder):
-        # -B produces bedgraph for signal
+    wd2result = {}
+    skipped_wd = set()
+
+    # Skip existing result folders: already calculated
+    for wd in work_dirs:
+        result_dir = '{}_macs2_{}'.format(wd, name)
+        wd2result[wd] = result_dir
+
+        if os.path.exists(result_dir):
+            print('Already processed: ', result_dir)
+            skipped_wd.add(wd)
+
+    # Run MACS2
+    unprocessed_workdirs = [wd for wd in work_dirs if wd not in skipped_wd]
+    if unprocessed_workdirs:
         if os.path.exists(chrom_sizes):
+            # -B produces bedgraph for signal
             params += ('-B',)
-        run_bash("macs2.sh", work_dir, genome, chrom_sizes, name, *[str(p) for p in params])
-        move_forward(work_dir, folder, ['*{}*'.format(name), '*rip.csv', '*_signal.bdg', '*_signal.bw'], copy_only=True)
-        process_macs2_logs(folder)
-    return folder
+
+        run_bash("macs2.sh", genome, chrom_sizes, name,
+                 "'{}'".format(" ".join([str(p) for p in params])),
+                 *unprocessed_workdirs)
+
+    # Move results to separate folder
+    for wd in unprocessed_workdirs:
+        result_dir = wd2result[wd]
+        move_forward(
+            wd, result_dir,
+            ['*{}*'.format(name), '*rip.csv', '*_signal.bdg', '*_signal.bw'],
+            copy_only=True)
+
+        process_macs2_logs(result_dir)
+
+    return [os.path.join(wd, wd2result[wd]) for wd in work_dirs]
 
 
 def main():
