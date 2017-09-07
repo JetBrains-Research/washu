@@ -85,7 +85,8 @@ def cli(out, data):
     #run_bash("index_bowtie.sh", GENOME, INDEXES)
 
     # Batch QC
-    run_bash("fastqc.sh", *data_dirs)
+    #TODO: temporary off
+    #run_bash("fastqc.sh", *data_dirs)
 
     # Total multiqc:
     # Use -s options, otherwise tons of "SRRnnn" hard to distinguish
@@ -113,7 +114,8 @@ def cli(out, data):
                              process_sra)
     for bams_dir in bams_dirs:
         # multiqc is able to process Bowtie report
-        run("multiqc", "-f", "-o", bams_dir, " ".join(bams_dirs))
+        # TODO: temporary off
+        #run("multiqc", "-f", "-o", bams_dir, " ".join(bams_dirs))
 
         # Create summary
         process_bowtie_logs(bams_dir)
