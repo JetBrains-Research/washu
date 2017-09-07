@@ -22,6 +22,10 @@ import glob
 def run_pipeline():
     os.chdir(os.path.expanduser("~"))
 
+    call(["tar", "xfz", "chip-seq-pipeline-test-data.tar.gz"])
+
+    call(["mv", "chip-seq-pipeline-test-data", "test_data"])
+
     shutil.copytree("./test_data/fastq/", "./H3K4me3")
 
     os.makedirs("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes")

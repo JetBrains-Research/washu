@@ -1,4 +1,4 @@
-FROM continuumio/miniconda
+FROM biolabs/test-data
 
 USER root
 # Fix default shell for CONDA source activate command.
