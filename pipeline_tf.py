@@ -34,6 +34,7 @@ def cli(out, data):
     INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes",
                            GENOME)
     CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
+    PICARD_TOOLS = os.path.join("~", "picard.jar")
 
     # Data table
     data_table = pd.read_csv(data, sep="\t")
@@ -136,7 +137,8 @@ def cli(out, data):
     # Remove duplicates
     process_dirs(bams_dirs, "_unique",
                  ["*_unique*", "*_metrics.txt", "*duplicates.log"],
-                 lambda dirs: run_bash("remove_duplicates.sh", *dirs))
+                 lambda dirs: run_bash("remove_duplicates.sh",
+                                       PICARD_TOOLS, *dirs))
 
     # Call PEAKS:
     files_to_cleanup = []
