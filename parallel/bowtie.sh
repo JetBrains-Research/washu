@@ -66,7 +66,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         BAM_NAME="${ID}.bam"
 
         if [ -f "${BAM_NAME}" ]; then
-            echo "   [Skipped]: ${WORK_DIR}/${BAM_NAME} already exists."
+            echo "   [Skipped] ${WORK_DIR}/${BAM_NAME} already exists."
             continue
         fi
 
