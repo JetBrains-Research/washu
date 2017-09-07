@@ -99,49 +99,44 @@ def cli(out, data):
     # it's better to trim first 5bp, so let's trim it in all samples for
     # simplicity:
     #
-    #  * batch Bowtie with trim 5 first base pairs
-    run_bash("bowtie2.sh", GENOME, INDEXES, "5", *data_dirs)
 
-    # Merge TF SRR*.bam files to one
-    run_bash("samtools_merge.sh", GENOME, *data_dirs)
+    # Alignment step:
+    def process_sra(sra_dirs):
+        #  * batch Bowtie with trim 5 first base pairs
+        run_bash("bowtie2.sh", GENOME, INDEXES, "5", *sra_dirs)
 
-    bams_dirs = []
-    for data_dir in data_dirs:
-        bams_dir = data_dir + "_bams"
-        bams_dirs.append(bams_dir)
-        move_forward(data_dir, bams_dir, ["*.bam", "*bowtie*.log"])
+        # Merge TF SRR*.bam files to one
+        run_bash("samtools_merge.sh", GENOME, *sra_dirs)
 
+    bams_dirs = process_dirs(data_dirs, "_bams", ["*.bam", "*bowtie*.log"],
+                             process_sra)
+    for bams_dir in bams_dirs:
         # multiqc is able to process Bowtie report
         run("multiqc", "-f", "-o", bams_dir, " ".join(bams_dirs))
 
         # Create summary
         process_bowtie_logs(bams_dir)
 
-    if len(data_dirs) > 1:
-        run("multiqc", "-f", "-o", out, " ".join(data_dirs + bams_dirs))
+    # if len(data_dirs) > 1:
+    #     run("multiqc", "-f", "-o", out, " ".join(data_dirs + bams_dirs))
+
 
     # XXX: doesn't work for some reason, "filter by -f66" returns nothing
     # Process insert size of BAM visualization
     # run_bash("fragments.sh", *bams_dirs)
 
     # Batch BigWig visualization
-    run_bash("bigwig.sh", CHROM_SIZES, *bams_dirs)
-    for bams_dir in bams_dirs:
-        move_forward(bams_dir, bams_dir + "_bws", ["*.bw", "*.bdg", "*bw.log"],
-                     copy_only=True)
+    process_dirs(bams_dirs, "_bws", ["*.bw", "*.bdg", "*bw.log"],
+                 lambda dirs: run_bash("bigwig.sh", CHROM_SIZES, *dirs))
 
     # Batch RPKM visualization
-    run_bash("rpkm.sh", *bams_dirs)
-    for bams_dir in bams_dirs:
-        move_forward(bams_dir, bams_dir + "_rpkms", ["*.bw", "*rpkm.log"],
-                     copy_only=True)
+    process_dirs(bams_dirs, "_rpkms", ["*.bw", "*rpkm.log"],
+                 lambda dirs: run_bash("rpkm.sh", *dirs))
 
     # Remove duplicates
-    run_bash("remove_duplicates.sh", *bams_dirs)
-    for bams_dir in bams_dirs:
-        move_forward(bams_dir, bams_dir + "_unique",
-                     ["*_unique*", "*_metrics.txt", "*duplicates.log"],
-                     copy_only=True)
+    process_dirs(bams_dirs, "_unique",
+                 ["*_unique*", "*_metrics.txt", "*duplicates.log"],
+                 lambda dirs: run_bash("remove_duplicates.sh", *dirs))
 
     # Call PEAKS:
     files_to_cleanup = []
@@ -205,6 +200,29 @@ def cli(out, data):
                 print("* deleted: ", f)
             except OSError:
                 print("Error while deleting '{}'".format(f), sys.exc_info()[0])
+
+
+def process_dirs(dirs, suffix, what_to_move, processor_fun):
+    # filter already processed dirs:
+    dirs_to_process = []
+    result_dirs = []
+    for data_dir in dirs:
+        res_dir = data_dir + suffix
+        result_dirs.append(res_dir)
+        if os.path.exists(res_dir):
+            print("[Skipped] Directory already exists:", res_dir)
+            continue
+        dirs_to_process.append((data_dir, res_dir))
+
+    if dirs_to_process:
+        # process dirs:
+        processor_fun(list(zip(*dirs_to_process))[0])
+
+        # move results:
+        for data_dir, res_dir in dirs_to_process:
+            move_forward(data_dir, res_dir, what_to_move, copy_only=True)
+
+    return result_dirs
 
 if __name__ == '__main__':
     cli()
