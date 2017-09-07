@@ -175,7 +175,8 @@ def cli(out, data):
         peaks_dirs = run_macs2(GENOME, CHROM_SIZES,
                                'broad_0.1', '--broad', '--broad-cutoff', 0.1,
                                work_dirs=bams_dirs_for_peakcalling)
-        for peaks_dir in peaks_dirs:
+        for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
+                                              peaks_dirs):
             run_bash('../bed/macs2_filter_fdr.sh', peaks_dir,
                      peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
                      bams_dir_signal)
@@ -187,7 +188,8 @@ def cli(out, data):
         # # Q=0.01 in example
         peaks_dirs = run_macs2(GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1,
                                work_dirs=bams_dirs_for_peakcalling)
-        for peaks_dir in peaks_dirs:
+        for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
+                                              peaks_dirs):
             run_bash("../bed/macs2_filter_fdr.sh", peaks_dir,
                      peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
                      bams_dir_signal)
