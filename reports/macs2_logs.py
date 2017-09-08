@@ -1,15 +1,16 @@
 #!/usr/bin/env python
-import numpy as np
-
-from reports.peaks_logs import collect_rip_records
-
-__author__ = 'oleg.shpynov@jetbrains.com'
-
 import getopt
 import sys
-import pandas as pd
 import os
 import re
+import collections
+
+import pandas as pd
+
+from reports.peaks_logs import collect_rip_records, RipRecord
+
+__author__ = 'oleg.shpynov@jetbrains.com roman.chernyatchik@jetbrains.com'
+
 
 help_message = 'Script to process macs2 logs summary.'
 
@@ -25,60 +26,64 @@ MACS2_PAIRED_PEAKS = '.*paired peaks:'
 MACS2_PREDICTED_FRAGMENT = '.*predicted fragment length is'
 MACS2_ALTERNATIVE_FRAGMENTS = '.*alternative fragment length\(s\) may be'
 
+MacsLogRecord = collections.namedtuple(
+    'MacsLogRecord',
+    ['sample', 'tags', 'redundant_rate', 'paired_peaks', 'fragment',
+     'alternatives']
+)
+
 
 def report(folder):
     print('Process macs2 logs processed by batch task', folder)
-    df = pd.DataFrame(np.empty((0,), dtype=[('sample', np.str),
-                                            ('tags', np.int),
-                                            ('redundant_rate', np.float),
-                                            ('paired_peaks', np.int),
-                                            ('fragment', np.int),
-                                            ('alternatives', np.str)]))
+
+    macs_records = []
     for dirpath, dirs, files in os.walk(folder):
         for f in files:
             if 'macs' not in f or not re.search('.log$', f):
                 continue
-            tags = ''
-            rr = ''
-            paired_peaks = ''
-            fragment = ''
+            tags = 0
+            rr = 0.0
+            paired_peaks = 0
+            fragment = 0
             alt_fragments = ''
             with open(dirpath + '/' + f, 'r') as log:
                 for line in log:
                     if re.search(MACS2_TAGS, line):
                         tags = int(re.sub(MACS2_TAGS, '', line).strip())
                     if re.search(MACS2_REDUNDANT_RATE, line):
-                        rr = float(re.sub(MACS2_REDUNDANT_RATE, '', line).strip())
+                        rr = float(re.sub(MACS2_REDUNDANT_RATE, '',
+                                          line).strip())
                     if re.search(MACS2_PAIRED_PEAKS, line):
-                        paired_peaks = int(re.sub(MACS2_PAIRED_PEAKS, '', line).strip())
+                        paired_peaks = int(re.sub(MACS2_PAIRED_PEAKS, '',
+                                                  line).strip())
                     if re.search(MACS2_PREDICTED_FRAGMENT, line):
-                        fragment = int(re.sub(MACS2_PREDICTED_FRAGMENT, '', line).replace('bps', '').strip())
+                        fragment = int(re.sub(MACS2_PREDICTED_FRAGMENT, '',
+                                              line).replace('bps', '').strip())
                     if re.search(MACS2_ALTERNATIVE_FRAGMENTS, line):
-                        alt_fragments = re.sub(MACS2_ALTERNATIVE_FRAGMENTS, '', line).replace('bps', '').strip()
-            df.loc[len(df)] = (f, tags, rr, paired_peaks, fragment, alt_fragments)
+                        alt_fragments = re.sub(MACS2_ALTERNATIVE_FRAGMENTS, '',
+                                               line).replace('bps', '').strip()
+
+            macs_records.append(MacsLogRecord(f, tags, rr, paired_peaks,
+                                              fragment, alt_fragments))
+
+    df = pd.DataFrame(macs_records, columns=MacsLogRecord._fields)
 
     # Collect RIP records
     rips = collect_rip_records(folder)
-    df['peaks'] = df['sample'].map(lambda x: find_peaks(x.rpartition('_macs')[0], rips))
-    df['rip'] = df['sample'].map(lambda x: find_rip(x.rpartition('_macs')[0], rips))
-    df['frip'] = list(map(lambda x: int(x), 100 * df['rip'] / df['tags']))
+    prefixes = (s.rpartition('_macs')[0] for s in df['sample'])
+    sample_to_rips = [match_peaks_file(p, rips) for p in prefixes]
+
+    df['peaks'] = [r.peaks for r in sample_to_rips]
+    df['rip'] = [r.rip for r in sample_to_rips]
+    df['frip'] = 100 * df['rip'] // df['tags']
     return df.sort_values(by=['sample'])
 
 
-def find_peaks(x, rips):
+def match_peaks_file(x, records):
     """Find number of peaks in RipRecords"""
-    try:
-        return int([rr.peaks for rr in rips if x in rr.peaks_file][0])
-    except:
-        return 0
-
-
-def find_rip(x, rips):
-    """Find Read in Peaks in RipRecords"""
-    try:
-        return int([rr.rip for rr in rips if x in rr.peaks_file][0])
-    except:
-        return 0
+    filtered = [r for r in records if x in r.peaks_file]
+    assert len(filtered) <= 1, "Ambiguous results for {}".format(x)
+    return RipRecord("", "", 0, 0, 0) if (not filtered) else filtered[0]
 
 
 def process_macs2_logs(folder, report_dir=None):
