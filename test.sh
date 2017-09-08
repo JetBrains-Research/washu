@@ -72,4 +72,4 @@ fi
 echo
 
 # Launch all the tests
-python -m teamcity.unittestpy discover test/
+python -m pytest test/

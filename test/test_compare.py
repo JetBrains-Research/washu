@@ -1,12 +1,10 @@
-import subprocess
-import tempfile
-import unittest
 import os
 
 from pathlib import Path
+from pipeline_utils import run_bash
 
-TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/bed'
-COMPARE_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/compare.sh'
+import pytest
+from test.fixtures import test_data
 
 
 # 0      100  200    300  400    500  600    700
@@ -16,23 +14,16 @@ COMPARE_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/compare.sh'
 #            |------------------|              |--|
 # C.bed
 #  |-| |-|        |-|          |-|                  |-|
+@pytest.mark.parametrize("cond,expected", [
+    ("cond1", "chr1	0	100\n"),
+    ("cond2", ""),
+    ("common", "chr1	150	500\nchr1	600	750\n"),
+])
+def test_compare(tmpdir, test_data, cond, expected):
+    os.chdir(tmpdir)
+    run_bash("bed/compare.sh", test_data("bed/A.bed"), test_data("bed/B.bed"),
+             "metabeds")
 
-class CompareTest(unittest.TestCase):
-    def test_compareAB(self):
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', prefix='metabeds', delete=False) as tmpfile:
-            prefix = tmpfile.name.replace('.txt', '')
-            subprocess.Popen(['bash', COMPARE_SH, TEST_DATA + '/A.bed', TEST_DATA + '/B.bed', prefix],
-                             stdout=subprocess.PIPE).communicate()
-            cond1 = prefix + "_cond1.bed"
-            cond2 = prefix + "_cond2.bed"
-            common = prefix + "_common.bed"
-        self.assertEqual("""chr1	0	100
-""", Path(cond1).read_text())
-        self.assertEqual('', Path(cond2).read_text())
-        self.assertEqual("""chr1	150	500
-chr1	600	750
-""", Path(common).read_text())
+    result_path = Path(tmpdir) / "metabeds_{}.bed".format(cond)
+    assert result_path.read_text() == expected
 
-
-if __name__ == '__main__':
-    unittest.main()

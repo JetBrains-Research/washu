@@ -54,13 +54,14 @@ def report(folder):
     return df.sort_values(by=['sample'])
 
 
-def process_peaks_logs(folder):
+def process_peaks_logs(folder, report_dir=None):
     """Process rip.csv files produced by rip.sh script and create summary"""
-    path = folder + '/peaks_report.csv'
     df = report(folder)
     print(df)
-    df.to_csv(path, index=False)
-    print("Saved report", path)
+
+    report_path = os.path.join(report_dir or folder, "peaks_report.csv")
+    df.to_csv(report_path, index=False)
+    print("Saved report", report_path)
 
 
 def main():

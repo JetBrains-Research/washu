@@ -1,9 +1,7 @@
-import subprocess
-import unittest
-import os
+from pipeline_utils import run_bash, PROJECT_ROOT_PATH
 
-TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/bed'
-INTERSECT_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/intersect.sh'
+import pytest
+from test.fixtures import test_data
 
 
 # 0      100  200    300  400    500  600    700
@@ -13,36 +11,16 @@ INTERSECT_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/intersect.s
 #            |------------------|              |--|
 # C.bed
 #  |-| |-|        |-|          |-|                  |-|
+@pytest.mark.parametrize("files,line", [
+    (["A.bed", "B.bed", "C.bed"], "chr1	150	500"),
+    (["A.bed", "B.bed"], "chr1	150	500\nchr1	600	750"),
+    (["A.bed", "C.bed"], "chr1	0	100\nchr1	200	300\nchr1	400	500"),
+    (["B.bed", "C.bed"], "chr1	150	460"),
+])
+def test_intersect(capfd, test_data, files, line):
+    run_bash("bed/intersect.sh", *[test_data("bed/" + f) for f in files])
 
-class IntersectTest(unittest.TestCase):
-    def test_intersect(self):
-        ps = subprocess.Popen(['bash', INTERSECT_SH, TEST_DATA + '/A.bed', TEST_DATA + '/B.bed', TEST_DATA + '/C.bed'],
-                              stdout=subprocess.PIPE)
-        self.assertEqual("""chr1	150	500
-""", ps.communicate()[0].decode("utf-8"))
-
-    def test_intersectAB(self):
-        ps = subprocess.Popen(['bash', INTERSECT_SH, TEST_DATA + '/A.bed', TEST_DATA + '/B.bed'],
-                              stdout=subprocess.PIPE)
-        self.assertEqual("""chr1	150	500
-chr1	600	750
-""", ps.communicate()[0].decode("utf-8"))
-
-    def test_intersectAC(self):
-        ps = subprocess.Popen(['bash', INTERSECT_SH, TEST_DATA + '/A.bed', TEST_DATA + '/C.bed'],
-                              stdout=subprocess.PIPE)
-        self.assertEqual("""chr1	0	100
-chr1	200	300
-chr1	400	500
-""", ps.communicate()[0].decode("utf-8"))
-
-    def test_intersectBC(self):
-        ps = subprocess.Popen(['bash', INTERSECT_SH, TEST_DATA + '/B.bed', TEST_DATA + '/C.bed'],
-                              stdout=subprocess.PIPE)
-        self.assertEqual("""chr1	150	460
-""", ps.communicate()[0].decode("utf-8"))
-
-
-
-if __name__ == '__main__':
-    unittest.main()
+    out, _err = capfd.readouterr()
+    res = out.replace(test_data("bed/"), "").replace(PROJECT_ROOT_PATH, ".")
+    assert "bash ./bed/intersect.sh {}\n{}\n".format(" ".join(files),
+                                                     line) == res

@@ -47,13 +47,14 @@ def report(folder):
     return df.sort_values(by=['sample'])
 
 
-def process_bowtie_logs(folder):
+def process_bowtie_logs(folder, report_dir=None):
     """Process bowtie logs and create summary report"""
-    path = folder + '/bowtie_report.csv'
     df = report(folder)
     print(df)
-    df.to_csv(path, index=False)
-    print("Saved report", path)
+
+    report_path = os.path.join(report_dir or folder, "bowtie_report.csv")
+    df.to_csv(report_path, index=False)
+    print("Saved report", report_path)
 
 
 def main():

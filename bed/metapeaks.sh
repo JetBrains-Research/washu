@@ -24,7 +24,10 @@ PEAKS=""
 T=$'\t'
 for F in $@
 do
-    NPEAKS=$(cat $F | wc -l)
+    # sometimes we need to trim 'wc -l' results, at least on my mac
+    # the easiest suitable way here is using 'xargs'
+    # Read about prons and cons at https://stackoverflow.com/questions/369758/how-to-trim-whitespace-from-a-bash-variable
+    NPEAKS="$(cat ${F} | wc -l | xargs echo)"
     PEAKS="$PEAKS$T$NPEAKS"
     # Folder with source file be read-only, use temp file
     SORTED=$(mktemp)

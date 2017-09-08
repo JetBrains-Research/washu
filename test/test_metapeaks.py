@@ -1,9 +1,7 @@
-import subprocess
-import unittest
-import os
+from pipeline_utils import run_bash, PROJECT_ROOT_PATH
 
-TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/bed'
-METAPEAKS_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/metapeaks.sh'
+import pytest
+from test.fixtures import test_data
 
 
 # 0      100  200    300  400    500  600    700
@@ -13,19 +11,17 @@ METAPEAKS_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/metapeaks.s
 #            |------------------|              |--|
 # C.bed
 #  |-| |-|        |-|          |-|                  |-|
+def test_metapeaks(capfd, test_data):
+    run_bash("bed/metapeaks.sh", test_data("bed/A.bed"),
+             test_data("bed/B.bed"), test_data("bed/C.bed"))
+    out, _err = capfd.readouterr()
+    res = out.replace(test_data("bed/"), "").replace(PROJECT_ROOT_PATH, ".")
 
-class MetapeaksTest(unittest.TestCase):
-    def test_metapeaks(self):
-        ps = subprocess.Popen(['bash', METAPEAKS_SH, TEST_DATA + '/A.bed', TEST_DATA + '/B.bed', TEST_DATA + '/C.bed'],
-                              stdout=subprocess.PIPE)
-        self.assertEqual("""PEAKS:\t4\t2\t5
+    assert res == """bash ./bed/metapeaks.sh A.bed B.bed C.bed
+PEAKS:\t4\t2\t5
 0 0 1	1
 1 0 1	1
 1 1 0	1
 1 1 1	1
 1, 1, 1, 1
-""", ps.communicate()[0].decode("utf-8"))
-
-
-if __name__ == '__main__':
-    unittest.main()
+"""

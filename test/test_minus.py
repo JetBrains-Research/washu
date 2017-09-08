@@ -1,9 +1,7 @@
-import subprocess
-import unittest
-import os
+from pipeline_utils import run_bash, PROJECT_ROOT_PATH
 
-TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + '/testdata/bed'
-MINUS_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/minus.sh'
+import pytest
+from test.fixtures import test_data
 
 
 # 0      100  200    300  400    500  600    700
@@ -13,26 +11,14 @@ MINUS_SH = os.path.dirname(os.path.abspath(__file__)) + '/../bed/minus.sh'
 #            |------------------|              |--|
 # C.bed
 #  |-| |-|        |-|          |-|                  |-|
-
-class MinusTest(unittest.TestCase):
-    def test_minusAB(self):
-        ps = subprocess.Popen(['bash', MINUS_SH, TEST_DATA + '/A.bed', TEST_DATA + '/B.bed'],
-                              stdout=subprocess.PIPE)
-        self.assertEqual("""chr1	0	100
-""", ps.communicate()[0].decode("utf-8"))
-
-    def test_minusAC(self):
-        ps = subprocess.Popen(['bash', MINUS_SH, TEST_DATA + '/A.bed', TEST_DATA + '/C.bed'],
-                              stdout=subprocess.PIPE)
-        self.assertEqual("""chr1	600	700
-""", ps.communicate()[0].decode("utf-8"))
-
-    def test_minusBC(self):
-        ps = subprocess.Popen(['bash', MINUS_SH, TEST_DATA + '/B.bed', TEST_DATA + '/C.bed'],
-                              stdout=subprocess.PIPE)
-        self.assertEqual("""chr1	650	750
-""", ps.communicate()[0].decode("utf-8"))
-
-
-if __name__ == '__main__':
-    unittest.main()
+@pytest.mark.parametrize("file1,file2,line", [
+    ("A.bed", "B.bed", "chr1	0	100"),
+    ("A.bed", "C.bed", "chr1	600	700"),
+    ("B.bed", "C.bed", "chr1	650	750"),
+])
+def test_minus(capfd, test_data, file1, file2, line):
+    run_bash("bed/minus.sh", test_data("bed/" + file1),
+             test_data("bed/" + file2))
+    out, _err = capfd.readouterr()
+    res = out.replace(test_data("bed/"), "").replace(PROJECT_ROOT_PATH, ".")
+    assert res == "bash ./bed/minus.sh {} {}\n{}\n".format(file1, file2, line)

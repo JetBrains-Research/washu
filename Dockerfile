@@ -33,7 +33,8 @@ RUN conda create -n py3.5 python=3.5
 RUN source activate py3.5 &&\
     conda install --channel bioconda bwa bowtie2 star \
     deeptools sra-tools rseg ucsc-bedgraphtobigwig ucsc-bedclip &&\
-    conda install --channel conda-forge matplotlib-venn && conda install pandas numpy &&\
+    conda install --channel conda-forge matplotlib-venn &&\
+    conda install pandas numpy pytest &&\
     pip install multiqc teamcity-messages
 
 # Workaround for TeamCity CI, temp folders are created with root permissions, unacessible for USER

@@ -81,13 +81,14 @@ def find_rip(x, rips):
         return 0
 
 
-def process_macs2_logs(folder):
+def process_macs2_logs(folder, report_dir=None):
     """Process macs2 logs and create summary report"""
-    path = folder + '/macs2_report.csv'
     df = report(folder)
     print(df)
-    df.to_csv(path, index=False)
-    print("Saved report", path)
+
+    report_path = os.path.join(report_dir or folder, "macs2_report.csv")
+    df.to_csv(report_path, index=False)
+    print("Saved report", report_path)
 
 
 def main():
