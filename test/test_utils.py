@@ -2,7 +2,7 @@ import os
 import subprocess
 
 import pytest
-from test.fixtures import test_data
+from test.fixtures import test_data, tmp_dir
 
 from scripts.util import find_input
 from scripts.util import lcs
@@ -52,17 +52,17 @@ def test_macs_input(build, species):
     ("geo/symlink/..", "geo"),
     ("geo/../geo/symlink/doo/file.txt", "geo/tmp/doo/file.txt"),
 ])
-def test_expand_path(tmpdir, capfd, path, expected):
-    os.makedirs(os.path.join(tmpdir, "geo/tmp/doo"))
-    os.symlink(os.path.join(tmpdir, "geo/tmp"),
-               os.path.join(tmpdir, "geo/symlink"))
-    open(os.path.join(tmpdir, "geo/tmp/doo/file.txt"), 'a').close()
+def test_expand_path(tmp_dir, capfd, path, expected):
+    os.makedirs(os.path.join(tmp_dir, "geo/tmp/doo"))
+    os.symlink(os.path.join(tmp_dir, "geo/tmp"),
+               os.path.join(tmp_dir, "geo/symlink"))
+    open(os.path.join(tmp_dir, "geo/tmp/doo/file.txt"), 'a').close()
 
-    path = os.path.join(tmpdir, path)
+    path = os.path.join(tmp_dir, path)
     util_sh = os.path.join(PROJECT_ROOT_PATH, "parallel/util.sh")
     subprocess.run(
         "bash -c 'source {}; echo $(expand_path \"{}\")'".format(util_sh,
                                                                  path),
         shell=True, check=True)
     out, _err = capfd.readouterr()
-    assert out == os.path.join(tmpdir, expected) + "\n"
+    assert out == os.path.join(tmp_dir, expected) + "\n"

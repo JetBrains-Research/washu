@@ -4,12 +4,12 @@ from bed.bedtrace import run
 from pipeline_utils import run_bash, PROJECT_ROOT_PATH
 
 import pytest
-from test.fixtures import test_data
+from test.fixtures import test_data, tmp_dir
 
 
 @pytest.mark.parametrize("q_target", ["0.01", "0.05"])
-def test_macs2_filter_fdr(tmpdir, test_data, q_target):
-    output_folder = tmpdir
+def test_macs2_filter_fdr(tmp_dir, test_data, q_target):
+    output_folder = tmp_dir
     run_bash("bed/macs2_filter_fdr.sh", test_data("macs2_filter_fdr"),
              output_folder, "0.1", q_target)
 

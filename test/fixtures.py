@@ -19,3 +19,17 @@ def bedtrace_cleanup():
     yield
     # After test section
     cleanup()
+
+
+@pytest.fixture
+def tmp_dir(tmpdir):
+    # tmpdir is py.path.LocalPath
+    # * python 3.6 supports non string/bytes object as path in os.path.*
+    #   methods
+    #
+    # * python 3.5 fails if gets non string/bytes object in os.path.* methods
+    #   E.g. you will get error like:
+    #     TypeError: join() argument must be str or bytes, not 'LocalPath'
+    #
+    # So in order to support 3.5, let's create fixture which returns string obj
+    return str(tmpdir)

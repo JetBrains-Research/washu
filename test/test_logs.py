@@ -2,18 +2,17 @@ import os
 import importlib
 
 import pandas as pd
-
 import pytest
-from test.fixtures import test_data
+from test.fixtures import test_data, tmp_dir
 
 
 @pytest.mark.parametrize("util_name", ["macs2", "peaks", "bowtie", "bowtie2"])
-def test_process_logs(tmpdir, test_data, util_name):
+def test_process_logs(tmp_dir, test_data, util_name):
     fun = getattr(importlib.import_module("reports.{}_logs".format(util_name)),
                   "process_{}_logs".format(util_name))
-    fun(test_data(util_name), tmpdir)
+    fun(test_data(util_name), tmp_dir)
 
-    output_file = os.path.join(tmpdir, util_name + "_report.csv")
+    output_file = os.path.join(tmp_dir, util_name + "_report.csv")
     assert os.path.exists(output_file)
 
     expected = str(pd.read_csv(test_data("{0}/{0}_report_correct.csv".format(util_name)),
