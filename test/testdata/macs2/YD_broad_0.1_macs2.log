@@ -20,14 +20,14 @@ INFO  @ Thu, 01 Jun 2017 08:51:42: end of X-cor
 INFO  @ Thu, 01 Jun 2017 08:51:42: #2 finished!
 INFO  @ Thu, 01 Jun 2017 08:51:42: #2 predicted fragment length is 145 bps
 INFO  @ Thu, 01 Jun 2017 08:51:42: #2 alternative fragment length(s) may be 1,145 bps
-INFO  @ Thu, 01 Jun 2017 08:51:42: #2.2 Generate R script for model : OD_broad_0.1_model.r
+INFO  @ Thu, 01 Jun 2017 08:51:42: #2.2 Generate R script for model : YD_broad_0.1_model.r
 INFO  @ Thu, 01 Jun 2017 08:51:42: #3 Call peaks...
 INFO  @ Thu, 01 Jun 2017 08:51:42: #3 Call broad peaks with given level1 -log10qvalue cutoff and level2: 1.301030, 1.000000...
 INFO  @ Thu, 01 Jun 2017 08:51:42: #3 Pre-compute pvalue-qvalue table...
 INFO  @ Thu, 01 Jun 2017 09:02:41: #3 In the peak calling step, the following will be performed simultaneously:
-INFO  @ Thu, 01 Jun 2017 09:02:41: #3   Write bedGraph files for treatment pileup (after scaling if necessary)... OD_broad_0.1_treat_pileup.bdg
-INFO  @ Thu, 01 Jun 2017 09:02:41: #3   Write bedGraph files for control lambda (after scaling if necessary)... OD_broad_0.1_control_lambda.bdg
+INFO  @ Thu, 01 Jun 2017 09:02:41: #3   Write bedGraph files for treatment pileup (after scaling if necessary)... YD_broad_0.1_treat_pileup.bdg
+INFO  @ Thu, 01 Jun 2017 09:02:41: #3   Write bedGraph files for control lambda (after scaling if necessary)... YD_broad_0.1_control_lambda.bdg
 INFO  @ Thu, 01 Jun 2017 09:02:41: #3 Call peaks for each chromosome...
-INFO  @ Thu, 01 Jun 2017 09:44:29: #4 Write output xls file... OD_broad_0.1_peaks.xls
-INFO  @ Thu, 01 Jun 2017 09:44:30: #4 Write broad peak in broadPeak format file... OD_broad_0.1_peaks.broadPeak
-INFO  @ Thu, 01 Jun 2017 09:44:30: #4 Write broad peak in bed12/gappedPeak format file... OD_broad_0.1_peaks.gappedPeak
+INFO  @ Thu, 01 Jun 2017 09:44:29: #4 Write output xls file... YD_broad_0.1_peaks.xls
+INFO  @ Thu, 01 Jun 2017 09:44:30: #4 Write broad peak in broadPeak format file... YD_broad_0.1_peaks.broadPeak
+INFO  @ Thu, 01 Jun 2017 09:44:30: #4 Write broad peak in bed12/gappedPeak format file... YD_broad_0.1_peaks.gappedPeak
