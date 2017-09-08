@@ -157,7 +157,7 @@ Defaults for MACS2 broad peak calling:
             # -B produces bedgraph for signal
             params += ('-B',)
 
-        run_bash("macs2.sh", genome, chrom_sizes, name,
+        run_bash("parallel/macs2.sh", genome, chrom_sizes, name,
                  "'{}'".format(" ".join([str(p) for p in params])),
                  *unprocessed_workdirs)
 

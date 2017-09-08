@@ -31,20 +31,20 @@ else:
         pairs.append(name + "_2.fq.gz")
 
 # Batch QC
-run_bash("fastqc.sh", WORK_DIR)
+run_bash("parallel/fastqc.sh", WORK_DIR)
 
-run_bash("star.sh", WORK_DIR, INDEXES, "\"" + " ".join(pairs) + "\"")
+run_bash("parallel/star.sh", WORK_DIR, INDEXES, "\"" + " ".join(pairs) + "\"")
 WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bams",
                         ["*.bam", "*star_*.log", "star_align_*"])
 
-run_bash("rnaseq_quality.sh", WORK_DIR)
+run_bash("parallel/rnaseq_quality.sh", WORK_DIR)
 WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_quality",
                         ["*.rnastat", "rnaseq_quality.*"], copy_only=True)
 
-run_bash("bigwig.sh", CHROMSIZES, WORK_DIR)
+run_bash("parallel/bigwig.sh", CHROMSIZES, WORK_DIR)
 WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bws",
                         ["*.bw", "*.bw.log", "*.bdg"], copy_only=True)
 
-run_bash("rsem.sh", WORK_DIR, INDEXES)
+run_bash("parallel/rsem.sh", WORK_DIR, INDEXES)
 WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_rsem",
                         ["*.results", "*.stat", "rsem_exp_*", "*.tsv"])

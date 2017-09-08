@@ -7,7 +7,7 @@ import shutil
 
 from glob import glob
 
-PARALLEL_SCRIPTS_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), "parallel"))
+PROJECT_ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__))))
 
 
 class WritableDirectory(argparse.Action):
@@ -21,7 +21,13 @@ class WritableDirectory(argparse.Action):
 
 
 def run_bash(script, *params):
-    command = " ".join(["bash", os.path.join(PARALLEL_SCRIPTS_PATH, script), *[str(p) for p in params]])
+    """
+    Executes desired bash script and wait until it has finished
+    :param script: script relative (to project root) path
+    :param params: script args
+    """
+    command = " ".join(["bash", os.path.join(PROJECT_ROOT_PATH, script),
+                        *[str(p) for p in params]])
     print(command)
     subprocess.run(command, shell=True, check=True)
 

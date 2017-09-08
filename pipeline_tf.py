@@ -73,20 +73,20 @@ def cli(out, data):
         for srx in srxs:
             srx_to_dir_list.extend([srx, sra_dir])
 
-    run_bash("geo_rsync.sh", *srx_to_dir_list)
+    run_bash("scripts/geo_rsync.sh", *srx_to_dir_list)
 
     # Fastq-dump SRA data:
-    run_bash("fastq_dump.sh", *data_dirs)
+    run_bash("parallel/fastq_dump.sh", *data_dirs)
 
     # Prepare genome *.fa and Bowtie indexes
     print("Genomes and indices folder: ", INDEXES)
-    run_bash("index_genome.sh", GENOME, INDEXES)
-    run_bash("index_bowtie2.sh", GENOME, INDEXES)
+    run_bash("parallel/index_genome.sh", GENOME, INDEXES)
+    run_bash("parallel/index_bowtie2.sh", GENOME, INDEXES)
     #run_bash("index_bowtie.sh", GENOME, INDEXES)
 
     # Batch QC
     #TODO: temporary off
-    #run_bash("fastqc.sh", *data_dirs)
+    #run_bash("parallel/fastqc.sh", *data_dirs)
 
     # Total multiqc:
     # Use -s options, otherwise tons of "SRRnnn" hard to distinguish
@@ -105,10 +105,10 @@ def cli(out, data):
     # Alignment step:
     def process_sra(sra_dirs):
         #  * batch Bowtie with trim 5 first base pairs
-        run_bash("bowtie2.sh", GENOME, INDEXES, "5", *sra_dirs)
+        run_bash("parallel/bowtie2.sh", GENOME, INDEXES, "5", *sra_dirs)
 
         # Merge TF SRR*.bam files to one
-        run_bash("samtools_merge.sh", GENOME, *sra_dirs)
+        run_bash("parallel/samtools_merge.sh", GENOME, *sra_dirs)
 
     bams_dirs = process_dirs(data_dirs, "_bams", ["*.bam", "*bowtie*.log"],
                              process_sra)
@@ -130,16 +130,17 @@ def cli(out, data):
 
     # Batch BigWig visualization
     process_dirs(bams_dirs, "_bws", ["*.bw", "*.bdg", "*bw.log"],
-                 lambda dirs: run_bash("bigwig.sh", CHROM_SIZES, *dirs))
+                 lambda dirs: run_bash("parallel/bigwig.sh", CHROM_SIZES,
+                                       *dirs))
 
     # Batch RPKM visualization
     process_dirs(bams_dirs, "_rpkms", ["*.bw", "*rpkm.log"],
-                 lambda dirs: run_bash("rpkm.sh", *dirs))
+                 lambda dirs: run_bash("parallel/rpkm.sh", *dirs))
 
     # Remove duplicates
     process_dirs(bams_dirs, "_unique",
                  ["*_unique*", "*_metrics.txt", "*duplicates.log"],
-                 lambda dirs: run_bash("remove_duplicates.sh",
+                 lambda dirs: run_bash("parallel/remove_duplicates.sh",
                                        PICARD_TOOLS, *dirs))
 
     # Call PEAKS:
@@ -179,10 +180,10 @@ def cli(out, data):
                                work_dirs=bams_dirs_for_peakcalling)
         for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
                                               peaks_dirs):
-            run_bash('../bed/macs2_filter_fdr.sh', peaks_dir,
+            run_bash('bed/macs2_filter_fdr.sh', peaks_dir,
                      peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
                      bams_dir_signal)
-            run_bash('../bed/macs2_filter_fdr.sh', peaks_dir,
+            run_bash('bed/macs2_filter_fdr.sh', peaks_dir,
                      peaks_dir.replace('0.1', '0.01'), 0.1, 0.01,
                      bams_dir_signal)
 
@@ -192,10 +193,10 @@ def cli(out, data):
                                work_dirs=bams_dirs_for_peakcalling)
         for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
                                               peaks_dirs):
-            run_bash("../bed/macs2_filter_fdr.sh", peaks_dir,
+            run_bash("bed/macs2_filter_fdr.sh", peaks_dir,
                      peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
                      bams_dir_signal)
-            run_bash("../bed/macs2_filter_fdr.sh", peaks_dir,
+            run_bash("bed/macs2_filter_fdr.sh", peaks_dir,
                      peaks_dir.replace('0.1', '0.01'), 0.1, 0.01,
                      bams_dir_signal)
     finally:
