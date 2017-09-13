@@ -31,12 +31,12 @@ def run_pipeline():
 def check_files_not_empty(pattern, expected_files_number=None):
     files = glob.glob(pattern)
     
-    print("Expected {} files for pattern '{}'".format(expected_files_number, 
-                                                      pattern))
-    assert len(files) == expected_files_number
+    msg = "Expected {} files for pattern '{}'".format(expected_files_number,
+                                                      pattern)
+    assert len(files) == expected_files_number, msg
 
     for f in files:
-        assert os.path.getsize(f) == 0
+        assert os.path.getsize(f) > 0, "File {} is empty".format(f)
 
 
 def check_files():
