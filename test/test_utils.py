@@ -4,10 +4,8 @@ import subprocess
 import pytest
 from test.fixtures import test_data, tmp_dir
 
-from scripts.util import find_input
-from scripts.util import lcs
-from scripts.util import macs_species
-from pipeline_utils import PROJECT_ROOT_PATH
+from scripts.util import find_input, lcs, macs_species
+from pipeline_utils import PROJECT_ROOT_PATH, run
 
 
 def test_lcs():
@@ -66,3 +64,18 @@ def test_expand_path(tmp_dir, capfd, path, expected):
         shell=True, check=True)
     out, _err = capfd.readouterr()
     assert out == os.path.join(tmp_dir, expected) + "\n"
+
+
+def test_module_mock(tmp_dir, capfd):
+    with open(os.path.join(tmp_dir, "modules.sh"), 'a') as f:
+        f.write("module() { echo \"my test mock module $@\"; }\n")
+
+    with open(os.path.join(tmp_dir, "foo.sh"), 'a') as f:
+        f.write("source {}/modules.sh\n"
+                "source {}/parallel/util.sh\n"
+                "module load R\n".format(tmp_dir, PROJECT_ROOT_PATH))
+    run("bash", "{}/foo.sh".format(tmp_dir))
+    out, _err = capfd.readouterr()
+
+    assert out.replace(tmp_dir, ".") == "bash ./foo.sh\n" \
+                                        "my test mock module load R\n"
