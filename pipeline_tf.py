@@ -11,24 +11,6 @@ from reports.bowtie_logs import process_bowtie_logs
 from scripts.util import run_macs2
 
 
-def file_path_type(dir=False, exists=True, ext=None):
-    def inner(string):
-        msg = None
-        if exists and not os.path.exists(string):
-            msg = "File not exists: " + string
-        elif not dir and not os.path.isfile(string):
-            msg = "File expected, by was: " + string
-        elif dir and (os.path.exists(string) and not os.path.isdir(string)):
-            msg = "Dir expected, by was: " + string
-        elif ext and not string.lower().endswith(".{}".format(ext)):
-            msg = "File *.{} expected, by was: {}".format(ext, string)
-
-        if msg:
-            raise argparse.ArgumentTypeError(msg)
-        return os.path.abspath(string)
-    return inner
-
-
 def cli():
     parser = argparse.ArgumentParser(
         description="For given descriptor table download SRA data & call peaks"

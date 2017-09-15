@@ -50,3 +50,31 @@ def move_forward(folder, new_folder, what_to_move, copy_only=False):
         return new_folder
     else:
         return folder
+
+
+def file_path_type(dir=False, exists=True, ext=None):
+    """
+    Argparse argument converter.
+    Usage:
+        parser.add_argument("tsv_file", type=file_path_type(ext="tsv"))
+
+    :param dir: Whether directory or file expected
+    :param exists: Ensure file or directory exists
+    :param ext: Desired file extension. If None - do not check
+    :return: Converter lambda: (arg: str) -> absolute path string
+    """
+    def inner(arg: str) -> str:
+        msg = None
+        if exists and not os.path.exists(arg):
+            msg = "File not exists: " + arg
+        elif not dir and not os.path.isfile(arg):
+            msg = "File expected, by was: " + arg
+        elif dir and (os.path.exists(arg) and not os.path.isdir(arg)):
+            msg = "Dir expected, by was: " + arg
+        elif ext and not arg.lower().endswith(".{}".format(ext)):
+            msg = "File *.{} expected, by was: {}".format(ext, arg)
+
+        if msg:
+            raise argparse.ArgumentTypeError(msg)
+        return os.path.abspath(arg)
+    return inner
