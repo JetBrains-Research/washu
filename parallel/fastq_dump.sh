@@ -46,7 +46,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         fi
 
         # Submit task
-        QSUB_ID=$(qsub << ENDINPUT
+        run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N fastq-dump_${WORK_DIR_NAME}_${FILE_NAME_WO_EXT}
 #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=32gb
@@ -80,8 +80,7 @@ fi
 
 fastq-dump --log-level err --dumpbase --outdir ${OUTDIR}\${SPLIT_FILES_OPTION} ${FILE}
 
-ENDINPUT
-)
+SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
     done

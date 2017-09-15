@@ -16,7 +16,7 @@ FOLDER=$2
 cd ${FOLDER}
 # Check both 32 and 64 large indexes
 if ([[ ! -f "$GENOME.1.ebwt" ]] && [[ ! -f "$GENOME.1.ebwtl" ]]); then
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N bowtie_indexes_${GENOME}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=32gb
@@ -29,8 +29,7 @@ module load bowtie
 # This is necessary because qsub default working dir is user home
 cd ${FOLDER}
 bowtie-build $(find . -type f -name "*.fa" | sed 's#\./##g' | paste -sd "," -) ${GENOME}
-ENDINPUT
-)
+SCRIPT
     wait_complete ${QSUB_ID}
     check_logs
 fi

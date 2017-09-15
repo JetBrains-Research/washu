@@ -26,7 +26,7 @@ do :
     NAME=${FILE%%.tr.bam} # file name without extension
 
     # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/bash
 #PBS -N rsem_exp_$NAME
 #PBS -j oe
@@ -36,8 +36,7 @@ do :
 
 cd ${WORK_DIR}
 $RSEMPATH/rsem-calculate-expression -p 8 --paired-end --bam --estimate-rspd --no-bam-output $FILE $REF $NAME
-ENDINPUT
-)
+SCRIPT
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done

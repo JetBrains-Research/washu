@@ -31,7 +31,7 @@ do :
     ID=${NAME}_${P}
 
     # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N macs2_${ID}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
@@ -52,8 +52,7 @@ fi
 
 # Compute Reads in Peaks
 bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}*.narrowPeak
-ENDINPUT
-)
+SCRIPT
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done

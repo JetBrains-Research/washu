@@ -21,7 +21,7 @@ do :
     ID=${NAME}_${READS}mln
 
     # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N subsample_${ID}
 #PBS -l nodes=1:ppn=8,walltime=4:00:00,vmem=64gb
@@ -44,8 +44,7 @@ samtools sort not_sorted_${ID}.bam -o ${ID}.bam
 rm *head*_${NAME}*
 rm ${ID}.sam
 rm not_sorted_${ID}.bam
-ENDINPUT
-)
+SCRIPT
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done

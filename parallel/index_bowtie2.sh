@@ -15,7 +15,7 @@ FOLDER=$2
 
 cd ${FOLDER}
 if ([[ ! -f "$GENOME.1.bt2" ]] && [[ ! -f "$GENOME.1.bt2l" ]]); then
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N bowtie2_indexes_${GENOME}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=32gb
@@ -28,8 +28,7 @@ module load bowtie2
 # This is necessary because qsub default working dir is user home
 cd ${FOLDER}
 bowtie2-build $(find . -type f -name "*.fa" | sed 's#\./##g' | paste -sd "," -) ${GENOME}
-ENDINPUT
-)
+SCRIPT
     wait_complete ${QSUB_ID}
     check_logs
 fi

@@ -79,3 +79,33 @@ def test_module_mock(tmp_dir, capfd):
 
     assert out.replace(tmp_dir, ".") == "bash ./foo.sh\n" \
                                         "my test mock module load R\n"
+
+
+def test_run_parallel(tmp_dir, capfd):
+    with open(os.path.join(tmp_dir, "foo.sh"), 'a') as f:
+        f.write("""
+source {}/parallel/util.sh
+TASKS=""
+for i in $(seq 1 100); do
+    echo $i
+    run_parallel << SCRIPT
+#It is necessary to include LOG here because run_parallel use it as out/err     
+#PBS -o {}/file_$i.log 
+echo $i > {}/file_$i.txt
+SCRIPT
+    TASKS="$TASKS $QSUB_ID"    
+done
+wait_complete $TASKS
+""".format(PROJECT_ROOT_PATH, tmp_dir, tmp_dir))
+
+    run("bash", "{}/foo.sh".format(tmp_dir))
+    out, _err = capfd.readouterr()
+
+    # Check expected stdout result
+    assert out.replace(tmp_dir, ".") == "bash ./foo.sh\n" + "\n".join(
+        [str(i) for i in range(1, 101)]) + "\nWaiting for tasks...\n" + "Done.\n"
+
+    # Check that files and logs created successfully
+    for i in range(1, 101):
+        assert os.path.isfile('{}/file_{}.txt'.format(tmp_dir, i))
+        assert os.path.isfile('{}/file_{}.log'.format(tmp_dir, i))

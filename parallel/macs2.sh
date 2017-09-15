@@ -41,7 +41,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         ID=${NAME}_${SUFFIX}
 
         # Submit task
-        run_parallel << ENDINPUT
+        run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N macs2_${WORK_DIR_NAME}_${ID}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
@@ -69,7 +69,7 @@ fi
 
 # Compute Reads in Peaks
 bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}*.*Peak
-ENDINPUT
+SCRIPT
 
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"

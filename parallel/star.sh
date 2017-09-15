@@ -20,7 +20,7 @@ do :
     NAME=${READ_FILES[i]%%_1.f*q.gz} # file name without extension
 
     # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/bash
 #PBS -N star_align_$NAME
 #PBS -j oe
@@ -43,8 +43,7 @@ mv ${NAME}_Aligned.sortedByCoord.out.bam $NAME.bam
 mv ${NAME}_Aligned.toTranscriptome.out.bam $NAME.tr.bam
 mv ${NAME}_Log.out $NAME.star_run.log
 mv ${NAME}_Log.final.out $NAME.star_final.log
-ENDINPUT
-)
+SCRIPT
     echo "FILE: $NAME; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done

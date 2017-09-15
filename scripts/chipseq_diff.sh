@@ -78,7 +78,7 @@ if [ ! -d $DIFFBIND ]; then
     cd ${DIFFBIND}
 
     echo "Processing diffbind"
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N diffbind_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=32gb
@@ -88,8 +88,7 @@ if [ ! -d $DIFFBIND ]; then
 cd ${DIFFBIND}
 module load R
 Rscript ${SCRIPT_DIR}/R/diffbind.R ${NAME}.csv
-ENDINPUT
-)
+SCRIPT
     wait_complete "$QSUB_ID"
 
     # Filter out old and young donors and sort by Q-Value
@@ -111,7 +110,7 @@ if [ ! -d $MACS_POOLED_Y_VS_O ]; then
 
     echo "Processing MACS2 pooled Y vs O as control and vice versa"
 
-    QSUB_ID_Y_vs_O=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N ${NAME}_Y_vs_O_macs2_broad
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -120,9 +119,9 @@ if [ ! -d $MACS_POOLED_Y_VS_O ]; then
 # This is necessary because qsub default working dir is user home
 cd ${MACS_POOLED_Y_VS_O}
 macs2 callpeak -t $READS_Y -c $READS_O -f BAM -g hs -n ${NAME}_Y_vs_O_${BROAD_CUTOFF} -B --broad --broad-cutoff ${BROAD_CUTOFF}
-ENDINPUT
-)
-    QSUB_ID_O_vs_Y=$(qsub << ENDINPUT
+SCRIPT
+    QSUB_ID_Y_vs_O=$QSUB_ID
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N ${NAME}_O_vs_Y_macs2_broad
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -131,8 +130,8 @@ ENDINPUT
 # This is necessary because qsub default working dir is user home
 cd ${MACS_POOLED_Y_VS_O}
 macs2 callpeak -t $READS_O -c $READS_Y -f BAM -g hs -n ${NAME}_O_vs_Y_${BROAD_CUTOFF} -B --broad --broad-cutoff ${BROAD_CUTOFF}
-ENDINPUT
-)
+SCRIPT
+    QSUB_ID_O_vs_Y=$QSUB_ID
     wait_complete "$QSUB_ID_Y_vs_O $QSUB_ID_O_vs_Y"
 fi
 
@@ -145,7 +144,7 @@ if [ ! -d $DIFF_MACS_POOLED ]; then
     cd ${DIFF_MACS_POOLED}
     echo "Processing MACS2 pooled peaks and compare them";
 
-    QSUB_ID1=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N ${NAME}_Y_macs2_broad_${BROAD_CUTOFF}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -154,10 +153,10 @@ if [ ! -d $DIFF_MACS_POOLED ]; then
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_POOLED}
 macs2 callpeak -t $READS_Y -c $INPUTS_Y -f BAM -g hs -n Y_${BROAD_CUTOFF} -B --broad --broad-cutoff ${BROAD_CUTOFF}
-ENDINPUT
-)
+SCRIPT
+    QSUB_ID1=$QSUB_ID
 
-    QSUB_ID2=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N ${NAME}_O_macs2_broad_${BROAD_CUTOFF}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -166,9 +165,10 @@ ENDINPUT
 # This is necessary because qsub default working dir is user home
 cd ${DIFF_MACS_POOLED}
 macs2 callpeak -t $READS_O -c $INPUTS_O -f BAM -g hs -n O_${BROAD_CUTOFF} -B --broad --broad-cutoff ${BROAD_CUTOFF}
-ENDINPUT
-)
+SCRIPT
+    QSUB_ID2=$QSUB_ID
     wait_complete "$QSUB_ID1 $QSUB_ID2"
+
     check_logs
     bash ${SCRIPT_DIR}/bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
 fi
@@ -191,7 +191,7 @@ if [ ! -d $MACS_BDGDIFF ]; then
     CONTROL_O=$(macs2_total_tags_control ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
     echo "Control O: $CONTROL_O"
 
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N ${NAME}_macs2_broad_bdgdiff
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=48gb
@@ -203,9 +203,8 @@ macs2 bdgdiff\
  --t1 ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_treat_pileup.bdg --c1 ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_control_lambda.bdg\
  --t2 ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_treat_pileup.bdg --c2 ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_control_lambda.bdg\
   --d1 ${CONTROL_Y} --d2 ${CONTROL_O} --o-prefix ${NAME}_${BROAD_CUTOFF}
-ENDINPUT
-)
-    wait_complete "$QSUB_ID"
+SCRIPT
+    wait_complete $QSUB_ID
 fi
 
 
@@ -246,7 +245,7 @@ CONFIG
         bash ${SCRIPT_DIR}/scripts/bam2tags.sh $F $SHIFT_O >> O_tags.tag
     done
 
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N ${NAME}_chipdiff_3
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -262,9 +261,8 @@ sort -k1,1 -k2,2n -o O_tags.tag O_tags.tag
 ChIPDiff Y_tags.tag O_tags.tag $CHROM_SIZES config.txt ${NAME}_3
 cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="-" {print \$1,\$2,\$3}' > ${NAME}_3_cond1.bed
 cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="+" {print \$1,\$2,\$3}' < ${NAME}_3_cond2.bed
-ENDINPUT
-)
-    wait_complete "$QSUB_ID"
+SCRIPT
+    wait_complete $QSUB_ID
 fi
 
 
@@ -299,7 +297,7 @@ if [ ! -d $MANORM ]; then
         bedtools bamtobed -i $F | awk -v OFS='\t' '{print $1,$2,$3,$6}' >> O_reads.bed
     done
 
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N manorm_${Q}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -320,7 +318,6 @@ module load R
 module load bedtools2
 
 bash ${MANORM}/MAnorm.sh Y_peaks.bed O_peaks.bed Y_reads.bed O_reads.bed $SHIFT_Y $SHIFT_O
-ENDINPUT
-)
-    wait_complete "$QSUB_ID"
+SCRIPT
+    wait_complete $QSUB_ID
 fi

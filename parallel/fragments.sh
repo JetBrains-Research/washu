@@ -23,7 +23,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         NAME=${FILE%%.bam} # file name without extension
 
         # Submit task
-        QSUB_ID=$(qsub << ENDINPUT
+        run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N fragments_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=8gb
@@ -39,8 +39,7 @@ samtools view -f66 $FILE | cut -f 9 | sed 's/^-//' > ${NAME}_metrics.txt
 module unload samtools # unload samtools, because it conflicts with R at the moment
 module load R
 Rscript ${SCRIPT_DIR}/R/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
-ENDINPUT
-)
+SCRIPT
         echo "FILE: ${WORK_DIR_NAME}:${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
     done

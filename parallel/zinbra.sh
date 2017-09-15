@@ -36,7 +36,7 @@ do :
     ID=${NAME}_${GENOME}_${Q}
 
     # Submit task
-    QSUB_ID=$(qsub << ENDINPUT
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N zinbra_${ID}
 #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=64gb
@@ -67,8 +67,8 @@ fi
 module load bedtools2
 # Compute Reads in Peaks
 bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}_peaks.bed
-ENDINPUT
-)
+SCRIPT
+
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS="$TASKS $QSUB_ID"
 done

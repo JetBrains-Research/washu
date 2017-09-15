@@ -62,7 +62,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         fi
 
         # Submit task
-        QSUB_ID=$(qsub << ENDINPUT
+        run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N bowtie2_${GENOME}_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=32gb
@@ -106,8 +106,7 @@ samtools sort -@ 4 ${ID}_not_sorted.bam -o ${BAM_NAME}
 # Cleanup
 rm ${ID}.sam ${ID}_not_sorted.bam
 
-ENDINPUT
-)
+SCRIPT
         if [ -f "${FILE_PAIRED}" ]; then
             echo "FILE: ${WORK_DIR_NAME}/${FILE} PAIRED ${FILE_PAIRED}; TASK: ${QSUB_ID}"
         else

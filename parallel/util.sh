@@ -2,8 +2,8 @@
 # author oleg.shpynov@jetbrains.com
 
 # MOCK for module command
-type module &>/dev/null ||
-    module() { echo "[mock] module $@"; }
+type module &>/dev/null || module() { echo "[mock] module $@"; }
+HEADER='#This file was generated as QSUB MOCK\ntype module &>/dev/null || module() { echo "[mock] module $@"; }\n'
 
 # CHPC (qsub) mock replacement
 which qsub &>/dev/null || {
@@ -17,20 +17,13 @@ which qsub &>/dev/null || {
         QSUB_FILE="${QSUB_FILE_PREFIX}.sh"
         rm ${QSUB_FILE_PREFIX}
 
-        echo "# This file was generated as QSUB MOCK" > $QSUB_FILE
-
-        # MOCK for module command
-        echo 'which module &>/dev/null || module() { echo "module $@"; }' >> $QSUB_FILE
-
+        printf "$HEADER" > $QSUB_FILE
         echo "$CMD" >> $QSUB_FILE
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
-
-        # Log tasks script path to STDERR, STDOUT will be treated as qsub
-        # return value which is supposed to be task name and is handled
-        # by wait_complete
-        echo "Running TASK: ${QSUB_FILE}" 1>&2
-        # Redirect both stderr and stdout to stdout then tee and then to stderr
-        bash $QSUB_FILE 2>&1 | tee "$LOG" 1>&2
+        echo "Running TASK: ${QSUB_FILE} LOG: $LOG" 1>&2
+        # Redirect both stderr and stdout to LOG file, don't use output, since we use [run_parallel]
+        bash $QSUB_FILE &> "$LOG"
+        QSUB_ID=""
     }
 }
 
@@ -88,14 +81,12 @@ else
         QSUB_FILE="${QSUB_FILE_PREFIX}.sh"
         rm ${QSUB_FILE_PREFIX}
 
-        echo "# This file was generated as QSUB MOCK" > $QSUB_FILE
-        # MOCK for module command
-        echo 'module() { echo "module $@"; } ' >> $QSUB_FILE
+        printf "$HEADER" > $QSUB_FILE
         echo "$CMD" >> $QSUB_FILE
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
-
-        # Redirect stdout and error to log file
-        bash $QSUB_FILE &>"$LOG" &
+        echo "Running TASK: ${QSUB_FILE} LOG: $LOG" 1>&2
+        # Redirect both stderr and stdout to LOG file, don't use output, since we use [run_parallel]
+        bash $QSUB_FILE &> "$LOG" &
         QSUB_ID="Task: ${QSUB_FILE} PID: $!"
     }
 fi

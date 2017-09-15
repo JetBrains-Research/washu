@@ -46,7 +46,7 @@ do :
     COVERAGE_TSV=${COVERAGES_FOLDER}/${NAME}.tsv
     if [[ ! -f ${COVERAGE_TSV} ]]; then
         # Submit task
-        QSUB_ID=$(qsub << ENDINPUT
+        run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N peaks_coverage_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=8gb
@@ -64,8 +64,7 @@ if [[ ! -f ${COVERAGE_TSV} ]]; then
     bedtools intersect -wa -c -a ${REGIONS3} -b ${TAGS} -sorted > ${COVERAGE_TSV}
 fi
 
-ENDINPUT
-)
+SCRIPT
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
     fi
@@ -93,7 +92,7 @@ if [[ ! -f sizes.tsv ]]; then
     done
 fi
 
-QSUB_ID=$(qsub << ENDINPUT
+run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N peaks_signal_${ID}
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=16gb
@@ -109,10 +108,8 @@ fi
 
 python ${SCRIPT_DIR}/scripts/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.tsv ${TAGS_FOLDER}/sizes.tsv $ID
 
-ENDINPUT
-)
-echo "CREATE TABLES TASK: ${QSUB_ID}"
-wait_complete ${QSUB_ID}
+SCRIPT
+wait_complete $QSUB_ID
 check_logs
 
 >&2 echo "Done. Batch peaks_signals $@"

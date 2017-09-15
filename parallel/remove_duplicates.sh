@@ -31,7 +31,7 @@ for WORK_DIR in ${WORK_DIRS}; do
         METRICS=${NAME}_metrics.txt
 
         # Submit task
-        QSUB_ID=$(qsub << ENDINPUT
+        run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N unique_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=32gb
@@ -46,8 +46,7 @@ module load java
 export _JAVA_OPTIONS="-Xmx12g"
 java -jar ${PICARD_TOOLS_JAR} MarkDuplicates REMOVE_DUPLICATES=true INPUT=${FILE} OUTPUT=${UNIQUE_BAM} M=${METRICS}
 
-ENDINPUT
-)
+SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
     done

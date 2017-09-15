@@ -29,7 +29,7 @@ for WORK_DIR in ${WORK_DIRS}; do
         NAME=${FILE%%.bam} # file name without extension
 
         # Submit task
-        QSUB_ID=$(qsub << ENDINPUT
+        run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N rpkm_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=64gb
@@ -46,8 +46,7 @@ if [[ ! -f "${FILE}.bai" ]]; then
 fi
 
 bamCoverage --bam ${FILE} --outFileName ${NAME}_rpkm.bw --outFileFormat bigwig --ignoreDuplicates --normalizeUsingRPKM
-ENDINPUT
-)
+SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
     done

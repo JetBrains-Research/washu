@@ -39,7 +39,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         NAME=${FILE_NAME%%.fast*} # file name without extension
 
         # Submit task
-        QSUB_ID=$(qsub << ENDINPUT
+        run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N fastqc_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=4gb
@@ -68,8 +68,7 @@ cd ${WORK_DIR}
 #                      6 threads on a 32 bit machine
 #
 fastqc --outdir "${WORK_DIR}/fastqc" "${FILE}"
-ENDINPUT
-)
+SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
     done

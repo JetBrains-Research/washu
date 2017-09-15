@@ -45,7 +45,7 @@ for WORK_DIR in ${WORK_DIRS}; do
 
             # Submit task
             NAME="${MERGED_FILE%%.bam}"
-            QSUB_ID=$(qsub << ENDINPUT
+            run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N samtools_merge_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=2:00:00,vmem=4gb
@@ -64,8 +64,7 @@ samtools merge ${MERGED_FILE} ${BAM_FILES_ARG}
 # Cleanup
 rm ${BAM_FILES_ARG}
 
-ENDINPUT
-)
+SCRIPT
             echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
             TASKS="$TASKS $QSUB_ID"
         fi
