@@ -53,17 +53,17 @@ export _JAVA_OPTIONS="-Xmx30g"
 
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
-    java -Djava.util.concurrent.ForkJoinPool.common.parallelism=4 \
-        -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} -c ${INPUT} \
+    java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} -c ${INPUT} \
         --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --bed ${ID}_peaks.bed \
-        --output ${OUTPUT_DIR}
+        --output ${OUTPUT_DIR} \
+        --parallelism=4
 
 else
     echo "${FILE}: no control file"
-    java -Djava.util.concurrent.ForkJoinPool.common.parallelism=4 \
-        -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} \
+    java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} \
         --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --bed ${ID}_peaks.bed \
-        --output ${OUTPUT_DIR}
+        --output ${OUTPUT_DIR} \
+        --parallelism=4
 fi
 
 module load bedtools2
