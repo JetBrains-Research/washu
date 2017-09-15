@@ -32,11 +32,11 @@ def run(out, data):
     #################
     # Configuration #
     #################
-    GENOME = "hg19"
-    INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes",
-                           GENOME)
-    CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
-    PICARD_TOOLS = os.path.join("~", "picard.jar")
+    genome = "hg19"
+    indexes = os.path.join("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes",
+                           genome)
+    chrom_sizes = os.path.join(indexes, genome + ".chrom.sizes")
+    picard_tools = os.path.join("~", "picard.jar")
 
     # Data table
     data_table = pd.read_csv(data, sep="\t")
@@ -76,10 +76,10 @@ def run(out, data):
     run_bash("parallel/fastq_dump.sh", *data_dirs)
 
     # Prepare genome *.fa and Bowtie indexes
-    print("Genomes and indices folder: ", INDEXES)
-    run_bash("parallel/index_genome.sh", GENOME, INDEXES)
-    run_bash("parallel/index_bowtie2.sh", GENOME, INDEXES)
-    #run_bash("index_bowtie.sh", GENOME, INDEXES)
+    print("Genomes and indices folder: ", indexes)
+    run_bash("parallel/index_genome.sh", genome, indexes)
+    run_bash("parallel/index_bowtie2.sh", genome, indexes)
+    # run_bash("index_bowtie.sh", genome, indexes)
 
     # Batch QC
     run_bash("parallel/fastqc.sh", *data_dirs)
@@ -101,10 +101,10 @@ def run(out, data):
     # Alignment step:
     def process_sra(sra_dirs):
         #  * batch Bowtie with trim 5 first base pairs
-        run_bash("parallel/bowtie2.sh", GENOME, INDEXES, "5", *sra_dirs)
+        run_bash("parallel/bowtie2.sh", genome, indexes, "5", *sra_dirs)
 
         # Merge TF SRR*.bam files to one
-        run_bash("parallel/samtools_merge.sh", GENOME, *sra_dirs)
+        run_bash("parallel/samtools_merge.sh", genome, *sra_dirs)
 
     bams_dirs = process_dirs(data_dirs, "_bams", ["*.bam", "*bowtie*.log"],
                              process_sra)
@@ -118,14 +118,13 @@ def run(out, data):
     if len(data_dirs) > 1:
         run("multiqc", "-f", "-o", out, " ".join(data_dirs + bams_dirs))
 
-
     # XXX: doesn't work for some reason, "filter by -f66" returns nothing
     # Process insert size of BAM visualization
     # run_bash("fragments.sh", *bams_dirs)
 
     # Batch BigWig visualization
     process_dirs(bams_dirs, "_bws", ["*.bw", "*.bdg", "*bw.log"],
-                 lambda dirs: run_bash("parallel/bigwig.sh", CHROM_SIZES,
+                 lambda dirs: run_bash("parallel/bigwig.sh", chrom_sizes,
                                        *dirs))
 
     # Batch RPKM visualization
@@ -136,7 +135,7 @@ def run(out, data):
     process_dirs(bams_dirs, "_unique",
                  ["*_unique*", "*_metrics.txt", "*duplicates.log"],
                  lambda dirs: run_bash("parallel/remove_duplicates.sh",
-                                       PICARD_TOOLS, *dirs))
+                                       picard_tools, *dirs))
 
     # Call PEAKS:
     files_to_cleanup = []
@@ -170,7 +169,7 @@ def run(out, data):
 
         # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1
         #  in example
-        peaks_dirs = run_macs2(GENOME, CHROM_SIZES,
+        peaks_dirs = run_macs2(genome, chrom_sizes,
                                'broad_0.1', '--broad', '--broad-cutoff', 0.1,
                                work_dirs=bams_dirs_for_peakcalling)
         for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
@@ -184,7 +183,7 @@ def run(out, data):
 
         # # MACS2 Regular peak calling (https://github.com/taoliu/MACS)
         # # Q=0.01 in example
-        peaks_dirs = run_macs2(GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1,
+        peaks_dirs = run_macs2(genome, chrom_sizes, 'q0.1', '-q', 0.1,
                                work_dirs=bams_dirs_for_peakcalling)
         for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
                                               peaks_dirs):
@@ -225,6 +224,7 @@ def process_dirs(dirs, suffix, what_to_move, processor_fun):
             move_forward(data_dir, res_dir, what_to_move, copy_only=True)
 
     return result_dirs
+
 
 if __name__ == '__main__':
     cli()
