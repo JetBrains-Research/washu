@@ -41,11 +41,6 @@ def run(out, data):
     # Data table
     data_table = pd.read_csv(data, sep="\t")
 
-    # TODO: clean-up when pipeline will be finished
-    # TODO >>>>>>
-    data_table = data_table.iloc[[0, 1], :]
-    # TODO: <<<<<
-
     print("Data to process:")
     print(data_table)
 
