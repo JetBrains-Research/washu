@@ -4,7 +4,6 @@
 
 import sys
 
-import click
 import pandas as pd
 
 from pipeline_utils import *
@@ -12,21 +11,42 @@ from reports.bowtie_logs import process_bowtie_logs
 from scripts.util import run_macs2
 
 
-@click.command(context_settings=dict(help_option_names=["-h", "--help"]))
-@click.option('-d', '--data',
-              required=True,
-              type=click.Path(resolve_path=True, dir_okay=False, exists=True),
-              help="Data *.tsv file")
-@click.option('-o', '--out', default=".",
-              type=click.Path(resolve_path=True, file_okay=False),
-              help="Output dir (default: .)")
-def cli(out, data):
-    """ For given descriptor table download SRA data & call peaks
+def file_path_type(dir=False, exists=True, ext=None):
+    def inner(string):
+        msg = None
+        if exists and not os.path.exists(string):
+            msg = "File not exists: " + string
+        elif not dir and not os.path.isfile(string):
+            msg = "File expected, by was: " + string
+        elif dir and (os.path.exists(string) and not os.path.isdir(string)):
+            msg = "Dir expected, by was: " + string
+        elif ext and not string.lower().endswith(".{}".format(ext)):
+            msg = "File *.{} expected, by was: {}".format(ext, string)
 
-    \b
-    VALUE is one of:
-    """
+        if msg:
+            raise argparse.ArgumentTypeError(msg)
+        return os.path.abspath(string)
+    return inner
 
+
+def cli():
+    parser = argparse.ArgumentParser(
+        description="For given descriptor table download SRA data & call peaks"
+    )
+    parser.add_argument("data",
+                        # required=True,
+                        type=file_path_type(ext="tsv"),
+                        help="Data *.tsv file")
+    parser.add_argument('-o', '--out', default='.',
+                        type=file_path_type(True, False),
+                        help="Output dir (default: .)")
+
+    args = parser.parse_args()
+
+    run(args.out, args.data)
+
+
+def run(out, data):
     #################
     # Configuration #
     #################
@@ -118,8 +138,8 @@ def cli(out, data):
         # Create summary
         process_bowtie_logs(bams_dir)
 
-    # if len(data_dirs) > 1:
-    #     run("multiqc", "-f", "-o", out, " ".join(data_dirs + bams_dirs))
+    if len(data_dirs) > 1:
+        run("multiqc", "-f", "-o", out, " ".join(data_dirs + bams_dirs))
 
 
     # XXX: doesn't work for some reason, "filter by -f66" returns nothing
