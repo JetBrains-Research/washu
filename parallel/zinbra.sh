@@ -56,14 +56,14 @@ if [ -f "${INPUT}" ]; then
     java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} -c ${INPUT} \
         --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --bed ${ID}_peaks.bed \
         --output ${OUTPUT_DIR} \
-        --parallelism=4
+        --threads=4
 
 else
     echo "${FILE}: no control file"
     java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} \
         --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --bed ${ID}_peaks.bed \
         --output ${OUTPUT_DIR} \
-        --parallelism=4
+        --threads=4
 fi
 
 module load bedtools2
