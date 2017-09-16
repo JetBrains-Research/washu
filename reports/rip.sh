@@ -16,6 +16,14 @@ PILEUP_BED=${NAME}_pileup.bed
 
 PEAKS_FILE=$2
 RIP_FILE=${PEAKS_FILE}_rip.csv
+
+# If we already have rip file, do not recalculate
+if [[ -f ${RIP_FILE} ]]; then
+    echo "${RIP_FILE}"
+    cat ${RIP_FILE}
+    exit 0
+fi
+
 PEAKS_FILE_SORTED=${PEAKS_FILE}.sorted
 INTERSECT_BED=${PEAKS_FILE}.intersect.bed
 
