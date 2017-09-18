@@ -81,7 +81,7 @@ if [ ! -d $DIFFBIND ]; then
     run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N diffbind_${NAME}
-#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=32gb
+#PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=64gb
 #PBS -j oe
 #PBS -o ${NAME}_diffbind.log
 # This is necessary because qsub default working dir is user home
