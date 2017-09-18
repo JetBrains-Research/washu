@@ -21,7 +21,7 @@ require_or_install <- function(..., bioc = FALSE) {
     }
 }
 
-require_or_install("DiffBind")
+require_or_install("DiffBind", bioc = TRUE)
 require_or_install("ggplot2")
 require_or_install("stringr")
 
