@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # TODO: Encode pipeline suggest using bowtie1 + SPP aligner for TF data
+# TODO: table 'folder' value not used
 
 import sys
 
@@ -25,10 +26,10 @@ def cli():
 
     args = parser.parse_args()
 
-    run(args.out, args.data)
+    run_pipeline(args.out, args.data)
 
 
-def run(out, data):
+def run_pipeline(out, data):
     #################
     # Configuration #
     #################
