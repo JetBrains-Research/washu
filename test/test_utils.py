@@ -103,7 +103,7 @@ wait_complete $TASKS
 
     # Check expected stdout result
     assert out.replace(tmp_dir, ".") == "bash ./foo.sh\n" + "\n".join(
-        [str(i) for i in range(1, 101)]) + "\nWaiting for tasks...\n" + "Done.\n" + "hello" + "word" + "foo" + "bar"
+        [str(i) for i in range(1, 101)]) + "\nWaiting for tasks...\n" + "Done.\n"
 
     # Check that files and logs created successfully
     for i in range(1, 101):
