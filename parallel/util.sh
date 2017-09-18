@@ -3,31 +3,20 @@
 
 # MOCK for module command
 type module &>/dev/null || module() { echo "[mock] module $@"; }
-HEADER='#This file was generated as QSUB MOCK\ntype module &>/dev/null || module() { echo "[mock] module $@"; }\n'
 
 # CHPC (qsub) mock replacement
-which qsub &>/dev/null || {
-    qsub()
+if which qsub &>/dev/null; then
+    # Use function to get rid of command substitution.
+    # Command substitution doesn't work well with parallel execution.
+    run_parallel()
     {
         # LOAD args to $CMD
+        CMD=""
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
-        # MacOS cannot handle XXXX template with ".sh" suffix, also --suffix
-        # option not available in BSD mktemp, so let's do some hack
-        QSUB_FILE_PREFIX=$(mktemp "${TMPDIR:-/tmp/}qsub.XXXXXXXXXXXX")
-        QSUB_FILE="${QSUB_FILE_PREFIX}.sh"
-        rm ${QSUB_FILE_PREFIX}
-
-        printf "$HEADER" > $QSUB_FILE
-        echo "$CMD" >> $QSUB_FILE
-        LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
-        echo "Running TASK: ${QSUB_FILE} LOG: $LOG" 1>&2
-        # Redirect both stderr and stdout to LOG file, don't use output, since we use [run_parallel]
-        bash $QSUB_FILE &> "$LOG"
-        QSUB_ID=""
+        # Return through global variable here, because we can't use command substitution.
+        QSUB_ID=$(qsub <<< "$CMD")
     }
-}
 
-if which qsub &>/dev/null; then
     # Small procedure to wait until all the tasks are finished on the qsub cluster
     # Example of usage: wait_complete $TASKS, where $TASKS is a task ids returned by qsub.
     wait_complete()
@@ -46,26 +35,29 @@ if which qsub &>/dev/null; then
             fi
             echo
         done
-        echo "Done."
+        echo "Done. Waiting for tasks"
     }
-
-    # Use function to get rid of command substitution.
-    # Command substitution not works well with parallel execution.
-    run_parallel()
+else
+    # Local qsub emulation
+    qsub()
     {
         # LOAD args to $CMD
         CMD=""
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
 
-        # Return through global variable here, because we can't use command substitution.
-        QSUB_ID=$(qsub <<< "$CMD")
-    }
-else
-    wait_complete()
-    {
-        echo "Waiting for tasks..."
-        wait
-        echo "Done."
+        # MacOS cannot handle XXXX template with ".sh" suffix, also --suffix
+        # option not available in BSD mktemp, so let's do some hack
+        QSUB_FILE_PREFIX=$(mktemp "${TMPDIR:-/tmp/}qsub.XXXXXXXXXXXX")
+        QSUB_FILE="${QSUB_FILE_PREFIX}.sh"
+        rm ${QSUB_FILE_PREFIX}
+
+        echo "#This file was generated as QSUB MOCK" > $QSUB_FILE
+        echo 'type module &>/dev/null || module() { echo "[mock] module $@"; }' >> $QSUB_FILE
+        echo "$CMD" >> $QSUB_FILE
+        LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
+        >&2 echo "LOCAL running TASK: ${QSUB_FILE} LOG: $LOG"
+        # Redirect both stderr and stdout to LOG file, don't use output, since we use [run_parallel]
+        bash $QSUB_FILE &> "$LOG"
     }
 
     run_parallel()
@@ -73,21 +65,17 @@ else
         # Wait until less then 8 tasks running
         while [ $(jobs | wc -l) -ge 8 ] ; do sleep 1 ; done
 
+        # LOAD args to $CMD
         CMD=""
         while read -r line; do CMD+=$line; CMD+=$'\n'; done;
-        # MacOS cannot handle XXXX template with ".sh" suffix, also --suffix
-        # option not available in BSD mktemp, so let's do some hack
-        QSUB_FILE_PREFIX=$(mktemp "${TMPDIR:-/tmp/}qsub.XXXXXXXXXXXX")
-        QSUB_FILE="${QSUB_FILE_PREFIX}.sh"
-        rm ${QSUB_FILE_PREFIX}
+        qsub <<< "$CMD"
+    }
 
-        printf "$HEADER" > $QSUB_FILE
-        echo "$CMD" >> $QSUB_FILE
-        LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
-        echo "Running TASK: ${QSUB_FILE} LOG: $LOG" 1>&2
-        # Redirect both stderr and stdout to LOG file, don't use output, since we use [run_parallel]
-        bash $QSUB_FILE &> "$LOG" &
-        QSUB_ID="Task: ${QSUB_FILE} PID: $!"
+    wait_complete()
+    {
+        echo "LOCAL waiting for tasks..."
+        wait
+        echo "Done. LOCAL waiting for tasks"
     }
 fi
 
