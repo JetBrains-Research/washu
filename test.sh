@@ -72,4 +72,4 @@ fi
 echo
 
 # Launch all the tests
-python -m pytest test/
+python -m pytest test/ --pep8
