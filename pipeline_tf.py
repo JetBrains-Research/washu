@@ -34,8 +34,9 @@ def run_pipeline(out, data):
     # Configuration #
     #################
     genome = "hg19"
-    indexes = os.path.join("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes",
-                           genome)
+    indexes \
+        = os.path.join("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes",
+                       genome)
     chrom_sizes = os.path.join(indexes, genome + ".chrom.sizes")
     picard_tools = os.path.join("~", "picard.jar")
 

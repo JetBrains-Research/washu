@@ -26,4 +26,3 @@ def test_compare(tmp_dir, test_data, cond, expected):
 
     result_path = Path(tmp_dir) / "metabeds_{}.bed".format(cond)
     assert result_path.read_text() == expected
-

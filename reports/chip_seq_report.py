@@ -10,9 +10,10 @@ import tempfile
 help_data = """
 Usage: chip_seq_report.py [chrom.sizes] [peaks files]
 
-Script creates report folder with ChIP-seq peaks statistics:    
- counts_stat.csv - consensus table. Table contains statistics for coverage of all tracks peaks.   
- frip_table.csv  - table with FRiPs 
+Script creates report folder with ChIP-seq peaks statistics:
+ counts_stat.csv - consensus table. Table contains statistics for coverage of
+                   all tracks peaks.
+ frip_table.csv  - table with FRiPs
  length.png      - distribution of peaks length
  jaccard.csv     - jaccard statistics for all pairs of peaks
 
@@ -69,16 +70,21 @@ def count_jaccard(chrom_sizes, peaks):
                 os.system("sort -k1,1 -k2,2n {} > {}".format(p1, first_file))
                 os.system("sort -k1,1 -k2,2n {} > {}".format(p2, second_file))
 
-                output = subprocess.check_output("bedtools jaccard -g {} -a {} -b {}"
-                                                 .format(genome_sorted, first_file, second_file), shell=True)
+                output = subprocess.check_output(
+                    "bedtools jaccard -g {} -a {} -b {}".format(
+                        genome_sorted, first_file, second_file
+                    ), shell=True
+                )
                 line = output.decode().split("\n")[1]
-                result.write("{},{},{}\n".format(p1, p2, float(line.split("\t")[2])))
+                result.write("{},{},{}\n".format(p1, p2,
+                                                 float(line.split("\t")[2])))
 
     shutil.rmtree(temp_dir)
 
 
 def count_intersection(peaks):
-    union_sh = os.path.realpath(os.path.join(os.path.dirname(__file__), '../bed/union.sh'))
+    union_sh = os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                             '../bed/union.sh'))
     command = "bash {} {} >{}".format(
         union_sh, " ".join(peaks), os.path.join("report", "counts.bed"))
     os.system(command)
@@ -91,7 +97,8 @@ def count_intersection(peaks):
     s = sum(counts)
     with open(os.path.join("report", "counts_stat.csv"), "w") as result:
         for i in range(len(counts)):
-            result.write("{},{},{}\n".format(i + 1, float(counts[i]) / s, counts[i]))
+            result.write("{},{},{}\n".format(i + 1, float(counts[i]) / s,
+                                             counts[i]))
 
 
 def write_peak_length(peaks):
@@ -109,14 +116,17 @@ r_file_text = """
 require("ggplot2")
 
 dt = read.csv("peaks_length.csv")
-plt = ggplot(dt, aes(length)) + scale_x_log10() + geom_histogram(bins=40) + facet_grid(track ~ .)
+plt = ggplot(dt, aes(length)) + scale_x_log10() + geom_histogram(bins=40) +\
+ facet_grid(track ~ .)
 ggsave(filename="length.png", plot=plt)
 
 consensus.df = read.table("./counts.bed", header = FALSE)
-consensus.scores = sapply(strsplit(as.character(consensus.df$V4), split = "\\\\|"), length)
+consensus.scores = sapply(strsplit(as.character(consensus.df$V4), split = \
+"\\\\|"), length)
 consensus = min(consensus.scores):max(consensus.scores)
 cons.numbers = sapply(consensus, function(x) sum(consensus.scores == x))
-plt2 = ggplot(data.frame(consensus = consensus, peaks = cumsum(cons.numbers)), aes(consensus, peaks)) +
+plt2 = ggplot(data.frame(consensus = consensus, peaks = cumsum(cons.numbers)),\
+ aes(consensus, peaks)) +
     geom_line() + ylim(0, sum(cons.numbers)) + ggtitle("Consensus by peaks")
 ggsave(filename = "./consensus.png", plot = plt2)
 

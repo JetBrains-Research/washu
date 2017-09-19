@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import os
+import getopt
+import re
 import sys
 
 #################################################################
@@ -8,27 +10,25 @@ this_file_path = os.path.realpath(__file__)
 project_root_path \
     = os.path.abspath(os.path.join(os.path.dirname(this_file_path), os.pardir))
 sys.path.insert(0, project_root_path)
-#################################################################
 
 from pipeline_utils import run_bash, move_forward
 from reports.macs2_logs import process_macs2_logs
+from bed.bedtrace import run
+
+#################################################################
 
 __author__ = 'oleg.shpynov@jetbrains.com'
-
-import getopt
-import re
-import sys
-from bed.bedtrace import run
 
 help_message = '''
 Usage:
 
 python util.py find_input <file>
-    Finds input given the file name. Heuristics: among all the files within folder find file with "input" substring and
+    Finds input given the file name. Heuristics: among all the files within\
+     folder find file with "input" substring and
     most common subsequence with initial file.
-    
+
 python util.py macs_species <genome>
-    Converts UCSC genome name to MACS. 
+    Converts UCSC genome name to MACS.
 
 python util.py effective_genome_fraction <genome> <chrom.sizes.path>
     Computes effective genome size, required for SICER.
@@ -42,7 +42,8 @@ def usage():
 def lcs(x, y):
     """
     Finds longest common subsequence
-    Code adopted from https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_subsequence#Python
+    Code adopted from https://en.wikibooks.org/wiki/Algorithm_Implementation/
+    Strings/Longest_common_subsequence#Python
     """
     m = len(x)
     n = len(y)
@@ -110,7 +111,8 @@ def effective_genome_fraction(genome, chrom_sizes_path):
     dm: 1.2e8"""
     chrom_length = int(run([['cat', chrom_sizes_path],
                             ['grep', '-v', 'chr_'],
-                            ['awk', '{ L+=$2 } END { print L }']])[0].decode('utf-8').strip())
+                            ['awk', '{ L+=$2 } END { print L }']
+                            ])[0].decode('utf-8').strip())
     if genome.startswith('mm'):
         size = 1.87e9
     elif genome.startswith('hg'):

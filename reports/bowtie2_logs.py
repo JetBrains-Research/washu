@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-__author__ = 'oleg.shpynov@jetbrains.com'
-
 import getopt
 import sys
 import pandas as pd
 import os
 import re
 
+__author__ = 'oleg.shpynov@jetbrains.com'
 help_message = 'Script to process bowtie2 logs summary.'
 
 
@@ -24,7 +23,8 @@ BOWTIE2_ALIGNED_MULTIPLE_TIMES = ' aligned >1 times'
 def report(folder):
     """Process bowtie2 logs processed by batch task"""
     print('Processing bowtie2 logs', folder)
-    df = pd.DataFrame(columns=['sample', 'reads', 'aligned', 'not_aligned', 'supressed'])
+    df = pd.DataFrame(columns=['sample', 'reads', 'aligned', 'not_aligned',
+                               'supressed'])
     for dirpath, dirs, files in os.walk(folder):
         for f in files:
             if 'bowtie2' not in f or not re.search('.log$', f):
@@ -40,9 +40,11 @@ def report(folder):
                     if re.search(BOWTIE2_ALIGNED, line):
                         aligned = re.sub(BOWTIE2_ALIGNED, '', line).strip()
                     if re.search(BOWTIE2_FAILED_TO_ALIGN, line):
-                        failed_to_align = re.sub(BOWTIE2_FAILED_TO_ALIGN, '', line).strip()
+                        failed_to_align \
+                            = re.sub(BOWTIE2_FAILED_TO_ALIGN, '', line).strip()
                     if re.search(BOWTIE2_ALIGNED_MULTIPLE_TIMES, line):
-                        supressed = re.sub(BOWTIE2_ALIGNED_MULTIPLE_TIMES, '', line).strip()
+                        supressed = re.sub(BOWTIE2_ALIGNED_MULTIPLE_TIMES,
+                                           '', line).strip()
             df.loc[len(df)] = (f, reads, aligned, failed_to_align, supressed)
     return df.sort_values(by=['sample'])
 
