@@ -56,7 +56,7 @@ RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
 # Create module command alias
 COPY ./scripts/module.sh /opt/
 COPY ./scripts/qsub.sh /opt/
-RUN ln -s /opt/qsub.sh /usr/bin/qsub
+# RUN ln -s /opt/qsub.sh /usr/bin/qsub
 # We need this for "which module" command
 RUN ln -s /bin/echo /usr/bin/module
 RUN echo "module() { source /opt/module.sh $@; }" >>/root/.bashrc && \
