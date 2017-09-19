@@ -11,9 +11,9 @@ project_root_path \
     = os.path.abspath(os.path.join(os.path.dirname(this_file_path), os.pardir))
 sys.path.insert(0, project_root_path)
 
-from pipeline_utils import run_bash, move_forward
-from reports.macs2_logs import process_macs2_logs
-from bed.bedtrace import run
+from pipeline_utils import run_bash, move_forward  # nopep8
+from reports.macs2_logs import process_macs2_logs  # nopep8
+from bed.bedtrace import run   # nopep8
 
 #################################################################
 

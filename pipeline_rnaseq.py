@@ -2,12 +2,17 @@
 from pipeline_utils import *
 import argparse
 
-parser = argparse.ArgumentParser(description='RNA-seq data pipeline for WashU cluster')
-parser.add_argument('path_to_directory', action=WritableDirectory, type=str,
-                    help='Path to directory with data to run pipeline')
-parser.add_argument('read_files', metavar='name read1 read2', type=str, nargs='+',
-                    help='reads files to be processed in format: name read1 read2 [name read1 read2 ...]\n'
-                         'read files must be absolute paths to read files')
+parser = argparse.ArgumentParser(
+    description='RNA-seq data pipeline for WashU cluster'
+)
+parser.add_argument(
+    'path_to_directory', action=WritableDirectory, type=str,
+    help='Path to directory with data to run pipeline')
+parser.add_argument(
+    'read_files', metavar='name read1 read2', type=str, nargs='+',
+    help='reads files to be processed in format: name read1 read2 [name read1 '
+         'read2 ...]\n'
+         'read files must be absolute paths to read files')
 args = parser.parse_args()
 
 # Configuration

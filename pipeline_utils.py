@@ -1,5 +1,6 @@
 import os
 import os.path
+from os.path import abspath, realpath, dirname
 import argparse
 import subprocess
 import itertools
@@ -7,17 +8,21 @@ import shutil
 
 from glob import glob
 
-PROJECT_ROOT_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__))))
+PROJECT_ROOT_PATH = abspath(os.path.join(dirname(realpath(__file__))))
 
 
 class WritableDirectory(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         if not os.path.isdir(values):
-            raise argparse.ArgumentTypeError("{0} is not a valid path".format(values))
+            raise argparse.ArgumentTypeError(
+                "{0} is not a valid path".format(values)
+            )
         if os.access(values, os.R_OK + os.W_OK):
             setattr(namespace, self.dest, values)
         else:
-            raise argparse.ArgumentTypeError("{0} is not a writable directory".format(values))
+            raise argparse.ArgumentTypeError(
+                "{0} is not a writable directory".format(values)
+            )
 
 
 def run_bash(script, *params):

@@ -89,11 +89,11 @@ TASKS=""
 for i in $(seq 1 100); do
     echo $i
     run_parallel << SCRIPT
-#It is necessary to include LOG here because run_parallel use it as out/err     
-#PBS -o {}/file_$i.log 
+#It is necessary to include LOG here because run_parallel use it as out/err
+#PBS -o {}/file_$i.log
 echo $i > {}/file_$i.txt
 SCRIPT
-    TASKS="$TASKS $QSUB_ID"    
+    TASKS="$TASKS $QSUB_ID"
 done
 wait_complete $TASKS
 """.format(PROJECT_ROOT_PATH, tmp_dir, tmp_dir))
@@ -103,7 +103,8 @@ wait_complete $TASKS
 
     # Check expected stdout result
     assert out.replace(tmp_dir, ".") == "bash ./foo.sh\n" + "\n".join(
-        [str(i) for i in range(1, 101)]) + "\nLOCAL waiting for tasks...\n" + "Done. LOCAL waiting for tasks\n"
+        [str(i) for i in range(1, 101)]
+    ) + "\nLOCAL waiting for tasks...\nDone. LOCAL waiting for tasks\n"
 
     # Check that files and logs created successfully
     for i in range(1, 101):

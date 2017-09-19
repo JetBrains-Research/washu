@@ -10,7 +10,8 @@ Usage:
   * Launch pipeline, and wait for "Done" message
 
 Conventions:
-This pipeline uses folder naming as a steps, i.e. next step appends _suffix for the working folder,
+This pipeline uses folder naming as a steps, i.e. next step appends _suffix \
+for the working folder,
 stores results in new folder and change working folder if necessary.
 
 Steps:
@@ -53,7 +54,8 @@ args = parser.parse_args()
 #################
 WORK_DIR = args.path_to_directory
 GENOME = "hg19"
-INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes", GENOME)
+INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes",
+                       GENOME)
 CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
 PICARD_TOOLS = os.path.join("~", "picard.jar")
 
@@ -69,7 +71,8 @@ run_bash("parallel/fastqc.sh", WORK_DIR)
 # Batch Bowtie with trim 5 first base pairs
 run_bash("parallel/index_bowtie.sh", GENOME, INDEXES)
 run_bash("parallel/bowtie.sh", GENOME, INDEXES, "5", WORK_DIR)
-WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bams", ["*.bam", "*bowtie*.log"])
+WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bams",
+                        ["*.bam", "*bowtie*.log"])
 # multiqc is able to process Bowtie report
 subprocess.run("multiqc " + WORK_DIR, shell=True)
 # Create summary
@@ -77,42 +80,53 @@ process_bowtie_logs(WORK_DIR)
 
 # Batch BigWig visualization
 run_bash("parallel/bigwig.sh", CHROM_SIZES, WORK_DIR)
-move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
+move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"],
+             copy_only=True)
 
 # Batch RPKM visualization
 run_bash("parallel/rpkm.sh", WORK_DIR)
-move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"], copy_only=True)
+move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"],
+             copy_only=True)
 
 # Remove duplicates
 run_bash("parallel/remove_duplicates.sh", PICARD_TOOLS, WORK_DIR)
-move_forward(WORK_DIR, WORK_DIR + "_unique", ["*_unique*", "*_metrics.txt", "*duplicates.log"], copy_only=True)
+move_forward(WORK_DIR, WORK_DIR + "_unique",
+             ["*_unique*", "*_metrics.txt", "*duplicates.log"],
+             copy_only=True)
 
 # Batch subsampling to 15mln reads
 # READS = 15
 # run_bash("subsample.sh", WORK_DIR, str(READS))
-# WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_{}mln".format(READS), ["*{}*".format(READS)])
+# WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_{}mln".format(READS),
+#                         ["*{}*".format(READS)])
 #
 # # Batch BigWig visualization
 # run_bash("bigwig.sh", CHROM_SIZES, WORK_DIR)
-# move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"], copy_only=True)
+# move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"],
+#              copy_only=True)
 
 ########################
 # Peak calling section #
 ########################
 
 # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1 in example
-folder = run_macs2(GENOME, CHROM_SIZES, 'broad_0.1', '--broad', '--broad-cutoff', 0.1,
+folder = run_macs2(GENOME, CHROM_SIZES,
+                   'broad_0.1', '--broad', '--broad-cutoff', 0.1,
                    work_dirs=[WORK_DIR])[0]
 # Bedtools is necessary for filter script
 subprocess.run('module load bedtools2', shell=True)
-run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.05'), 0.1, 0.05, WORK_DIR)
-run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.01'), 0.1, 0.01, WORK_DIR)
+run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.05'),
+         0.1, 0.05, WORK_DIR)
+run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.01'),
+         0.1, 0.01, WORK_DIR)
 
 # MACS2 Regular peak calling (https://github.com/taoliu/MACS) Q=0.01 in example
 folder = run_macs2(GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1,
                    work_dirs=[WORK_DIR])[0]
-run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.05'), 0.1, 0.05, WORK_DIR)
-run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.01'), 0.1, 0.01, WORK_DIR)
+run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.05'),
+         0.1, 0.05, WORK_DIR)
+run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.01'),
+         0.1, 0.01, WORK_DIR)
 
 # MACS1.4 P=1e-5 is default
 # P = 0.00001
@@ -121,7 +135,8 @@ run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.01'), 0.1, 
 # print(FOLDER)
 # if not os.path.exists(FOLDER):
 #     run_bash("macs14.sh", WORK_DIR, GENOME, str(P))
-#     move_forward(WORK_DIR, FOLDER, ['*{}*'.format(NAME), '*rip.csv'], copy_only=True)
+#     move_forward(WORK_DIR, FOLDER, ['*{}*'.format(NAME), '*rip.csv'],
+#                  copy_only=True)
 #     process_macs2_logs(FOLDER)
 
 # Batch RSEG
@@ -129,7 +144,9 @@ rseg_suffix = '_rseg'
 if not os.path.exists(WORK_DIR + rseg_suffix):
     run_bash("parallel/rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
     move_forward(WORK_DIR, WORK_DIR + rseg_suffix,
-                 ['*domains*', '*rseg*', '*.bam.bed', 'deadzones*', '*_chrom_sizes.bed', '*rip.csv'], copy_only=True)
+                 ['*domains*', '*rseg*', '*.bam.bed', 'deadzones*',
+                  '*_chrom_sizes.bed', '*rip.csv'],
+                 copy_only=True)
     process_peaks_logs(WORK_DIR + rseg_suffix)
 
 # Batch SICER
@@ -137,5 +154,7 @@ Q = 0.01
 sicer_suffix = '_sicer_{}'.format(Q)
 if not os.path.exists(WORK_DIR + sicer_suffix):
     run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, str(Q))
-    move_forward(WORK_DIR, WORK_DIR + sicer_suffix, ['*sicer.log', '*-removed.bed', '*-W*', '*rip.csv'], copy_only=True)
+    move_forward(WORK_DIR, WORK_DIR + sicer_suffix,
+                 ['*sicer.log', '*-removed.bed', '*-W*', '*rip.csv'],
+                 copy_only=True)
     process_peaks_logs(WORK_DIR + sicer_suffix)

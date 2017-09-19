@@ -20,10 +20,12 @@ def process(coverage_path, sizes_path, id):
     print('PROCESSING ID', id)
     print('COVERAGE PATH', coverage_path)
     print('SIZES PATH', sizes_path)
-    coverage = pd.read_csv(coverage_path, sep='\t', names=('chr', 'start', 'end', 'coverage', 'name'))
+    coverage = pd.read_csv(coverage_path, sep='\t',
+                           names=('chr', 'start', 'end', 'coverage', 'name'))
 
     print('Processing raw signal')
-    pivot = pd.pivot_table(coverage, index=['chr', 'start', 'end'], columns='name', values='coverage', fill_value=0)
+    pivot = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
+                           columns='name', values='coverage', fill_value=0)
     raw_signal = '{}_raw.tsv'.format(id)
     pivot.to_csv(raw_signal, sep='\t')
     print('Saved raw signal to {}'.format(raw_signal))
@@ -48,7 +50,8 @@ def process(coverage_path, sizes_path, id):
 
     print('Sizes peaks RPM: {}'.format(sizes_peaks_pm))
     coverage['rpm_peaks'] = coverage['coverage'] / coverage['sizes_peaks_pm']
-    save_signal(id, coverage, 'rpm_peaks', 'Saved normalized reads by RPM reads in peaks signal')
+    save_signal(id, coverage, 'rpm_peaks',
+                'Saved normalized reads by RPM reads in peaks signal')
 
     print('Processing RPKM normalization')
     coverage['rpk'] = (coverage['end'] - coverage['start']) / 1000.0
@@ -57,7 +60,8 @@ def process(coverage_path, sizes_path, id):
 
     print('Processing RPKM_PEAKS normalization')
     coverage['rpkm_peaks'] = coverage['rpm_peaks'] / coverage['rpk']
-    save_signal(id, coverage, 'rpkm_peaks', 'Saved normalized reads by RPKM reads in peaks signal')
+    save_signal(id, coverage, 'rpkm_peaks',
+                'Saved normalized reads by RPKM reads in peaks signal')
 
 
 def save_signal(id, coverage, signal_type, msg):
