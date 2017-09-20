@@ -43,6 +43,9 @@ if [ -z "${EFFECTIVE_GENOME_FRACTION}" ]; then
     exit 1
 fi
 
+TMP_DIR=~/tmp
+mkdir -p "${TMP_DIR}"
+
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
@@ -80,12 +83,12 @@ cd ${WORK_DIR}
 
 # SICER works with BED only
 export LC_ALL=C
-bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${INPUT_FOLDER}/${FILE_BED}
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T ${TMP_DIR} > ${INPUT_FOLDER}/${FILE_BED}
 
 # Use tmp files to reduced async problems with same input parallel processing
 echo "${FILE}: control file found: ${INPUT}"
 if [ ! -f ${INPUT_BED} ]; then
-    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${INPUT_FOLDER}/${INPUT_BED}
+    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T ${TMP_DIR} > ${INPUT_FOLDER}/${INPUT_BED}
     # Check that we are the first in async calls, not 100% safe
     if [ ! -f ${INPUT_BED} ]; then
         cp ${INPUT_FOLDER}/${INPUT_BED} ${WORK_DIR}

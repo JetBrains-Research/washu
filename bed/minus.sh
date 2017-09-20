@@ -15,13 +15,16 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
+TMP_DIR=~/tmp
+mkdir -p "${TMP_DIR}"
+
 FILE1=$1
 FILE2=$2
 # Folder with source file be read-only, use temp file
 SORTED1=$(mktemp)
 SORTED2=$(mktemp)
-sort -k1,1 -k2,2n $FILE1 > ${SORTED1}
-sort -k1,1 -k2,2n $FILE2 > ${SORTED2}
+sort -k1,1 -k2,2n -T ${TMP_DIR} $FILE1 > ${SORTED1}
+sort -k1,1 -k2,2n -T ${TMP_DIR} $FILE2 > ${SORTED2}
 
 bedtools multiinter -i ${SORTED1} ${SORTED2} |\
  bedtools merge -c 6,7 -o max |\
@@ -30,7 +33,7 @@ bedtools multiinter -i ${SORTED1} ${SORTED2} |\
  # NOTE[shpynov] use awk instead of grep, because grep has some problems with tab characters.
  awk "/\t1\t0/" |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
- sort -k1,1 -k2,2n
+ sort -k1,1 -k2,2n -T ${TMP_DIR}
 
 # Cleanup
 rm ${SORTED1} ${SORTED2}

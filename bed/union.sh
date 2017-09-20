@@ -25,8 +25,11 @@ do
     N=$((N+1))
 done
 
+TMP_DIR=~/tmp
+mkdir -p "${TMP_DIR}"
+
 SORTED=$(mktemp)
-sort -k1,1 -k2,2n ${TMP} > ${SORTED}
+sort -k1,1 -k2,2n -T ${TMP_DIR} ${TMP} > ${SORTED}
 bedtools merge -i ${SORTED} -c 4 -o distinct -delim "|"
 
 # Cleanup

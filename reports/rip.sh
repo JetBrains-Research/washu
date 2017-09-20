@@ -27,12 +27,15 @@ fi
 PEAKS_FILE_SORTED=${PEAKS_FILE}.sorted
 INTERSECT_BED=${PEAKS_FILE}.intersect.bed
 
+TMP_DIR=~/tmp
+mkdir -p "${TMP_DIR}"
+
 # To pileup bed
-bedtools bamtobed -i ${FILE} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n > ${PILEUP_BED}
+bedtools bamtobed -i ${FILE} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMP_DIR} > ${PILEUP_BED}
 READS=$(wc -l ${PILEUP_BED} | awk '{print $1}')
 
 # To sorted bed
-cat ${PEAKS_FILE} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n > ${PEAKS_FILE_SORTED}
+cat ${PEAKS_FILE} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMP_DIR} > ${PEAKS_FILE_SORTED}
 PEAKS=$(wc -l ${PEAKS_FILE_SORTED} | awk '{print $1}')
 
 # Compute number of reads, intersecting with peaks

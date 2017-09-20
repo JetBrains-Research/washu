@@ -16,10 +16,13 @@ fi
 BDG_FILE=$1
 CHROM_SIZES=$2
 
+TMP_DIR=~/tmp
+mkdir -p "${TMP_DIR}"
+
 # Remove coordinates outside chromosome sizes
 bedtools slop -i ${BDG_FILE} -g ${CHROM_SIZES} -b 0 | bedClip stdin ${CHROM_SIZES} ${BDG_FILE}.clip
 # Fix problem with not sorted clip file
-LC_COLLATE=C sort -k1,1 -k2,2n ${BDG_FILE}.clip > ${BDG_FILE}.sort.clip
+LC_COLLATE=C sort -k1,1 -k2,2n -T ${TMP_DIR} ${BDG_FILE}.clip > ${BDG_FILE}.sort.clip
 bedGraphToBigWig ${BDG_FILE}.sort.clip ${CHROM_SIZES} ${BDG_FILE/bdg/bw}
 # Cleanup
 rm -f ${BDG_FILE}*.clip

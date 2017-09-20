@@ -19,6 +19,9 @@ BED_1=$1
 BED_2=$2
 OUT_PREFIX=$3
 
+TMP_DIR=~/tmp
+mkdir -p "${TMP_DIR}"
+
 # FILTERED data on chromosomes only, i.e. no contig
 FILES=( $BED_1 $BED_2 )
 SORTED_FILES=()
@@ -26,7 +29,7 @@ for F in ${FILES[@]}
 do
     # Folder with source file be read-only, use temp file
     SORTED=$(mktemp)
-    sort -k1,1 -k2,2n $F > ${SORTED}
+    sort -k1,1 -k2,2n -T ${TMP_DIR} $F > ${SORTED}
     SORTED_FILES+=("$SORTED")
 done
 
@@ -40,15 +43,15 @@ bedtools merge -c 6,7 -o max |\
 
 cat ${TMP_FILE} | awk '/\t1\t0$/' |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
- sort -k1,1 -k2,2n > ${OUT_PREFIX}_cond1.bed
+ sort -k1,1 -k2,2n -T ${TMP_DIR} > ${OUT_PREFIX}_cond1.bed
 
 cat ${TMP_FILE} | awk '/\t0\t1$/' |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
- sort -k1,1 -k2,2n > ${OUT_PREFIX}_cond2.bed
+ sort -k1,1 -k2,2n -T ${TMP_DIR} > ${OUT_PREFIX}_cond2.bed
 
 cat ${TMP_FILE} | awk '/\t1\t1$/' |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
- sort -k1,1 -k2,2n > ${OUT_PREFIX}_common.bed
+ sort -k1,1 -k2,2n -T ${TMP_DIR} > ${OUT_PREFIX}_common.bed
 
 # Cleanup
 rm ${TMP_FILE}

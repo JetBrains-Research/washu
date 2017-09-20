@@ -39,6 +39,9 @@ if [[ ! -f ${DEADZONES} ]]; then
     wget "http://smithlabresearch.org/data/${DEADZONES}"
 fi
 
+TMP_DIR=~/tmp
+mkdir -p "${TMP_DIR}"
+
 TASKS=""
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
@@ -68,13 +71,14 @@ cd ${WORK_DIR}
 # RSEG works with BED only
 # See sort instructions at http://smithlabresearch.org/wp-content/uploads/rseg_manual_v0.4.4.pdf
 export LC_ALL=C
-bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${TMP_FOLDER}/${FILE_BED}
+
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T ${TMP_DIR} > ${TMP_FOLDER}/${FILE_BED}
 
 if [ -f "${INPUT}" ]; then
     # Use tmp files to reduced async problems with same input parallel processing
     echo "${FILE}: control file found: ${INPUT}"
     if [ ! -f ${INPUT_BED} ]; then
-        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 > ${TMP_FOLDER}/${INPUT_BED}
+        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T ${TMP_DIR} > ${TMP_FOLDER}/${INPUT_BED}
         # Check that we are the first in async calls, not 100% safe
         if [ ! -f ${INPUT_BED} ]; then
             cp ${TMP_FOLDER}/${INPUT_BED} ${WORK_DIR}

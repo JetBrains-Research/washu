@@ -19,6 +19,9 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 >&2 echo "metapeaks: $@"
 
+TMP_DIR=~/tmp
+mkdir -p "${TMP_DIR}"
+
 SORTED_FILES=()
 PEAKS=""
 T=$'\t'
@@ -31,7 +34,7 @@ do
     PEAKS="$PEAKS$T$NPEAKS"
     # Folder with source file be read-only, use temp file
     SORTED=$(mktemp)
-    sort -k1,1 -k2,2n $F > ${SORTED}
+    sort -k1,1 -k2,2n -T ${TMP_DIR} $F > ${SORTED}
     SORTED_FILES+=("$SORTED")
 done
 
