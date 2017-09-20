@@ -30,7 +30,12 @@ def collect_rip_records(folder):
                     # skip header
                     rip_file.readline()
 
-                    r = RipRecord(*rip_file.readline().split(','))
+                    line = rip_file.readline().strip()
+                    records = line.split(',')
+                    assert len(records) == 5,\
+                        "Expected 5 comma separated values, but was {}: " \
+                        "line = '{}', file = {}".format(len(records), line, f)
+                    r = RipRecord(*records)
 
                     # fix values if not set
                     rips.append(r._replace(peaks=(int(r.peaks or 0)),
