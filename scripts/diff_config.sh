@@ -37,20 +37,13 @@ PEAKS_DIR="$(expand_path "${PEAKS_DIR}")"
 READS_FILES=$(find "${READS_DIR}" -name "*.bam" | grep -v input | sort)
 echo "SampleID,Tissue,Factor,Condition,Replicate,bamReads,ControlID,bamControl,Peaks,PeakCaller"
 for R in ${READS_FILES}; do
-    >&2 echo "READ: $R"
     FNAME=${R##*/}
     # Assume name pattern .D[0-9]+_.*
     SAMPLE=${FNAME%%_*.bam}
-    >&2 echo "SAMPLE: $SAMPLE"
     CONDITION=${SAMPLE%%D*}
-    >&2 echo "CONDITION: $CONDITION"
     REPLICATE=${SAMPLE##*D}
-    >&2 echo "REPLICATE: $REPLICATE"
     READ=$(ls ${READS_DIR}/${SAMPLE}*.bam)
-    >&2 echo "READ: $READ"
     INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${R})
-    >&2 echo "INPUT: $INPUT"
     PEAK=$(ls ${PEAKS_DIR}/${SAMPLE}*.xls)
-    >&2 echo "PEAK: $PEAK"
     echo "$SAMPLE,CD14,Age,$CONDITION,$REPLICATE,$READ,${CONDITION}_input,$INPUT,${PEAK},macs"
 done
