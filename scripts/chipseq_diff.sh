@@ -231,22 +231,45 @@ maxTrainingSeqNum 10000
 minFoldChange    3
 minRegionDist    1000
 CONFIG
-
     >&2 echo "Processing Y Tags"
     SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
     echo "SHIFT Y: $SHIFT_Y"
-    for F in ${READS_Y}; do
-        >&2 echo $F
-        bash ${SCRIPT_DIR}/scripts/bam2tags.sh $F $SHIFT_Y >> Y_tags.tag
-    done
+    run_parallel << SCRIPT
+#!/bin/sh
+#PBS -N Y_bam2tags
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=8gb
+#PBS -j oe
+#PBS -o ${CHIPDIFF}/Y_bams2tags.log
+# This is necessary because qsub default working dir is user home
+cd ${CHIPDIFF}
+module load bedtools2
+for F in ${READS_Y}; do
+    >&2 echo \$F
+    bash ${SCRIPT_DIR}/scripts/bam2tags.sh \$F $SHIFT_Y >> Y_tags.tag
+done
+SCRIPT
+    QSUB_ID1=$QSUB_ID
 
     >&2 echo "Processing O Tags"
     SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
     echo "SHIFT O: $SHIFT_O"
-    for F in ${READS_O}; do
-        >&2 echo $F
-        bash ${SCRIPT_DIR}/scripts/bam2tags.sh $F $SHIFT_O >> O_tags.tag
-    done
+    run_parallel << SCRIPT
+#!/bin/sh
+#PBS -N O_bam2tags
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=8gb
+#PBS -j oe
+#PBS -o ${CHIPDIFF}/O_bams2tags.log
+# This is necessary because qsub default working dir is user home
+cd ${CHIPDIFF}
+module load bedtools2
+for F in ${READS_O}; do
+    >&2 echo \$F
+    bash ${SCRIPT_DIR}/scripts/bam2tags.sh \$F $SHIFT_O >> O_tags.tag
+done
+SCRIPT
+    QSUB_ID2=$QSUB_ID
+
+    wait_complete "$QSUB_ID1 $QSUB_ID2"
 
     run_parallel << SCRIPT
 #!/bin/sh
@@ -290,15 +313,42 @@ if [ ! -d $MANORM ]; then
     cp ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.broadPeak ${MANORM}/O_peaks.bed
 
     >&2 echo "Processing Y Pooled Reads"
-    for F in ${READS_Y}; do
-        >&2 echo $F
-        bedtools bamtobed -i $F | awk -v OFS='\t' '{print $1,$2,$3,$6}' >> Y_reads.bed
-    done
+    run_parallel << SCRIPT
+#!/bin/sh
+#PBS -N Y_bam2reads
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=8gb
+#PBS -j oe
+#PBS -o ${MANORM}/Y_bams2reads.log
+# This is necessary because qsub default working dir is user home
+cd ${MANORM}
+
+module load bedtools2
+for F in ${READS_Y}; do
+    >&2 echo \$F
+    bash ${SCRIPT_DIR}/scripts/bam2tags.sh \$F >> Y_reads.tag
+done
+SCRIPT
+    QSUB_ID1=$QSUB_ID
+
     >&2 echo "Processing O Pooled Reads"
-    for F in ${READS_O}; do
-        >&2 echo $F
-        bedtools bamtobed -i $F | awk -v OFS='\t' '{print $1,$2,$3,$6}' >> O_reads.bed
-    done
+    run_parallel << SCRIPT
+#!/bin/sh
+#PBS -N O_bam2reads
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=8gb
+#PBS -j oe
+#PBS -o ${MANORM}/O_bams2reads.log
+# This is necessary because qsub default working dir is user home
+cd ${MANORM}
+
+module load bedtools2
+for F in ${READS_O}; do
+    >&2 echo \$F
+    bash ${SCRIPT_DIR}/scripts/bam2tags.sh \$F >> O_reads.tag
+done
+SCRIPT
+    QSUB_ID2=$QSUB_ID
+
+    wait_complete "$QSUB_ID1 $QSUB_ID2"
 
     run_parallel << SCRIPT
 #!/bin/sh
