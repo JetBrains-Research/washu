@@ -16,8 +16,8 @@ which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://gith
 # Load technical stuff
 source $(dirname $0)/../parallel/util.sh
 SCRIPT_DIR="$(project_root_dir)"
-TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
-mkdir -p "${TMP_DIR}"
+TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMPDIR}"
 
 ################################################################################
 # Configuration start ##########################################################
@@ -46,24 +46,24 @@ echo "Q $Q"
 BROAD_CUTOFF=0.1
 echo "BROAD_CUTOFF $BROAD_CUTOFF"
 
-READS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $6 }' $DIFFBIND_CSV | sort  -T ${TMP_DIR} --unique | tr '\n' ' ')
+READS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $6 }' $DIFFBIND_CSV | sort  -T ${TMPDIR} --unique | tr '\n' ' ')
 echo "READS Y"
 echo "$READS_Y"
-READS_O=$(awk -v FS=',' '{ if ($4 == "O") print $6 }' $DIFFBIND_CSV | sort -T ${TMP_DIR} --unique | tr '\n' ' ')
+READS_O=$(awk -v FS=',' '{ if ($4 == "O") print $6 }' $DIFFBIND_CSV | sort -T ${TMPDIR} --unique | tr '\n' ' ')
 echo "READS O"
 echo "$READS_O"
 
-INPUTS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $8 }' $DIFFBIND_CSV | sort -T ${TMP_DIR} --unique | tr '\n' ' ')
+INPUTS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $8 }' $DIFFBIND_CSV | sort -T ${TMPDIR} --unique | tr '\n' ' ')
 echo "INPUT_READS Y"
 echo "$INPUTS_Y"
-INPUTS_O=$(awk -v FS=',' '{ if ($4 == "O") print $8 }' $DIFFBIND_CSV | sort -T ${TMP_DIR} --unique | tr '\n' ' ')
+INPUTS_O=$(awk -v FS=',' '{ if ($4 == "O") print $8 }' $DIFFBIND_CSV | sort -T ${TMPDIR} --unique | tr '\n' ' ')
 echo "INPUT_READS O"
 echo "$INPUTS_O"
 
-PEAKS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort -T ${TMP_DIR} --unique | tr '\n' ' ')
+PEAKS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort -T ${TMPDIR} --unique | tr '\n' ' ')
 echo "PEAKS Y"
 echo "$PEAKS_Y"
-PEAKS_O=$(awk -v FS=',' '{ if ($4 == "O") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort -T ${TMP_DIR} --unique | tr '\n' ' ')
+PEAKS_O=$(awk -v FS=',' '{ if ($4 == "O") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort -T ${TMPDIR} --unique | tr '\n' ' ')
 echo "PEAKS O"
 echo "$PEAKS_O"
 
@@ -95,9 +95,9 @@ SCRIPT
 
     # Filter out old and young donors and sort by Q-Value
     cat ${NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
-        awk -v OFS='\t' '$9 > 0 {print $0}' | sort -T ${TMP_DIR} -k10,10g > ${NAME}_cond1.bed
+        awk -v OFS='\t' '$9 > 0 {print $0}' | sort -T ${TMPDIR} -k10,10g > ${NAME}_cond1.bed
     cat ${NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
-        awk -v OFS='\t' '$9 < 0 {print $0}' | sort -T ${TMP_DIR} -k10,10g > ${NAME}_cond2.bed
+        awk -v OFS='\t' '$9 < 0 {print $0}' | sort -T ${TMPDIR} -k10,10g > ${NAME}_cond2.bed
     # Save ${NAME} results to simple BED3 format
     awk -v OFS='\t' '{print $1,$2,$3}' ${NAME}_cond1.bed > ${NAME}_cond1.bed3
     awk -v OFS='\t' '{print $1,$2,$3}' ${NAME}_cond2.bed > ${NAME}_cond2.bed3
@@ -280,11 +280,11 @@ SCRIPT
 cd ${CHIPDIFF}
 
 source "${SCRIPT_DIR}/parallel/util.sh"
-TMP_DIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
+TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
 
 # Inplace sort
-sort -T \${TMP_DIR} -k1,1 -k2,2n -o Y_tags.tag Y_tags.tag
-sort -T \${TMP_DIR} -k1,1 -k2,2n -o O_tags.tag O_tags.tag
+sort -T \${TMPDIR} -k1,1 -k2,2n -o Y_tags.tag Y_tags.tag
+sort -T \${TMPDIR} -k1,1 -k2,2n -o O_tags.tag O_tags.tag
 
 ChIPDiff Y_tags.tag O_tags.tag $CHROM_SIZES config.txt ${NAME}_3
 cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="-" {print \$1,\$2,\$3}' > ${NAME}_3_cond1.bed
@@ -362,14 +362,14 @@ SCRIPT
 cd ${MANORM}
 
 source "${SCRIPT_DIR}/parallel/util.sh"
-TMP_DIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
+TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
 
 # Sort inplace
-sort -T \${TMP_DIR} -k1,1 -k2,2n -o Y_reads.bed Y_reads.bed
-sort -T \${TMP_DIR} -k1,1 -k2,2n -o Y_peaks.bed Y_peaks.bed
+sort -T \${TMPDIR} -k1,1 -k2,2n -o Y_reads.bed Y_reads.bed
+sort -T \${TMPDIR} -k1,1 -k2,2n -o Y_peaks.bed Y_peaks.bed
 
-sort -T \${TMP_DIR} -k1,1 -k2,2n -o O_reads.bed O_reads.bed
-sort -T \${TMP_DIR} -k1,1 -k2,2n -o O_peaks.bed O_peaks.bed
+sort -T \${TMPDIR} -k1,1 -k2,2n -o O_reads.bed O_reads.bed
+sort -T \${TMPDIR} -k1,1 -k2,2n -o O_peaks.bed O_peaks.bed
 
 # Load required modules
 module load R

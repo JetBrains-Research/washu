@@ -21,13 +21,13 @@ SHIFT=$(($INSERT_SIZE / 2))
 
 # Optional load technical stuff:
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
-TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
-mkdir -p "${TMP_DIR}"
+TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMPDIR}"
 
 bedtools bamtobed -i ${BAM} |\
     awk -v OFS='\t' -v S=${SHIFT} \
     '{if ($6 != "-") {print($1, $2+S, $2+S+1)} else {if ($3-S>=1) {print($1, $3-S, $3-S+1)}}}' |\
-    sort -k1,1 -k3,3n -k2,2n -T ${TMP_DIR}
+    sort -k1,1 -k3,3n -k2,2n -T ${TMPDIR}
 
 # TMP dir cleanup:
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir

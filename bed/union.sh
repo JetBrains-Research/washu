@@ -19,8 +19,8 @@ fi
 
 # Optional load technical stuff:
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
-TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
-mkdir -p "${TMP_DIR}"
+TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMPDIR}"
 
 N=1
 for FILE in $@
@@ -31,7 +31,7 @@ do
 done
 
 SORTED=$(mktemp)
-sort -k1,1 -k2,2n -T ${TMP_DIR} ${TMP} > ${SORTED}
+sort -k1,1 -k2,2n -T ${TMPDIR} ${TMP} > ${SORTED}
 bedtools merge -i ${SORTED} -c 4 -o distinct -delim "|"
 
 # Cleanup

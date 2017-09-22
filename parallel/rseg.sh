@@ -70,15 +70,15 @@ cd ${WORK_DIR}
 export LC_ALL=C
 
 source "${SCRIPT_DIR}/parallel/util.sh"
-TMP_DIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
+TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
 
-bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMP_DIR} > ${TMP_FOLDER}/${FILE_BED}
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${TMP_FOLDER}/${FILE_BED}
 
 if [ -f "${INPUT}" ]; then
     # Use tmp files to reduced async problems with same input parallel processing
     echo "${FILE}: control file found: ${INPUT}"
     if [ ! -f ${INPUT_BED} ]; then
-        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMP_DIR} > ${TMP_FOLDER}/${INPUT_BED}
+        bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${TMP_FOLDER}/${INPUT_BED}
         # Check that we are the first in async calls, not 100% safe
         if [ ! -f ${INPUT_BED} ]; then
             cp ${TMP_FOLDER}/${INPUT_BED} ${WORK_DIR}

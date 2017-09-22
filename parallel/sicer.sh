@@ -76,19 +76,19 @@ do :
 module load bedtools2
 
 source "${SCRIPT_DIR}/parallel/util.sh"
-TMP_DIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
+TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 
 # SICER works with BED only
 export LC_ALL=C
-bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMP_DIR} > ${INPUT_FOLDER}/${FILE_BED}
+bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${INPUT_FOLDER}/${FILE_BED}
 
 # Use tmp files to reduced async problems with same input parallel processing
 echo "${FILE}: control file found: ${INPUT}"
 if [ ! -f ${INPUT_BED} ]; then
-    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMP_DIR} > ${INPUT_FOLDER}/${INPUT_BED}
+    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${INPUT_FOLDER}/${INPUT_BED}
     # Check that we are the first in async calls, not 100% safe
     if [ ! -f ${INPUT_BED} ]; then
         cp ${INPUT_FOLDER}/${INPUT_BED} ${WORK_DIR}

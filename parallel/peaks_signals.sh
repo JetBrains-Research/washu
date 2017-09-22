@@ -34,12 +34,12 @@ echo "RESULTS FOLDER: $COVERAGES_FOLDER"
 PROCESSED=""
 TASKS=""
 
-TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
-mkdir -p "${TMP_DIR}"
+TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMPDIR}"
 
 REGIONS3=${COVERAGES_FOLDER}/${ID}.bed3
 echo "Create BED3 regions file ${REGIONS3}"
-cat ${REGIONS} | awk -v OFS='\t' '{print($1,$2,$3)}' | sort -k1,1 -k3,3n -k2,2n -T ${TMP_DIR} > ${REGIONS3}
+cat ${REGIONS} | awk -v OFS='\t' '{print($1,$2,$3)}' | sort -k1,1 -k3,3n -k2,2n -T ${TMPDIR} > ${REGIONS3}
 
 cd ${WORK_DIR}
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | sort)

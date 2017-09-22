@@ -21,8 +21,8 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 
 # Optional load technical stuff:
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
-TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
-mkdir -p "${TMP_DIR}"
+TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMPDIR}"
 
 SORTED_FILES=()
 PEAKS=""
@@ -36,7 +36,7 @@ do
     PEAKS="$PEAKS$T$NPEAKS"
     # Folder with source file be read-only, use temp file
     SORTED=$(mktemp)
-    sort -k1,1 -k2,2n -T ${TMP_DIR} $F > ${SORTED}
+    sort -k1,1 -k2,2n -T ${TMPDIR} $F > ${SORTED}
     SORTED_FILES+=("$SORTED")
 done
 

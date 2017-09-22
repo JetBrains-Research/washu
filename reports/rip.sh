@@ -28,15 +28,15 @@ PEAKS_FILE_SORTED=${PEAKS_FILE}.sorted
 INTERSECT_BED=${PEAKS_FILE}.intersect.bed
 
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
-TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
-mkdir -p "${TMP_DIR}"
+TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMPDIR}"
 
 # To pileup bed
-bedtools bamtobed -i ${FILE} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMP_DIR} > ${PILEUP_BED}
+bedtools bamtobed -i ${FILE} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMPDIR} > ${PILEUP_BED}
 READS=$(wc -l ${PILEUP_BED} | awk '{print $1}')
 
 # To sorted bed
-cat ${PEAKS_FILE} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMP_DIR} > ${PEAKS_FILE_SORTED}
+cat ${PEAKS_FILE} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMPDIR} > ${PEAKS_FILE_SORTED}
 PEAKS=$(wc -l ${PEAKS_FILE_SORTED} | awk '{print $1}')
 
 # Compute number of reads, intersecting with peaks

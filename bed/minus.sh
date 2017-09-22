@@ -17,16 +17,16 @@ fi
 
 # Optional load technical stuff:
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
-TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
-mkdir -p "${TMP_DIR}"
+TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMPDIR}"
 
 FILE1=$1
 FILE2=$2
 # Folder with source file be read-only, use temp file
 SORTED1=$(mktemp)
 SORTED2=$(mktemp)
-sort -k1,1 -k2,2n -T ${TMP_DIR} $FILE1 > ${SORTED1}
-sort -k1,1 -k2,2n -T ${TMP_DIR} $FILE2 > ${SORTED2}
+sort -k1,1 -k2,2n -T ${TMPDIR} $FILE1 > ${SORTED1}
+sort -k1,1 -k2,2n -T ${TMPDIR} $FILE2 > ${SORTED2}
 
 bedtools multiinter -i ${SORTED1} ${SORTED2} |\
  bedtools merge -c 6,7 -o max |\
@@ -35,7 +35,7 @@ bedtools multiinter -i ${SORTED1} ${SORTED2} |\
  # NOTE[shpynov] use awk instead of grep, because grep has some problems with tab characters.
  awk "/\t1\t0/" |\
  awk '{for (i=1; i<=3; i++) printf("%s%s", $i, (i==3) ? "\n" : "\t")}' |\
- sort -k1,1 -k2,2n -T ${TMP_DIR}
+ sort -k1,1 -k2,2n -T ${TMPDIR}
 
 # Cleanup
 rm ${SORTED1} ${SORTED2}
