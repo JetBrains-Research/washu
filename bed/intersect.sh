@@ -12,7 +12,7 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 
 # Optional load technical stuff:
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
-TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
 SORTED_FILES=()

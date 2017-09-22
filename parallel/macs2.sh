@@ -49,7 +49,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
 #PBS -o ${WORK_DIR}/${ID}_macs2.log
 
 source "${SCRIPT_DIR}/parallel/util.sh"
-TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
+export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}

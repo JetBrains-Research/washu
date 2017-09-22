@@ -34,7 +34,7 @@ echo "RESULTS FOLDER: $COVERAGES_FOLDER"
 PROCESSED=""
 TASKS=""
 
-TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
 REGIONS3=${COVERAGES_FOLDER}/${ID}.bed3
