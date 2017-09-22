@@ -129,3 +129,20 @@ check_logs()
         echo "$ERRORS"
     fi
 }
+
+job_tmp_dir() {
+    if [ -z "${PBS_JOBID}" ]; then
+      TMP_DIR="~/tmp/job$$";
+    else
+      TMP_DIR="/tmp/$PBS_JOBID";
+    fi
+    mkdir -p "${TMP_DIR}"
+
+    echo "${TMP_DIR}"
+}
+
+clean_job_tmp_dir() {
+    if [ -z "${PBS_JOBID}" ]; then
+      rm -rf "$(job_tmp_dir)"
+    fi
+}

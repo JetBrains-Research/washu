@@ -17,6 +17,11 @@ if [ -f ${TMP} ]; then
     rm $TMP
 fi
 
+# Optional load technical stuff:
+source $(dirname $0)/../parallel/util.sh 2> /dev/null
+TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMP_DIR}"
+
 N=1
 for FILE in $@
 do
@@ -25,12 +30,10 @@ do
     N=$((N+1))
 done
 
-TMP_DIR=~/tmp
-mkdir -p "${TMP_DIR}"
-
 SORTED=$(mktemp)
 sort -k1,1 -k2,2n -T ${TMP_DIR} ${TMP} > ${SORTED}
 bedtools merge -i ${SORTED} -c 4 -o distinct -delim "|"
 
 # Cleanup
 rm ${TMP} ${SORTED}
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir

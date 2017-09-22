@@ -16,6 +16,8 @@ which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://gith
 # Load technical stuff
 source $(dirname $0)/../parallel/util.sh
 SCRIPT_DIR="$(project_root_dir)"
+TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMP_DIR}"
 
 ################################################################################
 # Configuration start ##########################################################
@@ -30,9 +32,6 @@ fi
 NAME=$1
 CHROM_SIZES=$2
 DIFFBIND_CSV=$3
-
-TMP_DIR=~/tmp
-mkdir -p "${TMP_DIR}"
 
 FOLDER=$(pwd)
 echo "FOLDER"
@@ -280,9 +279,12 @@ SCRIPT
 # This is necessary because qsub default working dir is user home
 cd ${CHIPDIFF}
 
+source "${SCRIPT_DIR}/parallel/util.sh"
+TMP_DIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
+
 # Inplace sort
-sort -T ${TMP_DIR} -k1,1 -k2,2n -o Y_tags.tag Y_tags.tag
-sort -T ${TMP_DIR} -k1,1 -k2,2n -o O_tags.tag O_tags.tag
+sort -T \${TMP_DIR} -k1,1 -k2,2n -o Y_tags.tag Y_tags.tag
+sort -T \${TMP_DIR} -k1,1 -k2,2n -o O_tags.tag O_tags.tag
 
 ChIPDiff Y_tags.tag O_tags.tag $CHROM_SIZES config.txt ${NAME}_3
 cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="-" {print \$1,\$2,\$3}' > ${NAME}_3_cond1.bed
@@ -359,12 +361,15 @@ SCRIPT
 # This is necessary because qsub default working dir is user home
 cd ${MANORM}
 
-# Sort inplace
-sort -T ${TMP_DIR} -k1,1 -k2,2n -o Y_reads.bed Y_reads.bed
-sort -T ${TMP_DIR} -k1,1 -k2,2n -o Y_peaks.bed Y_peaks.bed
+source "${SCRIPT_DIR}/parallel/util.sh"
+TMP_DIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
 
-sort -T ${TMP_DIR} -k1,1 -k2,2n -o O_reads.bed O_reads.bed
-sort -T ${TMP_DIR} -k1,1 -k2,2n -o O_peaks.bed O_peaks.bed
+# Sort inplace
+sort -T \${TMP_DIR} -k1,1 -k2,2n -o Y_reads.bed Y_reads.bed
+sort -T \${TMP_DIR} -k1,1 -k2,2n -o Y_peaks.bed Y_peaks.bed
+
+sort -T \${TMP_DIR} -k1,1 -k2,2n -o O_reads.bed O_reads.bed
+sort -T \${TMP_DIR} -k1,1 -k2,2n -o O_peaks.bed O_peaks.bed
 
 # Load required modules
 module load R
@@ -374,3 +379,6 @@ bash ${MANORM}/MAnorm.sh Y_peaks.bed O_peaks.bed Y_reads.bed O_reads.bed $SHIFT_
 SCRIPT
     wait_complete $QSUB_ID
 fi
+
+# TMP dir cleanup:
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir

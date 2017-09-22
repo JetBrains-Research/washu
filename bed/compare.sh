@@ -19,7 +19,9 @@ BED_1=$1
 BED_2=$2
 OUT_PREFIX=$3
 
-TMP_DIR=~/tmp
+# Optional load technical stuff:
+source $(dirname $0)/../parallel/util.sh 2> /dev/null
+TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMP_DIR}"
 
 # FILTERED data on chromosomes only, i.e. no contig
@@ -56,3 +58,4 @@ cat ${TMP_FILE} | awk '/\t1\t1$/' |\
 # Cleanup
 rm ${TMP_FILE}
 rm ${SORTED_FILES[@]}
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir

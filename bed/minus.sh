@@ -15,7 +15,9 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
-TMP_DIR=~/tmp
+# Optional load technical stuff:
+source $(dirname $0)/../parallel/util.sh 2> /dev/null
+TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMP_DIR}"
 
 FILE1=$1
@@ -37,3 +39,4 @@ bedtools multiinter -i ${SORTED1} ${SORTED2} |\
 
 # Cleanup
 rm ${SORTED1} ${SORTED2}
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir

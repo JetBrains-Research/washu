@@ -19,7 +19,9 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 >&2 echo "metapeaks: $@"
 
-TMP_DIR=~/tmp
+# Optional load technical stuff:
+source $(dirname $0)/../parallel/util.sh 2> /dev/null
+TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMP_DIR}"
 
 SORTED_FILES=()
@@ -61,3 +63,4 @@ echo
 
 # Cleanup
 rm ${SORTED_FILES[@]}
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir

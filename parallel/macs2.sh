@@ -48,6 +48,9 @@ for WORK_DIR in ${WORK_DIRS}; do :
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}_macs2.log
 
+source "${SCRIPT_DIR}/parallel/util.sh"
+TMP_DIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
+
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
 # Required for signal track processing
@@ -55,7 +58,7 @@ module load bedtools2
 
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
-    macs2 callpeak -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
+    macs2 callpeak --tempdir \${TMP_DIR} -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
 
     if [ -f "${CHROM_SIZES}" ]; then
         echo "Create fold enrichment signal track for ${FILE} and ${INPUT}"
@@ -64,7 +67,7 @@ if [ -f "${INPUT}" ]; then
     fi
 else
     echo "${FILE}: no control file"
-    macs2 callpeak -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
+    macs2 callpeak --tempdir \${TMP_DIR} -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
 fi
 
 # Compute Reads in Peaks

@@ -17,7 +17,4 @@ fi
 
 BAM=$1
 
-TMP_DIR=~/tmp
-mkdir -p "${TMP_DIR}"
-
 bedtools bamtobed -i $BAM | awk -v OFS='\t' '{print $1,$2,$3,$6}'

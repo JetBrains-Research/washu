@@ -34,7 +34,7 @@ echo "RESULTS FOLDER: $COVERAGES_FOLDER"
 PROCESSED=""
 TASKS=""
 
-TMP_DIR=~/tmp
+TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMP_DIR}"
 
 REGIONS3=${COVERAGES_FOLDER}/${ID}.bed3
@@ -114,5 +114,8 @@ python ${SCRIPT_DIR}/scripts/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage
 SCRIPT
 wait_complete $QSUB_ID
 check_logs
+
+# TMP dir cleanup:
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 
 >&2 echo "Done. Batch peaks_signals $@"

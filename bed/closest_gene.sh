@@ -14,7 +14,9 @@ fi
 FILE=$1
 GENES=$2
 
-TMP_DIR=~/tmp
+# Optional load technical stuff:
+source $(dirname $0)/../parallel/util.sh 2> /dev/null
+TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMP_DIR}"
 
 if [[ ! $GENES == *.bed ]]; then
@@ -33,3 +35,6 @@ COLS=$(cat $FILE | grep "chr" | head -1 | awk '{ print NF }')
 bedtools closest -a ${FILE} -b ${GENES} -d |\
     awk -v COLS=$COLS '{out=$1; for (i=2;i<=COLS;i++) {out=out"\t"$i}; out=out"\t"$(COLS+4)"\t"$(COLS+5); print out; }'|\
     sort -k1,1 -k3,3n -k2,2n -T ${TMP_DIR}
+
+# TMP dir cleanup:
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir

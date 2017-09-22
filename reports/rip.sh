@@ -27,7 +27,8 @@ fi
 PEAKS_FILE_SORTED=${PEAKS_FILE}.sorted
 INTERSECT_BED=${PEAKS_FILE}.intersect.bed
 
-TMP_DIR=~/tmp
+source $(dirname $0)/../parallel/util.sh 2> /dev/null
+TMP_DIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMP_DIR}"
 
 # To pileup bed
@@ -51,3 +52,4 @@ cat ${RIP_FILE}
 
 # Cleanup
 rm ${PILEUP_BED} ${PEAKS_FILE_SORTED} ${INTERSECT_BED}
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
