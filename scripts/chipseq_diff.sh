@@ -280,7 +280,7 @@ SCRIPT
 cd ${CHIPDIFF}
 
 source "${SCRIPT_DIR}/parallel/util.sh"
-export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo ~/tmp)
+export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 # Inplace sort
 sort -T \${TMPDIR} -k1,1 -k2,2n -o Y_tags.tag Y_tags.tag
@@ -362,7 +362,7 @@ SCRIPT
 cd ${MANORM}
 
 source "${SCRIPT_DIR}/parallel/util.sh"
-export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo ~/tmp)
+export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo \"/tmp\")
 
 # Sort inplace
 sort -T \${TMPDIR} -k1,1 -k2,2n -o Y_reads.bed Y_reads.bed
