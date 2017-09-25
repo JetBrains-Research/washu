@@ -30,7 +30,7 @@ def run_pipeline():
     call(["python", "/washu/pipeline_chipseq.py", "/root/H3K4me3"])
 
 
-def check_files_not_empty(pattern, expected_files_number=None):
+def check_files(pattern, expected_files_number=None):
     files = glob.glob(pattern)
 
     msg = "Expected {} files for pattern '{}'".format(expected_files_number,
@@ -41,32 +41,39 @@ def check_files_not_empty(pattern, expected_files_number=None):
         assert os.path.getsize(f) > 0, "File {} is empty".format(f)
 
 
-@pytest.mark.parametrize("ptn,expected_file_num", [
-    ("./H3K4me3_bams/*.bam", 5),
-    ("./H3K4me3_bams/*.bai", 5),
-    ("./H3K4me3_bams_macs2_broad_0.01/*.broadPeak", 4),
-    ("./H3K4me3_bams_macs2_broad_0.01/*.broadPeak_rip.csv", 4),
-    ("./H3K4me3_bams_macs2_broad_0.05/*.broadPeak", 4),
-    ("./H3K4me3_bams_macs2_broad_0.05/*.broadPeak_rip.csv", 4),
-    ("./H3K4me3_bams_macs2_broad_0.1/*.broadPeak", 4),
-    ("./H3K4me3_bams_macs2_broad_0.1/*.broadPeak_rip.csv", 4),
-    ("./H3K4me3_bams_macs2_q0.01/*.narrowPeak", 4),
-    ("./H3K4me3_bams_macs2_q0.01/*.narrowPeak_rip.csv", 4),
-    ("./H3K4me3_bams_macs2_q0.05/*.narrowPeak", 4),
-    ("./H3K4me3_bams_macs2_q0.05/*.narrowPeak_rip.csv", 4),
-    ("./H3K4me3_bams_macs2_q0.1/*.narrowPeak", 4),
-    ("./H3K4me3_bams_macs2_q0.1/*.narrowPeak_rip.csv", 4),
-    ("./H3K4me3_bams_rpkms/*.bw", 5),
-    ("./H3K4me3_bams_rseg/*_domains.bed", 4),
-    ("./H3K4me3_bams_sicer_0.01/*-island.bed", 4),
-    ("./H3K4me3_bams_sicer_0.01/*-island.bed_rip.csv", 4),
-    ("./H3K4me3_bams_unique/*.bam", 5)
-])
-def check_files(ptn, expected_file_num):
+def check_all():
     os.chdir(os.path.expanduser("~"))
-    check_files_not_empty(ptn, expected_file_num)
+    check_files("./H3K4me3_bams/*.bam", 5)
+    check_files("./H3K4me3_bams/*.bai", 5)
+
+    check_files("./H3K4me3_bams_macs2_broad_0.01/*.broadPeak", 4)
+    check_files("./H3K4me3_bams_macs2_broad_0.01/*.broadPeak_rip.csv", 4)
+
+    check_files("./H3K4me3_bams_macs2_broad_0.05/*.broadPeak", 4)
+    check_files("./H3K4me3_bams_macs2_broad_0.05/*.broadPeak_rip.csv", 4)
+
+    check_files("./H3K4me3_bams_macs2_broad_0.1/*.broadPeak", 4)
+    check_files("./H3K4me3_bams_macs2_broad_0.1/*.broadPeak_rip.csv", 4)
+
+    check_files("./H3K4me3_bams_macs2_q0.01/*.narrowPeak", 4)
+    check_files("./H3K4me3_bams_macs2_q0.01/*.narrowPeak_rip.csv", 4)
+
+    check_files("./H3K4me3_bams_macs2_q0.05/*.narrowPeak", 4)
+    check_files("./H3K4me3_bams_macs2_q0.05/*.narrowPeak_rip.csv", 4)
+
+    check_files("./H3K4me3_bams_macs2_q0.1/*.narrowPeak", 4)
+    check_files("./H3K4me3_bams_macs2_q0.1/*.narrowPeak_rip.csv", 4)
+
+    check_files("./H3K4me3_bams_rpkms/*.bw", 5)
+
+    check_files("./H3K4me3_bams_rseg/*_domains.bed", 4)
+
+    check_files("./H3K4me3_bams_sicer_0.01/*-island.bed", 4)
+    check_files("./H3K4me3_bams_sicer_0.01/*-island.bed_rip.csv", 4)
+
+    check_files("./H3K4me3_bams_unique/*.bam", 5)
 
 
 def test_pipeline():
     run_pipeline()
-    check_files()
+    check_all()
