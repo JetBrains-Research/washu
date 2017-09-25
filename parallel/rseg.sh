@@ -70,7 +70,7 @@ cd ${WORK_DIR}
 export LC_ALL=C
 
 source "${SCRIPT_DIR}/parallel/util.sh"
-export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "~/tmp")
+export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo ~/tmp)
 
 bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${TMP_FOLDER}/${FILE_BED}
 

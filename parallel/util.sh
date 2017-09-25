@@ -132,7 +132,7 @@ check_logs()
 
 job_tmp_dir() {
     if [ -z "${PBS_JOBID}" ]; then
-      TMP_DIR="~/tmp/job$$";
+      TMP_DIR=~/tmp/job$$;
     else
       TMP_DIR="/tmp/$PBS_JOBID";
     fi
