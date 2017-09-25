@@ -38,6 +38,12 @@ for WORK_DIR in ${WORK_DIRS}; do :
         FILE_NAME=${FILE##*/}
         NAME=${FILE_NAME%%.fast*} # file name without extension
 
+        RESULTS_DIR="${WORK_DIR}/fastqc"
+        if [ -d "${RESULTS_DIR}" ]; then
+            echo "   [Skipped] ${RESULTS_DIR} was already processed"
+            continue
+        fi
+
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
@@ -56,18 +62,18 @@ cd ${WORK_DIR}
 # Options:
 # -o --outdir     Create all output files in the specified output directory.
 #                     Please note that this directory must exist as the program
-#                     will not create it.  If this option is not set then the
+#                     will not create it. If this option is not set then the
 #                      output file for each sequence file is created in the same
 #                     directory as the sequence file which was processed.
 
 # TODO: maybe use a couple of threads instead one?
 # -t --threads    Specifies the number of files which can be processed
-#                     simultaneously.  Each thread will be allocated 250MB of
+#                     simultaneously. Each thread will be allocated 250MB of
 #                     memory so you shouldn't run more threads than your
 #                     available memory will cope with, and not more than
 #                      6 threads on a 32 bit machine
 #
-fastqc --outdir "${WORK_DIR}/fastqc" "${FILE}"
+fastqc --outdir "${RESULTS_DIR}" "${FILE}"
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
