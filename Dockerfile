@@ -22,11 +22,11 @@ RUN sed -i 's#python#python2#g' /opt/SICER_V1.1/SICER/SICER.sh
 RUN chmod a+x /opt/SICER_V1.1/SICER/SICER.sh
 ENV PATH $PATH:/opt/SICER_V1.1/SICER
 
-RUN conda create -n samtools --channel bioconda samtools
-RUN conda create -n bedtools --channel bioconda bedtools
-RUN conda create -n r --channel r r
-RUN conda create -n bowtie --channel bioconda bowtie
-RUN conda create -n java --channel bioconda fastqc
+RUN conda create -q -n samtools --channel bioconda samtools
+RUN conda create -q -n bedtools --channel bioconda bedtools
+RUN conda create -q -n r --channel r r
+RUN conda create -q -n bowtie --channel bioconda bowtie
+RUN conda create -q -n java --channel bioconda fastqc
 
 # Install env py3.5
 RUN conda create -n py3.5 python=3.5
