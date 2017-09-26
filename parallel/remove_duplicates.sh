@@ -11,6 +11,12 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
+if [ -n $IS_TEST ]; then
+    export JVM_MEM="-Xmx2g"
+else
+    export JVM_MEM="-Xmx12g"
+fi
+
 # Check Picard tools
 PICARD_TOOLS_JAR=$1
 if [[ ! -f "${PICARD_TOOLS_JAR}" ]]; then
@@ -44,7 +50,7 @@ module load java
 
 # PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
 # There is insufficient memory for the Java Runtime Environment to continue.
-export _JAVA_OPTIONS="-Xmx12g"
+export _JAVA_OPTIONS="${JVM_MEM}"
 source "${SCRIPT_DIR}/parallel/util.sh"
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 

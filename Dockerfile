@@ -58,8 +58,5 @@ COPY ./scripts/module.sh /opt/
 COPY ./scripts/qsub.sh /opt/
 # RUN ln -s /opt/qsub.sh /usr/bin/qsub
 # We need this for "which module" command
-RUN ln -s /bin/echo /usr/bin/module
-RUN echo "module() { source /opt/module.sh $@; }" >>/root/.bashrc && \
-    echo "export -f module" >>/root/.bashrc
 
 ENV PATH=$PATH:/opt/conda/envs/bedtools/bin/

@@ -73,5 +73,12 @@ if [ ! -f ~/zinbra.jar ]; then
 fi
 echo
 
+ln -s /bin/echo /usr/bin/module
+
+module() { source /opt/module.sh $@; }
+export -f module
+
+export IS_TEST=TRUE
+
 # Launch all the tests
 python -m pytest test/ --pep8
