@@ -48,8 +48,11 @@ def run_pipeline(out, data):
 
     gsm2srxs = {}
     for r in data_table.itertuples():
-        gsm2srxs[r.input] = r.input_srx.split(";")
         gsm2srxs[r.signal] = r.signal_srx.split(";")
+
+        # if input defined
+        if r.input != "-":
+            gsm2srxs[r.input] = r.input_srx.split(";")
     gsm_to_process = sorted(gsm2srxs.keys())
     print(gsm_to_process)
 
@@ -146,20 +149,22 @@ def run_pipeline(out, data):
         bams_dirs_for_peakcalling = []
         for r in data_table.itertuples():
             gsmid_signal = r.signal
-            gsmid_input = r.input
-
             bams_dir_signal = os.path.join(out, gsmid_signal + "_bams")
-            bams_dir_input = os.path.join(out, gsmid_input + "_bams")
 
-            # Find all input *.bam and *.bam.bai
-            input_files = [f for f in os.listdir(bams_dir_input)
-                           if f.endswith(".bam") or f.endswith(".bam.bai")]
-            # Create symlink to link
-            for f in input_files:
-                f_link = os.path.join(bams_dir_signal,
-                                      f.replace(".bam", "_input.bam"))
-                run("ln", "-s", os.path.join(bams_dir_input, f), f_link)
-                files_to_cleanup.append(f_link)
+            # if input defined
+            if r.input != "-":
+                gsmid_input = r.input
+                bams_dir_input = os.path.join(out, gsmid_input + "_bams")
+
+                # Find all input *.bam and *.bam.bai
+                input_files = [f for f in os.listdir(bams_dir_input)
+                               if f.endswith(".bam") or f.endswith(".bam.bai")]
+                # Create symlink to link
+                for f in input_files:
+                    f_link = os.path.join(bams_dir_signal,
+                                          f.replace(".bam", "_input.bam"))
+                    run("ln", "-s", os.path.join(bams_dir_input, f), f_link)
+                    files_to_cleanup.append(f_link)
 
             bams_dirs_for_peakcalling.append(bams_dir_signal)
 
