@@ -32,7 +32,12 @@ def cli():
 def filter_peaks(result_dirs: list[tuple[str, str]],
                  reads_dir: str, peaks_dir: str,
                  q_src: float, q_target: float):
+
     result_dir = peaks_dir.replace(str(q_src), str(q_target))
+    if os.path.exists(result_dir):
+        print('Already processed: ', result_dir)
+        return
+
     run_bash('bed/macs2_filter_fdr.sh', peaks_dir, result_dir,
              q_src, q_target, reads_dir)
     result_dirs.append((result_dir, reads_dir))
@@ -193,10 +198,10 @@ def run_pipeline(out, data):
 
         for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
                                               peaks_dirs):
-            fpeaks_and_bams_dirs.append(filter_peaks(bams_dir_signal, peaks_dir,
-                                                    0.1, 0.05))
-            fpeaks_and_bams_dirs.append(filter_peaks(bams_dir_signal, peaks_dir,
-                                                    0.1, 0.01))
+            filter_peaks(fpeaks_and_bams_dirs, bams_dir_signal, peaks_dir,
+                         0.1, 0.05)
+            filter_peaks(fpeaks_and_bams_dirs, bams_dir_signal, peaks_dir,
+                         0.1, 0.01)
 
         # # MACS2 Regular peak calling (https://github.com/taoliu/MACS)
         # # Q=0.01 in example
