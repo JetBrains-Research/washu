@@ -29,6 +29,15 @@ def cli():
     run_pipeline(args.out, args.data)
 
 
+def filter_peaks(result_dirs: list[tuple[str, str]],
+                 reads_dir: str, peaks_dir: str,
+                 q_src: float, q_target: float):
+    result_dir = peaks_dir.replace(str(q_src), str(q_target))
+    run_bash('bed/macs2_filter_fdr.sh', peaks_dir, result_dir,
+             q_src, q_target, reads_dir)
+    result_dirs.append((result_dir, reads_dir))
+
+
 def run_pipeline(out, data):
     #################
     # Configuration #
@@ -174,32 +183,40 @@ def run_pipeline(out, data):
         # Bedtools is necessary for filter script
         subprocess.run('module load bedtools2', shell=True)
 
+        fpeaks_and_bams_dirs = []
+
         # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1
         #  in example
         peaks_dirs = run_macs2(genome, chrom_sizes,
                                'broad_0.1', '--broad', '--broad-cutoff', 0.1,
                                work_dirs=bams_dirs_for_peakcalling)
+
         for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
                                               peaks_dirs):
-            run_bash('bed/macs2_filter_fdr.sh', peaks_dir,
-                     peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
-                     bams_dir_signal)
-            run_bash('bed/macs2_filter_fdr.sh', peaks_dir,
-                     peaks_dir.replace('0.1', '0.01'), 0.1, 0.01,
-                     bams_dir_signal)
+            fpeaks_and_bams_dirs.append(filter_peaks(bams_dir_signal, peaks_dir,
+                                                    0.1, 0.05))
+            fpeaks_and_bams_dirs.append(filter_peaks(bams_dir_signal, peaks_dir,
+                                                    0.1, 0.01))
 
         # # MACS2 Regular peak calling (https://github.com/taoliu/MACS)
         # # Q=0.01 in example
         peaks_dirs = run_macs2(genome, chrom_sizes, 'q0.1', '-q', 0.1,
                                work_dirs=bams_dirs_for_peakcalling)
+
         for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
                                               peaks_dirs):
-            run_bash("bed/macs2_filter_fdr.sh", peaks_dir,
-                     peaks_dir.replace('0.1', '0.05'), 0.1, 0.05,
-                     bams_dir_signal)
-            run_bash("bed/macs2_filter_fdr.sh", peaks_dir,
-                     peaks_dir.replace('0.1', '0.01'), 0.1, 0.01,
-                     bams_dir_signal)
+            filter_peaks(fpeaks_and_bams_dirs, bams_dir_signal, peaks_dir,
+                         0.1, 0.05)
+            filter_peaks(fpeaks_and_bams_dirs, bams_dir_signal, peaks_dir,
+                         0.1, 0.01)
+
+        # Calc FRiPs for filtered dirs:
+        # process_dirs(bams_dirs, "_rpkms", ["*.bw", "*rpkm.log"],
+        #              lambda dirs: run_bash("parallel/rpkm.sh", *dirs))
+        run_bash('parallel/peaks_frip.sh',
+                 ",".join(list(zip(*fpeaks_and_bams_dirs))[0]),
+                 ",".join(list(zip(*fpeaks_and_bams_dirs))[1]))
+
     finally:
         for f in files_to_cleanup:
             print("Cleanup:")

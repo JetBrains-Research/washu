@@ -44,8 +44,3 @@ for F in $(ls *.*Peak | grep -v gapped); do
     cat ${F} | awk -v OFS='\t' -v NAME=${NAME} -v Q_TARGET=${Q_TARGET} -v Q_MLOG10=${Q_MLOG10} \
     'BEGIN {i=1} ($9 > Q_MLOG10) {print($1,$2,$3,sprintf("%s%s_peak_%d",NAME,Q_TARGET,i),$5,$6,$7,$8,$9,$10);i=i+1}' > ${NEWF}
 done
-
-# Compute FRIP values for adjusted peaks
-if [[ -d ${READS_FOLDER} ]]; then
-    bash ${SCRIPT_DIR}/reports/peaks_frip.sh ${OUTPUT_FOLDER} ${READS_FOLDER}
-fi

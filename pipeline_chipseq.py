@@ -108,25 +108,31 @@ move_forward(WORK_DIR, WORK_DIR + "_unique",
 ########################
 # Peak calling section #
 ########################
+# Bedtools is necessary for filter script
+subprocess.run('module load bedtools2', shell=True)
 
 # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1 in example
 folder = run_macs2(GENOME, CHROM_SIZES,
                    'broad_0.1', '--broad', '--broad-cutoff', 0.1,
                    work_dirs=[WORK_DIR])[0]
-# Bedtools is necessary for filter script
-subprocess.run('module load bedtools2', shell=True)
-run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.05'),
-         0.1, 0.05, WORK_DIR)
-run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.01'),
-         0.1, 0.01, WORK_DIR)
+peaks_folder = folder.replace('0.1', '0.05')
+run_bash('bed/macs2_filter_fdr.sh', folder, peaks_folder, 0.1, 0.05, WORK_DIR)
+run_bash('parallel/peaks_frip.sh', peaks_folder, WORK_DIR)
+
+peaks_folder = folder.replace('0.1', '0.01')
+run_bash('bed/macs2_filter_fdr.sh', folder, peaks_folder, 0.1, 0.01, WORK_DIR)
+run_bash('parallel/peaks_frip.sh', peaks_folder, WORK_DIR)
 
 # MACS2 Regular peak calling (https://github.com/taoliu/MACS) Q=0.01 in example
 folder = run_macs2(GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1,
                    work_dirs=[WORK_DIR])[0]
-run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.05'),
-         0.1, 0.05, WORK_DIR)
-run_bash('bed/macs2_filter_fdr.sh', folder, folder.replace('0.1', '0.01'),
-         0.1, 0.01, WORK_DIR)
+peaks_folder = folder.replace('0.1', '0.05')
+run_bash('bed/macs2_filter_fdr.sh', folder, peaks_folder, 0.1, 0.05, WORK_DIR)
+run_bash('parallel/peaks_frip.sh', peaks_folder, WORK_DIR)
+
+peaks_folder = folder.replace('0.1', '0.01')
+run_bash('bed/macs2_filter_fdr.sh', folder, peaks_folder, 0.1, 0.01, WORK_DIR)
+run_bash('parallel/peaks_frip.sh', peaks_folder, WORK_DIR)
 
 # MACS1.4 P=1e-5 is default
 # P = 0.00001
