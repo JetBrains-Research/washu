@@ -4,6 +4,7 @@
 # TODO: table 'folder' value not used
 
 import sys
+from typing import Tuple, List
 
 import pandas as pd
 
@@ -29,7 +30,7 @@ def cli():
     run_pipeline(args.out, args.data)
 
 
-def filter_peaks(result_dirs: list[tuple[str, str]],
+def filter_peaks(result_dirs: List[Tuple[str, str]],
                  reads_dir: str, peaks_dir: str,
                  q_src: float, q_target: float):
 
