@@ -12,20 +12,14 @@ fi
  
 READS_BAM=$1
 PEAKS_FILE=$2
-# Do not vectorize on login node:
-N_THREADS=$(if [ -z ${PBS_JOBID} ]; then echo 1; else echo 4; fi)
 
-READS_DIR=$(dirname "${READS_BAM}")
-READS_BAM_NAME=${READS_BAM##*/}
-READS_PREFIX=${READS_BAM_NAME%%.bam}
-
-PILEUP_BED=${READS_DIR}/${READS_PREFIX}_pileup.bed
+READS_PREFIX=${READS_BAM%%.bam}
+PILEUP_BED=${READS_PREFIX}_pileup.bed
 RIP_FILE=${PEAKS_FILE}_rip.csv
 
 echo "BAM_FILE: ${READS_BAM}"
 echo "PILEUP_BED: ${PILEUP_BED}"
 echo "RIP_FILE: ${RIP_FILE}"
-echo "N_THREADS: ${N_THREADS}"
 
 # If we already have rip file, do not recalculate
 if [[ -f ${RIP_FILE} ]]; then
@@ -42,15 +36,7 @@ export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/
 mkdir -p "${TMPDIR}"
 
 # To pileup bed
-cd ${READS_DIR}
-bedtools bamtobed -i ${READS_BAM} | awk -v OFS='\t' "{print \$1,\$2,\$3>\"${READS_PREFIX}.rip.\"\$1\".bed\"}"
-find ${READS_DIR} -name "${READS_PREFIX}.rip.*" | xargs -P ${N_THREADS} -I file sort -k2,2n -T . -o file.sorted file
-sort -k1,1 -m  ${READS_PREFIX}.rip.*.sorted -o ${PILEUP_BED}
-# cleanup:
-rm ${READS_PREFIX}.rip*
-# validation:
-sort -k1,1 -k2,2n -c -T . ${PILEUP_BED} || exit 1
-
+bedtools bamtobed -i ${READS_BAM} | awk -v OFS='\t' '{print $1,$2,$3}' > sort -k1,1 -k2,2n -T ${TMPDIR} -o ${PILEUP_BED}
 READS=$(wc -l ${PILEUP_BED} | awk '{print $1}')
 
 # To sorted bed
