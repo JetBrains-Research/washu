@@ -34,6 +34,15 @@ for i in ${!PEAKS_FOLDERS[*]}; do
     PEAKS_FOLDER=${PEAKS_FOLDERS[$i]}
     READS_FOLDER=${READS_FOLDERS[$i]}
 
+    if [[ ! -d ${PEAKS_FOLDER} ]]; then
+        echo "Missing folder ${PEAKS_FOLDER}"
+        exit 1
+    fi
+    if [[ ! -d ${READS_FOLDER} ]]; then
+        echo "Missing folder ${READS_FOLDER}"
+        exit 1
+    fi
+
     cd ${PEAKS_FOLDER}
     PEAKS_FOLDER_NAME=${PEAKS_FOLDER##*/}
     for F in $(ls *.*Peak | grep -v gapped); do
