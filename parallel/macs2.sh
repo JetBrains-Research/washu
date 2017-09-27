@@ -56,6 +56,7 @@ cd ${WORK_DIR}
 # Required for signal track processing
 module load bedtools2
 
+echo "Macs2 TMPDIR: \${TMPDIR}"
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
     macs2 callpeak --tempdir \${TMPDIR} -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
