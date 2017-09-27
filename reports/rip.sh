@@ -36,7 +36,20 @@ export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/
 mkdir -p "${TMPDIR}"
 
 # To pileup bed
-bedtools bamtobed -i ${READS_BAM} | awk -v OFS='\t' '{print $1,$2,$3}' > sort -k1,1 -k2,2n -T ${TMPDIR} -o ${PILEUP_BED}
+if [ ! -f ${PILEUP_BED} ]; then
+    # Safely recalc in tmpfile if not exists:
+    # - recalc in tmp file
+    # - then move to desired location
+    # This script could be launched in parallel on cluster, and *pileup.bed fill
+    # is shared among peaks filtering tasks. So as not to get inconsistent
+    # file state let's change file in atomic like way
+    tmpfile=$(mktemp $TMPDIR/pileup.XXXXXX.bed)
+    bedtools bamtobed -i ${READS_BAM} | awk -v OFS='\t' '{print $1,$2,$3}' > sort -k1,1 -k2,2n -T ${TMPDIR} -o ${tmpfile}
+    if [ ! -f ${PILEUP_BED} ]; then
+        # if still doesn't exists:
+        mv ${tmpfile} ${PILEUP_BED}
+    fi
+fi
 READS=$(wc -l ${PILEUP_BED} | awk '{print $1}')
 
 # To sorted bed
@@ -55,5 +68,5 @@ echo "${RIP_FILE}"
 cat ${RIP_FILE}
 
 # Cleanup
-rm ${PILEUP_BED} ${PEAKS_FILE_SORTED} ${INTERSECT_BED}
+rm ${PEAKS_FILE_SORTED} ${INTERSECT_BED}
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
