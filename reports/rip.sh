@@ -44,7 +44,7 @@ if [ ! -f ${PILEUP_BED} ]; then
     # is shared among peaks filtering tasks. So as not to get inconsistent
     # file state let's change file in atomic like way
     tmpfile=$(mktemp $TMPDIR/pileup.XXXXXX.bed)
-    bedtools bamtobed -i ${READS_BAM} | awk -v OFS='\t' '{print $1,$2,$3}' > sort -k1,1 -k2,2n -T ${TMPDIR} -o ${tmpfile}
+    bedtools bamtobed -i ${READS_BAM} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMPDIR} -o ${tmpfile}
     if [ ! -f ${PILEUP_BED} ]; then
         # if still doesn't exists:
         mv ${tmpfile} ${PILEUP_BED}
