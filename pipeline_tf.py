@@ -31,17 +31,17 @@ def cli():
 
 
 def filter_peaks(result_dirs: List[Tuple[str, str]],
-                 reads_dir: str, peaks_dir: str,
+                 bams_dir: str, peaks_dir: str,
                  q_src: float, q_target: float):
 
-    result_dir = peaks_dir.replace(str(q_src), str(q_target))
-    if os.path.exists(result_dir):
-        print('Already processed: ', result_dir)
+    out_dir = peaks_dir.replace(str(q_src), str(q_target))
+    if os.path.exists(out_dir):
+        print('[Peaks Filter] Already processed: ', out_dir)
         return
 
-    run_bash('bed/macs2_filter_fdr.sh', peaks_dir, result_dir,
-             q_src, q_target, reads_dir)
-    result_dirs.append((result_dir, reads_dir))
+    run_bash('bed/macs2_filter_fdr.sh', peaks_dir, out_dir,
+             q_src, q_target, bams_dir)
+    result_dirs.append((out_dir, bams_dir))
 
 
 def run_pipeline(out, data):

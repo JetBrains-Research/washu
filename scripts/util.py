@@ -149,7 +149,7 @@ Defaults for MACS2 broad peak calling:
         wd2result[wd] = result_dir
 
         if os.path.exists(result_dir):
-            print('Already processed: ', result_dir)
+            print('[Macs2] Already processed: ', result_dir)
             skipped_wd.add(wd)
 
     # Run MACS2
