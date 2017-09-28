@@ -58,6 +58,7 @@ for i in ${!PEAKS_FOLDERS[*]}; do
 #PBS -j oe
 #PBS -o ${PEAKS_FOLDER}/${F}_frip.log
 
+cd ${PEAKS_FOLDER}
 bash ${SCRIPT_DIR}/reports/rip.sh ${BAM} ${F}
 
 SCRIPT
