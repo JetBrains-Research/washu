@@ -3,6 +3,7 @@
 
 # Load technical stuff
 source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch remove_duplicates $@"
 if [ $# -lt 1 ]; then
@@ -44,7 +45,10 @@ module load java
 # PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
 # There is insufficient memory for the Java Runtime Environment to continue.
 export _JAVA_OPTIONS="-Xmx12g"
-java -jar ${PICARD_TOOLS_JAR} MarkDuplicates REMOVE_DUPLICATES=true INPUT=${FILE} OUTPUT=${UNIQUE_BAM} M=${METRICS}
+source "${SCRIPT_DIR}/parallel/util.sh"
+export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
+
+java -Djava.io.tmpdir="\${TMPDIR}" -jar ${PICARD_TOOLS_JAR} MarkDuplicates REMOVE_DUPLICATES=true INPUT=${FILE} OUTPUT=${UNIQUE_BAM} M=${METRICS}
 
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"

@@ -7,6 +7,7 @@ RRNA="/scratch/artyomov_lab_aging/indexes/hg19/hg19.rRNA_merged.intervals"
 REFFLAT="/scratch/artyomov_lab_aging/indexes/hg19/hg19.refFlat.txt"
 GENOME="/scratch/artyomov_lab_aging/indexes/hg19/GRCh37.p13.genome.fa"
 PICARD="/home/kzaytsev/epiProject/tools/picardTools/picard-tools-2.4.1/picard.jar"
+TMPDIR="/tmp/${PBS_JOBID}"
 
 cd ${WORK_DIR}
 module load java 
@@ -30,7 +31,7 @@ echo "The sum of all reported percentages is estimated at $Pall"
 echo "done calculating FASTQ and BAM statistics"
 echo "---------------------------------------------------------------------------------------------------------"
 
-java -jar $PICARD CollectRnaSeqMetrics \
+java -Djava.io.tmpdir=${TMPDIR} -jar $PICARD CollectRnaSeqMetrics \
      I=$TAG.bam \
      O=$TAG.picard.metrics \
      REF_FLAT=$REFFLAT \
