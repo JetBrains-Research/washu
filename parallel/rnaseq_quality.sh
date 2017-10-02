@@ -17,8 +17,6 @@ RRNA="/scratch/artyomov_lab_aging/indexes/hg19/hg19.rRNA_merged.intervals"
 REFFLAT="/scratch/artyomov_lab_aging/indexes/hg19/hg19.refFlat.txt"
 GENOME="/scratch/artyomov_lab_aging/indexes/hg19/GRCh37.p13.genome.fa"
 
-PICARD="/home/kzaytsev/epiProject/tools/picardTools/picard-tools-2.4.1/picard.jar"
-
 cd ${WORK_DIR}
 
 TASKS=""
