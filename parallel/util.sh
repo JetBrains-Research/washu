@@ -123,10 +123,11 @@ project_root_dir() {
 # Checks for errors in logs, stops the world
 check_logs()
 {
-    ERRORS=`find . -name "*.log" | xargs grep -i -e "error"`
+    ERRORS=$(find . -name "*.log" | xargs grep -i -E "error|exception")
     if [ ! -z "$ERRORS" ]; then
         echo "ERRORS found"
         echo "$ERRORS"
+        exit 1
     fi
 }
 
