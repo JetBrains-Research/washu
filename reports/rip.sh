@@ -36,18 +36,24 @@ export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/
 mkdir -p "${TMPDIR}"
 
 # To pileup bed
-if [ ! -f ${PILEUP_BED} ]; then
+if [ -f ${PILEUP_BED} ]; then
+    echo "Pileup file already exists: ${PILEUP_BED}"
+else
     # Safely recalc in tmpfile if not exists:
     # - recalc in tmp file
     # - then move to desired location
     # This script could be launched in parallel on cluster, and *pileup.bed fill
     # is shared among peaks filtering tasks. So as not to get inconsistent
     # file state let's change file in atomic like way
-    tmpfile=$(mktemp $TMPDIR/pileup.XXXXXX.bed)
-    bedtools bamtobed -i ${READS_BAM} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMPDIR} -o ${tmpfile}
-    if [ ! -f ${PILEUP_BED} ]; then
+    TMPFILE=$(mktemp $TMPDIR/pileup.XXXXXX.bed)
+    echo "Calculate pileup file in tmp file: ${TMPFILE}"
+    bedtools bamtobed -i ${READS_BAM} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMPDIR} -o ${TMPFILE}
+    if [ -f ${PILEUP_BED} ]; then
+        echo "  Ignore result, file has been already calculated by smb else: ${PILEUP_BED}"
+    else
         # if still doesn't exists:
-        mv ${tmpfile} ${PILEUP_BED}
+        echo "  Move ${TMPFILE} -> ${PILEUP_BED}"
+        mv ${TMPFILE} ${PILEUP_BED}
     fi
 fi
 READS=$(wc -l ${PILEUP_BED} | awk '{print $1}')
