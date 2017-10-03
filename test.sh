@@ -59,6 +59,8 @@ BDGTOBW=$(which bedGraphToBigWig)
 echo "bedGraphToBigWig: $BDGTOBW"
 BEDCLIP=$(which bedClip)
 echo "bedClip: $BEDCLIP"
+BWAVGOVERBED=$(which bigWigAverageOverBed)
+echo "bigWigAverageOverBed: $BWAVGOVERBED"
 MULTIQC=$(which multiqc)
 echo "multiqc: $MULTIQC"
 BAMCOVERAGE=$(which bamCoverage)

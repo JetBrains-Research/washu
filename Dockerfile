@@ -32,7 +32,7 @@ RUN conda create -q -n java --channel bioconda fastqc
 RUN conda create -n py3.5 python=3.5
 RUN source activate py3.5 &&\
     conda install --channel bioconda bwa bowtie2 star \
-    deeptools sra-tools rseg ucsc-bedgraphtobigwig ucsc-bedclip &&\
+    deeptools sra-tools rseg ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed &&\
     conda install --channel conda-forge matplotlib-venn &&\
     conda install pandas numpy pytest pytest-pep8 &&\
     pip install multiqc teamcity-messages
