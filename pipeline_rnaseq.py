@@ -44,11 +44,11 @@ WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bams",
 
 run_bash("parallel/rnaseq_quality.sh", WORK_DIR)
 WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_quality",
-                        ["*.rnastat", "rnaseq_quality.*"], copy_only=True)
+                        ["*.rnastat", "rnaseq_quality.*"], chdir=False)
 
 run_bash("parallel/bigwig.sh", CHROMSIZES, WORK_DIR)
 WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bws",
-                        ["*.bw", "*.bw.log", "*.bdg"], copy_only=True)
+                        ["*.bw", "*.bw.log", "*.bdg"], chdir=False)
 
 run_bash("parallel/rsem.sh", WORK_DIR, INDEXES)
 WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_rsem",

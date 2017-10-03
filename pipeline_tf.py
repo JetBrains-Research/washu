@@ -251,7 +251,7 @@ def process_dirs(dirs, suffix, what_to_move, processor_fun):
 
         # move results:
         for data_dir, res_dir in dirs_to_process:
-            move_forward(data_dir, res_dir, what_to_move, copy_only=True)
+            move_forward(data_dir, res_dir, what_to_move, chdir=False)
 
     return result_dirs
 

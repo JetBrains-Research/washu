@@ -81,18 +81,18 @@ process_bowtie_logs(WORK_DIR)
 # Batch BigWig visualization
 run_bash("parallel/bigwig.sh", CHROM_SIZES, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"],
-             copy_only=True)
+             chdir=False)
 
 # Batch RPKM visualization
 run_bash("parallel/rpkm.sh", WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"],
-             copy_only=True)
+             chdir=False)
 
 # Remove duplicates
 run_bash("parallel/remove_duplicates.sh", PICARD_TOOLS, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_unique",
              ["*_unique*", "*_metrics.txt", "*duplicates.log"],
-             copy_only=True)
+             chdir=False)
 
 # Batch subsampling to 15mln reads
 # READS = 15
@@ -103,7 +103,7 @@ move_forward(WORK_DIR, WORK_DIR + "_unique",
 # # Batch BigWig visualization
 # run_bash("bigwig.sh", CHROM_SIZES, WORK_DIR)
 # move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"],
-#              copy_only=True)
+#              chdir=False)
 
 ########################
 # Peak calling section #
@@ -142,7 +142,7 @@ run_bash('parallel/peaks_frip.sh', peaks_folder, WORK_DIR)
 # if not os.path.exists(FOLDER):
 #     run_bash("macs14.sh", WORK_DIR, GENOME, str(P))
 #     move_forward(WORK_DIR, FOLDER, ['*{}*'.format(NAME), '*rip.csv'],
-#                  copy_only=True)
+#                  chdir=False)
 #     process_macs2_logs(FOLDER)
 
 # Batch RSEG
@@ -152,7 +152,7 @@ if not os.path.exists(WORK_DIR + rseg_suffix):
     move_forward(WORK_DIR, WORK_DIR + rseg_suffix,
                  ['*domains*', '*rseg*', '*.bam.bed', 'deadzones*',
                   '*_chrom_sizes.bed', '*rip.csv'],
-                 copy_only=True)
+                 chdir=False)
     process_peaks_logs(WORK_DIR + rseg_suffix)
 
 # Batch SICER
@@ -162,5 +162,5 @@ if not os.path.exists(WORK_DIR + sicer_suffix):
     run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, str(Q))
     move_forward(WORK_DIR, WORK_DIR + sicer_suffix,
                  ['*sicer.log', '*-removed.bed', '*-W*', '*rip.csv'],
-                 copy_only=True)
+                 chdir=False)
     process_peaks_logs(WORK_DIR + sicer_suffix)

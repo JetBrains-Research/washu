@@ -169,7 +169,7 @@ Defaults for MACS2 broad peak calling:
         move_forward(
             wd, result_dir,
             ['*{}*'.format(name), '*rip.csv', '*_signal.bdg', '*_signal.bw'],
-            copy_only=True)
+            chdir=False)
 
         process_macs2_logs(result_dir)
 
