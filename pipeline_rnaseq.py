@@ -39,17 +39,19 @@ else:
 run_bash("parallel/fastqc.sh", WORK_DIR)
 
 run_bash("parallel/star.sh", WORK_DIR, INDEXES, "\"" + " ".join(pairs) + "\"")
-WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bams",
-                        ["*.bam", "*star_*.log", "star_align_*"])
+move_forward(WORK_DIR, WORK_DIR + "_bams",
+             ["*.bam", "*star_*.log", "star_align_*"])
+WORK_DIR = WORK_DIR + "_bams"
+os.chdir(WORK_DIR)
 
 run_bash("parallel/rnaseq_quality.sh", WORK_DIR)
-WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_quality",
-                        ["*.rnastat", "rnaseq_quality.*"], chdir=False)
+move_forward(WORK_DIR, WORK_DIR + "_quality",
+             ["*.rnastat", "rnaseq_quality.*"])
 
 run_bash("parallel/bigwig.sh", CHROMSIZES, WORK_DIR)
-WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bws",
-                        ["*.bw", "*.bw.log", "*.bdg"], chdir=False)
+move_forward(WORK_DIR, WORK_DIR + "_bws",
+             ["*.bw", "*.bw.log", "*.bdg"])
 
 run_bash("parallel/rsem.sh", WORK_DIR, INDEXES)
-WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_rsem",
-                        ["*.results", "*.stat", "rsem_exp_*", "*.tsv"])
+move_forward(WORK_DIR, WORK_DIR + "_rsem",
+             ["*.results", "*.stat", "rsem_exp_*", "*.tsv"])

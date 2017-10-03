@@ -43,8 +43,7 @@ def run(*params):
     subprocess.run(command, shell=True)
 
 
-def move_forward(folder, new_folder, what_to_move, chdir=True,
-                 copy_files=False):
+def move_forward(folder, new_folder, what_to_move, copy_files=False):
     # Necessary for correct copy behavior
     os.chdir(folder)
     if not os.path.exists(new_folder):
@@ -54,11 +53,6 @@ def move_forward(folder, new_folder, what_to_move, chdir=True,
             shutil.copy(pattern, new_folder)
         else:
             shutil.move(pattern, new_folder)
-    if chdir:
-        os.chdir(new_folder)
-        return new_folder
-    else:
-        return folder
 
 
 def file_path_type(dir=False, exists=True, ext=None):

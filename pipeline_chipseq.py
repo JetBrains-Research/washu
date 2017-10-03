@@ -71,8 +71,10 @@ run_bash("parallel/fastqc.sh", WORK_DIR)
 # Batch Bowtie with trim 5 first base pairs
 run_bash("parallel/index_bowtie.sh", GENOME, INDEXES)
 run_bash("parallel/bowtie.sh", GENOME, INDEXES, "5", WORK_DIR)
-WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_bams",
-                        ["*.bam", "*bowtie*.log"])
+move_forward(WORK_DIR, WORK_DIR + "_bams", ["*.bam", "*bowtie*.log"])
+WORK_DIR = WORK_DIR + "_bams"
+os.chdir(WORK_DIR)
+
 # multiqc is able to process Bowtie report
 subprocess.run("multiqc " + WORK_DIR, shell=True)
 # Create summary
@@ -80,19 +82,16 @@ process_bowtie_logs(WORK_DIR)
 
 # Batch BigWig visualization
 run_bash("parallel/bigwig.sh", CHROM_SIZES, WORK_DIR)
-move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"],
-             chdir=False)
+move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"])
 
 # Batch RPKM visualization
 run_bash("parallel/rpkm.sh", WORK_DIR)
-move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"],
-             chdir=False)
+move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"])
 
 # Remove duplicates
 run_bash("parallel/remove_duplicates.sh", PICARD_TOOLS, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_unique",
-             ["*_unique*", "*_metrics.txt", "*duplicates.log"],
-             chdir=False)
+             ["*_unique*", "*_metrics.txt", "*duplicates.log"])
 
 # Batch subsampling to 15mln reads
 # READS = 15
@@ -151,8 +150,7 @@ if not os.path.exists(WORK_DIR + rseg_suffix):
     run_bash("parallel/rseg.sh", WORK_DIR, GENOME, CHROM_SIZES)
     move_forward(WORK_DIR, WORK_DIR + rseg_suffix,
                  ['*domains*', '*rseg*', '*.bam.bed', 'deadzones*',
-                  '*_chrom_sizes.bed', '*rip.csv'],
-                 chdir=False)
+                  '*_chrom_sizes.bed', '*rip.csv'])
     process_peaks_logs(WORK_DIR + rseg_suffix)
 
 # Batch SICER
@@ -161,6 +159,5 @@ sicer_suffix = '_sicer_{}'.format(Q)
 if not os.path.exists(WORK_DIR + sicer_suffix):
     run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, str(Q))
     move_forward(WORK_DIR, WORK_DIR + sicer_suffix,
-                 ['*sicer.log', '*-removed.bed', '*-W*', '*rip.csv'],
-                 chdir=False)
+                 ['*sicer.log', '*-removed.bed', '*-W*', '*rip.csv'])
     process_peaks_logs(WORK_DIR + sicer_suffix)
