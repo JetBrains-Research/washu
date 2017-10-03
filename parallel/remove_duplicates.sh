@@ -51,10 +51,10 @@ export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo 
 java -Djava.io.tmpdir="\${TMPDIR}" -jar ${PICARD_TOOLS_JAR} MarkDuplicates REMOVE_DUPLICATES=true INPUT=${FILE} OUTPUT=${UNIQUE_BAM} M=${METRICS}
 
 # Debug output for https://github.com/JetBrains-Research/washu/issues/16
-echo \$(du -cah \${TMPDIR}/*)
-# Try to create temp folder
-mkdir -p "\${TMPDIR}/foo"
-
+echo
+echo "\$(du -cah \${TMPDIR}/*)"
+echo
+echo "\$(quota -v)"
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
