@@ -4,7 +4,7 @@ USER root
 # Fix default shell for CONDA source activate command.
 RUN ln -snf /bin/bash /bin/sh
 RUN apt-get update
-RUN apt-get install --yes build-essential libgl1-mesa-dev bc unzip
+RUN apt-get install --yes build-essential libgl1-mesa-dev bc unzip quota
 # GNU AWK requered for proper scripts work.
 RUN apt-get install --yes gawk
 
