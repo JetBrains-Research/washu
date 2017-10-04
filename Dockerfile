@@ -43,7 +43,7 @@ RUN source activate py3.5 &&\
 # USER user
 
 # Download Picard tools
-RUN cd ~ && wget -q https://github.com/broadinstitute/picard/releases/download/2.10.6/picard.jar
+RUN cd ~ && wget -q https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar
 
 # Download ZINBRA
 RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/download/v0.4.0/zinbra-0.4.0.jar -O zinbra.jar
