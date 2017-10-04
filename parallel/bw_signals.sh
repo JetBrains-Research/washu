@@ -67,7 +67,7 @@ do :
 #PBS -N bw_signals_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=8gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${NAME}_bw_signals.log
+#PBS -o ${RESULTS_FOLDER}/${NAME}_bw_signals.log
 
 cd ${WORK_DIR}
 bigWigAverageOverBed ${FILE} ${REGIONS4} ${TSV}.tmp
