@@ -38,7 +38,7 @@ mkdir -p $TMPDIR
 REGIONS4=${RESULTS_FOLDER}/${ID}.bed4
 echo "Create BED4 regions file ${REGIONS4}"
 cat $REGIONS | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
-    sort -k1,1 -k3,3n -k2,2n -T --unique $TMPDIR > $REGIONS4
+    sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > $REGIONS4
 
 echo "Prepare chrom.sizes to compute libraries size"
 cat ${CHROM_SIZES} | awk -v OFS='\t' '{print $1,1,$2,$1$2}' > ${RESULTS_FOLDER}/chrom.sizes.bed4
