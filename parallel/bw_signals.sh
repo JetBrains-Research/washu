@@ -29,14 +29,14 @@ echo "ID: $REGIONS"
 echo "CHROM_SIZES: $CHROM_SIZES"
 
 RESULTS_FOLDER=${WORK_DIR}/${ID}
-mkdir -p ${RESULTS_FOLDER}
+mkdir -p $RESULTS_FOLDER
 echo "RESULTS FOLDER: $RESULTS_FOLDER"
 
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
-mkdir -p "${TMPDIR}"
+mkdir -p $TMPDIR
 
 echo "Process libraries sizes ${RESULTS_FOLDER}/sizes.tsv"
-cd ${WORK_DIR}
+cd $WORK_DIR
 if [[ ! -f ${RESULTS_FOLDER}/sizes.tsv ]]; then
     cat ${CHROM_SIZES} | awk -v OFS='\t' '{print $1,1,$2,$1$2}' > ${RESULTS_FOLDER}/chrom.sizes.bed
     for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
@@ -52,8 +52,8 @@ fi
 
 REGIONS4=${RESULTS_FOLDER}/${ID}.bed4
 echo "Create BED4 regions file ${REGIONS4}"
-cat ${REGIONS} | awk '{printf("%s\t%s\t%s\t%s_%s_%s\n",$1,$2,$3,$1,$2,$3)}' |\
-    sort -k1,1 -k3,3n -k2,2n -T ${TMPDIR} > ${REGIONS4}
+cat $REGIONS | awk '{printf("%s\t%s\t%s\t%s_%s_%s\n",$1,$2,$3,$1,$2,$3)}' |\
+    sort -k1,1 -k3,3n -k2,2n -T $TMPDIR > $REGIONS4
 
 echo "Batch bw processing"
 TASKS=""
@@ -77,12 +77,12 @@ SCRIPT
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
         TASKS="$TASKS $QSUB_ID"
 done
-
 wait_complete ${TASKS}
+
+cd $RESULTS_FOLDER
 check_logs
 
-
-echo "Merge all the tsv files into  ${ID}.tsv"
+echo "Merge all the tsv files into ${ID}.tsv"
 cd $RESULTS_FOLDER
 if [[ ! -f ${ID}.tsv ]]; then
     for FILE in $(ls *.tsv | grep -v ${ID}.tsv | grep -v sizes.tsv); do
@@ -97,7 +97,7 @@ run_parallel << SCRIPT
 #PBS -N peaks_signal_${ID}
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${ID}_peaks_signal.log
+#PBS -o ${RESULTS_FOLDER}/${ID}_peaks_signal.log
 
 cd $RESULTS_FOLDER
 PY_MAJOR_VERS=\$(python -c 'import sys; print(sys.version_info[0])')
@@ -110,12 +110,14 @@ python ${SCRIPT_DIR}/scripts/peaks_signals.py ${RESULTS_FOLDER}/${ID}.tsv ${RESU
 
 SCRIPT
 wait_complete $QSUB_ID
-check_logs
 
 # TMP dir cleanup:
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 
 # Cleanup
-rm ${REGIONS4}
+rm $REGIONS4
+
+cd $RESULTS_FOLDER
+check_logs
 
 >&2 echo "Done. Batch bw_signal $@"
