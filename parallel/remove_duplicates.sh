@@ -12,7 +12,7 @@ if [ $# -lt 1 ]; then
 fi
 
 if [ -n $IS_TEST ]; then
-    export JVM_MEM="-Xmx2g"
+    export JVM_MEM="-Xmx1g"
 else
     export JVM_MEM="-Xmx12g"
 fi
