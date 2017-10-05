@@ -35,25 +35,13 @@ echo "RESULTS FOLDER: $RESULTS_FOLDER"
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p $TMPDIR
 
-echo "Process libraries sizes ${RESULTS_FOLDER}/sizes.tsv"
-cd $WORK_DIR
-if [[ ! -f ${RESULTS_FOLDER}/sizes.tsv ]]; then
-    cat ${CHROM_SIZES} | awk -v OFS='\t' '{print $1,1,$2,$1$2}' > ${RESULTS_FOLDER}/chrom.sizes.bed
-    for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
-    do :
-        NAME=${FILE%%.bw}
-        bigWigAverageOverBed ${FILE} ${RESULTS_FOLDER}/chrom.sizes.bed ${RESULTS_FOLDER}/${NAME}.size.tab
-        SIZE=$(cat ${RESULTS_FOLDER}/${NAME}.size.tab | awk 'BEGIN{S=0} {S+=$4} END{print(S)}')
-        echo "${NAME}"$'\t'"${SIZE}" >> ${RESULTS_FOLDER}/sizes.tsv
-    done
-    rm ${RESULTS_FOLDER}/chrom.sizes.bed
-    rm ${RESULTS_FOLDER}/*size.tab
-fi
-
 REGIONS4=${RESULTS_FOLDER}/${ID}.bed4
 echo "Create BED4 regions file ${REGIONS4}"
 cat $REGIONS | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
     sort -k1,1 -k3,3n -k2,2n -T $TMPDIR > $REGIONS4
+
+echo "Prepare chrom.sizes to compute libraries size"
+cat ${CHROM_SIZES} | awk -v OFS='\t' '{print $1,1,$2,$1$2}' > ${RESULTS_FOLDER}/chrom.sizes.bed
 
 echo "Batch bw processing"
 TASKS=""
@@ -70,6 +58,10 @@ do :
 #PBS -o ${RESULTS_FOLDER}/${NAME}_bw_signals.log
 
 cd ${WORK_DIR}
+# Process full library size
+bigWigAverageOverBed ${FILE} ${RESULTS_FOLDER}/chrom.sizes.bed ${RESULTS_FOLDER}/${NAME}.size.tab
+
+# Process regions coverage
 bigWigAverageOverBed ${FILE} ${REGIONS4} ${TSV}.tmp
 cat ${TSV}.tmp | tr '#' '\t' | awk -v NAME=${NAME} -v OFS='\t' '{print \$1,\$2,\$3,\$6,NAME}' > ${TSV}
 rm ${TSV}.tmp
@@ -81,6 +73,16 @@ wait_complete ${TASKS}
 
 cd $RESULTS_FOLDER
 check_logs
+
+echo "Process libraries sizes ${RESULTS_FOLDER}/sizes.tsv"
+for FILE in $(find . -name '*.size.tab' | sed 's#\./##g' | sort)
+do :
+    NAME=${FILE%%.size.tab}
+    SIZE=$(cat ${RESULTS_FOLDER}/${NAME}.size.tab | awk 'BEGIN{S=0} {S+=$4} END{print(S)}')
+    echo "${NAME}"$'\t'"${SIZE}" >> ${RESULTS_FOLDER}/sizes.tsv
+done
+rm ${RESULTS_FOLDER}/chrom.sizes.bed
+rm ${RESULTS_FOLDER}/*size.tab
 
 echo "Merge all the tsv files into ${ID}.tsv"
 cd $RESULTS_FOLDER
