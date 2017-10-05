@@ -52,7 +52,7 @@ fi
 
 REGIONS4=${RESULTS_FOLDER}/${ID}.bed4
 echo "Create BED4 regions file ${REGIONS4}"
-cat $REGIONS | awk '{printf("%s\t%s\t%s\t%s_%s_%s\n",$1,$2,$3,$1,$2,$3)}' |\
+cat $REGIONS | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
     sort -k1,1 -k3,3n -k2,2n -T $TMPDIR > $REGIONS4
 
 echo "Batch bw processing"
@@ -71,7 +71,7 @@ do :
 
 cd ${WORK_DIR}
 bigWigAverageOverBed ${FILE} ${REGIONS4} ${TSV}.tmp
-cat ${TSV}.tmp | tr '_' '\t' | awk -v NAME=${NAME} -v OFS='\t' '{print \$1,\$2,\$3,\$6,NAME}' > ${TSV}
+cat ${TSV}.tmp | tr '#' '\t' | awk -v NAME=${NAME} -v OFS='\t' '{print \$1,\$2,\$3,\$6,NAME}' > ${TSV}
 rm ${TSV}.tmp
 SCRIPT
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
