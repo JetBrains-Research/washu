@@ -106,7 +106,7 @@ cd $RESULTS_FOLDER
 PY_MAJOR_VERS=\$(python -c 'import sys; print(sys.version_info[0])')
 if [[ \$PY_MAJOR_VERS != "3" ]]
 then
-    source activate py3.5
+    source activate py35 || source activate py3.5
 fi
 
 python ${SCRIPT_DIR}/scripts/peaks_signals.py ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}/sizes.tsv $ID
