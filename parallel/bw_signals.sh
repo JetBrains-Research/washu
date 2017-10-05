@@ -44,6 +44,7 @@ echo "Prepare chrom.sizes to compute libraries size"
 cat ${CHROM_SIZES} | awk -v OFS='\t' '{print $1,1,$2,$1$2}' > ${RESULTS_FOLDER}/chrom.sizes.bed
 
 echo "Batch bw processing"
+cd $WORK_DIR
 TASKS=""
 for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
 do :
