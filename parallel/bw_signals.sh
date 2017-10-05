@@ -78,8 +78,8 @@ echo "Process libraries sizes ${RESULTS_FOLDER}/sizes.tsv"
 for FILE in $(find . -name '*.size.tab' | sed 's#\./##g' | sort)
 do :
     NAME=${FILE%%.size.tab}
-    SIZE=$(cat ${RESULTS_FOLDER}/${NAME}.size.tab | awk 'BEGIN{S=0} {S+=$4} END{print(S)}')
-    echo "${NAME}"$'\t'"${SIZE}" >> ${RESULTS_FOLDER}/sizes.tsv
+    SIZE=$(cat ${FILE} | awk 'BEGIN{S=0} {S+=$4} END{print(S)}')
+    echo "${NAME}"$'\t'"${SIZE}" >> sizes.tsv
 done
 rm ${RESULTS_FOLDER}/chrom.sizes.bed
 rm ${RESULTS_FOLDER}/*size.tab
