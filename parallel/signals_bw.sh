@@ -100,7 +100,7 @@ run_parallel << SCRIPT
 #PBS -N peaks_signal_${ID}
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${RESULTS_FOLDER}/${ID}_peaks_signal.log
+#PBS -o ${RESULTS_FOLDER}/${ID}_signal.log
 
 cd $RESULTS_FOLDER
 PY_MAJOR_VERS=\$(python -c 'import sys; print(sys.version_info[0])')

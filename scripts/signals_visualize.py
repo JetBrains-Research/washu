@@ -174,7 +174,6 @@ TMM_R_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../R/tmm.R'
 
 
 def process(folder, id):
-    plt.figure(figsize=(3, 3))
     print('Processing signal data')
     file = folder + '/{0}/{0}_{1}.tsv'
     for normalization in ['raw', 'rpm', 'rpkm', 'rpm_peaks']:
