@@ -81,3 +81,5 @@ wait_complete ${TASKS}
 
 # Cleanup
 rm *.bed
+
+cat diff.nb.txt.hotspot | tail -n +4 | cut -f 1-3 >hotspot.bed
