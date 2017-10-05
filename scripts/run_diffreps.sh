@@ -52,7 +52,7 @@ do :
 cd ${FOLDER}
 module load bedtools2
 
-bash ${SCRIPT_DIR}/scripts/bam2reads.sh ${BAM_DIR}/${BAM_FILE} >${NAME}.bed
+bedtools bamtobed -i ${BAM_DIR}/${BAM_FILE} >${NAME}.bed
 
 SCRIPT
     echo "FILE: ${BAM_FILE}; TASK: ${QSUB_ID}"
