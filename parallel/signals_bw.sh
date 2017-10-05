@@ -109,7 +109,7 @@ then
     source activate py35 || source activate py3.5
 fi
 
-python ${SCRIPT_DIR}/scripts/peaks_signals.py ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}/sizes.tsv $ID
+python ${SCRIPT_DIR}/scripts/signals.py ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}/sizes.tsv $ID
 
 SCRIPT
 wait_complete $QSUB_ID

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Script to create _pileup.bed files for BAM alignment to compute reads coverage.
+# Script to compute signal for BAM files at given regions
 # author oleg.shpynov@jetbrains.com
 
 # Load technical stuff
@@ -106,10 +106,10 @@ cd $COVERAGES_FOLDER
 PY_MAJOR_VERS=\$(python -c 'import sys; print(sys.version_info[0])')
 if [[ \$PY_MAJOR_VERS != "3" ]]
 then
-    source activate py3.5
+    source activate py35 || source activate py3.5
 fi
 
-python ${SCRIPT_DIR}/scripts/peaks_signals.py ${COVERAGES_FOLDER}/${ID}_coverage.tsv ${TAGS_FOLDER}/sizes.tsv $ID
+python ${SCRIPT_DIR}/scripts/signals.py ${COVERAGES_FOLDER}/${ID}_coverage.tsv ${TAGS_FOLDER}/sizes.tsv $ID
 
 SCRIPT
 wait_complete $QSUB_ID

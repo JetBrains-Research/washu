@@ -1,13 +1,15 @@
 #!/usr/bin/env python
-# See parallel/peaks_signals.sh for data preprocessing
+# See signals.sh for data preprocessing
 #
 # Author: oleg.shpynov@jetbrains.com
 
 import getopt
 import sys
 
-import numpy as np
+import os
 import pandas as pd
+
+from scripts import signals_visualize
 
 help_message = 'ARGUMENTS: <coverage.tsv> <sizes.tsv> <id>'
 
@@ -38,9 +40,8 @@ def process(coverage_path, sizes_path, id):
                         right_index=True)
 
     print('Processing normalization by reads mapped to peaks')
-    sizes_peaks_pm = coverage.groupby(["name"])\
-        .agg({'coverage': 'sum'})\
-        .rename(columns={'coverage': "sizes_peaks_pm"}) / 1000000
+    sizes_peaks_pm = coverage.groupby(["name"]).agg({'coverage': 'sum'}).rename(
+        columns={'coverage': "sizes_peaks_pm"}) / 1000000
     coverage = pd.merge(coverage, sizes_peaks_pm, left_on="name", how='left',
                         right_index=True)
 
@@ -79,7 +80,14 @@ def main():
         usage()
         sys.exit(1)
 
-    process(args[0], args[1], args[2])
+    coverage_path = args[0]
+    sizes_path = args[1]
+    id = args[2]
+    print('Processing bed_signal.py {} {} {}'.format(coverage_path, sizes_path, id))
+    process(coverage_path, sizes_path, id)
+
+    bam_bw_folder = os.path.dirname(os.path.dirname(coverage_path))
+    signals_visualize.process(bam_bw_folder, id)
 
 
 if __name__ == "__main__":
