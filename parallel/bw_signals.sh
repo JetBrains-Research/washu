@@ -38,10 +38,10 @@ mkdir -p $TMPDIR
 REGIONS4=${RESULTS_FOLDER}/${ID}.bed4
 echo "Create BED4 regions file ${REGIONS4}"
 cat $REGIONS | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
-    sort -k1,1 -k3,3n -k2,2n -T $TMPDIR > $REGIONS4
+    sort -k1,1 -k3,3n -k2,2n -T --unique $TMPDIR > $REGIONS4
 
 echo "Prepare chrom.sizes to compute libraries size"
-cat ${CHROM_SIZES} | awk -v OFS='\t' '{print $1,1,$2,$1$2}' > ${RESULTS_FOLDER}/chrom.sizes.bed
+cat ${CHROM_SIZES} | awk -v OFS='\t' '{print $1,1,$2,$1$2}' > ${RESULTS_FOLDER}/chrom.sizes.bed4
 
 echo "Batch bw processing"
 cd $WORK_DIR
@@ -60,7 +60,7 @@ do :
 
 cd ${WORK_DIR}
 # Process full library size
-bigWigAverageOverBed ${FILE} ${RESULTS_FOLDER}/chrom.sizes.bed ${RESULTS_FOLDER}/${NAME}.size.tab
+bigWigAverageOverBed ${FILE} ${RESULTS_FOLDER}/chrom.sizes.bed4 ${RESULTS_FOLDER}/${NAME}.size.tab
 
 # Process regions coverage
 bigWigAverageOverBed ${FILE} ${REGIONS4} ${TSV}.tmp
@@ -82,7 +82,7 @@ do :
     SIZE=$(cat ${FILE} | awk 'BEGIN{S=0} {S+=$4} END{print(S)}')
     echo "${NAME}"$'\t'"${SIZE}" >> sizes.tsv
 done
-rm ${RESULTS_FOLDER}/chrom.sizes.bed
+rm ${RESULTS_FOLDER}/chrom.sizes.bed4
 rm ${RESULTS_FOLDER}/*size.tab
 
 echo "Merge all the tsv files into ${ID}.tsv"
