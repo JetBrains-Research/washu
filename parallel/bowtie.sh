@@ -101,7 +101,7 @@ else
     bowtie -p 4 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} ${FILE} ${ID}.sam
 fi
 samtools view -bS ${ID}.sam -o ${ID}_not_sorted.bam
-samtools sort ${ID}_not_sorted.bam -o ${BAM_NAME}.bam
+samtools sort ${ID}_not_sorted.bam -o ${BAM_NAME}
 
 # Cleanup
 rm ${ID}.sam ${ID}_not_sorted.bam
