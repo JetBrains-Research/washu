@@ -57,7 +57,7 @@ else
         LOG=$(echo "$CMD" | grep "#PBS -o" | sed 's/#PBS -o //g')
         >&2 echo "LOCAL running TASK: ${QSUB_FILE} LOG: $LOG"
         # Redirect both stderr and stdout to LOG file, don't use output, since we use [run_parallel]
-        bash $QSUB_FILE &> "$LOG"
+        bash $QSUB_FILE &> "$LOG" &
     }
 
     run_parallel()
