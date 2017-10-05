@@ -1,3 +1,7 @@
+import matplotlib
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
+
 import getopt
 import math
 import os
@@ -7,16 +11,12 @@ import sys
 import tempfile
 from collections import namedtuple
 from enum import Enum
-import matplotlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
-
-# Force matplotlib to not use any Xwindows backend.
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
 
 class Normalization(Enum):
