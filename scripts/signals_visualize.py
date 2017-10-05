@@ -1,19 +1,22 @@
 import getopt
-
-import pandas as pd
-import seaborn as sns
-from enum import Enum
-from collections import namedtuple
-import numpy as np
-import matplotlib.pyplot as plt
-import sys
-from sklearn.decomposition import PCA
-from sklearn import preprocessing
+import math
+import os
 import re
 import subprocess
-import math
+import sys
 import tempfile
-import os
+from collections import namedtuple
+from enum import Enum
+import matplotlib
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from sklearn import preprocessing
+from sklearn.decomposition import PCA
+
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 
 class Normalization(Enum):
