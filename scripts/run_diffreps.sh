@@ -32,9 +32,6 @@ PREFIX="$FOLDER/$NAME"
 echo "PREFIX"
 echo $PREFIX
 
-FOLDER=$(pwd)
-echo "FOLDER"
-echo $FOLDER
 
 for BAM_FILE in $(find ${BAM_DIR} -name '*.bam' | sed 's#.*/##g' | grep -v 'input');
 do :
@@ -82,4 +79,5 @@ SCRIPT
 
 wait_complete ${TASKS}
 
-
+# Cleanup
+rm *.bed
