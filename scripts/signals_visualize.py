@@ -216,7 +216,7 @@ def process(folder, id):
 
             # Save pca fit errors to file
             pd.DataFrame(data=[[e, e_scaled, e_log, e_scaled_log]]).\
-                to_csv(re.sub('.tsv', '_pca_fit.csv', f), index=None, header=False)
+                to_csv(re.sub('.tsv', '_pca_fit_error.csv', f), index=None, header=False)
 
         except FileNotFoundError:
             print('File not found: {}'.format(f))
@@ -249,7 +249,7 @@ def process(folder, id):
         plt.close()
 
         # Save means signal to df
-        pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_scores_data.csv', f), index=True, header=None)
+        pd.DataFrame(means['value']).to_csv(re.sub('_raw.tsv', '_scores_data.csv', f), index=True, header=None)
 
         groups = [p[2] for p in records]
         e, e_scaled, e_log, e_scaled_log = signal_pca_all(scores.T, 'Scores', groups=groups)
@@ -258,7 +258,7 @@ def process(folder, id):
 
         # Save pca fit errors to file
         pd.DataFrame(data=[[e, e_scaled, e_log, e_scaled_log]]). \
-            to_csv(re.sub('.tsv', '_scores_pca_fit.csv', f), index=None, header=False)
+            to_csv(re.sub('_raw.tsv', '_scores_pca_fit_error.csv', f), index=None, header=False)
 
         print('TMM normalization')
         scores_tmpfile = tempfile.NamedTemporaryFile(prefix='scores', suffix='.tsv').name
