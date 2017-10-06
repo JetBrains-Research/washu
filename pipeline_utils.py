@@ -31,16 +31,16 @@ def run_bash(script, *params):
     :param script: script relative (to project root) path
     :param params: script args
     """
-    command = " ".join(["bash", os.path.join(PROJECT_ROOT_PATH, script),
+    cmdline = " ".join(["bash", os.path.join(PROJECT_ROOT_PATH, script),
                         *[str(p) for p in params]])
-    print(command)
-    subprocess.run(command, shell=True, check=True)
+    print(cmdline)
+    subprocess.run(cmdline, shell=True, check=True)
 
 
 def run(*params):
-    command = " ".join([str(p) for p in params])
-    print(command)
-    subprocess.run(command, shell=True)
+    cmdline = " ".join([str(p) for p in params])
+    print(cmdline)
+    subprocess.run(cmdline, shell=True)
 
 
 def move_forward(folder, new_folder, what_to_move, copy_files=False):
