@@ -1,4 +1,5 @@
 import matplotlib
+
 # Force matplotlib to not use any Xwindows backend.
 matplotlib.use('Agg')
 
@@ -146,6 +147,7 @@ def mean_boxplots(df, title, ax):
                         textcoords='offset points')
 
     ax.set_title(title)
+    return signal
 
 
 # See documents on how to compute scores
@@ -191,9 +193,12 @@ def process(folder, id):
             mean_regions(df, title=normalization, ax=plt.subplot(1, 4, 1), plot_type=Plot.SCATTER)
             mean_regions(df, title='MA {}'.format(normalization), ax=plt.subplot(1, 4, 2), plot_type=Plot.MA)
             mean_regions(df, title='LOG {}'.format(normalization), ax=plt.subplot(1, 4, 3), plot_type=Plot.HISTOGRAM)
-            mean_boxplots(signal.T, title=normalization, ax=plt.subplot(1, 4, 4))
+            means = mean_boxplots(signal.T, title=normalization, ax=plt.subplot(1, 4, 4))
             plt.savefig(re.sub('.tsv', '.png', f))
             plt.close()
+
+            # Save means signal to df
+            pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_data.csv', f), index=True, header=None)
 
             signal_pca_all(signal.T, normalization)
             plt.savefig(re.sub('.tsv', '_pca.png', f))
@@ -225,9 +230,12 @@ def process(folder, id):
         mean_regions(scores, title='diffbind score', ax=plt.subplot(1, 4, 1), plot_type=Plot.SCATTER)
         mean_regions(scores, title='MA diffbind score', ax=plt.subplot(1, 4, 2), plot_type=Plot.MA)
         mean_regions(scores, title='LOG diffbind score', ax=plt.subplot(1, 4, 3), plot_type=Plot.HISTOGRAM)
-        mean_boxplots(scores.T, title='diffbind', ax=plt.subplot(1, 4, 4))
+        means = mean_boxplots(scores.T, title='diffbind', ax=plt.subplot(1, 4, 4))
         plt.savefig(re.sub('_raw.tsv', '_scores.png', f))
         plt.close()
+
+        # Save means signal to df
+        pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_scores_data.csv', f), index=True, header=None)
 
         groups = [p[2] for p in records]
         signal_pca_all(scores.T, 'Scores', groups=groups)
