@@ -18,6 +18,7 @@ import pandas as pd
 import seaborn as sns
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
+from sklearn.linear_model import LogisticRegression
 
 
 class Normalization(Enum):
@@ -59,18 +60,27 @@ def signal_pca(x0,
     plt.xlabel('PC1 {}%'.format(int(pca.explained_variance_ratio_[0] * 100)))
     plt.ylabel('PC2 {}%'.format(int(pca.explained_variance_ratio_[1] * 100)))
 
+    # Try to fit logistic regression and test
+    y = [0 if g == YD_GROUP else 1 for g in groups]
+    lr = LogisticRegression()
+    lr.fit(x_r, y)
+    p_y = [1 if x[0] < 0.5 else 0 for x in lr.predict_proba(x_r)]
+    error = np.sum(np.abs(np.subtract(y, p_y)))
+    return error
+
 
 def signal_pca_all(x, title, groups=None):
-    """Plot all the scaled variants of PCA"""
+    """Plot all the scaled variants of PCA, returns Logistic regression fit error"""
     plt.figure(figsize=(20, 5))
     plt.subplot(1, 4, 1)
-    signal_pca(x, title, groups=groups)
+    e = signal_pca(x, title, groups=groups)
     plt.subplot(1, 4, 2)
-    signal_pca(x, 'SCALED {}'.format(title), scale=Normalization.SCALED, groups=groups)
+    e_scaled = signal_pca(x, 'SCALED {}'.format(title), scale=Normalization.SCALED, groups=groups)
     plt.subplot(1, 4, 3)
-    signal_pca(np.log1p(x), 'LOG {}'.format(title), groups=groups)
+    e_log = signal_pca(np.log1p(x), 'LOG {}'.format(title), groups=groups)
     plt.subplot(1, 4, 4)
-    signal_pca(np.log1p(x), 'SCALED LOG {}'.format(title), scale=Normalization.SCALED, groups=groups)
+    e_scaled_log = signal_pca(np.log1p(x), 'SCALED LOG {}'.format(title), scale=Normalization.SCALED, groups=groups)
+    return e, e_scaled, e_log, e_scaled_log
 
 
 class Plot(Enum):
@@ -200,9 +210,13 @@ def process(folder, id):
             # Save means signal to df
             pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_data.csv', f), index=True, header=None)
 
-            signal_pca_all(signal.T, normalization)
+            e, e_scaled, e_log, e_scaled_log = signal_pca_all(signal.T, normalization)
             plt.savefig(re.sub('.tsv', '_pca.png', f))
             plt.close()
+
+            # Save pca fit errors to file
+            pd.DataFrame(data=[[e, e_scaled, e_log, e_scaled_log]]).\
+                to_csv(re.sub('.tsv', '_pca_fit.csv', f), index=None, header=False)
 
         except FileNotFoundError:
             print('File not found: {}'.format(f))
@@ -238,9 +252,13 @@ def process(folder, id):
         pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_scores_data.csv', f), index=True, header=None)
 
         groups = [p[2] for p in records]
-        signal_pca_all(scores.T, 'Scores', groups=groups)
+        e, e_scaled, e_log, e_scaled_log = signal_pca_all(scores.T, 'Scores', groups=groups)
         plt.savefig(re.sub('_raw.tsv', '_scores_pca.png', f))
         plt.close()
+
+        # Save pca fit errors to file
+        pd.DataFrame(data=[[e, e_scaled, e_log, e_scaled_log]]). \
+            to_csv(re.sub('.tsv', '_scores_pca_fit.csv', f), index=None, header=False)
 
         print('TMM normalization')
         scores_tmpfile = tempfile.NamedTemporaryFile(prefix='scores', suffix='.tsv').name
