@@ -288,7 +288,7 @@ sort -T \${TMPDIR} -k1,1 -k2,2n -o O_tags.tag O_tags.tag
 
 ChIPDiff Y_tags.tag O_tags.tag $CHROM_SIZES config.txt ${NAME}_3
 cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="-" {print \$1,\$2,\$3}' > ${NAME}_3_cond1.bed
-cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="+" {print \$1,\$2,\$3}' < ${NAME}_3_cond2.bed
+cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="+" {print \$1,\$2,\$3}' > ${NAME}_3_cond2.bed
 SCRIPT
     wait_complete $QSUB_ID
 fi
