@@ -327,7 +327,7 @@ cd ${MANORM}
 module load bedtools2
 for F in ${READS_Y}; do
     >&2 echo \$F
-    bash ${SCRIPT_DIR}/scripts/bam2tags.sh \$F >> Y_reads.tag
+    bash ${SCRIPT_DIR}/scripts/bam2reads.sh \$F >> Y_reads.bed
 done
 SCRIPT
     QSUB_ID1=$QSUB_ID
@@ -345,7 +345,7 @@ cd ${MANORM}
 module load bedtools2
 for F in ${READS_O}; do
     >&2 echo \$F
-    bash ${SCRIPT_DIR}/scripts/bam2tags.sh \$F >> O_reads.tag
+    bash ${SCRIPT_DIR}/scripts/bam2reads.sh \$F >> O_reads.bed
 done
 SCRIPT
     QSUB_ID2=$QSUB_ID
