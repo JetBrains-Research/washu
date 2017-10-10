@@ -50,8 +50,7 @@ def run(commands, stdin=None, stdout=subprocess.PIPE):
     """Launches pipe of commands given stdin and final stdout"""
     processes = []
     _stdin = stdin
-    for i in range(0, len(commands)):
-        cmd = commands[i]
+    for i, cmd in enumerate(commands):
         if i < len(commands) - 1:
             _stdout = subprocess.PIPE
         else:
