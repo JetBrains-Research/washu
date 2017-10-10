@@ -63,8 +63,12 @@ cd ${WORK_DIR}
 bigWigAverageOverBed ${FILE} ${RESULTS_FOLDER}/chrom.sizes.bed4 ${RESULTS_FOLDER}/${NAME}.size.tab
 
 # Process regions coverage
+#   sum - sum of values over all bases covered
+#   mean0 - average over bases with non-covered bases counting as zeroes
+#   mean - average over just covered bases
+# Fields \$6 \$7 \$8 - sum, mean0, mean values, after chr#start#end split by #
 bigWigAverageOverBed ${FILE} ${REGIONS4} ${TSV}.tmp
-cat ${TSV}.tmp | tr '#' '\t' | awk -v NAME=${NAME} -v OFS='\t' '{print \$1,\$2,\$3,\$6,NAME}' > ${TSV}
+cat ${TSV}.tmp | tr '#' '\t' | awk -v NAME=${NAME} -v OFS='\t' '{print \$1,\$2,\$3,\$6,\$7,\$8,NAME}' > ${TSV}
 rm ${TSV}.tmp
 SCRIPT
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
@@ -94,7 +98,7 @@ if [[ ! -f ${ID}.tsv ]]; then
     done
 fi
 
-echo "Processing coverage, rpm, rpkm, and rpm_peaks for ${ID}.tsv"
+echo "Processing data, rpm, rpkm, and rpm_peaks for ${ID}.tsv"
 run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N peaks_signal_${ID}
@@ -102,14 +106,14 @@ run_parallel << SCRIPT
 #PBS -j oe
 #PBS -o ${RESULTS_FOLDER}/${ID}_signal.log
 
-cd $RESULTS_FOLDER
 PY_MAJOR_VERS=\$(python -c 'import sys; print(sys.version_info[0])')
 if [[ \$PY_MAJOR_VERS != "3" ]]
 then
     source activate py35 || source activate py3.5
 fi
 
-python ${SCRIPT_DIR}/scripts/signals.py ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}/sizes.tsv $ID
+cd $RESULTS_FOLDER
+python ${SCRIPT_DIR}/scripts/signals.py ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}/sizes.tsv ${ID}
 
 SCRIPT
 wait_complete $QSUB_ID

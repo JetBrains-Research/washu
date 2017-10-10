@@ -102,14 +102,14 @@ run_parallel << SCRIPT
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}_peaks_signal.log
 
-cd $COVERAGES_FOLDER
 PY_MAJOR_VERS=\$(python -c 'import sys; print(sys.version_info[0])')
 if [[ \$PY_MAJOR_VERS != "3" ]]
 then
     source activate py35 || source activate py3.5
 fi
 
-python ${SCRIPT_DIR}/scripts/signals.py ${COVERAGES_FOLDER}/${ID}_coverage.tsv ${TAGS_FOLDER}/sizes.tsv $ID
+cd $COVERAGES_FOLDER
+python ${SCRIPT_DIR}/scripts/signals.py ${COVERAGES_FOLDER}/${ID}_coverage.tsv ${TAGS_FOLDER}/sizes.tsv ${ID}
 
 SCRIPT
 wait_complete $QSUB_ID

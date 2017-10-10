@@ -8,6 +8,7 @@ import sys
 
 import os
 import pandas as pd
+import re
 
 from scripts import signals_visualize
 
@@ -18,50 +19,59 @@ def usage():
     print(help_message)
 
 
-def process(coverage_path, sizes_path, id):
+def process(data_path, sizes_path, id):
     print('PROCESSING ID', id)
-    print('COVERAGE PATH', coverage_path)
+    print('COVERAGE PATH', data_path)
     print('SIZES PATH', sizes_path)
-    coverage = pd.read_csv(coverage_path, sep='\t',
-                           names=('chr', 'start', 'end', 'coverage', 'name'))
+    data = pd.read_csv(data_path, sep='\t',
+                       names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
+
+    chipseq_processing = [n for n in data['name'] if re.match('.*input.*', n)] and \
+                         not [n for n in data['name'] if re.match('.*(meth|trans|mirna).*', n)]
 
     print('Processing raw signal')
-    pivot = pd.pivot_table(coverage, index=['chr', 'start', 'end'],
-                           columns='name', values='coverage', fill_value=0)
+    pivot = pd.pivot_table(data, index=['chr', 'start', 'end'],
+                           columns='name',
+                           values='coverage' if chipseq_processing else 'mean',
+                           fill_value=0)
     raw_signal = '{}_raw.tsv'.format(id)
     pivot.to_csv(raw_signal, sep='\t')
     print('Saved raw signal to {}'.format(raw_signal))
+
+    if not chipseq_processing:
+        print("Processing METH|TRANS|MIRNA")
+        return
 
     print('Processing normalization by all library mapped reads')
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'sizes_pm'),
                         index_col='name')
     sizes_pm = sizes / 1000000
-    coverage = pd.merge(coverage, sizes_pm, left_on="name", how='left',
-                        right_index=True)
+    data = pd.merge(data, sizes_pm, left_on="name", how='left',
+                    right_index=True)
 
     print('Processing normalization by reads mapped to peaks')
-    sizes_peaks_pm = coverage.groupby(["name"]).agg({'coverage': 'sum'}).rename(
+    sizes_peaks_pm = data.groupby(["name"]).agg({'coverage': 'sum'}).rename(
         columns={'coverage': "sizes_peaks_pm"}) / 1000000
-    coverage = pd.merge(coverage, sizes_peaks_pm, left_on="name", how='left',
-                        right_index=True)
+    data = pd.merge(data, sizes_peaks_pm, left_on="name", how='left',
+                    right_index=True)
 
     print('Sizes RPM: {}'.format(sizes_pm))
-    coverage['rpm'] = coverage['coverage'] / coverage['sizes_pm']
-    save_signal(id, coverage, 'rpm', 'Saved RPM')
+    data['rpm'] = data['coverage'] / data['sizes_pm']
+    save_signal(id, data, 'rpm', 'Saved RPM')
 
     print('Sizes peaks RPM: {}'.format(sizes_peaks_pm))
-    coverage['rpm_peaks'] = coverage['coverage'] / coverage['sizes_peaks_pm']
-    save_signal(id, coverage, 'rpm_peaks',
+    data['rpm_peaks'] = data['coverage'] / data['sizes_peaks_pm']
+    save_signal(id, data, 'rpm_peaks',
                 'Saved normalized reads by RPM reads in peaks signal')
 
     print('Processing RPKM normalization')
-    coverage['rpk'] = (coverage['end'] - coverage['start']) / 1000.0
-    coverage['rpkm'] = coverage['rpm'] / coverage['rpk']
-    save_signal(id, coverage, 'rpkm', 'Saved RPKM')
+    data['rpk'] = (data['end'] - data['start']) / 1000.0
+    data['rpkm'] = data['rpm'] / data['rpk']
+    save_signal(id, data, 'rpkm', 'Saved RPKM')
 
     print('Processing RPKM_PEAKS normalization')
-    coverage['rpkm_peaks'] = coverage['rpm_peaks'] / coverage['rpk']
-    save_signal(id, coverage, 'rpkm_peaks',
+    data['rpkm_peaks'] = data['rpm_peaks'] / data['rpk']
+    save_signal(id, data, 'rpkm_peaks',
                 'Saved normalized reads by RPKM reads in peaks signal')
 
 

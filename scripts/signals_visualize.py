@@ -189,16 +189,20 @@ TMM_R_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../R/tmm.R'
 
 
 def process(folder, id):
-    print('Processing signal data')
-    file = folder + '/{0}/{0}_{1}.tsv'
+    print('Visualize {} {}'.format(folder, id))
+    file = os.path.join(folder, '{0}/{0}_{1}.tsv')
     for normalization in ['raw', 'rpm', 'rpkm', 'rpm_peaks']:
         f = file.format(id, normalization)
         try:
             print(f)
             df = pd.read_csv(f, sep='\t')
-            od_input = [c for c in df.columns.values if re.match('.*od.*input.*', c, flags=re.IGNORECASE)][0]
-            yd_input = [c for c in df.columns.values if re.match('.*yd.*input.*', c, flags=re.IGNORECASE)][0]
-            signal = df.drop(['chr', 'start', 'end', od_input, yd_input], axis=1)
+            od_inputs = [c for c in df.columns.values if re.match('.*od.*input.*', c, flags=re.IGNORECASE)]
+            yd_inputs = [c for c in df.columns.values if re.match('.*yd.*input.*', c, flags=re.IGNORECASE)]
+            inputs_found = od_inputs and yd_inputs
+            if inputs_found:
+                signal = df.drop(['chr', 'start', 'end', od_inputs[0], yd_inputs[0]], axis=1)
+            else:
+                signal = df.drop(['chr', 'start', 'end'], axis=1)
             plt.figure(figsize=(20, 5))
             mean_regions(df, title=normalization, ax=plt.subplot(1, 4, 1), plot_type=Plot.SCATTER)
             mean_regions(df, title='MA {}'.format(normalization), ax=plt.subplot(1, 4, 2), plot_type=Plot.MA)
@@ -218,11 +222,15 @@ def process(folder, id):
             pd.DataFrame(data=[[e, e_scaled, e_log, e_scaled_log]]).\
                 to_csv(re.sub('.tsv', '_pca_fit_error.csv', f), index=None, header=False)
 
+            if not inputs_found:
+                print("No chipseq inputs found, exit.")
+                return
+
         except FileNotFoundError:
             print('File not found: {}'.format(f))
 
-    print('Processing diffbind normalization')
-    f = folder + '/{0}/{0}_raw.tsv'.format(id)
+    print('Processing diffbind scores')
+    f = os.path.join(folder, '{0}/{0}_raw.tsv'.format(id))
     try:
         df = pd.read_csv(f, sep='\t')
         od_input = [c for c in df.columns.values if re.match('.*od.*input.*', c, flags=re.IGNORECASE)][0]
