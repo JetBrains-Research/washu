@@ -17,31 +17,25 @@ help_data = """
 """
 
 
-def plot_peaks_intersect(folder, pp):
-    files = os.listdir(folder)
-    ods = {re.findall('OD\\d+', f)[0]: Bed(folder + '/' + f) for f in files
-           if re.match('.*OD\\d+.*\.(?:broadPeak|bed|narrowPeak)$', f) and not re.match('.*input.*', f)}
-    yds = {re.findall('YD\\d+', f)[0]: Bed(folder + '/' + f) for f in files
-           if re.match('.*YD\\d+.*\.(?:broadPeak|bed|narrowPeak)$', f) and not re.match('.*input.*', f)}
-
-    yd_intersection = intersect(*yds.values())
-    od_intersection = intersect(*ods.values())
+def plot_peaks_intersect(od_paths_map, yd_paths_map, pp):
+    yd_intersection = intersect(*yd_paths_map.values())
+    od_intersection = intersect(*od_paths_map.values())
     yd_od_intersection = intersect(yd_intersection, od_intersection)
     metapeaks({'Young donors': yd_intersection, 'Old donors': od_intersection})
     pp.savefig()
 
-    n = len(yds) + len(ods)
+    n = len(yd_paths_map) + len(od_paths_map)
     ind = np.arange(n)
 
     common_peaks = [yd_od_intersection.count()] * n
-    group_specific = [yd_intersection.count() - yd_od_intersection.count()] * len(yds) + \
-                     [od_intersection.count() - yd_od_intersection.count()] * len(ods)
+    group_specific = [yd_intersection.count() - yd_od_intersection.count()] * len(yd_paths_map) + \
+                     [od_intersection.count() - yd_od_intersection.count()] * len(od_paths_map)
     sample_specific = []
     names = []
-    for k, v in yds.items():
+    for k, v in yd_paths_map.items():
         sample_specific.append(v.count() - yd_intersection.count())
         names.append(k)
-    for k, v in ods.items():
+    for k, v in od_paths_map.items():
         sample_specific.append(v.count() - od_intersection.count())
         names.append(k)
 
@@ -53,6 +47,62 @@ def plot_peaks_intersect(folder, pp):
     plt.ylabel('Peaks count')
     plt.xticks(ind, names, rotation=70)
     plt.legend((p1[0], p2[0], p3[0]), ('Common', 'Group', 'Individual'))
+    pp.savefig()
+
+
+def plot_consensus(tracks_paths, pp):
+    union_sh = os.path.realpath(os.path.join(os.path.dirname(__file__), '../bed/union.sh'))
+    command = "bash {} {} >{}".format(union_sh, " ".join(tracks_paths), os.path.join("report", "counts.bed"))
+    os.system(command)
+    counts = [0] * len(tracks_paths)
+    for line in read_all_lines(os.path.join("report", "counts.bed")):
+        parts = line.split("\t")
+        count = len(parts[3].split("|"))
+
+        counts[count - 1] += 1
+    counts.reverse()
+    counts_cumulative = list(np.cumsum(counts))
+    counts_cumulative.reverse()
+    plt.figure()
+    plt.xlabel('Number of donors')
+    plt.ylabel('Number of peaks')
+    plt.plot(range(len(tracks_paths)), counts_cumulative, label="")
+    plt.title("Reverse cumulative consensus peaks sum via number of donors")
+    pp.savefig()
+
+
+def plot_jaccard_heatmap(tracks_paths, pp):
+    tracks_names = [x.split('/')[-1] for x in sorted(list(set(tracks_paths)))]
+    callers_for_heatmaps = [item.split('_')[0] + "_" + item.split('_')[1] for item in tracks_names]
+    # callers_for_heatmaps = tracks_names
+    help_dict = {tracks_names[n]: n for n in range(len(tracks_names))}
+    heatmap = np.zeros((len(tracks_names), len(tracks_names)))
+    sample = []
+
+    for file_path in tracks_paths:
+        distances = list(pool.map(functools.partial(calc_jaccard_distance, bed_b=file_path,
+                                                    size=len(tracks_names) * len(tracks_names)), tracks_paths))
+        short_distances = [(y, x) for (y, x) in sorted(zip(distances, tracks_names), reverse=True)]
+        for db_entry in short_distances:
+            heatmap[help_dict[file_path.split('/')[-1]], help_dict[db_entry[1]]] = db_entry[0]
+            sample.append(db_entry[0])
+
+    sample = sorted(sample)
+    plt.figure()
+    plt.plot(sample, np.arange(len(sample)) / len(sample), label="")
+    plt.xlabel('Jaccard similarity')
+    plt.ylabel('CDF')
+    plt.legend(loc=4)
+    plt.tight_layout()
+    pp.savefig()
+
+    plt.figure()
+    plt.imshow(heatmap, aspect='auto', cmap="viridis", interpolation="nearest")
+    plt.xticks(np.arange(0, len(tracks_names), 1), callers_for_heatmaps, rotation='vertical')
+    plt.yticks(np.arange(0, len(tracks_names), 1), callers_for_heatmaps)
+    plt.colorbar(orientation='vertical')
+    plt.tight_layout()
+    plt.grid()
     pp.savefig()
 
 
@@ -74,51 +124,15 @@ def calc_jaccard_distance(bed_a, bed_b, size):
     return jac_dict['jaccard']
 
 
-def plot_jaccard_heatmap(path, pp):
-    tracks_paths = sorted({path + '/' + f for f in os.listdir(path) if
-                           re.match('.*\.(?:broadPeak|bed|narrowPeak)$', f)})
-    tracks_names = [x.split('/')[-1] for x in sorted(list(set(tracks_paths)))]
-    callers_for_heatmaps = [item.split('_')[0] for item in tracks_names]
-    help_dict = {tracks_names[n]: n for n in range(len(tracks_names))}
-    heatmap = np.zeros((len(tracks_names), len(tracks_names)))
-    sample = []
-
-    for file_name in tracks_names:
-        distances = list(pool.map(functools.partial(calc_jaccard_distance, bed_b=path + '/' + file_name,
-                                                    size=len(tracks_names)*len(tracks_names)), tracks_paths))
-        short_distances = [(y, x) for (y, x) in sorted(zip(distances, tracks_names), reverse=True)]
-        for db_entry in short_distances:
-            heatmap[help_dict[file_name], help_dict[db_entry[1]]] = db_entry[0]
-            sample.append(db_entry[0])
-
-    sample = sorted(sample)
-    plt.figure()
-    plt.plot(sample, np.arange(len(sample)) / len(sample), label="")
-    plt.xlabel('Jaccard similarity')
-    plt.ylabel('CDF')
-    plt.legend(loc=4)
-    plt.tight_layout()
-    pp.savefig()
-
-    plt.figure()
-    plt.imshow(heatmap, aspect='auto', cmap="viridis", interpolation="nearest")
-    plt.xticks(np.arange(0, len(tracks_names), 1), callers_for_heatmaps, rotation='vertical')
-    plt.yticks(np.arange(0, len(tracks_names), 1), callers_for_heatmaps)
-    plt.colorbar(orientation='vertical')
-    plt.grid()
-    pp.savefig()
-
-
-def plot_frip_boxplot(folder, pp):
-    files = [folder + '/' + file for file in os.listdir(folder) if file.endswith("_rip.csv")]
+def plot_frip_boxplot(rip_files, pp):
     df = pd.DataFrame(columns=["file", "reads", "peaks", "rip"])
-    for file in files:
-        data = pd.read_csv(file)
-        file = file.split('/')[-1]
+    for rip_file in rip_files:
+        data = pd.read_csv(rip_file)
+        rip_file = rip_file.split('/')[-1]
         reads = float(data["reads"].loc[0])
         peaks = int(data["peaks"].loc[0])
         rip = float(data["rip"].loc[0])
-        df.loc[df.size] = (file, reads, peaks, rip)
+        df.loc[df.size] = (rip_file, reads, peaks, rip)
     df["frip"] = 100.0 * df["rip"] / df["reads"]
 
     df.index = [re.search('[yo]d\\d+', df.loc[n]["file"], flags=re.IGNORECASE).group(0) for n in df.index]
@@ -161,39 +175,7 @@ def plot_frip_boxplot(folder, pp):
     pp.savefig()
 
 
-def plot_consensus(folder, pp):
-    tracks_paths = sorted({folder + '/' + f for f in os.listdir(folder) if
-                           re.match('.*\.(?:broadPeak|bed|narrowPeak)$', f) and not re.match('.*weak_consensus.*', f)})
-    union_sh = os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                             '../bed/union.sh'))
-    command = "bash {} {} >{}".format(
-        union_sh, " ".join(tracks_paths), os.path.join("report", "counts.bed"))
-    os.system(command)
-    counts = [0] * len(tracks_paths)
-    for line in read_all_lines(os.path.join("report", "counts.bed")):
-        parts = line.split("\t")
-        count = len(parts[3].split("|"))
-
-        counts[count - 1] += 1
-    counts.reverse()
-    counts_cumulative = list(np.cumsum(counts))
-    counts_cumulative.reverse()
-    plt.figure()
-    plt.xlabel('Number of donors')
-    plt.ylabel('Number of peaks')
-    plt.plot(range(len(tracks_paths)), counts_cumulative, label="")
-    plt.title("Reverse cumulative consensus peaks sum via number of donors")
-    pp.savefig()
-
-
-def read_all_lines(peak_file):
-    with open(peak_file, "r") as f:
-        return f.readlines()
-
-
-def plot_length_hist(folder, pp):
-    tracks_paths = sorted({folder + '/' + f for f in os.listdir(folder) if
-                           re.match('.*\.(?:broadPeak|bed|narrowPeak)$', f) and not re.match('.*weak_consensus.*', f)})
+def plot_length_hist(tracks_paths, pp):
     plt.figure()
     bins = np.logspace(2.0, 4.0, 80)
     for i, track_path in enumerate(tracks_paths):
@@ -218,26 +200,41 @@ def plot_length_hist(folder, pp):
     pp.savefig()
 
 
+def read_all_lines(peak_file):
+    with open(peak_file, "r") as f:
+        return f.readlines()
+
+
 def main():
     args = sys.argv
 
-    if len(args) < 1:
+    if len(args) < 2:
         print(help_data)
         sys.exit(1)
 
-    pp = PdfPages('multipage.pdf')
+    folder_path = args[1]
+    bed_files_paths = sorted({folder_path + '/' + f for f in os.listdir(folder_path) if
+                              re.match('.*peaks.*\.(?:broadPeak|bed|narrowPeak)$', f)})
+    tracks_paths = sorted({bed_file for bed_file in bed_files_paths if re.match(".*([YO]D\d+).*", bed_file)})
+    od_paths_map = {re.findall('OD\\d+', track_path)[0]: Bed(track_path) for track_path in tracks_paths
+                    if re.match('.*OD\\d+.*\.(?:broadPeak|bed|narrowPeak)$', track_path)}
+    yd_paths_map = {re.findall('YD\\d+', track_path)[0]: Bed(track_path) for track_path in tracks_paths
+                    if re.match('.*YD\\d+.*\.(?:broadPeak|bed|narrowPeak)$', track_path)}
+    rip_files = sorted([folder_path + '/' + file for file in os.listdir(folder_path) if file.endswith("_rip.csv")])
 
-    plot_peaks_intersect(args[1], pp)
-    plot_consensus(args[1], pp)
-    plot_jaccard_heatmap(args[1], pp)
-    plot_frip_boxplot(args[1], pp)
-    plot_length_hist(args[1], pp)
+    pp = PdfPages(args[2])
+
+    plot_peaks_intersect(od_paths_map, yd_paths_map, pp)
+    plot_consensus(tracks_paths, pp)
+    plot_jaccard_heatmap(bed_files_paths, pp)
+    plot_frip_boxplot(rip_files, pp)
+    plot_length_hist(tracks_paths, pp)
 
     pp.close()
 
 
 if __name__ == "__main__":
-    num_of_threads = 8
+    num_of_threads = 20
     # Initializing multiprocessor pool
     counter = multiprocessing.Value('i', 0)
     lock = multiprocessing.Lock()
