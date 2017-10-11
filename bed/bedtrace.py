@@ -46,8 +46,8 @@ METAPEAKS_SH = os.path.dirname(os.path.abspath(__file__)) + '/metapeaks.sh'
 TEMPFILES = []
 
 
-def run(commands, stdin=None, stdout=subprocess.PIPE):
-    """Launches pipe of commands given stdin and final stdout"""
+def run(commands, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
+    """Launches pipe of commands given stdin and final stdout, stderr"""
     processes = []
     _stdin = stdin
     for i, cmd in enumerate(commands):
@@ -55,12 +55,9 @@ def run(commands, stdin=None, stdout=subprocess.PIPE):
             _stdout = subprocess.PIPE
         else:
             _stdout = stdout
-        if i == 0:
-            p = subprocess.Popen(cmd, stdin=_stdin, stdout=_stdout)
-        elif i == len(commands) - 1:
-            p = subprocess.Popen(cmd, stdin=_stdin, stdout=_stdout)
-        else:
-            p = subprocess.Popen(cmd, stdin=_stdin, stdout=_stdout)
+
+        p = subprocess.Popen(cmd, stdin=_stdin, stdout=_stdout,
+                             stderr=stderr)
         processes.append(p)
         _stdin = p.stdout
 
