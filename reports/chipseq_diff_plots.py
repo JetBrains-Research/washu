@@ -89,9 +89,14 @@ class DiffProcessor:
         self.bed_files_produced.append(result_base_file_name)
 
     def process_diffreps(self):
-        folder_name = os.path.join("/mnt/stripe/kurbatsky/configs/Y20O20/diffreps", self.mark)
+        folder_name = os.path.join("/mnt/stripe/bio/experiments/configs/Y20O20/diffreps", self.mark)
 
         self.add_bed_file("diffreps_{}.bed".format(self.mark), os.path.join(folder_name, "hotspot.bed"))
+
+    def process_diffreps_not_uniqe(self):
+        folder_name = os.path.join("/mnt/stripe/kurbatsky/configs/Y20O20/diffreps", self.mark)
+
+        self.add_bed_file("diffreps_not_uniqe_{}.bed".format(self.mark), os.path.join(folder_name, "hotspot.bed"))
 
     def compare_difference(self):
 
@@ -106,6 +111,8 @@ class DiffProcessor:
         self.process_macs_pooled_Y_vs_O()
 
         self.process_diffreps()
+
+        self.process_diffreps_not_uniqe()
 
     def count_intersections(self):
         temp_dir = tempfile.mkdtemp(suffix=".tmp")
