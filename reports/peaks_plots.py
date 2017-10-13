@@ -45,8 +45,9 @@ def plot_peaks_intersect(od_paths_map, yd_paths_map, pp):
     p2 = plt.bar(ind, group_specific, width, bottom=common_peaks, color='blue')
     p3 = plt.bar(ind, sample_specific, width, bottom=np.sum([common_peaks, group_specific], axis=0), color='red')
     plt.ylabel('Peaks count')
-    plt.xticks(ind, names, rotation=70)
+    plt.xticks(ind, names, rotation=90)
     plt.legend((p1[0], p2[0], p3[0]), ('Common', 'Group', 'Individual'))
+    plt.tight_layout()
     pp.savefig()
 
 
@@ -73,7 +74,7 @@ def plot_consensus(tracks_paths, pp):
 
 def plot_jaccard_heatmap(tracks_paths, pp):
     tracks_names = [x.split('/')[-1] for x in sorted(list(set(tracks_paths)))]
-    callers_for_heatmaps = [item.split('_')[0] + "_" + item.split('_')[1] for item in tracks_names]
+    callers_for_heatmaps = [item.split('_')[0] + "_macs" for item in tracks_names]
     # callers_for_heatmaps = tracks_names
     help_dict = {tracks_names[n]: n for n in range(len(tracks_names))}
     heatmap = np.zeros((len(tracks_names), len(tracks_names)))
@@ -96,13 +97,15 @@ def plot_jaccard_heatmap(tracks_paths, pp):
     plt.tight_layout()
     pp.savefig()
 
-    plt.figure()
-    plt.imshow(heatmap, aspect='auto', cmap="viridis", interpolation="nearest")
-    plt.xticks(np.arange(0, len(tracks_names), 1), callers_for_heatmaps, rotation='vertical')
-    plt.yticks(np.arange(0, len(tracks_names), 1), callers_for_heatmaps)
-    plt.colorbar(orientation='vertical')
-    plt.tight_layout()
-    plt.grid()
+    figure, axes = plt.subplots()
+    sns.set(font_scale=0.75)
+    heatmap_data_frame = pd.DataFrame(data=heatmap[0:, 0:],  # values
+                                      index=callers_for_heatmaps,  # 1st column as index
+                                      columns=callers_for_heatmaps)  # 1st row as the column names
+    cg = sns.clustermap(heatmap_data_frame, metric="chebyshev")
+    plt.setp(cg.ax_heatmap.yaxis.get_majorticklabels(), rotation=0)
+    plt.setp(cg.ax_heatmap.xaxis.get_majorticklabels(), rotation=90)
+    figure.tight_layout()
     pp.savefig()
 
 
@@ -121,7 +124,7 @@ def calc_jaccard_distance(bed_a, bed_b, size):
         print('Failed to compare {} and {}.'.format(bed_a, bed_b))
         jac_dict = {'jaccard': -1}
 
-    return jac_dict['jaccard']
+    return 0 if np.isnan(jac_dict['jaccard']) else jac_dict['jaccard']
 
 
 def plot_frip_boxplot(rip_files, pp):
@@ -176,20 +179,24 @@ def plot_frip_boxplot(rip_files, pp):
 
 
 def plot_length_hist(tracks_paths, pp):
-    plt.figure()
     bins = np.logspace(2.0, 4.0, 80)
-    for i, track_path in enumerate(tracks_paths):
-        lenghts = []
-
+    lenghts = {}
+    max_length = 0
+    for track_path in tracks_paths:
+        lenghts[track_path] = []
         for line in read_all_lines(track_path):
             parts = line.split("\t")
-            lenghts.append(int(parts[2]) - int(parts[1]))
+            lenghts[track_path].append(int(parts[2]) - int(parts[1]))
+        max_length = max(max_length, max(plt.hist(lenghts[track_path], bins, histtype='bar')[0]))
 
+    plt.figure()
+    for i, track_path in enumerate(tracks_paths):
         ax = plt.subplot(330 + i % 9 + 1)
-        ax.hist(lenghts, bins, histtype='bar')
+        ax.hist(lenghts[track_path], bins, histtype='bar')
         ax.set_xscale('log')
         ax.set_xlabel('Peaks length')
         ax.set_ylabel('Peaks count')
+        ax.set_ylim([0, max_length])
         ax.set_title(re.match(".*([YO]D\d+).*", track_path).group(1))
 
         if i % 9 == 8:
@@ -214,7 +221,7 @@ def main():
 
     folder_path = args[1]
     bed_files_paths = sorted({folder_path + '/' + f for f in os.listdir(folder_path) if
-                              re.match('.*peaks.*\.(?:broadPeak|bed|narrowPeak)$', f)})
+                              re.match('.*\.(?:broadPeak|bed|narrowPeak)$', f)})
     tracks_paths = sorted({bed_file for bed_file in bed_files_paths if re.match(".*([YO]D\d+).*", bed_file)})
     od_paths_map = {re.findall('OD\\d+', track_path)[0]: Bed(track_path) for track_path in tracks_paths
                     if re.match('.*OD\\d+.*\.(?:broadPeak|bed|narrowPeak)$', track_path)}
@@ -234,7 +241,7 @@ def main():
 
 
 if __name__ == "__main__":
-    num_of_threads = 20
+    num_of_threads = 8
     # Initializing multiprocessor pool
     counter = multiprocessing.Value('i', 0)
     lock = multiprocessing.Lock()
