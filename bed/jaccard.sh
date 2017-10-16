@@ -21,8 +21,10 @@ source $(dirname $0)/../parallel/util.sh 2> /dev/null
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
-BED1=$1
-BED2=$2
+BED1=${TMPDIR}/1.bed
+sort -k1,1 -k2,2n -T ${TMPDIR} $1 > $BED1
+BED2=${TMPDIR}/2.bed
+sort -k1,1 -k2,2n -T ${TMPDIR} $2 > $BED2
 
 INTERSECT=$(bedtools intersect -a $BED1 -b $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
 UNION=$(bash $(dirname $0)/union.sh $BED1 $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
