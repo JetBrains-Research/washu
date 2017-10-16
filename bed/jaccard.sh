@@ -28,8 +28,13 @@ sort -k1,1 -k2,2n -T ${TMPDIR} $2 > $BED2
 
 INTERSECT=$(bedtools intersect -a $BED1 -b $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
 UNION=$(bash $(dirname $0)/union.sh $BED1 $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
-echo "0$(bc -l <<< "$INTERSECT / $UNION")"
 
+# Empty union results in 0
+if [[ $UNION -eq "0" ]]; then
+    echo 0
+else
+    echo "$(bc -l <<< "$INTERSECT / $UNION")" | sed 's#^\.#0.#g'
+fi
 
 # TMP dir cleanup:
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
