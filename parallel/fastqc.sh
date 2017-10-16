@@ -26,6 +26,17 @@ if [ $# -lt 1 ]; then
 fi
 WORK_DIRS="$@"
 
+for WORK_DIR in $(find . -type d -name "H*"); do :
+    WORK_DIR_NAME=${WORK_DIR##*/}
+    echo  "!${WORK_DIR_NAME}"
+
+    cd ${WORK_DIR}
+    find . -name "*_peaks.bed" -print0 | xargs -0 bash /home/user/work/washu/bed/union.sh | grep '|' | awk -v OFS='\t' '{print $1,$2,$3}' > ${WORK_DIR_NAME}_zinbra_weak_consensus.bed
+    find . -name "*OD*_peaks.bed" -print0 | xargs -0 bash /home/user/work/washu/bed/union.sh | grep '|' | awk -v OFS='\t' '{print $1,$2,$3}' > ODS_${WORK_DIR_NAME}_zinbra_weak_consensus.bed
+    find . -name "*YD*_peaks.bed" -print0 | xargs -0 bash /home/user/work/washu/bed/union.sh | grep '|' | awk -v OFS='\t' '{print $1,$2,$3}' > YDS_${WORK_DIR_NAME}_zinbra_weak_consensus.bed
+done
+
+
 TASKS=""
 for WORK_DIR in ${WORK_DIRS}; do :
     cd ${WORK_DIR}
