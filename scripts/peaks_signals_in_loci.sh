@@ -56,7 +56,7 @@ echo "Peaks in loci: $(cat ${PEAKS_IN_LOCI} | wc -l)"
 echo "Loci: $(cat ${LOCI} | wc -l)"
 
 # Get coverage:
-"${SCRIPT_DIR}/scripts/peaks_signals.sh" ${WORK_DIR} ${INSERT_LENGTH} ${PEAKS_IN_LOCI} ${ID}
+"${SCRIPT_DIR}/parallel/signals_tag.sh" ${WORK_DIR} ${INSERT_LENGTH} ${PEAKS_IN_LOCI} ${ID}
 
 
 echo "Done. Batch peaks_signals_in_loci: $@"
