@@ -35,8 +35,9 @@ do :
     NAME=${FILE%%.bam} # file name without extension
     ID=${NAME}_${GENOME}_${Q}
 
-    # Submit task
-    run_parallel << SCRIPT
+    if [ ! -f ${ID}_peaks.bed ]; then
+        # Submit task
+        run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N zinbra_${ID}
 #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=64gb
@@ -71,8 +72,9 @@ module load bedtools2
 bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}_peaks.bed
 SCRIPT
 
-    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+        echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
+        TASKS="$TASKS $QSUB_ID"
+    fi
 done
 wait_complete ${TASKS}
 check_logs
