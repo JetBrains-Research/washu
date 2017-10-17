@@ -12,7 +12,7 @@
 #
 #
 # Example
-#   ./peaks_signals_in_loci.sh . 150 YO_macs_broad_0.1.bed cpgIslands.bed CGI
+#   ./signals_tag_in_loci.sh . 150 YO_macs_broad_0.1.bed cpgIslands.bed CGI
 #
 
 # Load technical stuff
@@ -59,4 +59,4 @@ echo "Loci: $(cat ${LOCI} | wc -l)"
 "${SCRIPT_DIR}/parallel/signals_tag.sh" ${WORK_DIR} ${INSERT_LENGTH} ${PEAKS_IN_LOCI} ${ID}
 
 
-echo "Done. Batch peaks_signals_in_loci: $@"
+echo "Done. Batch signals_tag_in_loci: $@"
