@@ -31,12 +31,38 @@ OD_GROUP = Group('OD', 'blue', '')
 YD_GROUP = Group('YD', 'red', '')
 
 
+def is_od_input(c):
+    return re.match('.*input.*od.*', c, flags=re.IGNORECASE) or \
+           re.match('.*od.*input.*', c, flags=re.IGNORECASE)
+
+
+def is_yd_input(c):
+    return re.match('.*input.*yd.*', c, flags=re.IGNORECASE) or \
+           re.match('.*yd.*input.*', c, flags=re.IGNORECASE)
+
+
+def is_input(c):
+    return is_od_input(c) or is_yd_input(c)
+
+
+def is_od(c):
+    return re.match('.*od\\d+.*', c, flags=re.IGNORECASE) and not is_input(c)
+
+
+def is_yd(c):
+    return re.match('.*yd\\d+.*', c, flags=re.IGNORECASE) and not is_input(c)
+
+
+def age(n):
+    return re.search('[yo]d\\d+', n, flags=re.IGNORECASE).group(0)
+
+
 def signal_pca(x0,
                title,
                groups=None,
                scale=Normalization.NONE):
     if groups is None:
-        groups = [OD_GROUP if re.match('.*od\\d+.*', r, flags=re.IGNORECASE) else YD_GROUP for r in x0.index]
+        groups = [OD_GROUP if is_od(r) else YD_GROUP for r in x0.index]
     x = x0
     if scale == Normalization.SCALED:
         x = preprocessing.scale(x0)
@@ -47,9 +73,7 @@ def signal_pca(x0,
         group_filter = np.asarray([g == n for n in groups])
         plt.scatter(x_r[group_filter, 0], x_r[group_filter, 1], color=g.color, alpha=.8, label=g.name)
 
-    for g, label, x, y in zip(groups,
-                              [re.search('[yo]d\\d+', n, flags=re.IGNORECASE).group(0) for n in x0.index],
-                              x_r[:, 0], x_r[:, 1]):
+    for g, label, x, y in zip(groups, [age(n) for n in x0.index], x_r[:, 0], x_r[:, 1]):
         plt.annotate(g.prefix + label,
                      xy=(x, y),
                      xytext=(5, 0),
@@ -91,10 +115,8 @@ class Plot(Enum):
 
 def mean_regions(df, title, ax, plot_type):
     """Plots for mean values over OD and YD"""
-    ods = [c for c in df.columns if
-           re.match('.*od\\d+.*', c, flags=re.IGNORECASE) and not re.match('.*input.*', c, flags=re.IGNORECASE)]
-    yds = [c for c in df.columns if
-           re.match('.*yd\\d+.*', c, flags=re.IGNORECASE) and not re.match('.*input.*', c, flags=re.IGNORECASE)]
+    ods = [c for c in df.columns if is_od(c)]
+    yds = [c for c in df.columns if is_yd(c)]
 
     signal = pd.DataFrame()
     signal["ODS"] = df[ods].mean(axis=1)
@@ -140,7 +162,7 @@ def mean_regions(df, title, ax, plot_type):
 def mean_boxplots(df, title, ax):
     """Plot mean values for individual donors"""
     signal = df.mean(axis=1).to_frame("value")
-    signal.index = [re.search('[yo]d\\d+', n, flags=re.IGNORECASE).group(0) for n in signal.index]
+    signal.index = [age(n) for n in signal.index]
     signal["age"] = "ODS"
     signal.loc[signal.index.str.startswith("y"), "age"] = "YDS"
 
@@ -196,8 +218,8 @@ def process(folder, id):
         try:
             print(f)
             df = pd.read_csv(f, sep='\t')
-            od_inputs = [c for c in df.columns.values if re.match('.*od.*input.*', c, flags=re.IGNORECASE)]
-            yd_inputs = [c for c in df.columns.values if re.match('.*yd.*input.*', c, flags=re.IGNORECASE)]
+            od_inputs = [c for c in df.columns.values if is_od_input(c)]
+            yd_inputs = [c for c in df.columns.values if is_yd_input(c)]
             inputs_found = od_inputs and yd_inputs
             if inputs_found:
                 signal = df.drop(['chr', 'start', 'end', od_inputs[0], yd_inputs[0]], axis=1)
@@ -233,12 +255,10 @@ def process(folder, id):
     f = os.path.join(folder, '{0}/{0}_raw.tsv'.format(id))
     try:
         df = pd.read_csv(f, sep='\t')
-        od_input = [c for c in df.columns.values if re.match('.*od.*input.*', c, flags=re.IGNORECASE)][0]
-        yd_input = [c for c in df.columns.values if re.match('.*yd.*input.*', c, flags=re.IGNORECASE)][0]
-        ods = [c for c in df.columns if
-               re.match('.*od\\d+.*', c, flags=re.IGNORECASE) and not re.match('.*input.*', c, flags=re.IGNORECASE)]
-        yds = [c for c in df.columns if
-               re.match('.*yd\\d+.*', c, flags=re.IGNORECASE) and not re.match('.*input.*', c, flags=re.IGNORECASE)]
+        od_input = [c for c in df.columns.values if is_od_input(c)][0]
+        yd_input = [c for c in df.columns.values if is_yd_input(c)][0]
+        ods = [c for c in df.columns if is_od(c)]
+        yds = [c for c in df.columns if is_yd(c)]
 
         sizes = pd.read_csv(folder + '/{0}/sizes.tsv'.format(id), sep='\t', names=('name', 'size'))
         sizes.index = sizes['name']
