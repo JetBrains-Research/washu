@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
+if [ -z $WASHU_PARALLELISM ]; then
+    WASHU_PARALLELISM=8
+fi
+>&2 echo "WASHU_PARALLELISM LEVEL: $WASHU_PARALLELISM"
+
 # MOCK for module command
 type module &>/dev/null || module() { echo "[mock] module $@"; }
 
@@ -62,8 +67,8 @@ else
 
     run_parallel()
     {
-        # Wait until less then 8 tasks running
-        while [ $(jobs | wc -l) -ge 8 ] ; do sleep 1 ; done
+        # Wait until less then $WASHU_PARALLELISM tasks running
+        while [ $(jobs | wc -l) -ge $WASHU_PARALLELISM ] ; do sleep 1 ; done
 
         # LOAD args to $CMD
         CMD=""
