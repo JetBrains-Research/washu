@@ -1,6 +1,5 @@
 import os
 import sys
-import pybedtools
 import multiprocessing
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -9,9 +8,10 @@ import pandas as pd
 import re
 import functools
 from matplotlib.backends.backend_pdf import PdfPages
-from pybedtools.helpers import BEDToolsError
+from scipy.cluster import hierarchy
+from scipy.spatial import distance
 
-from bed.bedtrace import intersect, Bed, metapeaks
+from bed.bedtrace import intersect, Bed, metapeaks, jaccard
 
 help_data = """
 """
@@ -73,19 +73,17 @@ def plot_consensus(tracks_paths, pp):
 
 
 def plot_jaccard_heatmap(tracks_paths, pp):
-    tracks_names = [x.split('/')[-1] for x in sorted(list(set(tracks_paths)))]
-    callers_for_heatmaps = [item.split('_')[0] + "_macs" for item in tracks_names]
-    # callers_for_heatmaps = tracks_names
-    help_dict = {tracks_names[n]: n for n in range(len(tracks_names))}
-    heatmap = np.zeros((len(tracks_names), len(tracks_names)))
-    sample = []
+    callers_for_heatmaps = [re.match(".*([YO]D\d+|consensus).*", item).group(1) + "_zinbra" for item in tracks_paths]
+    help_dict = {tracks_paths[n]: n for n in range(len(tracks_paths))}
+    heatmap = np.zeros((len(tracks_paths), len(tracks_paths)))
 
+    sample = []
     for file_path in tracks_paths:
         distances = list(pool.map(functools.partial(calc_jaccard_distance, bed_b=file_path,
-                                                    size=len(tracks_names) * len(tracks_names)), tracks_paths))
-        short_distances = [(y, x) for (y, x) in sorted(zip(distances, tracks_names), reverse=True)]
+                                                    size=len(tracks_paths) * len(tracks_paths)), tracks_paths))
+        short_distances = [(y, x) for (y, x) in sorted(zip(distances, tracks_paths), reverse=True)]
         for db_entry in short_distances:
-            heatmap[help_dict[file_path.split('/')[-1]], help_dict[db_entry[1]]] = db_entry[0]
+            heatmap[help_dict[file_path], help_dict[db_entry[1]]] = db_entry[0]
             sample.append(db_entry[0])
 
     sample = sorted(sample)
@@ -99,10 +97,16 @@ def plot_jaccard_heatmap(tracks_paths, pp):
 
     figure, axes = plt.subplots()
     sns.set(font_scale=0.75)
-    heatmap_data_frame = pd.DataFrame(data=heatmap[0:, 0:],  # values
+
+    dissimilarity = distance.squareform(1 - heatmap)
+    linkage = hierarchy.linkage(dissimilarity, method="average")
+    clusters = hierarchy.dendrogram(linkage, no_plot=True)['leaves']
+
+    heatmap_data_frame = pd.DataFrame(data=heatmap,  # values
                                       index=callers_for_heatmaps,  # 1st column as index
                                       columns=callers_for_heatmaps)  # 1st row as the column names
-    cg = sns.clustermap(heatmap_data_frame, metric="chebyshev")
+    cg = sns.clustermap(heatmap_data_frame, cmap='rainbow', row_linkage=linkage, col_linkage=linkage,
+                        row_cluster=clusters, col_cluster=clusters, vmin=0.0, vmax=1.0)
     plt.setp(cg.ax_heatmap.yaxis.get_majorticklabels(), rotation=0)
     plt.setp(cg.ax_heatmap.xaxis.get_majorticklabels(), rotation=90)
     figure.tight_layout()
@@ -114,17 +118,7 @@ def calc_jaccard_distance(bed_a, bed_b, size):
         counter.value += 1
         if counter.value % 100 == 0:
             print("{0} / {1} Processing file {2}.".format(counter.value, size, bed_a))
-            pybedtools.cleanup()
-
-    a = pybedtools.bedtool.BedTool(bed_a).sort()
-    b = pybedtools.bedtool.BedTool(bed_b).sort()
-    try:
-        jac_dict = pybedtools.bedtool.BedTool.jaccard(a, b)
-    except BEDToolsError:
-        print('Failed to compare {} and {}.'.format(bed_a, bed_b))
-        jac_dict = {'jaccard': -1}
-
-    return 0 if np.isnan(jac_dict['jaccard']) else jac_dict['jaccard']
+    return 1.0 if bed_a == bed_b else jaccard(bed_a, bed_b)
 
 
 def plot_frip_boxplot(rip_files, pp):
@@ -222,7 +216,15 @@ def main():
     folder_path = args[1]
     bed_files_paths = sorted({folder_path + '/' + f for f in os.listdir(folder_path) if
                               re.match('.*\.(?:broadPeak|bed|narrowPeak)$', f)})
-    tracks_paths = sorted({bed_file for bed_file in bed_files_paths if re.match(".*([YO]D\d+).*", bed_file)})
+    filtered_bed_files_paths = bed_files_paths
+    # filtered_bed_files_paths = []
+    # for bed_files_path in bed_files_paths:
+    #      with open(tempfile.tempdir + "/" + bed_files_path.split("/")[-1].split(".")[0] + "_" + args[3] + ".bed",
+    #                'w') as tmpfile:
+    #         run((["sort", "-k9nr", bed_files_path], ["head", "-n", args[3]]), stdout=tmpfile)
+    #         filtered_bed_files_paths.append(tmpfile.name)
+
+    tracks_paths = sorted({bed_file for bed_file in filtered_bed_files_paths if re.match(".*([YO]D\d+).*", bed_file)})
     od_paths_map = {re.findall('OD\\d+', track_path)[0]: Bed(track_path) for track_path in tracks_paths
                     if re.match('.*OD\\d+.*\.(?:broadPeak|bed|narrowPeak)$', track_path)}
     yd_paths_map = {re.findall('YD\\d+', track_path)[0]: Bed(track_path) for track_path in tracks_paths
@@ -233,7 +235,7 @@ def main():
 
     plot_peaks_intersect(od_paths_map, yd_paths_map, pp)
     plot_consensus(tracks_paths, pp)
-    plot_jaccard_heatmap(bed_files_paths, pp)
+    plot_jaccard_heatmap(filtered_bed_files_paths, pp)
     plot_frip_boxplot(rip_files, pp)
     plot_length_hist(tracks_paths, pp)
 
