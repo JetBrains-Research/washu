@@ -5,8 +5,53 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 
 >&2 echo "jaccard $@"
+
+SORTED=NO
+HELP=NO
+###########################################
+POSITIONAL=()
+
+if [[ $# -eq 0 ]]; then
+  HELP=YES
+fi
+
+while [[ $# -gt 0 ]]; do
+key="$1"
+case $key in
+    --help|-h)
+    HELP=YES
+    shift # past argument with no value
+    ;;
+
+    -s) # Already sorted
+    SORTED=YES
+    shift # past argument with no value
+    ;;
+
+    *)
+    POSITIONAL+=("$key")
+    shift
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}"
+###########################################
+
+if [ "${HELP}" == "YES" ]; then
+  echo "Calculate Jaccard Index for A.bed B.bed"
+  echo ""
+  echo "Usage: jaccard.sh [OPTIONS] A.bed B.bed"
+  echo ""
+  echo "Options:"
+  echo "  -s              Files already sorted, do not resort them before calculations"
+  echo "  -h|--help       Show help"
+  echo ""
+  echo "With no arguments - show help"
+  exit 1
+fi
+
 if [ $# -lt 2 ]; then
-    echo "Need 2 parameters! <BED1> <BED2>"
+    echo "Need 2 parameters! <A.bed> <B.bed>"
     exit 1
 fi
 
@@ -24,9 +69,15 @@ mkdir -p "${TMPDIR}"
 # input files may contain intersecting intervals (e.g. introns vs transcripts)
 # merging is obligatory there so as get correct result
 BED1=${TMPDIR}/1.bed
-sort -k1,1 -k2,2n -T ${TMPDIR} $1 | bedtools merge > $BED1
 BED2=${TMPDIR}/2.bed
-sort -k1,1 -k2,2n -T ${TMPDIR} $2 | bedtools merge > $BED2
+if [ "${SORTED}" == "YES" ]; then
+    bedtools merge -i $1 > $BED1
+    bedtools merge -i $2 > $BED2
+else
+    sort -k1,1 -k2,2n -T ${TMPDIR} $1 | bedtools merge > $BED1
+    sort -k1,1 -k2,2n -T ${TMPDIR} $2 | bedtools merge > $BED2
+fi
+
 
 INTERSECT=$(bedtools intersect -a $BED1 -b $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
 UNION=$(bash $(dirname $0)/union.sh $BED1 $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
