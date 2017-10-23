@@ -21,10 +21,12 @@ source $(dirname $0)/../parallel/util.sh 2> /dev/null
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
+# input files may contain intersecting intervals (e.g. introns vs transcripts)
+# merging is obligatory there so as get correct result
 BED1=${TMPDIR}/1.bed
-sort -k1,1 -k2,2n -T ${TMPDIR} $1 > $BED1
+sort -k1,1 -k2,2n -T ${TMPDIR} $1 | bedtools merge > $BED1
 BED2=${TMPDIR}/2.bed
-sort -k1,1 -k2,2n -T ${TMPDIR} $2 > $BED2
+sort -k1,1 -k2,2n -T ${TMPDIR} $2 | bedtools merge > $BED2
 
 INTERSECT=$(bedtools intersect -a $BED1 -b $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
 UNION=$(bash $(dirname $0)/union.sh $BED1 $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')

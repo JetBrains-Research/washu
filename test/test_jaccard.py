@@ -23,6 +23,7 @@ from test.fixtures import test_data
     ("A.unsorted.bed", "B.bed", "0.33333333333333333333"),
     ("A.bed", "B.unsorted.bed", "0.33333333333333333333"),
     ("A.unsorted.bed", "B.unsorted.bed", "0.33333333333333333333"),
+    ("E.bed", "F.bed", "0.48611111111111111111"),
 ])
 def test_intersect(capfd, test_data, file1, file2, jaccard):
     files = [file1, file2]
