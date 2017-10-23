@@ -13,15 +13,16 @@ from test.fixtures import test_data
 #  |-| |-|        |-|          |-|                  |-|
 # D.bed
 #                                                   |-|
-@pytest.mark.parametrize("files,jaccard", [
-    (["A.bed", "A.bed"], "1.00000000000000000000"),
-    (["A.bed", "B.bed"], "0.33333333333333333333"),
-    (["B.bed", "A.bed"], "0.33333333333333333333"),
-    (["B.bed", "C.bed"], "0.02083333333333333333"),
-    (["A.bed", "C.bed"], "0.08888888888888888888"),
-    (["A.bed", "D.bed"], "0"),
+@pytest.mark.parametrize("file1,file2,jaccard", [
+    ("A.bed", "A.bed", "1.00000000000000000000"),
+    ("A.bed", "B.bed", "0.33333333333333333333"),
+    ("B.bed", "A.bed", "0.33333333333333333333"),
+    ("B.bed", "C.bed", "0.02083333333333333333"),
+    ("A.bed", "C.bed", "0.08888888888888888888"),
+    ("A.bed", "D.bed", "0"),
 ])
-def test_intersect(capfd, test_data, files, jaccard):
+def test_intersect(capfd, test_data, file1, file2, jaccard):
+    files = [file1, file2]
     run_bash("bed/jaccard.sh", *[test_data("bed/" + f) for f in files])
 
     out, _err = capfd.readouterr()
