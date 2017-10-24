@@ -57,7 +57,7 @@ def test_intersect(capfd, test_data, file1, file2, jaccard, sorted, merged):
     ) == res
 
 
-@pytest.mark.parametrize("help_arg", [ True, False ])
+@pytest.mark.parametrize("help_arg", [True, False])
 def test_intersect_help(capfd, help_arg):
     if help_arg:
         args = ["-s", "foo", "-h"]
