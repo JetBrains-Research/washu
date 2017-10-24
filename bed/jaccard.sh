@@ -7,6 +7,7 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 >&2 echo "jaccard $@"
 
 SORTED=NO
+MERGED=NO
 HELP=NO
 ###########################################
 POSITIONAL=()
@@ -28,6 +29,11 @@ case $key in
     shift # past argument with no value
     ;;
 
+    -m) # Already merged
+    MERGED=YES
+    shift # past argument with no value
+    ;;
+
     *)
     POSITIONAL+=("$key")
     shift
@@ -43,7 +49,8 @@ if [ "${HELP}" == "YES" ]; then
   echo "Usage: jaccard.sh [OPTIONS] A.bed B.bed"
   echo ""
   echo "Options:"
-  echo "  -s              Files already sorted, do not resort them before calculations"
+  echo "  -s              Files already sorted, skip resort step"
+  echo "  -m              Files already merged, skip merge step"
   echo "  -h|--help       Show help"
   echo ""
   echo "With no arguments - show help"
@@ -66,20 +73,41 @@ source $(dirname $0)/../parallel/util.sh 2> /dev/null
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
-# input files may contain intersecting intervals (e.g. introns vs transcripts)
+BED1=$1
+BED2=$2
+
+# 1. input files may contain intersecting intervals (e.g. introns vs transcripts)
 # merging is obligatory there so as get correct result
-BED1=${TMPDIR}/1.bed
-BED2=${TMPDIR}/2.bed
-if [ "${SORTED}" == "YES" ]; then
-    bedtools merge -i $1 > $BED1
-    bedtools merge -i $2 > $BED2
-else
-    sort -k1,1 -k2,2n -T ${TMPDIR} $1 | bedtools merge > $BED1
-    sort -k1,1 -k2,2n -T ${TMPDIR} $2 | bedtools merge > $BED2
+#
+# 2. whether files are sorted or not isn't critical here, but for sorted files
+# we can use additional options which can speedup calculations
+
+if [ "${MERGED}" == "NO" ]; then
+    # merge command requires pre-sorted files
+    if [ "${SORTED}" == "NO" ]; then
+        BED1_SORTED=${TMPDIR}/1.sorted.bed
+        BED2_SORTED=${TMPDIR}/2.sorted.bed
+        sort -k1,1 -k2,2n -T ${TMPDIR} $BED1 > $BED1_SORTED
+        sort -k1,1 -k2,2n -T ${TMPDIR} $BED2 > $BED2_SORTED
+        BED1=$BED1_SORTED
+        BED2=$BED2_SORTED
+    fi
+
+    BED1_MERGED=${TMPDIR}/1.merged.bed
+    BED2_MERGED=${TMPDIR}/2.merged.bed
+    bedtools merge -i $BED1 > $BED1_MERGED
+    bedtools merge -i $BED2 > $BED2_MERGED
+    BED1=$BED1_MERGED
+    BED2=$BED2_MERGED
 fi
 
+if [ "${SORTED}" == "NO" ]; then
+    SORTED_OPT=""
+else
+    SORTED_OPT=" -sorted"
+fi
 
-INTERSECT=$(bedtools intersect -a $BED1 -b $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
+INTERSECT=$(bedtools intersect$SORTED_OPT -a $BED1 -b $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
 UNION=$(bash $(dirname $0)/union.sh $BED1 $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
 
 # Empty union results in 0
