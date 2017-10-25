@@ -37,6 +37,8 @@ from matplotlib_venn import venn2
 from matplotlib_venn import venn3
 from pathlib import Path
 
+from scripts.util import run
+
 UNION_SH = os.path.dirname(os.path.abspath(__file__)) + '/union.sh'
 INTERSECT_SH = os.path.dirname(os.path.abspath(__file__)) + '/intersect.sh'
 MINUS_SH = os.path.dirname(os.path.abspath(__file__)) + '/minus.sh'
@@ -45,29 +47,6 @@ METAPEAKS_SH = os.path.dirname(os.path.abspath(__file__)) + '/metapeaks.sh'
 JACCARD_SH = os.path.dirname(os.path.abspath(__file__)) + '/jaccard.sh'
 
 TEMPFILES = []
-
-
-def run(commands, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
-    """Launches pipe of commands given stdin and final stdout, stderr"""
-    processes = []
-    _stdin = stdin
-    for i, cmd in enumerate(commands):
-        if i < len(commands) - 1:
-            _stdout = subprocess.PIPE
-        else:
-            _stdout = stdout
-
-        p = subprocess.Popen(cmd, stdin=_stdin, stdout=_stdout,
-                             stderr=stderr)
-        processes.append(p)
-        _stdin = p.stdout
-
-    for i in range(0, len(processes)):
-        if i < len(processes) - 1:
-            # Allow p1 to receive a SIGPIPE if p2 exits.
-            processes[i].stdout.close()
-        else:
-            return processes[i].communicate()
 
 
 def columns(path):

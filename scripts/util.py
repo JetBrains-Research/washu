@@ -3,6 +3,7 @@ import os
 import getopt
 import re
 import sys
+import subprocess
 
 #################################################################
 # Add project root folder to load path
@@ -13,7 +14,6 @@ sys.path.insert(0, project_root_path)
 
 from pipeline_utils import run_bash, move_forward  # nopep8
 from reports.macs2_logs import process_macs2_logs  # nopep8
-from bed.bedtrace import run   # nopep8
 
 #################################################################
 
@@ -173,6 +173,29 @@ Defaults for MACS2 broad peak calling:
         process_macs2_logs(result_dir)
 
     return [os.path.join(wd, wd2result[wd]) for wd in work_dirs]
+
+
+def run(commands, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
+    """Launches pipe of commands given stdin and final stdout, stderr"""
+    processes = []
+    _stdin = stdin
+    for i, cmd in enumerate(commands):
+        if i < len(commands) - 1:
+            _stdout = subprocess.PIPE
+        else:
+            _stdout = stdout
+
+        p = subprocess.Popen(cmd, stdin=_stdin, stdout=_stdout,
+                             stderr=stderr)
+        processes.append(p)
+        _stdin = p.stdout
+
+    for i in range(0, len(processes)):
+        if i < len(processes) - 1:
+            # Allow p1 to receive a SIGPIPE if p2 exits.
+            processes[i].stdout.close()
+        else:
+            return processes[i].communicate()
 
 
 def main():
