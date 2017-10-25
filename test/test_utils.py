@@ -5,6 +5,7 @@ import pytest
 from test.fixtures import test_data, tmp_dir
 
 from scripts.util import find_input, lcs, macs_species
+from scripts.util import run as srun
 from pipeline_utils import PROJECT_ROOT_PATH, run
 
 
@@ -110,3 +111,43 @@ wait_complete $TASKS
     for i in range(1, 101):
         assert os.path.isfile('{}/file_{}.txt'.format(tmp_dir, i))
         assert os.path.isfile('{}/file_{}.log'.format(tmp_dir, i))
+
+
+def test_run_stderr(capfd):
+    stdout, stderr = srun([["bash", "-c", "echo 'error!' 1>&2"]])
+
+    assert stdout == b""
+    assert stderr == b"error!\n"  # should be: b"error!\n"
+
+    out, err = capfd.readouterr()
+    assert out == ""
+    assert err == ""
+
+
+def test_run_stderr_piped(capfd):
+    stdout, stderr = srun([["echo", "ok1"],
+                           ["bash", "-c", "echo \"error!\" 1>&2"],
+                           ["echo", "ok2"]])
+
+    out, err = capfd.readouterr()
+
+    assert stdout == b"ok2\n"
+    assert stderr == b""  # should be: b"error!\n"
+    # assert stderr is None  # should be: b"error!\n"
+    assert out == ""
+    assert err == "error!\n"
+
+
+def test_run_error_piped(capfd):
+    stdout, stderr = srun([["echo", "ok1"],
+                           ["bash", "-c", "exit 1"],
+                           ["echo", "ok2"]])
+
+    out, err = capfd.readouterr()
+
+    assert stdout == b"ok2\n"
+    assert stderr == b""  # should be: b"error!\n"
+    # assert stderr is None  # should be: b"error!\n"
+    assert out == ""
+    assert err == ""
+

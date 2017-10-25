@@ -4,6 +4,7 @@ import getopt
 import re
 import sys
 import subprocess
+import traceback
 
 #################################################################
 # Add project root folder to load path
@@ -177,25 +178,50 @@ Defaults for MACS2 broad peak calling:
 
 def run(commands, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE):
     """Launches pipe of commands given stdin and final stdout, stderr"""
+
+    # TODO: consider 'plumbum' library instead of this
+    # https://plumbum.readthedocs.io/en/latest/local_commands.html
+
     processes = []
     _stdin = stdin
+
     for i, cmd in enumerate(commands):
         if i < len(commands) - 1:
             _stdout = subprocess.PIPE
+            # Not clear how to collect stderr from chain, let's left
+            # None here because result is more consistent:
+            # * last cmd stderr is captured
+            # * intermediate stderr is not missed, but not captured, goes to
+            #    stderr
+            # If you feel power, try to fix it + see tests
+            _stderr = None
         else:
             _stdout = stdout
+            _stderr = stderr
 
         p = subprocess.Popen(cmd, stdin=_stdin, stdout=_stdout,
-                             stderr=stderr)
+                             stderr=_stderr)
         processes.append(p)
         _stdin = p.stdout
 
     for i in range(0, len(processes)):
-        if i < len(processes) - 1:
-            # Allow p1 to receive a SIGPIPE if p2 exits.
-            processes[i].stdout.close()
-        else:
-            return processes[i].communicate()
+        # noinspection PyBroadException
+        try:
+            if i < len(processes) - 1:
+                # Allow p1 to receive a SIGPIPE if p2 exits.
+                processes[i].stdout.close()
+            else:
+                sp = processes[i]
+                out, err = sp.communicate()
+                return out, err  # , sp.returncode
+
+        except Exception:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            print("Error running: {}".format(commands))
+            # exc_type below is ignored on 3.5 and later
+            traceback.print_exception(exc_type, exc_value, exc_traceback,
+                                      # limit=2,
+                                      file=sys.stdout)
 
 
 def main():
