@@ -1,4 +1,4 @@
-import os
+import os, sys
 from multiprocessing import Pool, TimeoutError
 from typing import List, Tuple
 from collections import defaultdict
@@ -48,7 +48,17 @@ def _run_metric_jaccard(a, b, *args, **kw):
         cmdline.append("-m")
     output = run([cmdline])
     stdout = output[0].decode().strip()
-    return (float(stdout), *args)
+    try:
+        return (float(stdout), *args)
+    except ValueError:
+        print("Cannot parse float value:\n"
+              "--- STDOUT -------\n"
+              "{}\n"
+              "--- STDERR -------\n"
+              "{}\n"
+              "------------------\n".format(*output),
+              file=sys.stderr)
+        raise
 
 
 def bed_metric_table(a_paths: List[Path], b_paths: List[Path],
