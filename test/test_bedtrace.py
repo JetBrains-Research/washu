@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from bed.bedtrace import Bed, union, intersect, minus, compare
+from bed.bedtrace import Bed, union, intersect, minus, compare, jaccard
 
 import pytest
 from test.fixtures import test_data, bedtrace_cleanup
@@ -87,6 +87,11 @@ def test_compare(test_data):
                                           "chr1	600	750\n")
 
 
+def test_jaccard(test_data):
+    u = jaccard(test_data("bed/A.bed"), test_data("bed/B.bed"))
+    assert u == 1.0 / 3.0
+
+
 def test_save(test_data):
     assert union(Bed(test_data("bed/A.bed")),
                  Bed(test_data("bed/B.bed"))).count() == 3
@@ -137,4 +142,14 @@ def test_save3(test_data):
     f = u.process_pvalue()
     assert Path(f).read_text() == """chr1	92780966	92781404	5.47439
 chr1	10571239	10571874	4.94096
+"""
+
+
+def test_cat(test_data):
+    u = Bed(test_data("bed/A.bed"))
+
+    assert u.cat() == """chr1	0	100
+chr1	200	300
+chr1	400	500
+chr1	600	700
 """

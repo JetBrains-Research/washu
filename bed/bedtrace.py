@@ -42,6 +42,7 @@ INTERSECT_SH = os.path.dirname(os.path.abspath(__file__)) + '/intersect.sh'
 MINUS_SH = os.path.dirname(os.path.abspath(__file__)) + '/minus.sh'
 COMPARE_SH = os.path.dirname(os.path.abspath(__file__)) + '/compare.sh'
 METAPEAKS_SH = os.path.dirname(os.path.abspath(__file__)) + '/metapeaks.sh'
+JACCARD_SH = os.path.dirname(os.path.abspath(__file__)) + '/jaccard.sh'
 
 TEMPFILES = []
 
@@ -110,6 +111,10 @@ class Bed:
 
     def collect_beds(self):
         return [self]
+
+    def cat(self):
+        stdout, _stderr = run([['cat', self.path]])
+        return stdout.decode('utf-8')
 
     def head(self, lines=5):
         print('HEAD')
@@ -340,6 +345,11 @@ class Compare(Operation):
 
 def compare(*operands):
     return Compare(operands)
+
+
+def jaccard(file1, file2):
+    stdout, _stderr = run([['bash', JACCARD_SH, file1, file2]])
+    return float(stdout)
 
 
 def metapeaks(filesmap):
