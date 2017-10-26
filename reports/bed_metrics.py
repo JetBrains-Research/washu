@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
 from scripts.util import run
+from pipeline_utils import PROJECT_ROOT_PATH
 
 
 def _run_metric_intersection(a, b, *args, **kw):
@@ -40,7 +41,7 @@ def _run_metric_jaccard(a, b, *args, **kw):
     :param b: B.bed
     :return: Jaccard index by `~/work/washu/bed/jaccard.sh $a $b`
     """
-    script = os.path.expanduser("~/work/washu/bed/jaccard.sh")
+    script = os.path.join(PROJECT_ROOT_PATH, "bed/jaccard.sh")
     cmdline = ["bash", script, str(a), str(b)]
     if kw.get("sorted", False):
         cmdline.append("-s")
