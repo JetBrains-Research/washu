@@ -68,7 +68,6 @@ def assert_image(expected_path, actual_path):
 
 def test_plot_metric_heatmap(tmp_dir, test_data):
     df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
-    # plot_metric_heatmap("My title", df, save_to=test_data("metrics/img1.png"))
 
     result = tmp_dir + "foo.png"
     plot_metric_heatmap("My title", df, save_to=result)
