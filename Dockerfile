@@ -60,3 +60,6 @@ COPY ./scripts/qsub.sh /opt/
 # We need this for "which module" command
 
 ENV PATH=$PATH:/opt/conda/envs/bedtools/bin/
+
+# Configure matplotlib to work in headless mode:
+RUN echo "backend: Agg" > ~/.config/matplotlib/matplotlibrc
