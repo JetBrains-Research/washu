@@ -213,10 +213,10 @@ def plot_frip_boxplot(rip_files, pp):
 
 def plot_length_bar(tracks_paths, pp, min_length_power, max_length_power):
     bins = np.logspace(min_length_power, max_length_power, 80)
-    track_path, lengths, track_max_bar_height = zip(*pool.map(functools.partial(calculate_lengths, bins=bins),
-                                                              tracks_paths))
-    max_length = max(track_max_bar_height)
-    lengths = dict(zip(track_path, lengths))
+    ordered_tracks_paths, ordered_lengths, track_max_bar_height = zip(
+        *pool.map(functools.partial(calculate_lengths, bins=bins), tracks_paths))
+    max_bar_height = max(track_max_bar_height)
+    lengths = dict(zip(ordered_tracks_paths, ordered_lengths))
 
     plt.figure()
     for i, track_path in enumerate(tracks_paths):
@@ -225,7 +225,7 @@ def plot_length_bar(tracks_paths, pp, min_length_power, max_length_power):
         ax.set_xscale('log')
         ax.set_xlabel('Peaks length')
         ax.set_ylabel('Peaks count')
-        ax.set_ylim([0, max_length])
+        ax.set_ylim([0, max_bar_height])
         ax.set_title(re.match(".*([YO]D\d+).*", track_path).group(1))
 
         if i % 9 == 8:
