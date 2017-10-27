@@ -145,7 +145,7 @@ def heatmap_donor_color_fun(label) -> Tuple[Tuple[str, str]]:
     return (("age", "gray"),)
 
 
-def plot_metric_heatmap(title, df, figsize=(10, 10),
+def plot_metric_heatmap(title, df, figsize=(14, 14),
                         save_to=None,
                         vmin=0, vmax=1,
                         col_color_fun=None, row_color_fun=None,
@@ -216,6 +216,7 @@ def plot_metric_heatmap(title, df, figsize=(10, 10),
         plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
 
     plt.title(title)
+    plt.subplots_adjust(left=0.2, right=0.8, top=0.8, bottom=0.2)
     if save_to is None:
         plt.show()
     elif isinstance(save_to, str):
