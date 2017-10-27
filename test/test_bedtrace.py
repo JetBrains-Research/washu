@@ -92,6 +92,16 @@ def test_jaccard(test_data):
     assert u == 1.0 / 3.0
 
 
+def test_jaccard_not_sorted(test_data):
+    u = jaccard(test_data("bed/A.unsorted.bed"), test_data("bed/B.unsorted.bed"))
+    assert u == 1.0 / 3.0
+
+
+def test_jaccard_self_intersections(test_data):
+    u = jaccard(test_data("bed/E.bed"), test_data("bed/F.bed"))
+    assert u == 35.0 / 72.0
+
+
 def test_save(test_data):
     assert union(Bed(test_data("bed/A.bed")),
                  Bed(test_data("bed/B.bed"))).count() == 3
