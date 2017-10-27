@@ -226,16 +226,16 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
                 "All color list should be equal size:\n{}\n{}".format(
                     items,
                     {col: len(colors) for col, colors in data.items()}
-                )
+            )
 
             df = pd.DataFrame.from_dict(data)
             df.index = items
             return df
 
-        c_colors = None if not col_color_annotator else as_colors_df(col_color_annotator,
-                                                                     df.columns)
-        r_colors = None if not row_color_annotator else as_colors_df(row_color_annotator,
-                                                                     df.index)
+        c_colors = None if not col_color_annotator \
+            else as_colors_df(col_color_annotator, df.columns)
+        r_colors = None if not row_color_annotator \
+            else as_colors_df(row_color_annotator, df.index)
 
         # TODO: for jaccard use dist function? matrix could be not square here
         g = sns.clustermap(

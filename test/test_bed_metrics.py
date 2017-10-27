@@ -244,9 +244,9 @@ def test_label_converter_donor_and_tool(label, value):
     ("label2", "(('a', '0'), ('b', '2'), ('c', '0'))"),
 ])
 def test_color_annotator_chain(label, value):
-    ann1 = lambda l: (("a", "1" if "1" in l else "0"),)  # nopep8
-    ann2 = lambda l: (("b", "2" if "2" in l else "0"),)  # nopep8
-    ann3 = lambda l: (("c", "3" if "3" in l else "0"),)  # nopep8
+    ann1 = lambda l: (("a", "1" if "1" in l else "0"),)
+    ann2 = lambda l: (("b", "2" if "2" in l else "0"),)
+    ann3 = lambda l: (("c", "3" if "3" in l else "0"),)
     assert value == str(color_annotator_chain(ann1, ann2, ann3)(label))
 
 
@@ -255,7 +255,7 @@ def test_color_annotator_chain(label, value):
     ("label1", "(('a', '1'),)"),
 ])
 def test_color_annotator_chain_single(label, value):
-    ann1 = lambda l: (("a", "1" if "1" in l else "0"),)  # nopep8
+    ann1 = lambda l: (("a", "1" if "1" in l else "0"),)
     assert value == str(color_annotator_chain(ann1)(label))
 
 
