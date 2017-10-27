@@ -62,7 +62,7 @@ outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1,
                           index_col="donor")
 
 golden_root = Path("/mnt/stripe/bio/experiments/aging/peak_calling")
-result_plot_path = golden_root / "intersection_.pdf"
+result_plot_path = golden_root / "intersection.pdf"
 with PdfPages(str(result_plot_path)) as pdf:
     for mod_dir in golden_root.glob("H*"):
         if mod_dir.is_dir():
