@@ -1,3 +1,5 @@
+import platform, os
+import shutil
 from pathlib import Path
 import pandas as pd
 import pytest
@@ -58,12 +60,37 @@ def test_heatmap_donor_color_fun(name, color):
 
 
 def assert_image(expected_path, actual_path):
-    with open(expected_path, "rb") as ef:
-        with open(actual_path, "rb") as af:
-            expected = ef.read()
-            actual = af.read()
-            assert len(expected) == len(actual)
-            assert expected == actual
+    os_platform = platform.system().lower()
+    assert os_platform in ["linux", "darwin"], \
+        "Unsupported platform: " + os_platform
+
+    if os_platform == "linux":
+        os_specific_path = expected_path
+    else:
+        os_specific_path \
+            = Path(expected_path).with_suffix(".{}.png".format(os_platform))
+
+    try:
+        with open(str(os_specific_path), "rb") as ef:
+            with open(actual_path, "rb") as af:
+                expected = ef.read()
+                actual = af.read()
+                assert len(expected) == len(actual)
+                assert expected == actual
+
+    except AssertionError:
+        prefix = Path(actual_path).parent.name
+        exp_name = os_specific_path.name
+
+        if "TC_CHECKOUT_DIR" in os.environ:
+            tc_checkout_dir = os_platform.environ['TC_CHECKOUT_DIR']
+            export_dir = Path(tc_checkout_dir) / "testsArtifacts"
+        else:
+            export_dir = os_specific_path.parent
+
+        export_dir.mkdir(exist_ok=True, parents=True)
+        shutil.copy(actual_path, str(export_dir / (prefix + "-" + exp_name)))
+        raise
 
 
 def test_plot_metric_heatmap(tmp_dir, test_data):
@@ -108,7 +135,7 @@ def test_plot_metric_heatmap_col_fun(tmp_dir, test_data, fname, col, row):
     df.index = ["OD1", "foo", "boo_YD1"]
 
     expected = test_data("metrics/" + fname)
-    result = tmp_dir + "/foo.png"
+    result = "{}/{}".format(tmp_dir, fname)
 
     col_col_fun = None if not col else heatmap_donor_color_fun()
     row_col_fun = None if not row else heatmap_donor_color_fun()
