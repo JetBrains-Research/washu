@@ -86,6 +86,6 @@ cat diff.nb.txt.hotspot | tail -n +4 | cut -f 1-3 >hotspot.bed
 
 cat diff.nb.txt | grep "^chr" | cut -f1-3,11-14 | sort -g -k7 | awk '{ if($7 <= 0.02) { print }}' >enriched.txt
 
-cut enriched.txt | cut -f1-3 >enriched.bed
+cat enriched.txt | cut -f1-3 >enriched.bed
 grep Up enriched.txt | cut -f1-3 >enriched_up.bed
 grep Down enriched.txt | cut -f1-3 >enriched_down.bed
