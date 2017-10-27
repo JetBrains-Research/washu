@@ -121,7 +121,7 @@ def assert_image(expected_path, actual_path):
         exp_name = os_specific_path.name
 
         if "TC_CHECKOUT_DIR" in os.environ:
-            tc_checkout_dir = os_platform.environ['TC_CHECKOUT_DIR']
+            tc_checkout_dir = os.environ['TC_CHECKOUT_DIR']
             export_dir = Path(tc_checkout_dir) / "testsArtifacts"
         else:
             export_dir = os_specific_path.parent
