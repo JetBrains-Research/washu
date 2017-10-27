@@ -81,4 +81,5 @@ export -f module
 export IS_TEST=TRUE
 
 # Launch all the tests
-python -m pytest test/ --pep8
+python -m pytest test/
+python -m pytest --pep8 -m pep8
