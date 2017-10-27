@@ -159,7 +159,6 @@ def test_plot_metric_heatmap_label_fun(tmp_dir, test_data, fname, col, row):
     assert_image(expected, result)
 
 
-#TODO: empty
 @pytest.mark.parametrize("fdf,fname,col,row", [
     ("metric1.csv", "img1_c.png", False, False),
     ("metric1.csv", "img1_c-c.png", True, False),
