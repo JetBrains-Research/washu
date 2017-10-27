@@ -15,6 +15,20 @@ from scripts.util import run
 from pipeline_utils import PROJECT_ROOT_PATH
 
 
+def _try_parse_stdout(func, stdout, stderr):
+    try:
+        return func(stdout, stderr)
+    except ValueError:
+        print("Cannot parse stdout value:\n"
+              "--- STDOUT -------\n"
+              "{}\n"
+              "--- STDERR -------\n"
+              "{}\n"
+              "------------------\n".format(stdout, stderr),
+              file=sys.stderr)
+        raise
+
+
 def _run_metric_intersection(a, b, *args, **kw):
     """
     Metric intersection (#1):
@@ -28,11 +42,24 @@ def _run_metric_intersection(a, b, *args, **kw):
     output = run((["bedtools", "intersect", "-a", str(a),
                    "-b", str(b), "-wa"],
                   ["uniq"], ["wc", "-l"]))
-    n_intersecting = int(output[0].decode().strip())
+    n_intersecting = _try_parse_stdout(
+        lambda stdout, stderr: int(stdout.decode().strip()),
+        *output
+    )
 
     output = run([["wc", "-l", str(a)]])
-    n_total = int(output[0].decode().strip().split()[0])
-    return (n_intersecting / n_total, *args)
+    n_total = _try_parse_stdout(
+        lambda stdout, stderr: int(stdout.decode().strip().split()[0]),
+        *output
+    )
+
+    if n_total == 0:
+        print("Warning: Bed file is empty:", str(a), file=sys.stderr)
+        metric = 0
+    else:
+        metric = n_intersecting / n_total
+
+    return (metric, *args)
 
 
 def _run_metric_jaccard(a, b, *args, **kw):
@@ -49,18 +76,11 @@ def _run_metric_jaccard(a, b, *args, **kw):
     if kw.get("merged", False):
         cmdline.append("-m")
     output = run([cmdline])
-    stdout = output[0].decode().strip()
-    try:
-        return (float(stdout), *args)
-    except ValueError:
-        print("Cannot parse float value:\n"
-              "--- STDOUT -------\n"
-              "{}\n"
-              "--- STDERR -------\n"
-              "{}\n"
-              "------------------\n".format(*output),
-              file=sys.stderr)
-        raise
+
+    return (_try_parse_stdout(
+        lambda stdout, stderr: float(stdout.decode().strip()),
+        *output
+    ), *args)
 
 
 def bed_metric_table(a_paths: List[Path], b_paths: List[Path],

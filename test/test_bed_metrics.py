@@ -8,7 +8,7 @@ import pytest
 from test.fixtures import test_data, tmp_dir
 
 from reports.bed_metrics import bed_metric_table, heatmap_donor_color_fun, \
-    plot_metric_heatmap
+    plot_metric_heatmap, _run_metric_jaccard, _run_metric_intersection
 
 
 @pytest.mark.parametrize("jaccard,fname,swap_ab", [
@@ -28,6 +28,36 @@ def test_bed_metric_table(test_data, jaccard, fname, swap_ab):
     expected = pd.DataFrame.from_csv(test_data("metrics/{}".format(fname)))
 
     assert str(expected) == str(df)
+
+
+@pytest.mark.parametrize("jaccard,a,b,value", [
+    (False, "zero.bed", "a.bed", 0),
+    (False, "a.bed", "zero.bed", 0),
+    (False, "zero.bed", "zero.bed", 0),
+    (True, "zero.bed", "a.bed", 0.0),
+    (True, "a.bed", "zero.bed", 0.0),
+    (True, "zero.bed", "zero.bed", 0.0),
+])
+def test_metric_empty_file(test_data, capfd, jaccard, a, b, value):
+    a_path = test_data("metrics/" + a)
+    b_path = test_data("metrics/" + b)
+
+    if jaccard:
+        metric = _run_metric_jaccard
+    else:
+        metric = _run_metric_intersection
+
+    args = [1, 3, "foo"]
+    assert (value, *args) == metric(a_path, b_path, *args)
+
+    out, err = capfd.readouterr()
+    if not jaccard and a == "zero.bed":
+        error = "Warning: Bed file is empty: {}\n".format(
+            test_data("metrics/zero.bed")
+        )
+    else:
+        error = ""
+    assert error == err
 
 
 @pytest.mark.parametrize("name,color", [
