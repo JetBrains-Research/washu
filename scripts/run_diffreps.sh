@@ -15,14 +15,15 @@ mkdir -p "${TMPDIR}"
 ################################################################################
 
 >&2 echo "diffreps: $@"
-if [ $# -lt 3 ]; then
-    echo "Need 3 parameters! <NAME> <CHROM_SIZES> <BAM_DIR>"
+if [ $# -lt 4 ]; then
+    echo "Need 4 parameters! <NAME> <CHROM_SIZES> <BAM_DIR> <DIFFREPS_PARAMS>"
     exit 1
 fi
 
 NAME=$1
 CHROM_SIZES=$2
 BAM_DIR=$3
+DIFFREPS_PARAMS=$4
 
 FOLDER=$(pwd)
 echo "FOLDER"
@@ -74,7 +75,9 @@ module load bedtools2
 diffReps.pl -co YD*.bed \
             -tr OD*.bed \
             --chrlen ${CHROM_SIZES} \
-            -re diff.nb.txt -me nb
+            -re diff.nb.txt \
+            ${DIFFREPS_PARAMS} \
+            --nproc 8
 SCRIPT
 
 wait_complete ${TASKS}
