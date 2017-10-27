@@ -25,19 +25,22 @@ def process_hist_mod(peaks_root, threads):
     else:
         df = bed_metric_table(peaks_paths, peaks_paths, threads=threads)
         df.to_csv(str(df_path))
+        print("Metrics results saved to:", str(df_path))
 
     def donor_name(name):
         return name.split('_')[0] + "_golden"
 
+    result_plot_path = str(peaks_root / "{}.png".format(res_prefix))
     plot_metric_heatmap("Intersection metric: All donors {}".format(
         peaks_root.name
     ),
         df,
-        save_to=str(peaks_root / "{}.png".format(res_prefix)),
+        save_to=result_plot_path,
         row_cluster=True, col_cluster=True,
         row_color_fun=donor_color, col_color_fun=donor_color,
         row_label_fun=donor_name, col_label_fun=donor_name
     )
+    print("Metrics plot saved to:", str(result_plot_path))
 
 
 golden_root = Path("/mnt/stripe/bio/experiments/aging/peak_calling")
