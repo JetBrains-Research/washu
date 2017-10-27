@@ -150,4 +150,3 @@ def test_run_error_piped(capfd):
     # assert stderr is None  # should be: b"error!\n"
     assert out == ""
     assert err == ""
-
