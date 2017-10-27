@@ -65,7 +65,7 @@ def assert_image(expected_path, actual_path):
         "Unsupported platform: " + os_platform
 
     if os_platform == "linux":
-        os_specific_path = expected_path
+        os_specific_path = Path(expected_path)
     else:
         os_specific_path \
             = Path(expected_path).with_suffix(".{}.png".format(os_platform))
