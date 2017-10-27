@@ -19,7 +19,7 @@ def process_hist_mod(peaks_root):
         df = pd.DataFrame.from_csv(df_path)
     else:
         df = bed_metric_table(peaks_paths, peaks_paths, threads=30)
-        df.to_csv(df_path)
+        df.to_csv(str(df_path))
 
     print(df.head())
     plot_metric_heatmap("Intersection metric: All donors {}".format(
