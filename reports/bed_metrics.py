@@ -121,8 +121,7 @@ def bed_metric_table(a_paths: List[Path], b_paths: List[Path],
 def heatmap_donor_color_fun(label) -> Tuple[Tuple[str, str]]:
     chunks = [ch.lower() for ch in label.split("_")]
 
-    for chunk in chunks:
-        ch = chunk.lower()
+    for ch in chunks:
         if ch.startswith("od"):
             return (("age", "b"),)
         elif ch.startswith("yd"):
