@@ -2,6 +2,7 @@ import os
 import sys
 from pathlib import Path
 import pandas as pd
+from itertools import chain
 
 # Force matplotlib to not use any Xwindows backend.
 import matplotlib
@@ -15,9 +16,13 @@ from reports.bed_metrics import plot_metric_heatmap, bed_metric_table  # noqa
 from reports.bed_metrics import heatmap_donor_color_fun as donor_color  # noqa
 
 
-def process_hist_mod(peaks_root, threads):
+def process_hist_mod(peaks_root, threads, golden):
+    assert golden, "Zinbra paths not supported yet"
+
     all_peaks_root = peaks_root / "bed_all"
-    peaks_paths = list(all_peaks_root.glob("*Peak"))
+
+    peaks_paths = list(chain(all_peaks_root.glob("*Peak"),
+                             all_peaks_root.glob("*-island.bed")))
 
     res_prefix = "{}_intersection".format(peaks_root.name)
     df_path = peaks_root / "{}.csv".format(res_prefix)
@@ -29,7 +34,15 @@ def process_hist_mod(peaks_root, threads):
         print("Metrics results saved to:", str(df_path))
 
     def donor_name(name):
-        return name.split('_')[0] + "_golden"
+        if name.endswith("Peak"):
+            tool = "macs2"
+        elif name.endswith("island.bed"):
+            tool = "sicer"
+        else:
+            tool = "unknown"
+        return name.split('_')[0] + "_" + tool
+
+    print({donor_name(str(p.name)): p.name for p in peaks_paths})
 
     result_plot_path = str(peaks_root / "{}.png".format(res_prefix))
     plot_metric_heatmap("Intersection metric: All donors {}".format(
@@ -47,6 +60,6 @@ def process_hist_mod(peaks_root, threads):
 golden_root = Path("/mnt/stripe/bio/experiments/aging/peak_calling")
 for mod in golden_root.glob("H*"):
     if mod.is_dir():
-        process_hist_mod(Path(mod), threads=30)
+        process_hist_mod(Path(mod), threads=30, golden=True)
 
 # if __name__ == "__main__":
