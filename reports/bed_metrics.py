@@ -1,6 +1,6 @@
 import os
 import sys
-from multiprocessing import Pool, TimeoutError
+from multiprocessing import Pool
 from typing import List, Tuple
 from collections import defaultdict
 
@@ -116,20 +116,6 @@ def bed_metric_table(a_paths: List[Path], b_paths: List[Path],
                       index=[f.name for f in a_paths],
                       columns=[f.name for f in b_paths])
     return df
-
-
-# def load_intersection_table(beds, loci, path_to_bt, result_path, *kw):
-#     if result_path.exists():
-#         df = pd.DataFrame.from_csv(result_path)
-#         print("Loaded: ", result_path)
-#     else:
-#         print("Calculating: ", result_path)
-#         df = intersections_table(beds, loci, *kw)
-#         result_path.parent.mkdir(parents=True, exist_ok=True)
-#         df.to_csv(str(result_path))
-#         print("  Saved: ", result_path)
-#
-#     return df
 
 
 def heatmap_donor_color_fun(label) -> Tuple[Tuple[str, str]]:
