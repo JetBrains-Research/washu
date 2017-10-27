@@ -162,16 +162,22 @@ def test_plot_metric_heatmap_label_fun(tmp_dir, test_data, fname, col, row):
     assert_image(expected, result)
 
 
-@pytest.mark.parametrize("fname,col,row", [
-    ("img1_c.png", False, False),
-    ("img1_c-c.png", True, False),
-    ("img1_c-r.png", False, True),
-    ("img1_c-rl.png", True, True),
+#TODO: empty
+@pytest.mark.parametrize("fdf,fname,col,row", [
+    ("metric1.csv", "img1_c.png", False, False),
+    ("metric1.csv", "img1_c-c.png", True, False),
+    ("metric1.csv", "img1_c-r.png", False, True),
+    ("metric1.csv", "img1_c-rl.png", True, True),
+    ("empty.csv", "empty.png", False, False),
+    ("empty.csv", "empty.png", True, False),
+    ("empty.csv", "empty.png", False, True),
+    ("empty.csv", "empty.png", True, True),
 ])
-def test_plot_metric_heatmap_col_fun(tmp_dir, test_data, fname, col, row):
-    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
-    df.columns = ["ODS", "boo", "YDS", "YD20"]
-    df.index = ["OD1", "foo", "boo_YD1"]
+def test_plot_metric_heatmap_col_fun(tmp_dir, test_data, fdf, fname, col, row):
+    df = pd.DataFrame.from_csv(test_data("metrics/" + fdf))
+    if len(df) > 0:
+        df.columns = ["ODS", "boo", "YDS", "YD20"]
+        df.index = ["OD1", "foo", "boo_YD1"]
 
     expected = test_data("metrics/" + fname)
     result = "{}/{}".format(tmp_dir, fname)
