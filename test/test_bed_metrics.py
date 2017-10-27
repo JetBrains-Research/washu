@@ -1,4 +1,6 @@
-import platform, os
+import platform
+import os
+import sys
 import shutil
 from pathlib import Path
 import pandas as pd
@@ -89,7 +91,10 @@ def assert_image(expected_path, actual_path):
             export_dir = os_specific_path.parent
 
         export_dir.mkdir(exist_ok=True, parents=True)
-        shutil.copy(actual_path, str(export_dir / (prefix + "-" + exp_name)))
+        export_path = str(export_dir / (prefix + "-" + exp_name))
+        shutil.copy(actual_path, export_path)
+        print("Mismatched image copied to:", str(expected_path),
+              file=sys.stderr)
         raise
 
 
