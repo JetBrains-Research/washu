@@ -14,6 +14,7 @@ sys.path.insert(0, project_root)
 from reports.bed_metrics import plot_metric_heatmap, bed_metric_table  # noqa
 from reports.bed_metrics import heatmap_donor_color_fun as donor_color
 
+
 def process_hist_mod(peaks_root, threads):
     all_peaks_root = peaks_root / "bed_all"
     peaks_paths = list(all_peaks_root.glob("*Peak"))
