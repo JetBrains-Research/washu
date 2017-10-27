@@ -116,7 +116,7 @@ def assert_image(expected_path, actual_path):
                 assert len(expected) == len(actual)
                 assert expected == actual
 
-    except AssertionError:
+    except (AssertionError, FileNotFoundError) :
         prefix = Path(actual_path).parent.name
         exp_name = os_specific_path.name
 
@@ -186,6 +186,35 @@ def test_plot_metric_heatmap_col_fun(tmp_dir, test_data, fdf, fname, col, row):
     col_col_fun = None if not col else heatmap_donor_color_fun
     row_col_fun = None if not row else heatmap_donor_color_fun
     plot_metric_heatmap("My title", df, save_to=result,
+                        col_color_fun=col_col_fun,
+                        row_color_fun=row_col_fun)
+
+    assert_image(expected, result)
+
+
+@pytest.mark.parametrize("fdf,fname,col,row", [
+    ("metric1.csv", "img_multi_c.png", False, False),
+    ("metric1.csv", "img_multi_c-c.png", True, False),
+    ("metric1.csv", "img_multi_c-r.png", False, True),
+    ("metric1.csv", "img_multi_c_c-r.png", True, True),
+])
+def test_plot_multiple_col_fun(tmp_dir, test_data, fdf, fname, col, row):
+    df = pd.DataFrame.from_csv(test_data("metrics/" + fdf))
+
+    expected = test_data("metrics/" + fname)
+    result = "{}/{}".format(tmp_dir, fname)
+
+    def col_fun(s):
+        def inner(label):
+            has_a_color = "green" if ("a" in label) else "red"
+            has_str = "white" if (s in label) else "gray"
+            return (("has_a", has_a_color), ("has_" + s, has_str))
+        return inner
+
+    col_col_fun = None if not col else col_fun("1")
+    row_col_fun = None if not row else col_fun("2")
+
+    plot_metric_heatmap("My title 2", df, save_to=result,
                         col_color_fun=col_col_fun,
                         row_color_fun=row_col_fun)
 
