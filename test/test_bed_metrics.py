@@ -116,7 +116,7 @@ def assert_image(expected_path, actual_path):
                 assert len(expected) == len(actual)
                 assert expected == actual
 
-    except (AssertionError, FileNotFoundError) :
+    except (AssertionError, FileNotFoundError):
         prefix = Path(actual_path).parent.name
         exp_name = os_specific_path.name
 
