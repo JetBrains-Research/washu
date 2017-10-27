@@ -3,6 +3,10 @@ import sys
 from pathlib import Path
 import pandas as pd
 
+# Force matplotlib to not use any Xwindows backend.
+import matplotlib
+matplotlib.use('Agg')
+
 parent_dir = os.path.dirname(os.path.realpath(__file__))
 project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
 sys.path.insert(0, project_root)

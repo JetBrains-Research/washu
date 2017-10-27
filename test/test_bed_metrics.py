@@ -7,8 +7,12 @@ import pandas as pd
 import pytest
 from test.fixtures import test_data, tmp_dir
 
+# Force matplotlib to not use any Xwindows backend.
+import matplotlib
+matplotlib.use('Agg')
+
 from reports.bed_metrics import bed_metric_table, heatmap_donor_color_fun, \
-    plot_metric_heatmap, _run_metric_jaccard, _run_metric_intersection
+    plot_metric_heatmap, _run_metric_jaccard, _run_metric_intersection  # noqa
 
 
 @pytest.mark.parametrize("jaccard,fname,swap_ab", [
