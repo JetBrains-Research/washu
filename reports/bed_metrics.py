@@ -167,48 +167,53 @@ def plot_metric_heatmap(title, df, figsize=(10, 10),
     :param col_cluster: see seaborn.clustermap(..) details
     :param row_cluster: see seaborn.clustermap(..) details
     """
-    if col_label_fun or row_label_fun:
-        df = df.copy()
+    ncol, nrow = df.shape
 
-        if col_label_fun:
-            df.columns = [col_label_fun(s) for s in df.columns]
+    if not ncol or not nrow:
+        plt.figure(figsize=figsize)
+    else:
+        if col_label_fun or row_label_fun:
+            df = df.copy()
 
-        if row_label_fun:
-            df.index = [row_label_fun(s) for s in df.index]
+            if col_label_fun:
+                df.columns = [col_label_fun(s) for s in df.columns]
 
-    def as_colors_df(color_fun, items):
-        if len(items) == 0:
-            return None
+            if row_label_fun:
+                df.index = [row_label_fun(s) for s in df.index]
 
-        data = defaultdict(list)
-        for item in items:
-            for k, v in color_fun(item):
-                data[k].append(v)
-        assert len({len(colors) for col, colors in data.items()}) == 1,\
-            "All color list should be equal size:\n{}\n{}".format(
-                items,
-                {col: len(colors) for col, colors in data.items()}
-            )
+        def as_colors_df(color_fun, items):
+            if len(items) == 0:
+                return None
 
-        df = pd.DataFrame.from_dict(data)
-        df.index = items
-        return df
+            data = defaultdict(list)
+            for item in items:
+                for k, v in color_fun(item):
+                    data[k].append(v)
+            assert len({len(colors) for col, colors in data.items()}) == 1,\
+                "All color list should be equal size:\n{}\n{}".format(
+                    items,
+                    {col: len(colors) for col, colors in data.items()}
+                )
 
-    c_colors = None if not col_color_fun else as_colors_df(col_color_fun,
-                                                           df.columns)
-    r_colors = None if not row_color_fun else as_colors_df(row_color_fun,
-                                                           df.index)
+            df = pd.DataFrame.from_dict(data)
+            df.index = items
+            return df
 
-    # TODO: for jaccard use dist function? matrix could be not square here
-    g = sns.clustermap(
-        df, figsize=figsize, cmap="rainbow",
-        col_cluster=col_cluster, row_cluster=row_cluster, metric="chebyshev",
-        col_colors=c_colors, row_colors=r_colors,
-        vmin=vmin, vmax=vmax,
-        robust=True,  # robust=True: ignore color outliers
-    )
+        c_colors = None if not col_color_fun else as_colors_df(col_color_fun,
+                                                               df.columns)
+        r_colors = None if not row_color_fun else as_colors_df(row_color_fun,
+                                                               df.index)
 
-    plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
+        # TODO: for jaccard use dist function? matrix could be not square here
+        g = sns.clustermap(
+            df, figsize=figsize, cmap="rainbow",
+            col_cluster=col_cluster, row_cluster=row_cluster, metric="chebyshev",
+            col_colors=c_colors, row_colors=r_colors,
+            vmin=vmin, vmax=vmax,
+            robust=True,  # robust=True: ignore color outliers
+        )
+
+        plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
 
     plt.title(title)
     if save_to is None:
