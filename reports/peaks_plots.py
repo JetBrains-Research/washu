@@ -1,6 +1,8 @@
 import os
 import sys
 import multiprocessing
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -297,7 +299,7 @@ def main():
 
 
 if __name__ == "__main__":
-    num_of_threads = 8
+    num_of_threads = 30
     # Initializing multiprocessor pool
     counter = multiprocessing.Value('i', 0)
     lock = multiprocessing.Lock()
