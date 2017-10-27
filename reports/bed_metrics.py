@@ -3,6 +3,7 @@ import sys
 from multiprocessing import Pool
 from typing import List, Tuple
 from collections import defaultdict
+from itertools import chain
 
 from pathlib import Path
 import pandas as pd
@@ -118,7 +119,7 @@ def bed_metric_table(a_paths: List[Path], b_paths: List[Path],
     return df
 
 
-def heatmap_donor_color_fun(label) -> Tuple[Tuple[str, str]]:
+def color_annotator_age(label) -> Tuple[Tuple[str, str]]:
     chunks = [ch.lower() for ch in label.split("_")]
 
     for ch in chunks:
@@ -130,11 +131,58 @@ def heatmap_donor_color_fun(label) -> Tuple[Tuple[str, str]]:
     return (("age", "gray"),)
 
 
+def color_annotator_chain(*annotators):
+    def inner(label):
+        return tuple(chain(*(f(label) for f in annotators)))
+
+    return inner
+
+
+def color_annotator_outlier(outliers_df, data_type):
+    outlier_mapping = outliers_df.loc[:, data_type]
+
+    def inner(label):
+        chunks = [ch.upper() for ch in label.split("_") if len(ch) > 2]
+
+        for ch in chunks:
+            if ch.startswith("OD") or ch.startswith("YD"):
+                if ch in outlier_mapping:
+                    value = outlier_mapping[ch]
+                    if value == 0:
+                        # ok
+                        return (("outlier", "g"),)
+                    elif value == 1:
+                        # outlier
+                        return (("outlier", "lightgray"),)
+
+        # unknown
+        return (("outlier", "white"),)
+
+    return inner
+
+
+def label_converter_donor_and_tool(name):
+    if name.endswith("Peak"):
+        tool = "macs2"
+    elif name.endswith("island.bed"):
+        tool = "sicer"
+    else:
+        tool = None
+
+    if tool:
+        for ch in name.split('_'):
+            lch = ch.lower()
+            if len(lch) > 2 and (lch.startswith("od") or lch.startswith("yd")):
+                return ch + "_" + tool
+
+    return name
+
+
 def plot_metric_heatmap(title, df, figsize=(14, 14),
                         save_to=None,
                         vmin=0, vmax=1,
-                        col_color_fun=None, row_color_fun=None,
-                        col_label_fun=None, row_label_fun=None,
+                        col_color_annotator=None, row_color_annotator=None,
+                        col_label_converter=None, row_label_converter=None,
                         col_cluster=False, row_cluster=False):
 
     """
@@ -145,10 +193,10 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
            plot on the screen
     :param vmin: Heatmap min value (use None to infer from data)
     :param vmax: Heatmap max value (use None to infer from data)
-    :param col_color_fun: Function which highlights cols
-    :param row_color_fun: Function which highlights rows
-    :param col_label_fun: Function which modifies cols names
-    :param row_label_fun: Function which modifies rows names
+    :param col_color_annotator: Function which highlights cols
+    :param row_color_annotator: Function which highlights rows
+    :param col_label_converter: Function which modifies cols names
+    :param row_label_converter: Function which modifies rows names
     :param col_cluster: see seaborn.clustermap(..) details
     :param row_cluster: see seaborn.clustermap(..) details
     """
@@ -157,14 +205,14 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
     if not ncol or not nrow:
         plt.figure(figsize=figsize)
     else:
-        if col_label_fun or row_label_fun:
+        if col_label_converter or row_label_converter:
             df = df.copy()
 
-            if col_label_fun:
-                df.columns = [col_label_fun(s) for s in df.columns]
+            if col_label_converter:
+                df.columns = [col_label_converter(s) for s in df.columns]
 
-            if row_label_fun:
-                df.index = [row_label_fun(s) for s in df.index]
+            if row_label_converter:
+                df.index = [row_label_converter(s) for s in df.index]
 
         def as_colors_df(color_fun, items):
             if len(items) == 0:
@@ -184,17 +232,19 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
             df.index = items
             return df
 
-        c_colors = None if not col_color_fun else as_colors_df(col_color_fun,
-                                                               df.columns)
-        r_colors = None if not row_color_fun else as_colors_df(row_color_fun,
-                                                               df.index)
+        c_colors = None if not col_color_annotator else as_colors_df(col_color_annotator,
+                                                                     df.columns)
+        r_colors = None if not row_color_annotator else as_colors_df(row_color_annotator,
+                                                                     df.index)
 
         # TODO: for jaccard use dist function? matrix could be not square here
         g = sns.clustermap(
             df, figsize=figsize, cmap="rainbow",
-            col_cluster=col_cluster, row_cluster=row_cluster, metric="chebyshev",
+            col_cluster=col_cluster, row_cluster=row_cluster,
+            metric="chebyshev",
             col_colors=c_colors, row_colors=r_colors,
             vmin=vmin, vmax=vmax,
+            # linewidths=0.75,  # separator line width
             robust=True,  # robust=True: ignore color outliers
         )
 

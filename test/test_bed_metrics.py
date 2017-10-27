@@ -8,8 +8,10 @@ import pytest
 from test.fixtures import test_data, tmp_dir
 
 
-from reports.bed_metrics import bed_metric_table, heatmap_donor_color_fun, \
-    plot_metric_heatmap, _run_metric_jaccard, _run_metric_intersection  # noqa
+from reports.bed_metrics import bed_metric_table, color_annotator_age, \
+    plot_metric_heatmap, _run_metric_jaccard, _run_metric_intersection, \
+    label_converter_donor_and_tool, color_annotator_chain, \
+    color_annotator_outlier  # noqa
 
 
 @pytest.mark.parametrize("jaccard,fname,swap_ab", [
@@ -85,8 +87,8 @@ def test_metric_empty_file(test_data, capfd, jaccard, a, b, value):
     ("fo.OD2", "gray"),
     ("fo.YD2", "gray"),
 ])
-def test_heatmap_donor_color_fun(name, color):
-    res = heatmap_donor_color_fun(name)
+def test_color_annotator_age(name, color):
+    res = color_annotator_age(name)
     assert 1 == len(res)
     assert "age" == res[0][0]
     assert color == res[0][1]
@@ -158,8 +160,8 @@ def test_plot_metric_heatmap_label_fun(tmp_dir, test_data, fname, col, row):
     col_label_fun = None if not col else lambda x: "[c]" + x
     row_label_fun = None if not row else lambda x: "[r]" + x
     plot_metric_heatmap("My title", df, save_to=result,
-                        col_label_fun=col_label_fun,
-                        row_label_fun=row_label_fun)
+                        col_label_converter=col_label_fun,
+                        row_label_converter=row_label_fun)
 
     assert_image(expected, result)
 
@@ -183,11 +185,11 @@ def test_plot_metric_heatmap_col_fun(tmp_dir, test_data, fdf, fname, col, row):
     expected = test_data("metrics/" + fname)
     result = "{}/{}".format(tmp_dir, fname)
 
-    col_col_fun = None if not col else heatmap_donor_color_fun
-    row_col_fun = None if not row else heatmap_donor_color_fun
+    col_col_fun = None if not col else color_annotator_age
+    row_col_fun = None if not row else color_annotator_age
     plot_metric_heatmap("My title", df, save_to=result,
-                        col_color_fun=col_col_fun,
-                        row_color_fun=row_col_fun)
+                        col_color_annotator=col_col_fun,
+                        row_color_annotator=row_col_fun)
 
     assert_image(expected, result)
 
@@ -215,7 +217,61 @@ def test_plot_multiple_col_fun(tmp_dir, test_data, fdf, fname, col, row):
     row_col_fun = None if not row else col_fun("2")
 
     plot_metric_heatmap("My title 2", df, save_to=result,
-                        col_color_fun=col_col_fun,
-                        row_color_fun=row_col_fun)
+                        col_color_annotator=col_col_fun,
+                        row_color_annotator=row_col_fun)
 
     assert_image(expected, result)
+
+
+@pytest.mark.parametrize("label,value", [
+    ("OD1", "OD1"),
+    ("OD1_foo.broadPeak", "OD1_macs2"),
+    ("OD1_foo.narrowPeak", "OD1_macs2"),
+    ("OD1_foo-island.bed", "OD1_sicer"),
+
+    ("ODS_foo.broadPeak", "ODS_macs2"),
+    ("boo_ODS_foo.broadPeak", "ODS_macs2"),
+    ("boo_OD12_foo.broadPeak", "OD12_macs2"),
+
+])
+def test_label_converter_donor_and_tool(label, value):
+    assert value == label_converter_donor_and_tool(label)
+
+
+@pytest.mark.parametrize("label,value", [
+    ("label1", "(('a', '1'), ('b', '0'), ('c', '0'))"),
+    ("label13", "(('a', '1'), ('b', '0'), ('c', '3'))"),
+    ("label2", "(('a', '0'), ('b', '2'), ('c', '0'))"),
+])
+def test_color_annotator_chain(label, value):
+    ann1 = lambda l: (("a", "1" if "1" in l else "0"),)  # noqa
+    ann2 = lambda l: (("b", "2" if "2" in l else "0"),)  # noqa
+    ann3 = lambda l: (("c", "3" if "3" in l else "0"),)  # noqa
+    assert value == str(color_annotator_chain(ann1, ann2, ann3)(label))
+
+
+@pytest.mark.parametrize("label,value", [
+    ("label", "(('a', '0'),)"),
+    ("label1", "(('a', '1'),)"),
+])
+def test_color_annotator_chain_single(label, value):
+    ann1 = lambda l: (("a", "1" if "1" in l else "0"),)  # noqa
+    assert value == str(color_annotator_chain(ann1)(label))
+
+
+@pytest.mark.parametrize("label,data_type,value", [
+    ("foo_OD1_boo", "H3K4me1", "white"),
+    ("foo_OD7_boo", "H3K4me1", "lightgray"),
+    ("OD11_boo", "H3K4me1", "g"),
+    ("foo_OD11boo", "H3K4me1", "white"),
+    ("YD1", "H3K27ac", "lightgray"),
+    ("OD20", "methylation", "g"),
+])
+def test_color_annotator_outlier(test_data, label, data_type, value):
+    df = pd.read_csv(test_data("metrics/Y20O20.outliers.csv"),
+                     delimiter="\t", skiprows=1, index_col="donor")
+    res = color_annotator_outlier(df, data_type)(label)
+    assert len(res) == 1
+    k, v = res[0]
+    assert k == "outlier"
+    assert value == v
