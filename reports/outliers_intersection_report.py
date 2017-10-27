@@ -21,10 +21,10 @@ def process_hist_mod(peaks_root, threads):
         df = bed_metric_table(peaks_paths, peaks_paths, threads=threads)
         df.to_csv(str(df_path))
 
-    print(df.head())
+    # print(df.head())
     plot_metric_heatmap("Intersection metric: All donors {}".format(
         peaks_root.name
-    ), save_to=str(all_peaks_root / "intersection.png"))
+    ), df, save_to=str(all_peaks_root / "intersection.png"))
 
 
 h3k4me3 = Path("/mnt/stripe/bio/experiments/aging/peak_calling/H3K4me3")
