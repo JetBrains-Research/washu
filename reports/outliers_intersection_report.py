@@ -9,7 +9,7 @@ import datetime
 import matplotlib
 matplotlib.use('Agg')
 
-from matplotlib.backends.backend_pdf import PdfPages  # noqa
+from matplotlib.backends.backend_pdf import PdfPages  # nopep8
 
 parent_dir = os.path.dirname(os.path.realpath(__file__))
 project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
@@ -17,7 +17,7 @@ sys.path.insert(0, project_root)
 
 from reports.bed_metrics import plot_metric_heatmap, bed_metric_table, \
     label_converter_donor_and_tool, color_annotator_chain, \
-    color_annotator_outlier, color_annotator_age  # noqa
+    color_annotator_outlier, color_annotator_age  # nopep8
 
 
 def process_hist_mod(peaks_root, outliers_df, threads, golden, pdf_printer):
