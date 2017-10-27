@@ -182,7 +182,9 @@ def plot_metric_heatmap(title, df, figsize=(10, 10),
             for k, v in color_fun(item):
                 data[k].append(v)
         assert len({len(colors) for col, colors in data.items()}) == 1,\
-            "All color list should be equal size"
+            "All color list should be equal size: {}".format(
+                {col: len(colors) for col, colors in data.items()}
+            )
 
         df = pd.DataFrame.from_dict(data)
         df.index = items
