@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 from multiprocessing import Pool, TimeoutError
 from typing import List, Tuple
 from collections import defaultdict
