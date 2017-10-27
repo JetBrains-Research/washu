@@ -45,7 +45,7 @@ def process_hist_mod(peaks_root, threads, golden, pdf_printer):
             tool = "unknown"
         return name.split('_')[0] + "_" + tool
 
-    # result_plot_path = str(peaks_root / "{}.png".format(res_prefix))
+    # print to pdf:
     plot_metric_heatmap("Intersection metric: All donors {}".format(
         peaks_root.name
     ),
@@ -56,7 +56,19 @@ def process_hist_mod(peaks_root, threads, golden, pdf_printer):
         row_color_fun=donor_color, col_color_fun=donor_color,
         row_label_fun=donor_name, col_label_fun=donor_name
     )
-    # print("Metrics plot saved to:", str(result_plot_path))
+
+    # print to png:
+    result_plot_path = str(peaks_root / "{}.png".format(res_prefix))
+    plot_metric_heatmap("Intersection metric: All donors {}".format(
+        peaks_root.name
+    ),
+        df,
+        save_to=result_plot_path,
+        row_cluster=True, col_cluster=True,
+        row_color_fun=donor_color, col_color_fun=donor_color,
+        row_label_fun=donor_name, col_label_fun=donor_name
+    )
+    print("Metrics plot saved to:", str(result_plot_path))
 
 
 golden_root = Path("/mnt/stripe/bio/experiments/aging/peak_calling")
