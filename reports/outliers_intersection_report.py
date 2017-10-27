@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 import pandas as pd
 from itertools import chain
+import datetime
 
 # Force matplotlib to not use any Xwindows backend.
 import matplotlib
@@ -65,6 +66,14 @@ with PdfPages(str(result_plot_path)) as pdf:
         if mod.is_dir():
             process_hist_mod(Path(mod), threads=30, golden=True,
                              pdf_printer=pdf)
+
+    d = pdf.infodict()
+    d['Title'] = 'Report: Intersection metric for outliers detection'
+    d['Author'] = 'JetBrains Research BioLabs'
+    d['Subject'] = 'outliers'
+    # d['Keywords'] = 'outliers jetbrains aging'
+    d['CreationDate'] = datetime.datetime.today()
+    d['ModDate'] = datetime.datetime.today()
 
 print("Metrics plot saved to:", str(result_plot_path))
 
