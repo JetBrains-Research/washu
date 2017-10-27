@@ -89,7 +89,7 @@ def test_metric_empty_file(test_data, capfd, jaccard, a, b, value):
     ("fo.YD2", "gray"),
 ])
 def test_heatmap_donor_color_fun(name, color):
-    res = heatmap_donor_color_fun()(name)
+    res = heatmap_donor_color_fun(name)
     assert 1 == len(res)
     assert "age" == res[0][0]
     assert color == res[0][1]
@@ -176,8 +176,8 @@ def test_plot_metric_heatmap_col_fun(tmp_dir, test_data, fname, col, row):
     expected = test_data("metrics/" + fname)
     result = "{}/{}".format(tmp_dir, fname)
 
-    col_col_fun = None if not col else heatmap_donor_color_fun()
-    row_col_fun = None if not row else heatmap_donor_color_fun()
+    col_col_fun = None if not col else heatmap_donor_color_fun
+    row_col_fun = None if not row else heatmap_donor_color_fun
     plot_metric_heatmap("My title", df, save_to=result,
                         col_color_fun=col_col_fun,
                         row_color_fun=row_col_fun)

@@ -132,20 +132,17 @@ def bed_metric_table(a_paths: List[Path], b_paths: List[Path],
 #     return df
 
 
-def heatmap_donor_color_fun():
-    def inner(label) -> Tuple[Tuple[str, str]]:
-        chunks = [ch.lower() for ch in label.split("_")]
+def heatmap_donor_color_fun(label) -> Tuple[Tuple[str, str]]:
+    chunks = [ch.lower() for ch in label.split("_")]
 
-        for chunk in chunks:
-            ch = chunk.lower()
-            if ch.startswith("od"):
-                return (("age", "b"),)
-            elif ch.startswith("yd"):
-                return (("age", "r"),)
+    for chunk in chunks:
+        ch = chunk.lower()
+        if ch.startswith("od"):
+            return (("age", "b"),)
+        elif ch.startswith("yd"):
+            return (("age", "r"),)
 
-        return (("age", "gray"),)
-
-    return inner
+    return (("age", "gray"),)
 
 
 def plot_metric_heatmap(title, df, figsize=(10, 10),

@@ -12,26 +12,37 @@ project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
 sys.path.insert(0, project_root)
 
 from reports.bed_metrics import plot_metric_heatmap, bed_metric_table  # noqa
-
+from reports.bed_metrics import heatmap_donor_color_fun as donor_color
 
 def process_hist_mod(peaks_root, threads):
     all_peaks_root = peaks_root / "bed_all"
     peaks_paths = list(all_peaks_root.glob("*Peak"))
 
-    df_path = all_peaks_root / "intersection.csv"
+    res_prefix = "{}_intersection".format(peaks_root.name)
+    df_path = peaks_root / "{}.csv".format(res_prefix)
     if df_path.exists():
         df = pd.DataFrame.from_csv(str(df_path))
     else:
         df = bed_metric_table(peaks_paths, peaks_paths, threads=threads)
         df.to_csv(str(df_path))
 
-    # print(df.head())
+    def donor_name(name):
+        return name.split('_')[0] + "_golden"
+
     plot_metric_heatmap("Intersection metric: All donors {}".format(
         peaks_root.name
-    ), df, save_to=str(all_peaks_root / "intersection.png"))
+    ),
+        df,
+        save_to=str(peaks_root / "{}.png".format(res_prefix)),
+        row_cluster=True, col_cluster=True,
+        row_color_fun=donor_color, col_color_fun=donor_color,
+        row_label_fun=donor_name, col_label_fun=donor_name
+    )
 
 
-h3k4me3 = Path("/mnt/stripe/bio/experiments/aging/peak_calling/H3K4me3")
-process_hist_mod(h3k4me3, threads=30)
+golden_root = Path("/mnt/stripe/bio/experiments/aging/peak_calling")
+for mod in golden_root.glob("H*"):
+    if mod.is_dir():
+        process_hist_mod(Path(mod), threads=30)
 
 # if __name__ == "__main__":
