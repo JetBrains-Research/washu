@@ -124,7 +124,7 @@ def assert_image(expected_path, actual_path):
         export_dir.mkdir(exist_ok=True, parents=True)
         export_path = str(export_dir / (prefix + "-" + exp_name))
         shutil.copy(actual_path, export_path)
-        print("Mismatched image copied to:", str(expected_path),
+        print("Mismatched image copied to:", str(export_path),
               file=sys.stderr)
         raise
 
