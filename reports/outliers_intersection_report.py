@@ -42,8 +42,6 @@ def process_hist_mod(peaks_root, threads, golden):
             tool = "unknown"
         return name.split('_')[0] + "_" + tool
 
-    print({donor_name(str(p.name)): p.name for p in peaks_paths})
-
     result_plot_path = str(peaks_root / "{}.png".format(res_prefix))
     plot_metric_heatmap("Intersection metric: All donors {}".format(
         peaks_root.name
