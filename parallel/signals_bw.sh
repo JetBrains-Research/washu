@@ -100,7 +100,7 @@ if [[ ! -f ${LIBRARIES_SIZES} ]]; then
     done
 fi
 
-if [[ ! -f $PEAKS_FILE ]]; then
+if [[ -f $PEAKS_FILE ]]; then
     LIBRARIES_PEAKS_SIZES=${WORK_DIR}/${PEAKS_FILE##*/}.tsv
     echo "Compute libraries peaks size ${LIBRARIES_PEAKS_SIZES}"
     if [[ ! -f ${LIBRARIES_PEAKS_SIZES} ]]; then

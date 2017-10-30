@@ -83,7 +83,7 @@ def save_signal(id, coverage, signal_type, msg):
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
-    if len(args) < 4:
+    if len(args) < 3:
         print("ARGUMENTS:  <work_dir> <id> <sizes.tsv> [<peaks.sizes.tsv>]\n"
               "     <work_dir>: folder with BW files\n"
               "     <sizes.tsv>: libraries sizes, used for RPM normalization\n"
