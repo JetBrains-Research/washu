@@ -44,6 +44,7 @@ process_coverage()
     _BED4=$1
     _ID=$2
     _RESULT=$3
+    _LOGS_DIR=$4
     if [[ -f $_RESULT ]]; then
         rm -r $_RESULT
     fi
@@ -61,7 +62,7 @@ process_coverage()
 #PBS -N bw_signals_${ID}_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=8gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/bw_signals_${ID}_${NAME}.log
+#PBS -o ${_LOGS_DIR}/bw_signals_${ID}_${NAME}.log
 
 # Process regions coverage
 #   sum - sum of values over all bases covered
@@ -89,7 +90,7 @@ if [[ ! -f ${LIBRARIES_SIZES} ]]; then
     # Prepare BED4 region
     cat ${CHROM_SIZES} | awk '{printf("%s\t1\t%s\t%s#1#%s\n",$1,$2,$1,$2)}' > ${TMPDIR}/chrom.sizes.bed4
 
-    process_coverage ${TMPDIR}/chrom.sizes.bed4 "chrom.sizes" ${TMPDIR}/chrom.sizes.tsv
+    process_coverage ${TMPDIR}/chrom.sizes.bed4 "chrom.sizes" ${TMPDIR}/chrom.sizes.tsv ${TMPDIR}
 
     for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
     do :
@@ -106,7 +107,7 @@ if [[ ! -f $PEAKS_FILE ]]; then
         cat $REGIONS | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
             sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/peaks.sizes.bed4
 
-        process_coverage ${TMPDIR}/peaks.sizes.bed4 "peaks.sizes" ${TMPDIR}/peaks.sizes.tsv
+        process_coverage ${TMPDIR}/peaks.sizes.bed4 "peaks.sizes" ${TMPDIR}/peaks.sizes.tsv ${WORK_DIR}
 
         for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
         do :
@@ -123,7 +124,7 @@ echo "Compute regions coverage ${REGIONS}"
 cat $REGIONS | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
     sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/regions.bed4
 
-process_coverage ${TMPDIR}/regions.bed4 ${ID} ${RESULTS_FOLDER}/${ID}.tsv
+process_coverage ${TMPDIR}/regions.bed4 ${ID} ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}
 
 echo "Processing data, rpm, rpkm, and rpm_peaks for ${ID}.tsv"
 run_parallel << SCRIPT
