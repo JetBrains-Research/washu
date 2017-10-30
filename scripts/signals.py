@@ -83,12 +83,13 @@ def save_signal(id, coverage, signal_type, msg):
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
-    if len(args) != 4:
+    if len(args) < 4:
         print("ARGUMENTS:  <work_dir> <id> <sizes.tsv> [<peaks.sizes.tsv>]\n"
               "     <work_dir>: folder with BW files\n"
               "     <sizes.tsv>: libraries sizes, used for RPM normalization\n"
               "     <peaks.sizes.tsv>: libraries sizes in peaks regions, used for RPM_peaks normalization\n"
-              "CONVENTION: signal results are saved under <work_dir>/<id>")
+              "CONVENTION: signal results are saved under <work_dir>/<id>\n\n"
+              "ARGS: " + ",".join(args))
         sys.exit(1)
 
     work_dir = args[0]

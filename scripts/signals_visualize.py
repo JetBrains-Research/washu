@@ -328,7 +328,8 @@ def main():
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
     if len(args) != 2:
         print("ARGUMENTS:  <work_dir> <id>\n"
-              "CONVENTION: signal data is saved <folder>/<id>")
+              "CONVENTION: signal data is saved <folder>/<id>\n\n"
+              "ARGS: " + ",".join(args))
         sys.exit(1)
 
     work_dir = args[0]
