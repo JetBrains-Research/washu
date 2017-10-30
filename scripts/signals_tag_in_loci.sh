@@ -42,7 +42,7 @@ COVERAGES_FOLDER=${WORK_DIR}/coverages/${ID}
 echo "RESULTS FOLDER: $COVERAGES_FOLDER"
 mkdir -p ${COVERAGES_FOLDER}
 
-# Intesect loci with peaks
+# Intersect loci with peaks
 SIGNAL_PEAKS_FNAME=${SIGNAL_PEAKS##*/}
 PEAKS_IN_LOCI="$COVERAGES_FOLDER/${SIGNAL_PEAKS_FNAME%.*}.${ID}.bed"
 echo "PEAKS_IN_LOCI: $PEAKS_IN_LOCI"
