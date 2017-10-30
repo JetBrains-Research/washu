@@ -18,8 +18,7 @@ def process(work_dir, id, sizes_path, peaks_sizes_path):
     data = pd.read_csv(data_path, sep='\t',
                        names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
 
-    processing_chipseq = [n for n in data['name'] if re.match('.*input.*', n)] and \
-                         not [n for n in data['name'] if re.match('.*(meth|trans|mirna).*', n)]
+    processing_chipseq = not [n for n in data['name'] if re.match('.*(meth|trans|mirna).*', n)]
 
     if processing_chipseq:
         print("Processing ChIP-Seq, input found")
@@ -54,7 +53,7 @@ def process(work_dir, id, sizes_path, peaks_sizes_path):
     data['rpkm'] = data['rpm'] / data['rpk']
     save_signal(id, data, 'rpkm', 'Saved RPKM')
 
-    if not(peaks_sizes_path and os.path.exists(peaks_sizes_path)):
+    if not (peaks_sizes_path and os.path.exists(peaks_sizes_path)):
         return
     print('Processing normalization by reads mapped to peaks')
     peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'sizes_peaks_pm'),

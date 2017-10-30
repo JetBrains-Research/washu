@@ -10,63 +10,25 @@ import re
 import subprocess
 import sys
 import tempfile
-from collections import namedtuple
 from enum import Enum
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from scripts.util import *
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 
 
-class Normalization(Enum):
-    NONE = 1
-    SCALED = 2
-
-
-Group = namedtuple('Group', 'name color prefix')
-OD_GROUP = Group('OD', 'blue', '')
-YD_GROUP = Group('YD', 'red', '')
-
-
-def is_od_input(c):
-    return re.match('.*input.*od.*', c, flags=re.IGNORECASE) or \
-           re.match('.*od.*input.*', c, flags=re.IGNORECASE)
-
-
-def is_yd_input(c):
-    return re.match('.*input.*yd.*', c, flags=re.IGNORECASE) or \
-           re.match('.*yd.*input.*', c, flags=re.IGNORECASE)
-
-
-def is_input(c):
-    return is_od_input(c) or is_yd_input(c)
-
-
-def is_od(c):
-    return re.match('.*od\\d+.*', c, flags=re.IGNORECASE) and not is_input(c)
-
-
-def is_yd(c):
-    return re.match('.*yd\\d+.*', c, flags=re.IGNORECASE) and not is_input(c)
-
-
-def age(n):
-    return re.search('[yo]d\\d+', n, flags=re.IGNORECASE).group(0)
-
-
 def signal_pca(x0,
                title,
                groups=None,
-               scale=Normalization.NONE):
+               scaled=False):
     if groups is None:
-        groups = [OD_GROUP if is_od(r) else YD_GROUP for r in x0.index]
-    x = x0
-    if scale == Normalization.SCALED:
-        x = preprocessing.scale(x0)
-
+        groups = [OLD if is_od(r) else YOUNG for r in x0.index]
+    # Use scaled PCA if required
+    x = preprocessing.scale(x0) if scaled else x0
     pca = PCA(n_components=2)
     x_r = pca.fit_transform(x)
     for g in set(groups):
@@ -85,7 +47,7 @@ def signal_pca(x0,
     plt.ylabel('PC2 {}%'.format(int(pca.explained_variance_ratio_[1] * 100)))
 
     # Try to fit logistic regression and test
-    y = [0 if g == YD_GROUP else 1 for g in groups]
+    y = [0 if g == YOUNG else 1 for g in groups]
     lr = LogisticRegression()
     lr.fit(x_r, y)
     p_y = [1 if x[0] < 0.5 else 0 for x in lr.predict_proba(x_r)]
@@ -99,11 +61,11 @@ def signal_pca_all(x, title, groups=None):
     plt.subplot(1, 4, 1)
     e = signal_pca(x, title, groups=groups)
     plt.subplot(1, 4, 2)
-    e_scaled = signal_pca(x, 'SCALED {}'.format(title), scale=Normalization.SCALED, groups=groups)
+    e_scaled = signal_pca(x, 'SCALED {}'.format(title), groups=groups, scaled=True)
     plt.subplot(1, 4, 3)
     e_log = signal_pca(np.log1p(x), 'LOG {}'.format(title), groups=groups)
     plt.subplot(1, 4, 4)
-    e_scaled_log = signal_pca(np.log1p(x), 'SCALED LOG {}'.format(title), scale=Normalization.SCALED, groups=groups)
+    e_scaled_log = signal_pca(np.log1p(x), 'SCALED LOG {}'.format(title), groups=groups, scaled=True)
     return e, e_scaled, e_log, e_scaled_log
 
 
@@ -138,8 +100,8 @@ def mean_regions(df, title, ax, plot_type):
         signal["ODS"] = np.log1p(signal["ODS"]) / np.log(10)
         signal["YDS"] = np.log1p(signal["YDS"]) / np.log(10)
 
-        ax.hist(signal["ODS"], color=OD_GROUP.color, bins=100, alpha=0.3, label="ODS")
-        ax.hist(signal["YDS"], color=YD_GROUP.color, bins=100, alpha=0.3, label="YDS")
+        ax.hist(signal["ODS"], color=OLD.color, bins=100, alpha=0.3, label="ODS")
+        ax.hist(signal["YDS"], color=YOUNG.color, bins=100, alpha=0.3, label="YDS")
         ax.legend()
     else:
         ax.scatter(signal["ODS"], signal["YDS"], alpha=.3, s=1)
@@ -175,16 +137,19 @@ def mean_boxplots(df, title, ax):
         for j, label in enumerate(age_data.index):
             ax.annotate(label, xy=(i, age_data.iloc[j, :]['value']),
                         xytext=(5, 0),
-                        color=OD_GROUP.color if age_label == "YDS" else YD_GROUP.color,
+                        color=OLD.color if age_label == "YDS" else YOUNG.color,
                         textcoords='offset points')
 
     ax.set_title(title)
     return signal
 
 
-# See documents on how to compute scores
-# https://docs.google.com/document/d/1zH5cw5Zal546xkoFFCVqhhYmf3742efhddz5cqpD9PQ/edit?usp=sharing
 def score(cond, cont, scale):
+    """
+Computes DiffBind score
+See documents on how to compute scores
+https://docs.google.com/document/d/1zH5cw5Zal546xkoFFCVqhhYmf3742efhddz5cqpD9PQ/edit?usp=sharing
+"""
     if scale > 1:
         scale = 1
     if scale != 0:
@@ -240,7 +205,7 @@ def process(work_dir, id):
             plt.close()
 
             # Save pca fit errors to file
-            pd.DataFrame(data=[[e, e_scaled, e_log, e_scaled_log]]).\
+            pd.DataFrame(data=[[e, e_scaled, e_log, e_scaled_log]]). \
                 to_csv(re.sub('.tsv', '_pca_fit_error.csv', f), index=None, header=False)
 
             if not inputs_found:
@@ -264,7 +229,7 @@ def process(work_dir, id):
         sizes = sizes.drop('name', axis=1)
         sizes['size'] = sizes['size'] / 1000000
 
-        records = [(d, od_input, OD_GROUP) for d in ods] + [(d, yd_input, YD_GROUP) for d in yds]
+        records = [(d, od_input, OLD) for d in ods] + [(d, yd_input, YOUNG) for d in yds]
         scores, lib_sizes = process_scores(df, sizes, records)
 
         plt.figure(figsize=(20, 5))

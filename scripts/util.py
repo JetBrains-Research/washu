@@ -8,6 +8,8 @@ import traceback
 
 #################################################################
 # Add project root folder to load path
+from collections import namedtuple
+
 this_file_path = os.path.realpath(__file__)
 project_root_path \
     = os.path.abspath(os.path.join(os.path.dirname(this_file_path), os.pardir))
@@ -38,6 +40,42 @@ python util.py effective_genome_fraction <genome> <chrom.sizes.path>
 
 def usage():
     print(help_message)
+
+
+#################################################################
+# Age and donors utility code
+#################################################################
+Age = namedtuple('Age', 'name color prefix')
+OLD = Age('O', 'blue', '')
+YOUNG = Age('Y', 'red', '')
+
+
+def is_od_input(c):
+    return re.match('.*input.*od.*', c, flags=re.IGNORECASE) or \
+           re.match('.*od.*input.*', c, flags=re.IGNORECASE)
+
+
+def is_yd_input(c):
+    return re.match('.*input.*yd.*', c, flags=re.IGNORECASE) or \
+           re.match('.*yd.*input.*', c, flags=re.IGNORECASE)
+
+
+def is_input(c):
+    return is_od_input(c) or is_yd_input(c)
+
+
+def is_od(c):
+    return re.match('.*od\\d+.*', c, flags=re.IGNORECASE) and not is_input(c)
+
+
+def is_yd(c):
+    return re.match('.*yd\\d+.*', c, flags=re.IGNORECASE) and not is_input(c)
+
+
+def age(n):
+    return re.search('[yo]d\\d+', n, flags=re.IGNORECASE).group(0)
+
+#################################################################
 
 
 def lcs(x, y):
