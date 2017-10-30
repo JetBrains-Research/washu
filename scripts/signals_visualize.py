@@ -163,10 +163,7 @@ def process_scores(df, sizes, records):
     sizes_processed = pd.DataFrame(columns=['name', 'size'])
     for cond, cont, g in records:
         scale = sizes.loc[cond]['size'] / sizes.loc[cont]['size']
-        if g is None:
-            prefix = ''
-        else:
-            prefix = g.prefix
+        prefix = '' if g is None else g.prefix
         scores_processed[prefix + cond] = [score(z[0], z[1], scale) for z in zip(df[cond], df[cont])]
         sizes_processed.loc[len(sizes_processed)] = (prefix + cond, sizes.loc[cond]['size'])
     return scores_processed, sizes_processed
@@ -175,8 +172,8 @@ def process_scores(df, sizes, records):
 TMM_R_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../R/tmm.R'
 
 
-def process(work_dir, id):
-    print('Visualize {} {}'.format(work_dir, id))
+def process(work_dir, id, sizes):
+    print('Visualize {} {} {}'.format(work_dir, id, sizes))
     for signal_type in ['raw', 'rpm', 'rpkm', 'rpm_peaks', 'rpkm_peaks']:
         f = os.path.join(work_dir, id, '{0}_{1}.tsv'.format(id, signal_type))
         try:
@@ -212,25 +209,34 @@ def process(work_dir, id):
                 print("No chipseq inputs found, exit.")
                 return
 
-        except FileNotFoundError:
-            print('File not found: {}'.format(f))
+        except FileNotFoundError as e:
+            print(e)
 
     print('Processing diffbind scores')
-    f = os.path.join(work_dir, id, '{}_raw.tsv'.format(id))
     try:
+        f = os.path.join(work_dir, id, '{}_raw.tsv'.format(id))
         df = pd.read_csv(f, sep='\t')
         od_input = [c for c in df.columns.values if is_od_input(c)][0]
         yd_input = [c for c in df.columns.values if is_yd_input(c)][0]
         ods = [c for c in df.columns if is_od(c)]
         yds = [c for c in df.columns if is_yd(c)]
 
-        sizes = pd.read_csv(os.path.join(work_dir, id, 'sizes.tsv').format(id), sep='\t', names=('name', 'size'))
-        sizes.index = sizes['name']
-        sizes = sizes.drop('name', axis=1)
-        sizes['size'] = sizes['size'] / 1000000
+        sizes_df = pd.read_csv(sizes, sep='\t', names=('name', 'size'))
+        sizes_df.index = sizes_df['name']
+        sizes_df = sizes_df.drop('name', axis=1)
+        sizes_df['size'] = sizes_df['size'] / 1000000
 
         records = [(d, od_input, OLD) for d in ods] + [(d, yd_input, YOUNG) for d in yds]
-        scores, lib_sizes = process_scores(df, sizes, records)
+        scores, lib_sizes = process_scores(df, sizes_df, records)
+        scores2save = pd.DataFrame()
+        scores2save['chr'] = df['chr']
+        scores2save['start'] = df['start']
+        scores2save['end'] = df['end']
+        for n in scores.columns:
+            scores2save[n] = scores[n]
+        scores_file = re.sub('_raw.tsv', '_scores.tsv', f)
+        scores2save.to_csv(scores_file, index=False, sep='\t')
+        print('Saved diffbind scores to', scores_file)
 
         plt.figure(figsize=(20, 5))
         mean_regions(scores, title='diffbind score', ax=plt.subplot(1, 4, 1), plot_type=Plot.SCATTER)
@@ -271,7 +277,7 @@ def process(work_dir, id):
         scores_tmm = pd.read_csv(tmm_file, sep='\t') * 10000000
 
         # counts <- counts * mean(res$samples$lib.size)
-        scores_tmm_full = scores_tmm.T * sizes.loc[ods + yds]['size'].mean()
+        scores_tmm_full = scores_tmm.T * sizes_df.loc[ods + yds]['size'].mean()
         plt.figure(figsize=(20, 5))
         plt.subplot(1, 4, 1)
         signal_pca(scores_tmm.T, 'TMM DBA_SCORE_TMM_MINUS_FULL_CPM', groups=groups)
@@ -284,24 +290,25 @@ def process(work_dir, id):
         plt.savefig(re.sub('_raw.tsv', '_scores_tmm_pca.png', f))
         plt.close()
 
-    except FileNotFoundError:
-        print('File not found: {}'.format(f))
+    except FileNotFoundError as e:
+        print(e)
 
 
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
-    if len(args) != 2:
-        print("ARGUMENTS:  <work_dir> <id>\n"
+    if len(args) != 3:
+        print("ARGUMENTS:  <work_dir> <id> <sizes.tsv>\n"
               "CONVENTION: signal data is saved <folder>/<id>\n\n"
               "ARGS: " + ",".join(args))
         sys.exit(1)
 
     work_dir = args[0]
     id = args[1]
+    sizes = args[2]
 
-    print('Processing signal_visualize.py {} {}'.format(work_dir, id))
-    process(work_dir, id)
+    print('Processing signal_visualize.py {} {} {}'.format(work_dir, id, sizes))
+    process(work_dir, id, sizes)
 
 
 if __name__ == "__main__":

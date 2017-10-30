@@ -101,8 +101,7 @@ def main():
     print('PEAKS SIZES PATH', peaks_sizes_path)
 
     process(work_dir, id, sizes_path, peaks_sizes_path)
-
-    signals_visualize.process(work_dir, id)
+    signals_visualize.process(work_dir, id, sizes_path)
 
 
 if __name__ == "__main__":
