@@ -210,11 +210,10 @@ def process_scores(df, sizes, records):
 TMM_R_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../R/tmm.R'
 
 
-def process(folder, id):
-    print('Visualize {} {}'.format(folder, id))
-    file = os.path.join(folder, '{0}/{0}_{1}.tsv')
-    for normalization in ['raw', 'rpm', 'rpkm', 'rpm_peaks']:
-        f = file.format(id, normalization)
+def process(work_dir, id):
+    print('Visualize {} {}'.format(work_dir, id))
+    for signal_type in ['raw', 'rpm', 'rpkm', 'rpm_peaks', 'rpkm_peaks']:
+        f = os.path.join(work_dir, id, '{0}_{1}.tsv'.format(id, signal_type))
         try:
             print(f)
             df = pd.read_csv(f, sep='\t')
@@ -226,17 +225,17 @@ def process(folder, id):
             else:
                 signal = df.drop(['chr', 'start', 'end'], axis=1)
             plt.figure(figsize=(20, 5))
-            mean_regions(df, title=normalization, ax=plt.subplot(1, 4, 1), plot_type=Plot.SCATTER)
-            mean_regions(df, title='MA {}'.format(normalization), ax=plt.subplot(1, 4, 2), plot_type=Plot.MA)
-            mean_regions(df, title='LOG {}'.format(normalization), ax=plt.subplot(1, 4, 3), plot_type=Plot.HISTOGRAM)
-            means = mean_boxplots(signal.T, title=normalization, ax=plt.subplot(1, 4, 4))
+            mean_regions(df, title=signal_type, ax=plt.subplot(1, 4, 1), plot_type=Plot.SCATTER)
+            mean_regions(df, title='MA {}'.format(signal_type), ax=plt.subplot(1, 4, 2), plot_type=Plot.MA)
+            mean_regions(df, title='LOG {}'.format(signal_type), ax=plt.subplot(1, 4, 3), plot_type=Plot.HISTOGRAM)
+            means = mean_boxplots(signal.T, title=signal_type, ax=plt.subplot(1, 4, 4))
             plt.savefig(re.sub('.tsv', '.png', f))
             plt.close()
 
             # Save means signal to df
             pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_data.csv', f), index=True, header=None)
 
-            e, e_scaled, e_log, e_scaled_log = signal_pca_all(signal.T, normalization)
+            e, e_scaled, e_log, e_scaled_log = signal_pca_all(signal.T, signal_type)
             plt.savefig(re.sub('.tsv', '_pca.png', f))
             plt.close()
 
@@ -252,7 +251,7 @@ def process(folder, id):
             print('File not found: {}'.format(f))
 
     print('Processing diffbind scores')
-    f = os.path.join(folder, '{0}/{0}_raw.tsv'.format(id))
+    f = os.path.join(work_dir, id, '{}_raw.tsv'.format(id))
     try:
         df = pd.read_csv(f, sep='\t')
         od_input = [c for c in df.columns.values if is_od_input(c)][0]
@@ -260,7 +259,7 @@ def process(folder, id):
         ods = [c for c in df.columns if is_od(c)]
         yds = [c for c in df.columns if is_yd(c)]
 
-        sizes = pd.read_csv(folder + '/{0}/sizes.tsv'.format(id), sep='\t', names=('name', 'size'))
+        sizes = pd.read_csv(os.path.join(work_dir, id, 'sizes.tsv').format(id), sep='\t', names=('name', 'size'))
         sizes.index = sizes['name']
         sizes = sizes.drop('name', axis=1)
         sizes['size'] = sizes['size'] / 1000000
@@ -324,25 +323,19 @@ def process(folder, id):
         print('File not found: {}'.format(f))
 
 
-help_message = 'ARGUMENTS: <folder with BW or BAM> <id>'
-
-
-def usage():
-    print(help_message)
-
-
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
     if len(args) != 2:
-        usage()
+        print("ARGUMENTS:  <work_dir> <id>\n"
+              "CONVENTION: signal data is saved <folder>/<id>")
         sys.exit(1)
 
-    folder = args[0]
+    work_dir = args[0]
     id = args[1]
 
-    print('Processing signal_visualize.py {} {}'.format(folder, id))
-    process(folder, id)
+    print('Processing signal_visualize.py {} {}'.format(work_dir, id))
+    process(work_dir, id)
 
 
 if __name__ == "__main__":

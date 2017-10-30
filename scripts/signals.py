@@ -12,63 +12,60 @@ import re
 
 from scripts import signals_visualize
 
-help_message = 'ARGUMENTS: <coverage.tsv> <sizes.tsv> <id>'
 
-
-def usage():
-    print(help_message)
-
-
-def process(data_path, sizes_path, id):
-    print('PROCESSING ID', id)
-    print('COVERAGE PATH', data_path)
-    print('SIZES PATH', sizes_path)
+def process(work_dir, id, sizes_path, peaks_sizes_path):
+    data_path = os.path.join(work_dir, id, '{}.tsv'.format(id))
     data = pd.read_csv(data_path, sep='\t',
                        names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
 
-    chipseq_processing = [n for n in data['name'] if re.match('.*input.*', n)] and \
+    processing_chipseq = [n for n in data['name'] if re.match('.*input.*', n)] and \
                          not [n for n in data['name'] if re.match('.*(meth|trans|mirna).*', n)]
+
+    if processing_chipseq:
+        print("Processing ChIP-Seq, input found")
+    else:
+        print("Processing Methylation|Transcription|miRNA, input not found")
 
     print('Processing raw signal')
     pivot = pd.pivot_table(data, index=['chr', 'start', 'end'],
                            columns='name',
-                           values='coverage' if chipseq_processing else 'mean',
+                           values='coverage' if processing_chipseq else 'mean',
                            fill_value=0)
     raw_signal = '{}_raw.tsv'.format(id)
     pivot.to_csv(raw_signal, sep='\t')
     print('Saved raw signal to {}'.format(raw_signal))
 
-    if not chipseq_processing:
-        print("Processing METH|TRANS|MIRNA")
+    # Normalization is available only for ChIP-Seq
+    if not processing_chipseq:
         return
 
     print('Processing normalization by all library mapped reads')
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'sizes_pm'),
                         index_col='name')
     sizes_pm = sizes / 1000000
-    data = pd.merge(data, sizes_pm, left_on="name", how='left',
-                    right_index=True)
+    data = pd.merge(data, sizes_pm, left_on="name", how='left', right_index=True)
 
-    print('Processing normalization by reads mapped to peaks')
-    sizes_peaks_pm = data.groupby(["name"]).agg({'coverage': 'sum'}).rename(
-        columns={'coverage': "sizes_peaks_pm"}) / 1000000
-    data = pd.merge(data, sizes_peaks_pm, left_on="name", how='left',
-                    right_index=True)
-
-    print('Sizes RPM: {}'.format(sizes_pm))
+    print('Sizes RPM: {}'.format(sizes_pm.to_string()))
     data['rpm'] = data['coverage'] / data['sizes_pm']
     save_signal(id, data, 'rpm', 'Saved RPM')
-
-    print('Sizes peaks RPM: {}'.format(sizes_peaks_pm))
-    data['rpm_peaks'] = data['coverage'] / data['sizes_peaks_pm']
-    save_signal(id, data, 'rpm_peaks',
-                'Saved normalized reads by RPM reads in peaks signal')
 
     print('Processing RPKM normalization')
     data['rpk'] = (data['end'] - data['start']) / 1000.0
     data['rpkm'] = data['rpm'] / data['rpk']
     save_signal(id, data, 'rpkm', 'Saved RPKM')
 
+    if not(peaks_sizes_path and os.path.exists(peaks_sizes_path)):
+        return
+    print('Processing normalization by reads mapped to peaks')
+    peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'sizes_peaks_pm'),
+                              index_col='name')
+    sizes_peaks_pm = peaks_sizes / 1000000
+    print('Sizes peaks RPM: {}'.format(sizes_peaks_pm.to_string()))
+
+    data = pd.merge(data, sizes_peaks_pm, left_on="name", how='left', right_index=True)
+    data['rpm_peaks'] = data['coverage'] / data['sizes_peaks_pm']
+    save_signal(id, data, 'rpm_peaks',
+                'Saved normalized reads by RPM reads in peaks signal')
     print('Processing RPKM_PEAKS normalization')
     data['rpkm_peaks'] = data['rpm_peaks'] / data['rpk']
     save_signal(id, data, 'rpkm_peaks',
@@ -86,18 +83,26 @@ def save_signal(id, coverage, signal_type, msg):
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
-    if len(args) != 3:
-        usage()
+    if len(args) != 4:
+        print("ARGUMENTS:  <work_dir> <id> <sizes.tsv> [<peaks.sizes.tsv>]\n"
+              "     <work_dir>: folder with BW files\n"
+              "     <sizes.tsv>: libraries sizes, used for RPM normalization\n"
+              "     <peaks.sizes.tsv>: libraries sizes in peaks regions, used for RPM_peaks normalization\n"
+              "CONVENTION: signal results are saved under <work_dir>/<id>")
         sys.exit(1)
 
-    coverage_path = args[0]
-    sizes_path = args[1]
-    id = args[2]
-    print('Processing bed_signal.py {} {} {}'.format(coverage_path, sizes_path, id))
-    process(coverage_path, sizes_path, id)
+    work_dir = args[0]
+    id = args[1]
+    sizes_path = args[2]
+    peaks_sizes_path = args[3] if len(args) == 4 else None
+    print('WORK_DIR', work_dir)
+    print('ID', id)
+    print('SIZES PATH', sizes_path)
+    print('PEAKS SIZES PATH', peaks_sizes_path)
 
-    bam_bw_folder = os.path.dirname(os.path.dirname(coverage_path))
-    signals_visualize.process(bam_bw_folder, id)
+    process(work_dir, id, sizes_path, peaks_sizes_path)
+
+    signals_visualize.process(work_dir, id)
 
 
 if __name__ == "__main__":
