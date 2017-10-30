@@ -160,6 +160,17 @@ SCRIPT
 
     wait_complete "$QSUB_ID1 $QSUB_ID2"
 
+    # Check MACS2 for shift values
+    macs2_shift() {
+        echo $(cat $1 | grep "# d =" | sed 's/.*# d = //g')
+    }
+
+    SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
+    echo "SHIFT Y: $SHIFT_Y"
+
+    SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
+    echo "SHIFT O: $SHIFT_O"
+
     run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N manorm_${Q}
