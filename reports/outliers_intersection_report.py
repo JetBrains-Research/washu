@@ -41,7 +41,7 @@ def process_hist_mod(peaks_root, outliers_df, threads, golden, pdf_printer):
 
     anns = [color_annotator_age]
     if hist_mod in outliers_df.columns:
-        anns.append(color_annotator_outlier(outliers_df, mod_dir.name))
+        anns.append(color_annotator_outlier(outliers_df, hist_mod))
     annotator = color_annotator_chain(*anns)
 
     # print to pdf:

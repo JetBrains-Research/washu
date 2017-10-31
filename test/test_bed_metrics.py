@@ -233,6 +233,17 @@ def test_plot_multiple_col_fun(tmp_dir, test_data, fdf, fname, col, row):
     ("boo_ODS_foo.broadPeak", "ODS_macs2"),
     ("boo_OD12_foo.broadPeak", "OD12_macs2"),
 
+    ("ODS_foo_peaks.bed", "ODS_zinbra"),
+    ("boo_ODS_foo_peaks.bed", "ODS_zinbra"),
+    ("boo_OD12_foo_peaks.bed", "OD12_zinbra"),
+
+    ("YDS_boo_consensus_zinbra.bed", "YDS_consensus_zinbra"),
+    ("boo_zinbra_YDS_boo_consensus.bed", "YDS_consensus_zinbra"),
+    ("boo_zinbra_boo_consensus.bed", "consensus_zinbra"),
+
+    ("YDS_boo_consensus_macs2.bed", "YDS_consensus_macs2"),
+    ("boo_macs2_YDS_boo_consensus.bed", "YDS_consensus_macs2"),
+    ("boo_macs2_boo_consensus.bed", "consensus_macs2"),
 ])
 def test_label_converter_donor_and_tool(label, value):
     assert value == label_converter_donor_and_tool(label)
