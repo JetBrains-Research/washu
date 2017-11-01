@@ -32,3 +32,5 @@ fi
 NAME=${BAM%%.bam}
 bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${NAME}.bdg
 bash "${SCRIPT_DIR}/scripts/bdg2bw.sh" ${NAME}.bdg ${CHROM_SIZES}
+# Cleanup
+rm ${NAME}.bdg
