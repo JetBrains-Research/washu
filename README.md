@@ -4,16 +4,17 @@ Technical pipelines for ChIP-Seq, RNA-Seq, RRBS processing on Portable Batch Sys
 Project
 -------
 
-* `/bed`        - BED files manipulations - intersection, ChromHMM enrichment, etc.
-* `/notebooks`  - Jupiter notebooks
-* `/parallel`   - Scripts for parallel execution of PBS greed using `qsub` queue management
-* `/R`          - R scripts
-* `/reports`    - Scripts to generate report by logs (bowtie, macs2, etc) 
-* `/scripts`    - Visualization, downstream analysis, e.g. replicated ChIP-Seq comparison, etc.
-* `/test`       - Tests
-* `/tex`        - Latex presentation for the `pipeline_chipseq.py`
-* `/uscs`       - Prepared custom tracks for UCSC genome [browser](https://genome.ucsc.edu/)
-* `/web`        - Create web server with tracks and peaks powered by [Biodalliance](http://www.biodalliance.org/) genome browser
+* `/bed`            - BED files manipulations - intersection, ChromHMM enrichment, etc.
+* `/dockertestdata` - Docker file with testdata: fastq, indices, etc. Used for `pipeline_chipseq.py` testing.
+* `/notebooks`      - Jupiter notebooks
+* `/parallel`       - Scripts for parallel execution of PBS greed using `qsub` queue management
+* `/R`              - R scripts
+* `/reports`        - Scripts to generate report by logs (bowtie, macs2, etc) 
+* `/scripts`        - Visualization, downstream analysis, e.g. replicated ChIP-Seq comparison, etc.
+* `/test`           - Tests
+* `/tex`            - Latex presentation for the `pipeline_chipseq.py`
+* `/uscs`           - Prepared custom tracks for UCSC genome [browser](https://genome.ucsc.edu/)
+* `/web`            - Create web server with tracks and peaks powered by [Biodalliance](http://www.biodalliance.org/) genome browser.
 
 
 Scripts
