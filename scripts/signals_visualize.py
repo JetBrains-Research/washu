@@ -137,40 +137,43 @@ def mean_boxplots(df, title, ax):
     return signal
 
 
+def visualize(f, name):
+    try:
+        print(f)
+        df = pd.read_csv(f, sep='\t')
+        od_inputs = [c for c in df.columns.values if is_od_input(c)]
+        yd_inputs = [c for c in df.columns.values if is_yd_input(c)]
+        if od_inputs and yd_inputs:
+            signal = df.drop(['chr', 'start', 'end', od_inputs[0], yd_inputs[0]], axis=1)
+        else:
+            signal = df.drop(['chr', 'start', 'end'], axis=1)
+        plt.figure(figsize=(20, 5))
+        mean_regions(df, title=name, ax=plt.subplot(1, 4, 1), plot_type=Plot.SCATTER)
+        mean_regions(df, title='MA {}'.format(name), ax=plt.subplot(1, 4, 2), plot_type=Plot.MA)
+        mean_regions(df, title='LOG {}'.format(name), ax=plt.subplot(1, 4, 3), plot_type=Plot.HISTOGRAM)
+        means = mean_boxplots(signal.T, title=name, ax=plt.subplot(1, 4, 4))
+        plt.savefig(re.sub('.tsv', '.png', f))
+        plt.close()
+
+        # Save means signal to df
+        pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_data.csv', f), index=True, header=None)
+
+        e, e_scaled, e_log, e_scaled_log = signal_pca_all(signal.T, name)
+        plt.savefig(re.sub('.tsv', '_pca.png', f))
+        plt.close()
+
+        # Save pca fit errors to file
+        pd.DataFrame(data=[[e, e_scaled, e_log, e_scaled_log]]). \
+            to_csv(re.sub('.tsv', '_pca_fit_error.csv', f), index=None, header=False)
+
+    except FileNotFoundError as e:
+        print(e)
+
+
 def process(work_dir, id):
     print('Visualize', work_dir, id)
     for signal_type in ['raw', 'rpm', 'rpkm', 'rpm_peaks', 'rpkm_peaks', 'scores', 'scores_tmm']:
-        f = os.path.join(work_dir, id, '{0}_{1}.tsv'.format(id, signal_type))
-        try:
-            print(f)
-            df = pd.read_csv(f, sep='\t')
-            od_inputs = [c for c in df.columns.values if is_od_input(c)]
-            yd_inputs = [c for c in df.columns.values if is_yd_input(c)]
-            if od_inputs and yd_inputs:
-                signal = df.drop(['chr', 'start', 'end', od_inputs[0], yd_inputs[0]], axis=1)
-            else:
-                signal = df.drop(['chr', 'start', 'end'], axis=1)
-            plt.figure(figsize=(20, 5))
-            mean_regions(df, title=signal_type, ax=plt.subplot(1, 4, 1), plot_type=Plot.SCATTER)
-            mean_regions(df, title='MA {}'.format(signal_type), ax=plt.subplot(1, 4, 2), plot_type=Plot.MA)
-            mean_regions(df, title='LOG {}'.format(signal_type), ax=plt.subplot(1, 4, 3), plot_type=Plot.HISTOGRAM)
-            means = mean_boxplots(signal.T, title=signal_type, ax=plt.subplot(1, 4, 4))
-            plt.savefig(re.sub('.tsv', '.png', f))
-            plt.close()
-
-            # Save means signal to df
-            pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_data.csv', f), index=True, header=None)
-
-            e, e_scaled, e_log, e_scaled_log = signal_pca_all(signal.T, signal_type)
-            plt.savefig(re.sub('.tsv', '_pca.png', f))
-            plt.close()
-
-            # Save pca fit errors to file
-            pd.DataFrame(data=[[e, e_scaled, e_log, e_scaled_log]]). \
-                to_csv(re.sub('.tsv', '_pca_fit_error.csv', f), index=None, header=False)
-
-        except FileNotFoundError as e:
-            print(e)
+        visualize(os.path.join(work_dir, id, '{0}_{1}.tsv'.format(id, signal_type)), signal_type)
 
 
 def main():
@@ -185,7 +188,6 @@ def main():
     work_dir = args[0]
     id = args[1]
 
-    print('Processing signal_visualize.py', work_dir, id)
     process(work_dir, id)
 
 
