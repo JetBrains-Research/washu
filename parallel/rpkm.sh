@@ -19,7 +19,7 @@ fi
 WORK_DIRS=$@
 
 
-TASKS=""
+TASKS=()
 for WORK_DIR in ${WORK_DIRS}; do
     WORK_DIR_NAME=${WORK_DIR##*/}
     cd ${WORK_DIR}
@@ -48,10 +48,10 @@ fi
 bamCoverage --bam ${FILE} --outFileName ${NAME}_rpkm.bw --outFileFormat bigwig --ignoreDuplicates --normalizeUsingRPKM
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
-        TASKS="$TASKS $QSUB_ID"
+        TASKS+=("$QSUB_ID")
     done
 done
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 >&2 echo "Done. Batch rpkm $@"

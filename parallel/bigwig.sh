@@ -13,7 +13,7 @@ fi
 CHROM_SIZES=$1
 WORK_DIRS=${@:2}
 
-TASKS=""
+TASKS=()
 for WORK_DIR in ${WORK_DIRS}; do
     WORK_DIR_NAME=${WORK_DIR##*/}
     cd ${WORK_DIR}
@@ -37,10 +37,10 @@ module load bedtools2
 bash ${SCRIPT_DIR}/scripts/bam2bw.sh ${FILE} ${CHROM_SIZES}
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
-        TASKS="$TASKS $QSUB_ID"
+        TASKS+=("$QSUB_ID")
     done
 done
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 >&2 echo "Done. Batch bigwig $@"

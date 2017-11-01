@@ -29,7 +29,7 @@ if [ ${#PEAKS_FOLDERS[*]} -ne ${#READS_FOLDERS[*]} ]; then
   exit 1
 fi
 
-TASKS=""
+TASKS=()
 for i in ${!PEAKS_FOLDERS[*]}; do
     PEAKS_FOLDER=${PEAKS_FOLDERS[$i]}
     READS_FOLDER=${READS_FOLDERS[$i]}
@@ -63,11 +63,11 @@ bash ${SCRIPT_DIR}/reports/rip.sh ${BAM} ${F}
 
 SCRIPT
         echo "FILE: ${F}; TASK: ${QSUB_ID}"
-        TASKS="$TASKS $QSUB_ID"
+        TASKS+=("$QSUB_ID")
     done
 done
 
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 for PEAKS_FOLDER in ${PEAKS_FOLDERS[*]}; do

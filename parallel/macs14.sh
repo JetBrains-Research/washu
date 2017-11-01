@@ -21,7 +21,7 @@ SPECIES=$(python ${SCRIPT_DIR}/scripts/util.py macs_species ${GENOME})
 
 cd ${WORK_DIR}
 
-TASKS=""
+TASKS=()
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
     INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
@@ -54,9 +54,9 @@ fi
 bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}*.narrowPeak
 SCRIPT
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+    TASKS+=("$QSUB_ID")
 done
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 # Create pdf reports

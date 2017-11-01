@@ -14,7 +14,7 @@ REF="$2/human_star_100"
 READ_FILES=($3)
 cd ${WORK_DIR}
 
-TASKS=""
+TASKS=()
 for (( i=0; i<${#READ_FILES[@]} ; i+=2 )) ;
 do :
     NAME=${READ_FILES[i]%%_1.f*q.gz} # file name without extension
@@ -45,10 +45,10 @@ mv ${NAME}_Log.out $NAME.star_run.log
 mv ${NAME}_Log.final.out $NAME.star_final.log
 SCRIPT
     echo "FILE: $NAME; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+    TASKS+=("$QSUB_ID")
 done
 
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 
 rm Aligned.out.sam
 rm *_Log.progress.out

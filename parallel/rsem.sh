@@ -19,7 +19,7 @@ RSEMPATH="/home/kzaytsev/rna_seq_pipeline/tools/RSEM-1.2.31"
 
 cd ${WORK_DIR}
 
-TASKS=""
+TASKS=()
 for FILE in $(find . -name '*.tr.bam' | sed 's#\./##g')
 do :
 
@@ -38,9 +38,9 @@ cd ${WORK_DIR}
 $RSEMPATH/rsem-calculate-expression -p 8 --paired-end --bam --estimate-rspd --no-bam-output $FILE $REF $NAME
 SCRIPT
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+    TASKS+=("$QSUB_ID")
 done
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 module load R
 Rscript ${SCRIPT_DIR}/R/gather.R
 

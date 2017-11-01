@@ -31,9 +31,6 @@ echo "TAGS PROCESSED: $TAGS_FOLDER"
 echo "INSERT SIZE FOR TAGS USED: $INSERT_LENGTH"
 echo "RESULTS FOLDER: $COVERAGES_FOLDER"
 
-PROCESSED=""
-TASKS=""
-
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
@@ -42,6 +39,8 @@ echo "Create BED3 regions file ${REGIONS3}"
 cat ${REGIONS} | awk -v OFS='\t' '{print($1,$2,$3)}' | sort -k1,1 -k3,3n -k2,2n -T ${TMPDIR} > ${REGIONS3}
 
 cd ${WORK_DIR}
+
+TASKS=()
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | sort)
 do :
     NAME=${FILE%%.bam}
@@ -69,11 +68,11 @@ fi
 
 SCRIPT
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-        TASKS="$TASKS $QSUB_ID"
+        TASKS+=("$QSUB_ID")
     fi
 done
 
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 cd $COVERAGES_FOLDER

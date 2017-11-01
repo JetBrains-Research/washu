@@ -26,7 +26,7 @@ fi
 
 cd ${WORK_DIR}
 
-TASKS=""
+TASKS=()
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
     INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
@@ -73,10 +73,10 @@ bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}_peaks.bed
 SCRIPT
 
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-        TASKS="$TASKS $QSUB_ID"
+        TASKS+=("$QSUB_ID")
     fi
 done
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 >&2 echo "Done. Batch zinbra $@"
