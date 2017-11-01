@@ -75,7 +75,7 @@ def main():
         print("Calculating frip vs age")
         frip_boxplot(rip_files, pdf)
         print("Calculating peaks count vs length")
-        length_bar_plots(tracks_paths, 2.0, 4.0, pdf, num_of_threads)
+        length_bar_plots(tracks_paths, 2.0, 4.0, num_of_threads, pdf)
 
         desc = pdf.infodict()
         desc['Title'] = 'Report: Peaks plots for data investigation'

@@ -20,6 +20,15 @@ from reports.bed_metrics import plot_metric_heatmap, bed_metric_table, color_ann
 
 
 def venn_bar_consensus(od_paths_map, yd_paths_map, scale, pdf, threads_num):
+    """
+    Plots venn diagram and bar plot for consensus of selected scale to pdf:
+
+    :param od_paths_map: OD names as keys, od beds as values
+    :param yd_paths_map: YD names as keys, yd beds as values
+    :param scale: 1/scale is ratio of tack number needed for consensus
+    :param pdf: PDF object for plots saving
+    :param threads_num: Threads number for parallel execution
+    """
     pool = multiprocessing.Pool(processes=threads_num)
     od_union = union(*od_paths_map.values())
     yd_union = union(*yd_paths_map.values())
@@ -84,6 +93,15 @@ def venn_bar_consensus(od_paths_map, yd_paths_map, scale, pdf, threads_num):
 
 
 def _groups_sizes(entry, common_bed, own_group_bed, opposite_group_bed):
+    """
+    Count sizes of common, own group, opposite group and personal peaks:
+
+    :param entry: Pair of donor name and bed file
+    :param common_bed: Bed file with common peaks
+    :param own_group_bed: Bed file with own group peaks
+    :param opposite_group_bed: Bed file opposite group peaks
+    :return Donor name and number of peaks in common, own group, opposite group and personal
+    """
     common = intersect(entry[1], common_bed).count()
     own_group = intersect(entry[1], own_group_bed).count() - common
     opposite_group = intersect(entry[1], opposite_group_bed).count() - common
@@ -92,6 +110,12 @@ def _groups_sizes(entry, common_bed, own_group_bed, opposite_group_bed):
 
 
 def cumulative_consensus(tracks_paths, pdf):
+    """
+    Plot cumulative consensus from individual number of peaks down to common number of peaks:
+
+    :param tracks_paths: List of tracks paths
+    :param pdf: PDF object for plots saving
+    """
     tracks_union = union(*[Bed(track_path) for track_path in tracks_paths])
     tracks_union.compute()
 
@@ -115,12 +139,12 @@ def cumulative_consensus(tracks_paths, pdf):
 
 def plot_heatmap(folder, outliers_df, threads_num, pdf):
     """
-    Test:
+    Plots heatmap of distances based on #1 metrics for all region files found in specified folder:
 
-    :param folder: test
-    :param outliers_df: test
-    :param threads_num: test
-    :param pdf: test
+    :param folder: Folder with region files (BED format)
+    :param outliers_df: table with information about outlier tracks
+    :param threads_num: Threads number for parallel execution
+    :param pdf: PDF object for plots saving
     """
     peaks_paths = list(chain(folder.glob("*golden*"), folder.glob("*zinbra*"), folder.glob("*Peak"),
                              folder.glob("*-island.bed"), folder.glob("*peaks.bed")))
@@ -142,6 +166,12 @@ def plot_heatmap(folder, outliers_df, threads_num, pdf):
 
 
 def frip_boxplot(rip_paths, pdf):
+    """
+    Plots FRiP boxplot for old and young donor groups:
+
+    :param rip_paths: List of absolute paths to rip files
+    :param pdf: PDF object for plots saving
+    """
     df = pd.DataFrame(columns=["file", "reads", "peaks", "rip"])
     for rip_path in rip_paths:
         data = pd.read_csv(rip_path)
@@ -186,10 +216,19 @@ def frip_boxplot(rip_paths, pdf):
     pdf.savefig()
 
 
-def length_bar_plots(tracks_paths, min_power, max_power, pdf, threads_num):
+def length_bar_plots(tracks_paths, min_power, max_power, threads_num, pdf):
+    """
+    Plots bar plot for each track - peaks count via peaks lengths:
+
+    :param tracks_paths: List of absolute track paths
+    :param min_power: used for left border of bar plot as a power for 10
+    :param max_power: used for right border of bar plot as a power for 10
+    :param threads_num: Threads number for parallel execution
+    :param pdf: PDF object for plots saving
+    """
     pool = multiprocessing.Pool(processes=threads_num)
     bins = np.logspace(min_power, max_power, 80)
-    ordered_paths, ordered_lengths, track_max_bar_height = zip( *pool.map(functools.partial(
+    ordered_paths, ordered_lengths, track_max_bar_height = zip(*pool.map(functools.partial(
         _calculate_lengths, bins=bins), tracks_paths))
     max_bar_height = max(track_max_bar_height)
     lengths = dict(zip(ordered_paths, ordered_lengths))
@@ -213,6 +252,13 @@ def length_bar_plots(tracks_paths, min_power, max_power, pdf, threads_num):
 
 
 def _calculate_lengths(track_path, bins):
+    """
+    Calculates track peaks lengths and max bar height within all bins:
+
+    :param track_path: Absolute track path
+    :param bins: Object with information about bins in which peaks should be divided
+    :return Absolute track path, list of track peaks lengths, max bar height for the track
+    """
     lengths = []
     extended_bins = np.append(bins, bins[-1] + 1)
     with open(track_path, "r") as track_file:
