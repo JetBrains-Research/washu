@@ -31,7 +31,7 @@ for WORK_DIR in ${WORK_DIRS}; do
     WORK_DIR_NAME=${WORK_DIR##*/}
     cd ${WORK_DIR}
 
-    for FILE in $(find . -name '*.bam' | sed 's#\./##g')
+    for FILE in $(find . -name '*.bam' | grep -v _unique | sed 's#\./##g')
     do :
         NAME=${FILE%%.bam}
         UNIQUE_BAM=${NAME}_unique.bam
