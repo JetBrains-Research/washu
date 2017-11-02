@@ -34,13 +34,13 @@ case "$INPUT" in
     >&2 echo "bed.gz: $INPUT"
     gunzip --keep ${INPUT}
     UNZIPPED=${INPUT%%.gz}
-    BAM=${INPUT%%.bed.gz}.bam
+    BAM=${INPUT/.bed.gz/.bam}
     bedToBam -i ${UNZIPPED} -g ${CHROM_SIZES} > ${BAM}
     rm -f ${UNZIPPED}
     ;;
   *.bed )
     >&2 echo "bed: $INPUT"
-    BAM=${INPUT%%.bed}.bam
+    BAM=${INPUT/.bed/.bam}
     bedToBam -i ${INPUT} -g ${CHROM_SIZES} > ${BAM}
     ;;
   *.bam )

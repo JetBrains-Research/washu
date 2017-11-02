@@ -36,9 +36,9 @@ BAM=$(bash "${SCRIPT_DIR}/scripts/reads2bam.sh" ${INPUT} ${CHROM_SIZES})
 
 # Covert bam to bdg
 if [[ ! -z  ${RESULT} ]]; then
-    BDG_FILE=${RESULT/bw/bdg}
+    BDG_FILE=${RESULT/.bw/.bdg}
 else
-    BDG_FILE=${BAM/bam/bdg}
+    BDG_FILE=${BAM/.bam/.bdg}
 fi
 
 bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${BDG_FILE}

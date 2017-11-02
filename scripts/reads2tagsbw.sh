@@ -32,22 +32,22 @@ SHIFT=$(($INSERT_SIZE / 2))
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
 SCRIPT_DIR="$(project_root_dir)"
 
-export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
-mkdir -p "${TMPDIR}"
 
 # Convert reads to BAM is required
 BAM=$(bash "${SCRIPT_DIR}/scripts/reads2bam.sh" ${INPUT} ${CHROM_SIZES})
-NAME=${BAM%%.bam} # file name without extension
-
+NAME=${BAM%%.bam}; NAME=${NAME##*/} # file name without extension
 # Covert bam to bdg
 if [[ ! -z  ${RESULT} ]]; then
-    BDG=${RESULT/bw/bdg}
+    BDG=${RESULT/.bw/.bdg}
 else
     BDG=${BAM/.bam/_tags.bdg}
 fi
 
-bash ${SCRIPT_DIR}/scripts/bam2tags.sh ${BAM} ${INSERT_SIZE} > ${TMPDIR}/${NAME}.bed
-bedtools merge -i ${TMPDIR}/${NAME}.bed -c 1 -o count > ${BDG}
+export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMPDIR}"
+
+bash ${SCRIPT_DIR}/scripts/bam2tags.sh ${BAM} ${INSERT_SIZE} > ${TMPDIR}/${NAME}.tags
+bedtools merge -i ${TMPDIR}/${NAME}.tags -c 1 -o count > ${BDG}
 bash ${SCRIPT_DIR}/scripts/bdg2bw.sh ${BDG} ${CHROM_SIZES}
 # Cleanup
 rm ${BDG}
