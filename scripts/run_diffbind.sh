@@ -14,9 +14,9 @@ mkdir -p "${TMPDIR}"
 # Configuration start ##########################################################
 ################################################################################
 
->&2 echo "chipseq_diff: $@"
-if [ $# -lt 3 ]; then
-    echo "Need 3 parameters! <NAME> <DIFFBIND_CSV>"
+>&2 echo "run_diffbind: $@"
+if [ $# -lt 2 ]; then
+    echo "Need 2 parameters! <NAME> <DIFFBIND_CSV>"
     exit 1
 fi
 
