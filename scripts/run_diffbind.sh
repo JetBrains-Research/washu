@@ -21,7 +21,7 @@ if [ $# -lt 2 ]; then
 fi
 
 NAME=$1
-DIFFBIND_CSV=$3
+DIFFBIND_CSV=$2
 
 FOLDER=$(pwd)
 echo "FOLDER"
@@ -30,32 +30,6 @@ echo $FOLDER
 PREFIX="$FOLDER/$NAME"
 echo "PREFIX"
 echo $PREFIX
-
-Q=0.01
-echo "Q $Q"
-BROAD_CUTOFF=0.1
-echo "BROAD_CUTOFF $BROAD_CUTOFF"
-
-READS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $6 }' $DIFFBIND_CSV | sort  -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "READS Y"
-echo "$READS_Y"
-READS_O=$(awk -v FS=',' '{ if ($4 == "O") print $6 }' $DIFFBIND_CSV | sort -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "READS O"
-echo "$READS_O"
-
-INPUTS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $8 }' $DIFFBIND_CSV | sort -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "INPUT_READS Y"
-echo "$INPUTS_Y"
-INPUTS_O=$(awk -v FS=',' '{ if ($4 == "O") print $8 }' $DIFFBIND_CSV | sort -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "INPUT_READS O"
-echo "$INPUTS_O"
-
-PEAKS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "PEAKS Y"
-echo "$PEAKS_Y"
-PEAKS_O=$(awk -v FS=',' '{ if ($4 == "O") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "PEAKS O"
-echo "$PEAKS_O"
 
 ################################################################################
 # Configuration end ############################################################
