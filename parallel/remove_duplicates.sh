@@ -36,9 +36,9 @@ for WORK_DIR in ${WORK_DIRS}; do
         NAME=${FILE%%.bam}
         UNIQUE_BAM=${NAME}_unique.bam
         METRICS=${NAME}_metrics.txt
-
-        # Submit task
-        run_parallel << SCRIPT
+        if [[ ! -f ${UNIQUE_BAM} ]]; then
+            # Submit task
+            run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N unique_${WORK_DIR_NAME}_${NAME}
 #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=32gb
@@ -55,15 +55,10 @@ source "${SCRIPT_DIR}/parallel/util.sh"
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 java -Djava.io.tmpdir="\${TMPDIR}" -jar ${PICARD_TOOLS_JAR} MarkDuplicates REMOVE_DUPLICATES=true INPUT=${FILE} OUTPUT=${UNIQUE_BAM} M=${METRICS}
-
-# Debug output for https://github.com/JetBrains-Research/washu/issues/16
-echo
-echo "\$(du -cah \${TMPDIR}/*)"
-echo
-echo "\$(quota -v)"
 SCRIPT
-        echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
-        TASKS+=("$QSUB_ID")
+            echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
+            TASKS+=("$QSUB_ID")
+        fi
     done
 done
 wait_complete ${TASKS[@]}
