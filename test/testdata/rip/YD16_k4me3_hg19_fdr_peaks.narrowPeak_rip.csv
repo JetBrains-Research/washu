@@ -1,0 +1,2 @@
+file,peaks_file,reads,peaks,rip
+/mnt/stripe/bio/experiments/aging/peak_calling/H3K4me3/bam/YD16_k4me3_hg19.bam,YD16_k4me3_hg19_fdr_peaks.narrowPeak,56809534,23621,4450301

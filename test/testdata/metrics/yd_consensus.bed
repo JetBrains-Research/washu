@@ -1,0 +1,5 @@
+chr1	20	30	1_/Users/tsurinov/IdeaProjects/washu/test/testdata/bed/C.bed
+chr1	40	50	1_/Users/tsurinov/IdeaProjects/washu/test/testdata/bed/C.bed
+chr1	250	260	1_/Users/tsurinov/IdeaProjects/washu/test/testdata/bed/C.bed
+chr1	450	460	1_/Users/tsurinov/IdeaProjects/washu/test/testdata/bed/C.bed
+chr1	800	850	1_/Users/tsurinov/IdeaProjects/washu/test/testdata/bed/C.bed|2_/Users/tsurinov/IdeaProjects/washu/test/testdata/bed/D.bed

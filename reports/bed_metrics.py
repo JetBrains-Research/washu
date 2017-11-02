@@ -252,6 +252,10 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
 
     plt.title(title)
     plt.subplots_adjust(left=0.2, right=0.8, top=0.8, bottom=0.2)
+    save_plot(save_to)
+
+
+def save_plot(save_to):
     if save_to is None:
         plt.show()
     elif isinstance(save_to, str):

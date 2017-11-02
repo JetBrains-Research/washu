@@ -16,7 +16,7 @@ sys.path.insert(0, project_root)
 from matplotlib.backends.backend_pdf import PdfPages  # nopep8
 from scripts.util import regions_extension, age, is_od, is_yd, is_od_or_yd  # nopep8
 from bed.bedtrace import Bed, run  # nopep8
-from reports.peak_metrics import venn_bar_consensus  # nopep8
+from reports.peak_metrics import calc_consensus, venn_consensus, bar_consensus  # nopep8
 
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
@@ -58,7 +58,11 @@ def main():
     with PdfPages(args[2]) as pdf:
         # Code for different consensuses investigation
         for scale in [1, 1.1667, 1.25, 1.5, 2, 3, 5, 7]:
-            venn_bar_consensus(od_paths_map, yd_paths_map, scale, pdf, num_of_threads)
+            od_consensus_bed, yd_consensus_bed, yd_od_int_bed = \
+                calc_consensus(od_paths_map, yd_paths_map, scale)
+            venn_consensus(od_consensus_bed, yd_consensus_bed, scale, pdf)
+            bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed,
+                          yd_od_int_bed, num_of_threads, pdf)
 
         desc = pdf.infodict()
         desc['Title'] = 'Report: Consensus plots for data investigation'

@@ -1,0 +1,5 @@
+file,reads,peaks,rip,frip,age
+OD1_k4me3_hg19_fdr_peaks.narrowPeak_rip.csv,44504564.0,13430,1018928.0,2.2894910283808194,ODS
+OD2_k4me3_hg19_fdr_peaks.narrowPeak_rip.csv,44331609.0,7759,477701.0,1.0775629641595008,ODS
+YD16_k4me3_hg19_fdr_peaks.narrowPeak_rip.csv,56809534.0,23621,4450301.0,7.833722065032253,YDS
+YD1_k4me3_hg19_fdr_peaks.narrowPeak_rip.csv,52931700.0,3186,177057.0,0.3345008756567426,YDS
