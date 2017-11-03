@@ -7,7 +7,7 @@ Usage:
   * Launch FastQC, visualization
   * Decide whether trimming or subsampling is required
   * Modify inplace copy of this pipeline
-  * Launch pipeline, and wait for "Done" message
+  * Launch pipeline
 
 Conventions:
 This pipeline uses folder naming as a steps, i.e. next step appends _suffix \
@@ -28,11 +28,6 @@ Steps:
     * RSEG
     * SICER
 
-Example:
-k4me1_10vs10    -> k4me1_10vs10_bams    -> k4me1_10vs10_bams_bws
-                                        -> k4me1_10vs10_bams_macs_0.01
-                                        -> k4me1_10vs10_bams_macs_broad_0.1
-
 NOTE: python3 required
 > source activate py3.5
 
@@ -42,27 +37,32 @@ from pipeline_utils import *
 from reports.bowtie_logs import process_bowtie_logs
 from reports.peaks_logs import process_peaks_logs
 from scripts.util import run_macs2
-import glob
-
 
 parser = argparse.ArgumentParser(description='ULI ChIP-Seq data pipeline')
 parser.add_argument('path_to_directory', action=WritableDirectory, type=str,
                     help='Path to directory with data to run pipeline')
+parser.add_argument('path_to_indexes', action=WritableDirectory, type=str,
+                    help='Path to indexes')
+parser.add_argument('genome', type=str,
+                    help='Genome')
 args = parser.parse_args()
+
 #################
 # Configuration #
 #################
 WORK_DIR = args.path_to_directory
-GENOME = "hg19"
-INDEXES = os.path.join("/scratch/artyomov_lab_aging/Y20O20/chipseq/indexes",
-                       GENOME)
-CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
-PICARD_TOOLS = os.path.join("~", "picard.jar")
+GENOME = args.genome
+INDEXES = os.path.join(args.path_to_indexes, GENOME)
+
+print("WORK_DIR:", WORK_DIR)
+print("GENOME:", GENOME)
+print("INDEXES:", INDEXES)
 
 ##################
 # Pipeline start #
 ##################
-print("Genomes and indices folder: ", INDEXES)
+CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
+PICARD_TOOLS = os.path.join("~", "picard.jar")
 run_bash("parallel/index_genome.sh", GENOME, INDEXES)
 
 # Batch QC

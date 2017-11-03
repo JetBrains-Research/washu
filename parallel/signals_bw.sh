@@ -34,9 +34,10 @@ RESULTS_FOLDER=${WORK_DIR}/${ID}
 mkdir -p $RESULTS_FOLDER
 echo "RESULTS FOLDER: $RESULTS_FOLDER"
 
-
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p $TMPDIR
+
+cd ${WORK_DIR}
 
 # Function to process all the summary coverages for given file
 process_coverage()

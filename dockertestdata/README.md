@@ -2,21 +2,21 @@ Docker Image with test data
 ==========
 
 This is just an image `continuumio/miniconda` with test data from
-`/mnt/stripe/chip-seq-pipeline-test-data`.
+`/mnt/stripe/washu_test_data`.
 
 Build
 -------
-To build you have to copy file to folder with image.
+To build you have to copy file `washu_test_data.tar.gz` to folder with this image.
 
 ```bash
 # Copy test data to folder with Docker file
-tar -cvzf chip-seq-pipeline-test-data.tar.gz -C /mnt/stripe/ chip-seq-pipeline-test-data
+tar -cvzf washu_test_data.tar.gz -C /mnt/stripe/ washu_test_data
 
 # Build Docker
 docker build -t biolabs/test-data .
 
 # Clean up
-rm chip-seq-pipeline-test-data.tar.gz
+rm washu_test_data.tar.gz
 ```
 
 Push

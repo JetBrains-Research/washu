@@ -11,7 +11,7 @@ which bedtools &>/dev/null || {
 
 
 >&2 echo "reads2bam $@"
-if [ $# -lt 1 ]; then
+if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <READS> <CHROM.SIZES>"
     echo "READS: bam, bed, bed.gz"
     exit 1
@@ -35,13 +35,13 @@ case "$INPUT" in
     gunzip --keep ${INPUT}
     UNZIPPED=${INPUT%%.gz}
     BAM=${INPUT/.bed.gz/.bam}
-    bedToBam -i ${UNZIPPED} -g ${CHROM_SIZES} > ${BAM}
+    bedtools bedtobam -i ${UNZIPPED} -g ${CHROM_SIZES} > ${BAM}
     rm -f ${UNZIPPED}
     ;;
   *.bed )
     >&2 echo "bed: $INPUT"
     BAM=${INPUT/.bed/.bam}
-    bedToBam -i ${INPUT} -g ${CHROM_SIZES} > ${BAM}
+    bedtools bedtobam -i ${INPUT} -g ${CHROM_SIZES} > ${BAM}
     ;;
   *.bam )
     >&2 echo "bam: $INPUT"

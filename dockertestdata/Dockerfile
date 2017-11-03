@@ -3,4 +3,4 @@
 # author: evgeny.kurbatsky@jetbrains.com
 FROM continuumio/miniconda
 
-COPY chip-seq-pipeline-test-data.tar.gz /root/
+COPY washu_test_data.tar.gz /root/

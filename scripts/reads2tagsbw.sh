@@ -27,7 +27,6 @@ SCRIPT_DIR="$(project_root_dir)"
 
 # Convert reads to BAM is required
 BAM=$(bash "${SCRIPT_DIR}/scripts/reads2bam.sh" ${INPUT} ${CHROM_SIZES})
-NAME=${BAM%%.bam}; NAME=${NAME##*/} # file name without extension
 # Covert bam to bdg
 if [[ ! -z  ${RESULT} ]]; then
     BDG=${RESULT/.bw/.bdg}
@@ -38,10 +37,10 @@ fi
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
-bash ${SCRIPT_DIR}/scripts/bam2tags.sh ${BAM} ${INSERT_SIZE} |\
-    awk -v OFS='\t' 'BEGIN{C="";S=0;E=0;X=0}
-    {if(C!=$1||S!=$2||E!=$3){if(X!=0){print(C,S,E,X)};C=$1;S=$2;E=$3;X=1}else{X=X+1}}
-    END{if(X!=0){print(C,S,E,X)}}' > ${BDG}
+NAME=${BAM%%.bam}; NAME=${NAME##*/} # file name without extension
+
+bash ${SCRIPT_DIR}/scripts/bam2tags.sh ${BAM} ${INSERT_SIZE} > ${TMPDIR}/${NAME}.tags
+bash ${SCRIPT_DIR}/scripts/tags2bdg.sh  ${TMPDIR}/${NAME}.tags > ${BDG}
 bash ${SCRIPT_DIR}/scripts/bdg2bw.sh ${BDG} ${CHROM_SIZES}
 # Cleanup
 rm ${BDG}
