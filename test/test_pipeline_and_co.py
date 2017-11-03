@@ -43,7 +43,7 @@ def run_pipeline():
                         "./fastq_bams/deadzones-k36-hg19.bed")
 
     # Launch pipeline
-    # call(["python", "/washu/pipeline_chipseq.py", "/root/fastq", "/root/index", "hg19"])
+    call(["python", "/washu/pipeline_chipseq.py", "/root/fastq", "/root/index", "hg19"])
 
     # Touch marker file
     open("./pipeline_finished.txt", "a")
