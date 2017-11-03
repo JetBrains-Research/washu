@@ -1,14 +1,6 @@
 #!/usr/bin/env bash
 # author: oleg.shpynov@jetbrains.com
 
-# Check tools
-which bedtools &>/dev/null || {
-    echo "bedtools not found! You can install it using:"
-    echo "  conda install -c bioconda bedtools"
-    echo "For further details see http://code.google.com/p/bedtools"
-    exit 1;
-   }
-
 >&2 echo "reads2tagsbw $@"
 if [ $# -lt 3 ]; then
     echo "Need at least 3 parameters! <READS> <INSERT_SIZE> <CHROM_SIZES> [<OUTPUT.bw>]"
@@ -46,8 +38,10 @@ fi
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
-bash ${SCRIPT_DIR}/scripts/bam2tags.sh ${BAM} ${INSERT_SIZE} > ${TMPDIR}/${NAME}.tags
-bedtools merge -i ${TMPDIR}/${NAME}.tags -c 1 -o count > ${BDG}
+bash ${SCRIPT_DIR}/scripts/bam2tags.sh ${BAM} ${INSERT_SIZE} |\
+    awk -v OFS='\t' 'BEGIN{C="";S=0;E=0;X=0}
+    {if(C!=$1||S!=$2||E!=$3){if(X!=0){print(C,S,E,X)};C=$1;S=$2;E=$3;X=1}else{X=X+1}}
+    END{if(X!=0){print(C,S,E,X)}}' > ${BDG}
 bash ${SCRIPT_DIR}/scripts/bdg2bw.sh ${BDG} ${CHROM_SIZES}
 # Cleanup
 rm ${BDG}
