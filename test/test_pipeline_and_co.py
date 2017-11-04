@@ -119,7 +119,7 @@ def test_tags2bdg():
 def test_signals():
     os.chdir(os.path.expanduser("~"))
     if not os.path.exists("./regions.bed"):
-        shutil.copy("./washu_test_data/regions.bed", "./regions.bed")
+        shutil.copy("./washu_test_data/data/regions.bed", "./regions.bed")
     if os.path.exists("./fastq_bams_bws/regions"):
         shutil.rmtree("./fastq_bams_bws/regions")
     call(["bash", "/washu/parallel/signals_bw.sh",
