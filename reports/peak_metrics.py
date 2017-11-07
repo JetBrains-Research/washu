@@ -3,6 +3,7 @@ import tempfile
 import multiprocessing
 import numpy as np
 import pandas as pd
+from pathlib import Path
 
 # Force matplotlib to not use any Xwindows backend.
 import matplotlib
@@ -11,7 +12,6 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt  # nopep8
 import seaborn as sns  # nopep8
-from pathlib import Path
 from scripts.util import age, is_od_or_yd  # nopep8
 from bed.bedtrace import intersect, Bed, metapeaks, union  # nopep8
 from reports.bed_metrics import save_plot  # nopep8
