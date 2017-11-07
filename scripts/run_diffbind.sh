@@ -23,28 +23,18 @@ fi
 NAME=$1
 DIFFBIND_CSV=$2
 
-FOLDER=$(pwd)
-echo "FOLDER"
-echo $FOLDER
-
-PREFIX="$FOLDER/$NAME"
-echo "PREFIX"
-echo $PREFIX
+DIFFBIND=$(pwd)
+echo "DIFFBIND"
+echo $DIFFBIND
 
 ################################################################################
 # Configuration end ############################################################
 ################################################################################
 
-DIFFBIND="${PREFIX}_diffbind"
 echo
-echo "Processing $DIFFBIND"
-if [ ! -d $DIFFBIND ]; then
-    mkdir -p ${DIFFBIND}
-    cp ${DIFFBIND_CSV} ${DIFFBIND}/${NAME}.csv
-    cd ${DIFFBIND}
+echo "Processing diffbind"
 
-    echo "Processing diffbind"
-    run_parallel << SCRIPT
+run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N diffbind_${NAME}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=64gb
@@ -55,17 +45,19 @@ cd ${DIFFBIND}
 module load R
 Rscript ${SCRIPT_DIR}/R/diffbind.R ${NAME}.csv
 SCRIPT
-    wait_complete "$QSUB_ID"
 
-    # Filter out old and young donors and sort by Q-Value
-    cat ${NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
-        awk -v OFS='\t' '$9 > 0 {print $0}' | sort -T ${TMPDIR} -k10,10g > ${NAME}_cond1.bed
-    cat ${NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
-        awk -v OFS='\t' '$9 < 0 {print $0}' | sort -T ${TMPDIR} -k10,10g > ${NAME}_cond2.bed
-    # Save ${NAME} results to simple BED3 format
-    awk -v OFS='\t' '{print $1,$2,$3}' ${NAME}_cond1.bed > ${NAME}_cond1.bed3
-    awk -v OFS='\t' '{print $1,$2,$3}' ${NAME}_cond2.bed > ${NAME}_cond2.bed3
-fi
+wait_complete "$QSUB_ID"
+
+# Filter out old and young donors and sort by Q-Value
+cat ${NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
+awk -v OFS='\t' '$9 > 0 {print $0}' | sort -T ${TMPDIR} -k10,10g > ${NAME}_cond1.bed
+
+cat ${NAME}_result.csv | awk 'NR > 1 {print $0}' | sed 's#"##g' | tr ',' '\t' |\
+awk -v OFS='\t' '$9 < 0 {print $0}' | sort -T ${TMPDIR} -k10,10g > ${NAME}_cond2.bed
+
+# Save ${NAME} results to simple BED3 format
+awk -v OFS='\t' '{print $1,$2,$3}' ${NAME}_cond1.bed > ${NAME}_cond1.bed3
+awk -v OFS='\t' '{print $1,$2,$3}' ${NAME}_cond2.bed > ${NAME}_cond2.bed3
 
 # TMP dir cleanup:
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir

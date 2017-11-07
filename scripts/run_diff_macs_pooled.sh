@@ -16,34 +16,28 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
-
 NAME=$1
 
 BROAD_CUTOFF=0.1
 
-FOLDER=$2
+DIFF_MACS_POOLED=$2
 
-READS_Y=$(find . -name 'YD*.bam' | sed 's#\./##g' | grep -v 'input')
+READS_Y=$(find . -name 'YD*.bam' | sed 's#\./##g' | grep -v 'input' | tr '\n' ' ')
 
 INPUTS_Y=YD_input.bam
 
-READS_O=$(find . -name 'OD*.bam' | sed 's#\./##g' | grep -v 'input')
+READS_O=$(find . -name 'OD*.bam' | sed 's#\./##g' | grep -v 'input' | tr '\n' ' ')
 
 INPUTS_O=OD_input.bam
 
-cd $FOLDER
+cd $DIFF_MACS_POOLED
 
-echo "FOLDER"
-echo $FOLDER
+echo "DIFF_MACS_POOLED"
+echo $DIFF_MACS_POOLED
 
-DIFF_MACS_POOLED="${FOLDER}/diff_macs_pooled"
+echo "Processing MACS2 pooled peaks and compare them";
 
-if [ ! -d $DIFF_MACS_POOLED ]; then
-    mkdir -p ${DIFF_MACS_POOLED}
-    cd ${DIFF_MACS_POOLED}
-    echo "Processing MACS2 pooled peaks and compare them";
-
-    run_parallel << SCRIPT
+run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N ${NAME}_Y_macs2_broad_${BROAD_CUTOFF}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -53,9 +47,9 @@ if [ ! -d $DIFF_MACS_POOLED ]; then
 cd ${DIFF_MACS_POOLED}
 macs2 callpeak -t $READS_Y -c $INPUTS_Y -f BAM -g hs -n Y_${BROAD_CUTOFF} -B --broad --broad-cutoff ${BROAD_CUTOFF}
 SCRIPT
-    QSUB_ID1=$QSUB_ID
+QSUB_ID1=$QSUB_ID
 
-    run_parallel << SCRIPT
+run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N ${NAME}_O_macs2_broad_${BROAD_CUTOFF}
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -65,9 +59,10 @@ SCRIPT
 cd ${DIFF_MACS_POOLED}
 macs2 callpeak -t $READS_O -c $INPUTS_O -f BAM -g hs -n O_${BROAD_CUTOFF} -B --broad --broad-cutoff ${BROAD_CUTOFF}
 SCRIPT
-    QSUB_ID2=$QSUB_ID
-    wait_complete "$QSUB_ID1 $QSUB_ID2"
 
-    check_logs
-    bash ${SCRIPT_DIR}/bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
-fi
+QSUB_ID2=$QSUB_ID
+wait_complete "$QSUB_ID1 $QSUB_ID2"
+
+check_logs
+bash ${SCRIPT_DIR}/bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
+

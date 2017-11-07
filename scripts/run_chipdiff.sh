@@ -1,13 +1,4 @@
 #!/usr/bin/env bash
-# Script to process differential chip-seq analysis
-# author Oleg Shpynov (oleg.shpynov@jetbrains.com)
-#
-# Example of ChIP-Seq differential analysis:
-# cd /scratch/artyomov_lab_aging/Y20O20/chipseq/processed/k4me3
-# mkdir -p k4me3_diff
-# bash ~/work/washu/scripts/diff_config.sh k4me3_20vs20_bams k4me3_20vs20_bams_macs2_broad_0.1 > k4me3_diff/k4me3.csv
-# cd k4me3_diff
-# bash ~/work/washu/scripts/chipseq_diff.sh k4me3 /scratch/artyomov_lab_aging/Y20O20/chipseq/indexes/hg19/hg19.chrom.sizes k4me3.csv
 
 # Check tools
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
@@ -23,78 +14,51 @@ mkdir -p "${TMPDIR}"
 # Configuration start ##########################################################
 ################################################################################
 
->&2 echo "chipseq_diff: $@"
-if [ $# -lt 3 ]; then
-    echo "Need 3 parameters! <NAME> <CHROM_SIZES> <DIFFBIND_CSV>"
+>&2 echo "run_chipdiff: $@"
+if [ $# -lt 4 ]; then
+    echo "Need 4 parameters! <NAME> <WORKING_DIR> <CHROM_SIZES> <DIFF_MACS_POOLED>"
     exit 1
 fi
 
 NAME=$1
-CHROM_SIZES=$2
-DIFFBIND_CSV=$3
 
-FOLDER=$(pwd)
-echo "FOLDER"
-echo $FOLDER
+CHIPDIFF=$2
 
-PREFIX="$FOLDER/$NAME"
-echo "PREFIX"
-echo $PREFIX
+CHROM_SIZES=$3
 
-Q=0.01
-echo "Q $Q"
+DIFF_MACS_POOLED=$4
+
 BROAD_CUTOFF=0.1
 echo "BROAD_CUTOFF $BROAD_CUTOFF"
 
-READS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $6 }' $DIFFBIND_CSV | sort  -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "READS Y"
-echo "$READS_Y"
-READS_O=$(awk -v FS=',' '{ if ($4 == "O") print $6 }' $DIFFBIND_CSV | sort -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "READS O"
-echo "$READS_O"
+READS_Y=$(find . -name 'YD*.bam' | sed 's#\./##g' | grep -v 'input' | tr '\n' ' ')
 
-INPUTS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $8 }' $DIFFBIND_CSV | sort -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "INPUT_READS Y"
-echo "$INPUTS_Y"
-INPUTS_O=$(awk -v FS=',' '{ if ($4 == "O") print $8 }' $DIFFBIND_CSV | sort -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "INPUT_READS O"
-echo "$INPUTS_O"
-
-PEAKS_Y=$(awk -v FS=',' '{ if ($4 == "Y") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "PEAKS Y"
-echo "$PEAKS_Y"
-PEAKS_O=$(awk -v FS=',' '{ if ($4 == "O") print $9 }' $DIFFBIND_CSV | sed 's#xls#broadPeak#g' | sort -T ${TMPDIR} --unique | tr '\n' ' ')
-echo "PEAKS O"
-echo "$PEAKS_O"
-
-################################################################################
-# Configuration end ############################################################
-################################################################################
+READS_O=$(find . -name 'OD*.bam' | sed 's#\./##g' | grep -v 'input' | tr '\n' ' ')
 
 # Check MACS2 for shift values
 macs2_shift() {
     echo $(cat $1 | grep "# d =" | sed 's/.*# d = //g')
 }
 
-CHIPDIFF="${PREFIX}_chipdiff"
 echo
 echo "Processing $CHIPDIFF"
-if [ ! -d $CHIPDIFF ]; then
-    mkdir -p ${CHIPDIFF}
-    cd ${CHIPDIFF}
-    echo "Processing chipdiff as on pooled tags (reads)"
+echo $CHIPDIFF
 
-    cat >config.txt <<CONFIG
+echo "Processing chipdiff as on pooled tags (reads)"
+
+cat >config.txt <<CONFIG
 maxIterationNum  500
 minP             0.95
 maxTrainingSeqNum 10000
 minFoldChange    3
 minRegionDist    1000
 CONFIG
-    >&2 echo "Processing Y Tags"
-    SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
-    echo "SHIFT Y: $SHIFT_Y"
-    run_parallel << SCRIPT
+
+>&2 echo "Processing Y Tags"
+SHIFT_Y=$(macs2_shift ${DIFF_MACS_POOLED}/Y_${BROAD_CUTOFF}_peaks.xls)
+echo "SHIFT Y: $SHIFT_Y"
+
+run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N Y_bam2tags
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=8gb
@@ -108,12 +72,13 @@ for F in ${READS_Y}; do
     bash ${SCRIPT_DIR}/scripts/bam2tags.sh \$F $SHIFT_Y >> Y_tags.tag
 done
 SCRIPT
-    QSUB_ID1=$QSUB_ID
 
-    >&2 echo "Processing O Tags"
-    SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
-    echo "SHIFT O: $SHIFT_O"
-    run_parallel << SCRIPT
+QSUB_ID1=$QSUB_ID
+
+>&2 echo "Processing O Tags"
+SHIFT_O=$(macs2_shift ${DIFF_MACS_POOLED}/O_${BROAD_CUTOFF}_peaks.xls)
+echo "SHIFT O: $SHIFT_O"
+run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N O_bam2tags
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=8gb
@@ -129,9 +94,9 @@ done
 SCRIPT
     QSUB_ID2=$QSUB_ID
 
-    wait_complete "$QSUB_ID1 $QSUB_ID2"
+wait_complete "$QSUB_ID1 $QSUB_ID2"
 
-    run_parallel << SCRIPT
+run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N ${NAME}_chipdiff_3
 #PBS -l nodes=1:ppn=8,walltime=24:00:00,vmem=16gb
@@ -151,8 +116,8 @@ ChIPDiff Y_tags.tag O_tags.tag $CHROM_SIZES config.txt ${NAME}_3
 cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="-" {print \$1,\$2,\$3}' > ${NAME}_3_cond1.bed
 cat ${NAME}_3.region | awk -v OFS='\t' '\$4=="+" {print \$1,\$2,\$3}' > ${NAME}_3_cond2.bed
 SCRIPT
-    wait_complete $QSUB_ID
-fi
+
+wait_complete $QSUB_ID
 
 # TMP dir cleanup:
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
