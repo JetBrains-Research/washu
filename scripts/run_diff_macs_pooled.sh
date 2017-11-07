@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+# Check tools
+which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
+which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
+
+# Load technical stuff
+source $(dirname $0)/../parallel/util.sh
+SCRIPT_DIR="$(project_root_dir)"
+export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMPDIR}"
+
 >&2 echo "run_diff_macs_pooled: $@"
 if [ $# -ne 2 ]; then
     echo "Need 2 parameters! <NAME> <WORKDIR>"
