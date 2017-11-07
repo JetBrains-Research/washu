@@ -39,7 +39,7 @@ def run_pipeline():
     if not os.path.exists("./fastq_bams"):
         os.mkdir("./fastq_bams")
         if not os.path.exists("./fastq_bams/deadzones-k36-hg19.bed"):
-            shutil.copy("./washu_test_data/deadzones-k36-hg19.bed",
+            shutil.copy("./index/hg19/deadzones-k36-hg19.bed",
                         "./fastq_bams/deadzones-k36-hg19.bed")
 
     # Launch pipeline
