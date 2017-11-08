@@ -92,8 +92,10 @@ def calc_consensus(od_paths_map, yd_paths_map, scale):
     :param scale: 1/scale is ratio of tack number needed for consensus
     :return OD consensus bed, YD consensus bed and bed with their intersect
     """
-    od_union = union(*od_paths_map.values())
-    yd_union = union(*yd_paths_map.values())
+    od_union = union(*[path[1] for path in sorted(od_paths_map.items(),
+                                                  key=operator.itemgetter(0))])
+    yd_union = union(*[path[1] for path in sorted(yd_paths_map.items(),
+                                                  key=operator.itemgetter(0))])
     od_union.compute()
     yd_union.compute()
 

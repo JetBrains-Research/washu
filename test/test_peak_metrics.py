@@ -1,3 +1,4 @@
+import re
 import numpy as np
 import pandas as pd
 import pytest
@@ -26,9 +27,9 @@ def test_calc_consensus(test_data, od_consensus, yd_consensus, yd_od_int):
 
     od_consensus_bed, yd_consensus_bed, yd_od_int_bed = \
         calc_consensus(od_paths_map, yd_paths_map, 2.0)
-    assert Bed(expected_od_consensus).cat() == od_consensus_bed.cat()
-    assert Bed(expected_yd_consensus).cat() == yd_consensus_bed.cat()
-    assert Bed(expected_yd_od_int).cat() == yd_od_int_bed.cat()
+    assert Bed(expected_od_consensus).cat() == re.sub("/[^|\n]*/", "", od_consensus_bed.cat())
+    assert Bed(expected_yd_consensus).cat() == re.sub("/[^|\n]*/", "", yd_consensus_bed.cat())
+    assert Bed(expected_yd_od_int).cat() == re.sub("/[^|\n]*/", "", yd_od_int_bed.cat())
 
 
 @pytest.mark.parametrize("fname", [
