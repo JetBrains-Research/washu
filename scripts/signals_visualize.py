@@ -121,7 +121,7 @@ def mean_boxplots(df, title, ax):
     signal["age"] = "ODS"
     signal.loc[signal.index.str.startswith("y"), "age"] = "YDS"
 
-    age_labels = list(reversed(sorted(list(set(signal['age'])))))
+    age_labels = list(reversed(sorted(set(signal['age']))))
     sns.boxplot(x="age", y="value", data=signal, palette="Set3", linewidth=1.0, order=age_labels, ax=ax)
     sns.swarmplot(x="age", y="value", data=signal, color=".25", order=age_labels, ax=ax)
 
