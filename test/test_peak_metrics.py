@@ -106,7 +106,7 @@ def test_calc_frip(test_data, fname):
 
     age_labels, df = calc_frip(rip_paths)
     assert ['YDS', 'ODS'] == age_labels
-    assert_frame_equal(expected_df, df, check_dtype=False)
+    assert_frame_equal(expected_df, df.sort_index(), check_dtype=False)
 
 
 @pytest.mark.parametrize("fname", [
