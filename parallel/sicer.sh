@@ -43,7 +43,7 @@ if [ -z "${EFFECTIVE_GENOME_FRACTION}" ]; then
     exit 1
 fi
 
-TASKS=""
+TASKS=()
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
     NAME=${FILE%%.bam} # file name without extension
@@ -129,9 +129,9 @@ bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${NAME}*island.bed
 SCRIPT
 
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+    TASKS+=("$QSUB_ID")
 done
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 # Cleanup

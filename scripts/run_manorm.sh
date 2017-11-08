@@ -1,13 +1,4 @@
 #!/usr/bin/env bash
-# Script to process differential chip-seq analysis
-# author Oleg Shpynov (oleg.shpynov@jetbrains.com)
-#
-# Example of ChIP-Seq differential analysis:
-# cd /scratch/artyomov_lab_aging/Y20O20/chipseq/processed/k4me3
-# mkdir -p k4me3_diff
-# bash ~/work/washu/scripts/diff_config.sh k4me3_20vs20_bams k4me3_20vs20_bams_macs2_broad_0.1 > k4me3_diff/k4me3.csv
-# cd k4me3_diff
-# bash ~/work/washu/scripts/chipseq_diff.sh k4me3 /scratch/artyomov_lab_aging/Y20O20/chipseq/indexes/hg19/hg19.chrom.sizes k4me3.csv
 
 # Check tools
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
@@ -135,7 +126,7 @@ cd ${MANORM}
 module load bedtools2
 for F in ${READS_Y}; do
     >&2 echo \$F
-    bash ${SCRIPT_DIR}/scripts/bam2reads.sh \$F >> Y_reads.bed
+    bedtools bamtobed -i \$F | awk -v OFS='\t' '{print \$1,\$2,\$3,\$6}' >> Y_reads.bed
 done
 SCRIPT
     QSUB_ID1=$QSUB_ID
@@ -153,7 +144,7 @@ cd ${MANORM}
 module load bedtools2
 for F in ${READS_O}; do
     >&2 echo \$F
-    bash ${SCRIPT_DIR}/scripts/bam2reads.sh \$F >> O_reads.bed
+    bedtools bamtobed -i \$F | awk -v OFS='\t' '{print \$1,\$2,\$3,\$6}' >> O_reads.bed
 done
 SCRIPT
     QSUB_ID2=$QSUB_ID

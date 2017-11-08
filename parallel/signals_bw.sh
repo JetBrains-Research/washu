@@ -34,9 +34,10 @@ RESULTS_FOLDER=${WORK_DIR}/${ID}
 mkdir -p $RESULTS_FOLDER
 echo "RESULTS FOLDER: $RESULTS_FOLDER"
 
-
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p $TMPDIR
+
+cd ${WORK_DIR}
 
 # Function to process all the summary coverages for given file
 process_coverage()
@@ -139,7 +140,7 @@ then
     source activate py35 || source activate py3.5
 fi
 cd $RESULTS_FOLDER
-python ${SCRIPT_DIR}/scripts/signals.py ${WORK_DIR} ${ID} ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
+python ${SCRIPT_DIR}/scripts/signals.py ${RESULTS_FOLDER}/${ID}.tsv ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
 SCRIPT
 wait_complete $QSUB_ID
 

@@ -15,8 +15,8 @@ INDEXES=$2
 TRIM5=$3
 WORK_DIRS=${@:4}
 
-TASKS=""
-PROCESSED=""
+TASKS=()
+PROCESSED=()
 
 for WORK_DIR in ${WORK_DIRS}; do :
     WORK_DIR_NAME=${WORK_DIR##*/}
@@ -56,7 +56,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         if [ -f "${FILE_PAIRED}" ]; then
             echo "PAIRED END reads detected: $FILE and $FILE_PAIRED"
             # Mark it as already processed
-            PROCESSED="${PROCESSED} ${FILE_PAIRED}"
+            PROCESSED+=("${FILE_PAIRED}")
             NAME="${PREFIX}${SUFFIX}"
         else
             NAME=${FILE%%.f*q}
@@ -112,10 +112,10 @@ SCRIPT
         else
             echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         fi
-        TASKS="$TASKS $QSUB_ID"
+        TASKS+=("$QSUB_ID")
     done
 done
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 # Cleanup indexes soft link

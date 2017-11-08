@@ -13,7 +13,7 @@ fi
 
 WORK_DIRS="$@"
 
-TASKS=""
+TASKS=()
 for WORK_DIR in ${WORK_DIRS}; do :
     cd ${WORK_DIR}
 
@@ -41,11 +41,11 @@ module load R
 Rscript ${SCRIPT_DIR}/R/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}:${FILE}; TASK: ${QSUB_ID}"
-        TASKS="$TASKS $QSUB_ID"
+        TASKS+=("$QSUB_ID")
     done
 done
 
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 >&2 echo "Done. Batch fragments $@"

@@ -17,18 +17,31 @@ SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "bam2bw $@"
 if [ $# -lt 2 ]; then
-    echo "Need 2 parameters! <BAM> <chrom.sizes>"
+    echo "Need at least 2 parameters! <READS> <chrom.sizes> [<OUTPUT.bw>]"
+    echo "READS: bam, bed, bed.gz"
     exit 1
 fi
 
-BAM=$1
+INPUT=$1
 CHROM_SIZES=$2
+RESULT=$3
 
 if [ ! -f "${CHROM_SIZES}" ]; then
   echo "File not found: ${CHROM_SIZES}"
   exit 1
 fi
 
-NAME=${BAM%%.bam}
-bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${NAME}.bdg
-bash "${SCRIPT_DIR}/scripts/bdg2bw.sh" ${NAME}.bdg ${CHROM_SIZES}
+# Convert reads to BAM is required
+BAM=$(bash "${SCRIPT_DIR}/scripts/reads2bam.sh" ${INPUT} ${CHROM_SIZES})
+
+# Covert bam to bdg
+if [[ ! -z  ${RESULT} ]]; then
+    BDG_FILE=${RESULT/.bw/.bdg}
+else
+    BDG_FILE=${BAM/.bam/.bdg}
+fi
+
+bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${BDG_FILE}
+bash "${SCRIPT_DIR}/scripts/bdg2bw.sh" ${BDG_FILE} ${CHROM_SIZES}
+# Cleanup
+rm ${BDG_FILE}

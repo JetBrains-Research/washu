@@ -20,7 +20,7 @@ GENOME=$1
 WORK_DIRS=${@:2}
 
 
-TASKS=""
+TASKS=()
 for WORK_DIR in ${WORK_DIRS}; do
     cd ${WORK_DIR}
     WORK_DIR_NAME=${WORK_DIR##*/}
@@ -66,12 +66,12 @@ rm ${BAM_FILES_ARG}
 
 SCRIPT
             echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-            TASKS="$TASKS $QSUB_ID"
+            TASKS+=("$QSUB_ID")
         fi
     fi
 done
 
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 >&2 echo "Done. Batch samtools-merge $@"

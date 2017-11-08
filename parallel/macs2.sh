@@ -26,7 +26,7 @@ fi
 
 SPECIES=$(python ${SCRIPT_DIR}/scripts/util.py macs_species ${GENOME})
 
-TASKS=""
+TASKS=()
 for WORK_DIR in ${WORK_DIRS}; do :
     echo "${WORK_DIR}"
     WORK_DIR_NAME=${WORK_DIR##*/}
@@ -76,10 +76,10 @@ bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}*.*Peak
 SCRIPT
 
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
-        TASKS="$TASKS $QSUB_ID"
+        TASKS+=("$QSUB_ID")
     done
 done
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 for WORK_DIR in ${WORK_DIRS}; do :

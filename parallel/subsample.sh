@@ -14,7 +14,7 @@ READS=$2
 
 cd ${WORK_DIR}
 
-TASKS=""
+TASKS=()
 for FILE in $(find . -name '*.bam' | sed 's#\./##g')
 do :
     NAME=${FILE%%.bam} # file name without extension
@@ -46,9 +46,9 @@ rm ${ID}.sam
 rm not_sorted_${ID}.bam
 SCRIPT
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS="$TASKS $QSUB_ID"
+    TASKS+=("$QSUB_ID")
 done
-wait_complete ${TASKS}
+wait_complete ${TASKS[@]}
 check_logs
 
 >&2 echo "Done. Batch subsample $@"

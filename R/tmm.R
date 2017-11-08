@@ -31,12 +31,16 @@ normalize <- function(input_path, libsizes_path, output_path) {
     # Transpose libsizes, so that we can do indexing
     libsizes.T = t(libsizes[,2])
     colnames(libsizes.T) <- libsizes[,1]
+
     # Prepare list of libsizes
     ls=rep(0, ncol(df))
     for (i in 1:ncol(df)) {ls[i] = libsizes.T[1,names[i]]}
+
     # Create EdgeR object and use TMM normalization
+    # See analyse.R:1380
     res = DGEList(df, lib.size = ls, group = groups)
     res = calcNormFactors(res,method="TMM",doWeighting=F)
+
     # Update counts given normalization factors
     counts <- res$counts
     sizes  <- res$samples$lib.size * res$samples$norm.factors
