@@ -1,5 +1,6 @@
 import functools
 import tempfile
+import operator
 import multiprocessing
 import numpy as np
 import pandas as pd
@@ -52,11 +53,13 @@ def bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed
     yd_names, yd_common, yd_own, yd_opposite, yd_personal = zip(*pool.map(
         functools.partial(_groups_sizes, common_bed=yd_od_int_bed,
                           own_group_bed=yd_consensus_bed,
-                          opposite_group_bed=od_consensus_bed), yd_paths_map.items()))
+                          opposite_group_bed=od_consensus_bed), sorted(yd_paths_map.items(),
+                                                                       key=operator.itemgetter(0))))
     od_names, od_common, od_own, od_opposite, od_personal = zip(*pool.map(
         functools.partial(_groups_sizes, common_bed=yd_od_int_bed,
                           own_group_bed=od_consensus_bed,
-                          opposite_group_bed=yd_consensus_bed), od_paths_map.items()))
+                          opposite_group_bed=yd_consensus_bed), sorted(od_paths_map.items(),
+                                                                       key=operator.itemgetter(0))))
 
     common_peaks = yd_common + od_common
     group_own = yd_own + od_own
