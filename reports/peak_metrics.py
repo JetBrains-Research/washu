@@ -51,12 +51,12 @@ def bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed
     ind = np.arange(n)
 
     yd_names, yd_common, yd_own, yd_opposite, yd_personal = zip(*pool.map(
-        functools.partial(_groups_sizes, common_bed=yd_od_int_bed,
+        functools.partial(groups_sizes, common_bed=yd_od_int_bed,
                           own_group_bed=yd_consensus_bed,
                           opposite_group_bed=od_consensus_bed), sorted(yd_paths_map.items(),
                                                                        key=operator.itemgetter(0))))
     od_names, od_common, od_own, od_opposite, od_personal = zip(*pool.map(
-        functools.partial(_groups_sizes, common_bed=yd_od_int_bed,
+        functools.partial(groups_sizes, common_bed=yd_od_int_bed,
                           own_group_bed=od_consensus_bed,
                           opposite_group_bed=yd_consensus_bed), sorted(od_paths_map.items(),
                                                                        key=operator.itemgetter(0))))
@@ -121,7 +121,7 @@ def calc_consensus(od_paths_map, yd_paths_map, scale):
     return od_consensus_bed, yd_consensus_bed, yd_od_int_bed
 
 
-def _groups_sizes(entry, common_bed, own_group_bed, opposite_group_bed):
+def groups_sizes(entry, common_bed, own_group_bed, opposite_group_bed):
     """
     Count sizes of common, own group, opposite group and personal peaks:
 
