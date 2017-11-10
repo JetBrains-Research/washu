@@ -77,9 +77,9 @@ def main():
         anns.append(color_annotator_outlier(outliers_df, hist_mod))
     annotator = color_annotator_chain(*anns)
 
-    peaks_paths = list(chain(folder_path.glob("*golden*"), folder_path.glob("*zinbra*"),
-                             folder_path.glob("*Peak"), folder_path.glob("*-island.bed"),
-                             folder_path.glob("*peaks.bed")))
+    peaks_paths = list(chain(folder_path.glob("*golden*consensus*"),
+                             folder_path.glob("*zinbra*consensus*"), folder_path.glob("*Peak"),
+                             folder_path.glob("*-island.bed"), folder_path.glob("*peaks.bed")))
     df = bed_metric_table(peaks_paths, peaks_paths, threads=threads_num)
 
     with PdfPages(args[2]) as pdf:
