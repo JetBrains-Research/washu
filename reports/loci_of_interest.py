@@ -72,38 +72,61 @@ def _collect_chromhmm(loci_root):
                   key=lambda p: int(p.name.split(".")[2].split("_")[0]))
 
 
-def _collect_peaks(peaks_roots, outliers=False):
-    result = {}
-    for peaks_root in [x for x in peaks_roots.iterdir() if x.is_dir() and x.name.startswith("H")]:
-        print("Peaks:", peaks_root)
+# def donor_order_id(path):
+#     def filter_fun(s):
+#         return len(s) > 2 and (s.startswith("OD") or s.startswith("YD"))
+#
+#     chunks = path.name.split('_')
+#     cands = [ch for ch in chunks if filter_fun(ch)]
+#     if len(cands) > 0:
+#         donor_id = cands[0]
+#         if donor_id[2] != "S":
+#             return (donor_id[:2], int(donor_id[2:]))
+#         else:
+#             return (donor_id[:3], path.name)
+#     return (path.name, 0)
 
-        peaks = list(chain(peaks_root.glob("**/*_peaks.bed"),
-                           peaks_root.glob("**/bed/*-island.bed"),
-                           peaks_root.glob("**/bed/*.*Peak")
-                           # peaks_root.glob("**/*consensus*.bed")  # Ignore
-                          ))
-        for p in peaks:
-            assert "outlier" not in str(p)
-        # e.g.
-        # * OD_OD14_H3K27ac_hg19_1.0E-6_peaks.bed
-        # * OD8_k27ac_hg19_broad_peaks.broadPeak
-        # * Ignore consensus: e.g. zinbra_weak_consensus.bed
-        #TODO: peaks.sort(key=donor_order_id)
-        print(len(peaks))
-        print(*[str(p) for p in peaks], sep="\n")
-        result[peaks_root.name] = peaks
-    return result
+
+def _collect_peaks_in_folder(peaks_root):
+    return sorted(chain(peaks_root.glob("*_peaks.bed"),
+                        peaks_root.glob("*-island.bed"),
+                        peaks_root.glob("*.*Peak")))
+                  # key=donor_order_id)
+
+
+def _collect_zinbra_peaks(zinbra_peaks_root):
+    zinbra_peaks = {}
+    for folder in (zinbra_peaks_root / "peaks").iterdir():
+        if folder.is_dir() and folder.name.startswith("H"):
+            zinbra_peaks[folder.name] = _collect_peaks_in_folder(folder)
+
+    return zinbra_peaks
+
+
+def _collect_golden_peaks(golden_peaks_root, exclude_outliers):
+    golden_peaks = {}
+    for folder in golden_peaks_root.iterdir():
+        if folder.is_dir() and folder.name.startswith("H"):
+            sub_folder = "bed" if exclude_outliers else "bed_all"
+            golden_peaks[folder.name] = _collect_peaks_in_folder(folder / sub_folder)
+    return golden_peaks
 
 
 if __name__ == "__main__":
     # data_root = Path("/Volumes/BigData/bio")
     data_root = Path("/mnt/stripe/bio")
-
     loci_root = data_root / "raw-data/aging/loci_of_interest"
-    golden_peaks_root = data_root / "experiments/aging/peak_calling"
-    zinbra_peaks_root = data_root / "experiments/configs/Y20O20/peaks"
-
-    # Full:
-    #zinbra_peaks_root = data_root / "experiments/configs/Y20O20_full/peaks"
-
     signal_root = data_root / "experiments/signal"
+
+    exclude_outliers = True
+
+    golden_peaks_root = data_root / "experiments/aging/peak_calling"
+    zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}".format(
+        "" if exclude_outliers else "_full"
+    )
+
+    peaks_map = {
+        "zinbra": _collect_zinbra_peaks(zinbra_peaks_root),
+        "golden": _collect_golden_peaks(golden_peaks_root, exclude_outliers)
+    }
+    pass

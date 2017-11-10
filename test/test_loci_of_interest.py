@@ -59,50 +59,119 @@ def test_collect_loci(tmpdir):
             'doo.bed', 'foo.bed'] == [t.name for t in table['default']]
 
 
-@pytest.mark.parametrize("path,selected,mod", [
+@pytest.mark.parametrize("root,relative_path,selected,mod", [
     # Zinbra
-    ("H3K27ac/YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed", True, "H3K27ac"),
-    ("H3K27ac/OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed", True, "H3K27ac"),
-    ("H3K27ac/OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed_rip.csv", False, "H3K27ac"),
-    ("H3K27ac/H3K27ac_zinbra_ODS_weak_consensus.bed", False, "H3K27ac"),
-    ("H3K27ac/H3K27ac_zinbra_weak_consensus.bed", False, "H3K27ac"),
-    ("H3K27ac/H3K27ac_zinbra_weak_consensus.bed", False, "H3K27ac"),
-
-    # Macs2 broad
-    ("H3K27ac/bed/YD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac"),
-    ("H3K27ac/bed/OD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac"),
-    ("H3K27ac/bed/YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac"),
-
-    # Macs2 narrow
-    ("H3K4me3/bed/YD4_k4me3_hg19_fdr_peaks.narrowPeak", True, "H3K4me3"),
-    ("H3K4me3/bed/OD4_k4me3_hg19_fdr_peaks.narrowPeak", True, "H3K4me3"),
-    ("H3K4me3/bed/YD21_k4me3_hg19_fdr_peaks.narrowPeak_rip.csv", False, "H3K4me3"),
-    ("H3K4me3/bed/YD21_k4me3_hg19_fdr_peaks.narrowPeak_frip.log", False, "H3K4me3"),
-
-    # Sicer
-    ("H3K36me3/bed/YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", True, "H3K36me3"),
-    ("H3K36me3/bed/OD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", True, "H3K36me3"),
-    ("H3K36me3/bed/YD18_k36me3_hg19-W200-G1000-FDR1E-6-island.bed_rip.csv", False, "H3K36me3"),
-
-    # All Golden
-    ("H3K27ac/bed/H3K27ac_golden_ODS_weak_consensus.bed", False, "H3K27ac"),
-    ("H3K36me3/bed/H3K36me3_golden_weak_consensus.bed", False, "H3K36me3"),
-
-    # Outliers
-    ("H3K27ac/bed/outliers/YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac"),
-    ("H3K27ac/bed_all/YD9_k27ac_hg19_broad_peaks.broadPeak", False, "H3K27ac"),
-    ("H3K27ac/bed_all/OD9_k27ac_hg19_broad_peaks.broadPeak", False, "H3K27ac"),
-    ("H3K27ac/bed_all/YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac"),
+    ("peaks/H3K27ac", "YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed", True, "H3K27ac"),
+    ("peaks/H3K27ac", "OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed", True, "H3K27ac"),
+    ("peaks/H3K27ac", "OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed_rip.csv", False, "H3K27ac"),
+    ("peaks/H3K27ac", "H3K27ac_zinbra_ODS_weak_consensus.bed", False, "H3K27ac"),
+    ("peaks/H3K27ac", "H3K27ac_zinbra_weak_consensus.bed", False, "H3K27ac"),
+    ("peaks/H3K27ac", "H3K27ac_zinbra_weak_consensus.bed", False, "H3K27ac"),
 ])
-def test_collect_peaks(tmpdir, path, selected, mod):
-    peaks_root = Path(tmpdir)
-
-    file = peaks_root / path
+def test_collect_zinbra_peaks(tmpdir, root, relative_path, selected, mod):
+    data_root = Path(tmpdir)
+    file = data_root / root / relative_path
     file.parent.mkdir(parents=True)
     file.touch()
 
-    res = loi._collect_peaks(peaks_root, outliers=False)
-    assert selected == (file in res[mod])
+    peaks = loi._collect_zinbra_peaks(data_root)
+    assert selected == (file in peaks[mod])
+
+
+@pytest.mark.parametrize("root,relative_path,selected,mod,exclude_outliers", [
+    # Macs2 broad
+    ("H3K27ac/bed", "YD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", True),
+    ("H3K27ac/bed", "OD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", True),
+    ("H3K27ac/bed", "YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac", True),
+
+    # Macs2 narrow
+    ("H3K4me3/bed", "YD4_k4me3_hg19_fdr_peaks.narrowPeak", True, "H3K4me3", True),
+    ("H3K4me3/bed", "OD4_k4me3_hg19_fdr_peaks.narrowPeak", True, "H3K4me3", True),
+    ("H3K4me3/bed", "YD21_k4me3_hg19_fdr_peaks.narrowPeak_rip.csv", False, "H3K4me3", True),
+    ("H3K4me3/bed", "YD21_k4me3_hg19_fdr_peaks.narrowPeak_frip.log", False, "H3K4me3", True),
+
+    # Sicer
+    ("H3K36me3/bed", "YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", True, "H3K36me3", True),
+    ("H3K36me3/bed", "OD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", True, "H3K36me3", True),
+    ("H3K36me3/bed", "YD18_k36me3_hg19-W200-G1000-FDR1E-6-island.bed_rip.csv", False, "H3K36me3", True),
+
+    # All Golden
+    ("H3K27ac/bed", "H3K27ac_golden_ODS_weak_consensus.bed", False, "H3K27ac", True),
+    ("H3K36me3/bed", "H3K36me3_golden_weak_consensus.bed", False, "H3K36me3", True),
+
+    # # Outliers
+    ("H3K27ac/bed", "outliers/YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac", True),
+    ("H3K27ac/bed_all", "YD9_k27ac_hg19_broad_peaks.broadPeak", False, "H3K27ac", True),
+    ("H3K27ac/bed_all", "OD9_k27ac_hg19_broad_peaks.broadPeak", False, "H3K27ac", True),
+    ("H3K27ac/bed_all", "YD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", False),
+    ("H3K27ac/bed_all", "OD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", False),
+    ("H3K27ac/bed_all", "YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac", True),
+])
+def test_collect_golden_peaks(tmpdir, root, relative_path, selected, mod, exclude_outliers):
+    data_root = Path(tmpdir)
+
+    file = data_root / root / relative_path
+    file.parent.mkdir(parents=True)
+    file.touch()
+
+    peaks = loi._collect_golden_peaks(data_root, exclude_outliers)
+
+    assert selected == (file in peaks[mod])
+
+
+@pytest.mark.parametrize("relative_path,selected", [
+    ("YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed", True),
+    ("OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed", True),
+    ("YD9_k27ac_hg19_broad_peaks.broadPeak", True),
+    ("YD4_k4me3_hg19_fdr_peaks.narrowPeak", True),
+    ("YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", True),
+
+    ("OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed_rip.csv", False),
+    ("H3K27ac_zinbra_ODS_weak_consensus.bed", False),
+    ("H3K27ac_zinbra_weak_consensus.bed", False),
+    ("YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False),
+    ("YD21_k4me3_hg19_fdr_peaks.narrowPeak_rip.csv", False),
+    ("YD21_k4me3_hg19_fdr_peaks.narrowPeak_frip.log", False),
+    ("YD18_k36me3_hg19-W200-G1000-FDR1E-6-island.bed_rip.csv", False),
+    ("H3K27ac_golden_ODS_weak_consensus.bed", False),
+    ("H3K36me3_golden_weak_consensus.bed", False),
+])
+def test_collect_peaks_in_folder(tmpdir, relative_path, selected):
+    peaks_root = Path(tmpdir)
+
+    file = peaks_root / relative_path
+    file.touch()
+
+    res = loi._collect_peaks_in_folder(peaks_root)
+    assert selected == (file in res)
+
+
+# def test_collect_peaks_in_folder_sorted(tmpdir):
+#     peaks_root = Path(tmpdir)
+#
+#     files = (
+#         "YD_YD1_H3K27ac_hg19_1.0E-6_peaks.bed",
+#         "YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed",
+#         "OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed",
+#         "OD_OD11_H3K27ac_hg19_1.0E-6_peaks.bed",
+#         "YD9_k27ac_hg19_broad_peaks.broadPeak",
+#         "YD4_k4me3_hg19_fdr_peaks.narrowPeak",
+#         "YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed"
+#     )
+#     for file in files:
+#         (peaks_root / file).touch()
+#
+#     res = loi._collect_peaks_in_folder(peaks_root)
+#     print([f.name for f in res])
+#     assert [
+#                'OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed',
+#                'OD_OD11_H3K27ac_hg19_1.0E-6_peaks.bed',
+#                'YD_YD1_H3K27ac_hg19_1.0E-6_peaks.bed',
+#                'YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed',
+#                'YD4_k4me3_hg19_fdr_peaks.narrowPeak',
+#                'YD9_k27ac_hg19_broad_peaks.broadPeak',
+#                'YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed',
+#            ] == [f.name for f in res]
 
 
 def generate_test_data_chromhmm(loci_root):
