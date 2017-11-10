@@ -93,14 +93,16 @@ def test_collect_zinbra_peaks(tmpdir, root, relative_path, selected, mod):
     # Sicer
     ("H3K36me3/bed", "YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", True, "H3K36me3", True),
     ("H3K36me3/bed", "OD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", True, "H3K36me3", True),
-    ("H3K36me3/bed", "YD18_k36me3_hg19-W200-G1000-FDR1E-6-island.bed_rip.csv", False, "H3K36me3", True),
+    ("H3K36me3/bed", "YD18_k36me3_hg19-W200-G1000-FDR1E-6-island.bed_rip.csv", False, "H3K36me3",
+     True),
 
     # All Golden
     ("H3K27ac/bed", "H3K27ac_golden_ODS_weak_consensus.bed", False, "H3K27ac", True),
     ("H3K36me3/bed", "H3K36me3_golden_weak_consensus.bed", False, "H3K36me3", True),
 
     # # Outliers
-    ("H3K27ac/bed", "outliers/YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac", True),
+    ("H3K27ac/bed", "outliers/YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac",
+     True),
     ("H3K27ac/bed_all", "YD9_k27ac_hg19_broad_peaks.broadPeak", False, "H3K27ac", True),
     ("H3K27ac/bed_all", "OD9_k27ac_hg19_broad_peaks.broadPeak", False, "H3K27ac", True),
     ("H3K27ac/bed_all", "YD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", False),
@@ -144,34 +146,6 @@ def test_collect_peaks_in_folder(tmpdir, relative_path, selected):
 
     res = loi._collect_peaks_in_folder(peaks_root)
     assert selected == (file in res)
-
-
-# def test_collect_peaks_in_folder_sorted(tmpdir):
-#     peaks_root = Path(tmpdir)
-#
-#     files = (
-#         "YD_YD1_H3K27ac_hg19_1.0E-6_peaks.bed",
-#         "YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed",
-#         "OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed",
-#         "OD_OD11_H3K27ac_hg19_1.0E-6_peaks.bed",
-#         "YD9_k27ac_hg19_broad_peaks.broadPeak",
-#         "YD4_k4me3_hg19_fdr_peaks.narrowPeak",
-#         "YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed"
-#     )
-#     for file in files:
-#         (peaks_root / file).touch()
-#
-#     res = loi._collect_peaks_in_folder(peaks_root)
-#     print([f.name for f in res])
-#     assert [
-#                'OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed',
-#                'OD_OD11_H3K27ac_hg19_1.0E-6_peaks.bed',
-#                'YD_YD1_H3K27ac_hg19_1.0E-6_peaks.bed',
-#                'YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed',
-#                'YD4_k4me3_hg19_fdr_peaks.narrowPeak',
-#                'YD9_k27ac_hg19_broad_peaks.broadPeak',
-#                'YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed',
-#            ] == [f.name for f in res]
 
 
 def generate_test_data_chromhmm(loci_root):
