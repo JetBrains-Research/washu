@@ -33,6 +33,8 @@ def test_collect_loci(tmpdir):
     generate_test_data_chromhmm(loci_root)
     (loci_root / "foo.bed").touch()
     (loci_root / "doo.bed").touch()
+    (loci_root / "aaa").touch()
+    (loci_root / "aaa.csv").touch()
     for i, name in enumerate(["enhancers", "tfs", "regulatory", "repeats", "golden_consensus",
                               "zinbra_consensus", 'else']):
         folder = loci_root / name

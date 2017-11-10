@@ -14,7 +14,7 @@ def collect_loci(loci_root: Path):
         if f.is_dir():
             if (f.name != "chromhmm"):
                 annotations[f.name] = sorted(f.glob('*.bed'), key=sort_by_fname)
-        else:
+        elif f.suffix == ".bed":
             # add top level files
             top_level_paths.append(f)
 
