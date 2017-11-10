@@ -81,7 +81,7 @@ def age(n):
 
 
 def regions_extension(c):
-    return re.match('.*\.(?:broadPeak|bed|narrowPeak)$', str(c))
+    return re.match('.*(?:Peak|_peaks\.bed|island\.bed)$', str(c))
 #################################################################
 
 
