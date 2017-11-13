@@ -262,3 +262,35 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
         plt.close()
     else:
         raise ValueError("Unsupported value type: {}".format(type(save_to)))
+
+
+def process_intersection_metric(a_paths: List[Path], b_paths: List[Path],
+                                df_path: Path,
+                                save_to=None,
+                                outliers_df=None, hist_mod=None,
+                                **kw):
+
+    if df_path.exists():
+        df = pd.DataFrame.from_csv(str(df_path))
+    else:
+        df = bed_metric_table(a_paths, b_paths, **kw)
+        df.to_csv(str(df_path))
+        print("Metrics results saved to:", str(df_path))
+
+    anns = [color_annotator_age]
+    if outliers_df and hist_mod:
+        if hist_mod in outliers_df.columns:
+            anns.append(color_annotator_outlier(outliers_df, hist_mod))
+    annotator = color_annotator_chain(*anns)
+
+    # print to pdf:
+    plot_metric_heatmap(
+        "Intersection metric: {}".format(df_path.name),
+        df,
+        save_to=save_to,
+        row_cluster=True, col_cluster=True,
+        row_color_annotator=annotator,
+        col_color_annotator=annotator,
+        row_label_converter=label_converter_donor_and_tool,
+        col_label_converter=label_converter_donor_and_tool
+    )
