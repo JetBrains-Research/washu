@@ -22,12 +22,10 @@ def collect_loci(loci_root: Path):
     annotations[None] = sorted(chain(top_level_paths, *annotations.values()),
                                key=sort_by_fname)
 
-    # Default annotations: top level + selected folders
+    # Default annotations: top level + selected folders (~ FIXED, doesn't depend on to peak
+    # calling)
     default_paths = list(top_level_paths)
-    for key in ["enhancers", "tfs", "regulatory", "repeats",
-                # "golden_consensus", "zinbra_consensus"
-                "golden_median_consensus", "zinbra_median_consensus"
-                ]:
+    for key in ["enhancers", "tfs", "regulatory", "repeats"]:
         default_paths.extend(annotations[key])
     annotations["default"] = sorted(default_paths, key=sort_by_fname)
 
