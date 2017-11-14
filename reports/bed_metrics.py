@@ -186,7 +186,7 @@ def label_converter_donor_and_tool(name):
         if tool in name or name.endswith(suffix):
             chunks.append(tool)
 
-    return "_".join(chunks)
+    return "_".join(chunks) if chunks else name
 
 
 def plot_metric_heatmap(title, df, figsize=(14, 14),

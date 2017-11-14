@@ -72,7 +72,8 @@ def main():
     rip_files = sorted([str(f) for f in folder_path.glob("*_rip.csv")])
 
     anns = [color_annotator_age]
-    hist_mod = re.match(".*(k\d{1,2}(?:me\d|ac)).*", str(folder_path), flags=re.IGNORECASE).group(1)
+    hist_mod = re.match(".*(h3k\d{1,2}(?:me\d|ac)).*", str(folder_path),
+                        flags=re.IGNORECASE).group(1)
     if hist_mod in outliers_df.columns:
         anns.append(color_annotator_outlier(outliers_df, hist_mod))
     annotator = color_annotator_chain(*anns)
