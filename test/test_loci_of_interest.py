@@ -4,8 +4,8 @@ from test.fixtures import test_data, tmp_dir
 import reports.loci_of_interest as loi
 
 
-def test_collect_chromhmm(tmpdir):
-    loci_root = Path(tmpdir)
+def test_collect_chromhmm(tmp_dir):
+    loci_root = Path(tmp_dir)
     generate_test_data_chromhmm(loci_root)
     (loci_root / "foo.bed").touch()
 
@@ -28,8 +28,8 @@ def test_chromhmm_state_descr(fname, descr):
     assert descr == loi.chromhmm_state_descr(fname)
 
 
-def test_collect_loci(tmpdir):
-    loci_root = Path(tmpdir)
+def test_collect_loci(tmp_dir):
+    loci_root = Path(tmp_dir)
     generate_test_data_chromhmm(loci_root)
     (loci_root / "foo.bed").touch()
     (loci_root / "doo.bed").touch()
@@ -78,8 +78,8 @@ def test_collect_loci(tmpdir):
     ("peaks/H3K27ac", "H3K27ac_zinbra_weak_consensus.bed", False, "H3K27ac"),
     ("peaks/H3K27ac", "H3K27ac_zinbra_weak_consensus.bed", False, "H3K27ac"),
 ])
-def test_collect_zinbra_peaks(tmpdir, root, relative_path, selected, mod):
-    data_root = Path(tmpdir)
+def test_collect_zinbra_peaks(tmp_dir, root, relative_path, selected, mod):
+    data_root = Path(tmp_dir)
     file = data_root / root / relative_path
     file.parent.mkdir(parents=True)
     file.touch()
@@ -119,8 +119,8 @@ def test_collect_zinbra_peaks(tmpdir, root, relative_path, selected, mod):
     ("H3K27ac/bed_all", "OD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", False),
     ("H3K27ac/bed_all", "YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac", True),
 ])
-def test_collect_golden_peaks(tmpdir, root, relative_path, selected, mod, exclude_outliers):
-    data_root = Path(tmpdir)
+def test_collect_golden_peaks(tmp_dir, root, relative_path, selected, mod, exclude_outliers):
+    data_root = Path(tmp_dir)
 
     file = data_root / root / relative_path
     file.parent.mkdir(parents=True)
@@ -148,8 +148,8 @@ def test_collect_golden_peaks(tmpdir, root, relative_path, selected, mod, exclud
     ("H3K27ac_golden_ODS_weak_consensus.bed", False),
     ("H3K36me3_golden_weak_consensus.bed", False),
 ])
-def test_collect_peaks_in_folder(tmpdir, relative_path, selected):
-    peaks_root = Path(tmpdir)
+def test_collect_peaks_in_folder(tmp_dir, relative_path, selected):
+    peaks_root = Path(tmp_dir)
 
     file = peaks_root / relative_path
     file.touch()
