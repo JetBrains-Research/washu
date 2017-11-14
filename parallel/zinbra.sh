@@ -7,7 +7,7 @@ SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch zinbra $@"
 if [ $# -lt 5 ]; then
-    echo "Need >= 5 parameters! <ZINBRA_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q> [<OUTPUT_DIR>]"
+    echo "Need >= 5 parameters! <ZINBRA_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q> [<OUTPUT_DIR> [<GAP>]]"
     exit 1
 fi
 
@@ -22,6 +22,12 @@ Q=$5
 OUTPUT_DIR=$6
 if [ ! -d "$OUTPUT_DIR" ]; then
     OUTPUT_DIR=$WORK_DIR
+fi
+
+if [ $# -lt 7 ]; then
+    GAP=""
+else
+    GAP="--gap $7"
 fi
 
 cd ${WORK_DIR}
@@ -57,14 +63,14 @@ if [ -f "${INPUT}" ]; then
     java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} -c ${INPUT} \
         --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --bed ${ID}_peaks.bed \
         --output ${OUTPUT_DIR} \
-        --threads=4
+        --threads=4 ${GAP}
 
 else
     echo "${FILE}: no control file"
     java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} \
         --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --bed ${ID}_peaks.bed \
         --output ${OUTPUT_DIR} \
-        --threads=4
+        --threads=4 ${GAP}
 fi
 
 module load bedtools2
