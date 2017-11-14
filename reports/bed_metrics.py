@@ -280,17 +280,23 @@ def process_intersection_metric(a_paths: List[Path], b_paths: List[Path],
                                 save_to=None,
                                 outliers_df=None, hist_mod=None,
                                 annotate_age=True,
+                                verbose=True,
                                 **kw):
 
     if df_path.exists():
         df = pd.DataFrame.from_csv(str(df_path))
+        if verbose:
+            print("[Skipped]: Already exists", str(df_path))
     else:
+        if verbose:
+            print("Calculating metrics: ", str(df_path))
         df = bed_metric_table(a_paths, b_paths, **kw)
         df.to_csv(str(df_path))
-        print("Metrics results saved to:", str(df_path))
+        if verbose:
+            print("  [Saved]")
 
     anns = []
-    if annotator_age:
+    if annotate_age:
         anns.append(color_annotator_age)
     if hist_mod and outliers_df is not None:
         if hist_mod in outliers_df.columns:

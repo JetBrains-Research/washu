@@ -51,13 +51,22 @@ def _cli():
                                   index_col="donor")
     ########################################################################
 
+    print("----- [Report]: Default ----")
     report_default(loi_dict, results_dir, threads)
+    print("----- [Report]: Consensus ----")
     report_consensus(loi_dict, results_dir, threads)
+    print("----- [Report]: Repeats ----")
     report("repeats", loi_dict, results_dir, threads,
            consensus_yo=False, default=False)
+    print("----- [Report]: Donors Zinbra ----")
     report_donors("zinbra", peaks_map, loi_dict, results_dir, threads, outliers_df)
+    print("----- [Report]: Donors Golden ----")
+    report_donors("golden", peaks_map, loi_dict, results_dir, threads, outliers_df)
+    print("----- [Report]: Differential ChipSeq ----")
     report("chipseq_diff_loci", loi_dict, results_dir, threads)
+    print("----- [Report]: Differential RnaSeq ----")
     report("rna_diff", loi_dict, results_dir, threads)
+    print("----- [Report]: Pathways interesting ----")
     report("interesting_pathways", loi_dict, results_dir, threads,
            itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
 
