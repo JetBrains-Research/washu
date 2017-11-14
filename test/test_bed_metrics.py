@@ -166,6 +166,29 @@ def test_plot_metric_heatmap_label_fun(tmp_dir, test_data, fname, col, row):
     assert_image(expected, result)
 
 
+@pytest.mark.parametrize("fname,adjustments", [
+    ("img1.png", None),
+    ("img1.png", dict()),
+    ("img1l.png", dict(left=0.5)),
+    ("img1r.png", dict(right=0.5)),
+    ("img1t.png", dict(top=0.5)),
+    ("img1b.png", dict(bottom=0.5)),
+])
+def test_plot_metric_heatmap_label_fun(tmp_dir, test_data, fname, adjustments):
+    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
+
+    expected = test_data("metrics/" + fname)
+    result = tmp_dir + "/foo.png"
+
+    kw = {}
+    if adjustments is not None:
+        kw = {**kw, 'adjustments': adjustments}
+
+    plot_metric_heatmap("My title", df, save_to=result, **kw)
+
+    assert_image(expected, result)
+
+
 @pytest.mark.parametrize("fdf,fname,col,row", [
     ("metric1.csv", "img1_c.png", False, False),
     ("metric1.csv", "img1_c-c.png", True, False),

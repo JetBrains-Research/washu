@@ -5,6 +5,7 @@ from multiprocessing import Pool
 from typing import List, Tuple
 from collections import defaultdict
 from itertools import chain
+import argparse
 
 from pathlib import Path
 import pandas as pd
@@ -13,8 +14,17 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-from scripts.util import run
-from pipeline_utils import PROJECT_ROOT_PATH
+if __name__ == "__main__":
+    parent_dir = os.path.dirname(os.path.realpath(__file__))
+    project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
+    sys.path.insert(0, project_root)
+
+    # Force matplotlib to not use any Xwindows backend.
+    import matplotlib
+    matplotlib.use('Agg')
+
+from scripts.util import run  # nopep8
+from pipeline_utils import PROJECT_ROOT_PATH  # nopep8
 
 
 def _try_parse_stdout(func, stdout, stderr):
@@ -184,7 +194,8 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
                         vmin=0, vmax=1,
                         col_color_annotator=None, row_color_annotator=None,
                         col_label_converter=None, row_label_converter=None,
-                        col_cluster=False, row_cluster=False):
+                        col_cluster=False, row_cluster=False, **kw):
+
     """
     :param title: Plot title
     :param df: Dataframe with metric value
@@ -199,6 +210,7 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
     :param row_label_converter: Function which modifies rows names
     :param col_cluster: see seaborn.clustermap(..) details
     :param row_cluster: see seaborn.clustermap(..) details
+    :param kw: extra arguments for easier API usages
     """
     ncol, nrow = df.shape
 
@@ -251,7 +263,11 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
         plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
 
     plt.title(title)
-    plt.subplots_adjust(left=0.2, right=0.8, top=0.8, bottom=0.2)
+    adjustments = kw.get('adjustments', {})
+    plt.subplots_adjust(left=adjustments.get('left', 0.2),
+                        right=adjustments.get('right', 0.8),
+                        top=adjustments.get('top', 0.8),
+                        bottom=adjustments.get('bottom', 0.2))
     save_plot(save_to)
 
 
@@ -266,3 +282,94 @@ def save_plot(save_to):
         plt.close()
     else:
         raise ValueError("Unsupported value type: {}".format(type(save_to)))
+
+
+def process_intersection_metric(a_paths: List[Path], b_paths: List[Path],
+                                df_path: Path,
+                                save_to=None,
+                                outliers_df=None, hist_mod=None,
+                                annotate_age=True,
+                                verbose=True,
+                                **kw):
+
+    if df_path.exists():
+        df = pd.DataFrame.from_csv(str(df_path))
+        if verbose:
+            print("[Skipped]: Already exists", str(df_path))
+    else:
+        if verbose:
+            print("Calculating metrics: ", str(df_path))
+        df = bed_metric_table(a_paths, b_paths, **kw)
+        df.to_csv(str(df_path))
+        if verbose:
+            print("  [Saved]")
+
+    anns = []
+    if annotate_age:
+        anns.append(color_annotator_age)
+    if hist_mod and outliers_df is not None:
+        if hist_mod in outliers_df.columns:
+            anns.append(color_annotator_outlier(outliers_df, hist_mod))
+    annotator = None if not anns else color_annotator_chain(*anns)
+
+    # print to pdf:
+    plot_metric_heatmap(
+        "Intersection metric: {}".format(df_path.name),
+        df,
+        save_to=save_to,
+        row_color_annotator=annotator,
+        col_color_annotator=annotator,
+        row_label_converter=label_converter_donor_and_tool,
+        col_label_converter=label_converter_donor_and_tool,
+        **kw
+    )
+    return df
+
+
+def _cli():
+    parser = argparse.ArgumentParser(
+        description="For given two loci paths sets build intersection heatmap pdf"
+    )
+    parser.add_argument("-a", required=True, action='append', metavar="PATHS",
+                        help="First set: comma separated list of files. Could be used multiple "
+                             "times")
+    parser.add_argument("-b", action='append', required=True, metavar="PATHS",
+                        help="Second set: comma separated list of files. Could be used multiple "
+                             "times")
+    parser.add_argument('-o', '--out', default='result', metavar="PREFIX",
+                        help="Output path prefix")
+
+    parser.add_argument('--rowc', help="Rows clustering", action="store_true")
+    parser.add_argument('--colc', help="Cols clustering", action="store_true")
+    parser.add_argument('-p', '--threads', help="Threads number for parallel processing",
+                        type=int, default=4)
+    parser.add_argument('--outliers', metavar="PATH",
+                        default="/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv",
+                        help="Outliers *.csv path")
+    parser.add_argument('--hist', help="Histone modification name (is used for outliers "
+                                       "highlighting), e.g. H3K4me3")
+    parser.add_argument('--age', help="Highlight donors age", action="store_true")
+    parser.add_argument('--size', help="Figure size: width and height separated by space",
+                        type=int, nargs=2, metavar="INT",
+                        default=[14, 14])
+
+    args = parser.parse_args()
+
+    a_paths = [Path(s.strip()) for s in chain(*(s.split(',') for s in args.a))]
+    b_paths = [Path(s.strip()) for s in chain(*(s.split(',') for s in args.b))]
+    prefix = args.out.strip()
+    plot_path = prefix + ".pdf"
+    df_path = Path(prefix + ".df")
+
+    outliers_df = pd.read_csv(args.outliers, delimiter="\t", skiprows=1,
+                              index_col="donor")
+    process_intersection_metric(a_paths, b_paths, df_path, plot_path, outliers_df,
+                                hist_mode=args.hist,
+                                row_cluster=args.rowc, col_cluster=args.colc,
+                                annotate_age=args.age,
+                                figsize=args.size,
+                                threads=args.threads)
+
+
+if __name__ == "__main__":
+    _cli()

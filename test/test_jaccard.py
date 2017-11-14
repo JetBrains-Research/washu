@@ -38,7 +38,7 @@ from test.fixtures import test_data
     ("A.bed", "B.unsorted.bed", "0", True, True),
     ("A.unsorted.bed", "B.unsorted.bed", "0", True, True),
 ])
-def test_intersect(capfd, test_data, file1, file2, jaccard, sorted, merged):
+def test_jaccard(capfd, test_data, file1, file2, jaccard, sorted, merged):
     files = [file1, file2]
     args = [test_data("bed/" + f) for f in files]
     if sorted:
@@ -58,7 +58,7 @@ def test_intersect(capfd, test_data, file1, file2, jaccard, sorted, merged):
 
 
 @pytest.mark.parametrize("help_arg", [True, False])
-def test_intersect_help(capfd, help_arg):
+def test_jaccard_help(capfd, help_arg):
     if help_arg:
         args = ["-s", "foo", "-h"]
     else:
