@@ -6,14 +6,19 @@ def collect_loci(loci_root: Path):
     sort_by_fname = lambda p: p.name
 
     # Chrom HMM
-    annotations = {"chromhmm": _collect_chromhmm(loci_root)}
+    annotations = {}
 
     # Other Loci
     top_level_paths = []
     for f in loci_root.iterdir():
         if f.is_dir():
             if (f.name != "chromhmm"):
-                annotations[f.name] = sorted(f.glob('*.bed'), key=sort_by_fname)
+                annotations[f.name] = sorted(f.glob('**/*.bed'), key=sort_by_fname)
+            else:
+                annotations[f.name] = sorted(
+                    f.glob('*.bed'),
+                    key=lambda p: int(p.name.split(".")[2].split("_")[0])
+                )
         elif f.suffix == ".bed":
             # add top level files
             top_level_paths.append(f)
@@ -65,11 +70,6 @@ _CHROMHMM_ST_MAP = {
     "17_ReprPCWk": "Weak Repressed PolyComb",
     "18_Quies": "Quiescent/Low",
 }
-
-
-def _collect_chromhmm(loci_root):
-    return sorted((loci_root / "chromhmm").glob('*.bed'),
-                  key=lambda p: int(p.name.split(".")[2].split("_")[0]))
 
 
 def _collect_peaks_in_folder(peaks_root):

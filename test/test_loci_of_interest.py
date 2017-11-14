@@ -8,8 +8,10 @@ def test_collect_chromhmm(tmp_dir):
     loci_root = Path(tmp_dir)
     generate_test_data_chromhmm(loci_root)
     (loci_root / "foo.bed").touch()
+    for folder in ["enhancers", "tfs", "regulatory", "repeats", 'chromhmm']:
+        (loci_root / folder).mkdir(parents=True, exist_ok=True)
 
-    res = loi._collect_chromhmm(loci_root)
+    res = loi.collect_loci(loci_root)["chromhmm"]
     assert 5 == len(res)
     expected_fnames = [
         'cd14_chromhmm.hg19.1_TssA.bed', 'cd14_chromhmm.hg19.2_TssFlnk.bed',
@@ -35,6 +37,9 @@ def test_collect_loci(tmp_dir):
     (loci_root / "doo.bed").touch()
     (loci_root / "aaa").touch()
     (loci_root / "aaa.csv").touch()
+    (loci_root / "chipseq_diff_loci/H3K27ac").mkdir(parents=True)
+    (loci_root / "chipseq_diff_loci/H3K27ac/diff1.bed").touch()
+    (loci_root / "chipseq_diff_loci/H3K27ac/diff2.bed").touch()
     for i, name in enumerate(["enhancers", "tfs", "regulatory", "repeats",
                               "golden_median_consensus", "zinbra_median_consensus",
                               "golden_consensus", "zinbra_consensus", 'else']):
@@ -44,13 +49,14 @@ def test_collect_loci(tmp_dir):
         (folder / "{}.bed".format(i + 1)).touch()
 
     table = loi.collect_loci(loci_root)
-    assert 12 == len(table)
-    assert ['None', 'chromhmm', 'default', 'else', 'enhancers',
+    assert 13 == len(table)
+    assert ['None', 'chipseq_diff_loci', 'chromhmm', 'default', 'else', 'enhancers',
             'golden_consensus', 'golden_median_consensus',
             'regulatory', 'repeats', 'tfs',
             'zinbra_consensus', 'zinbra_median_consensus'
             ] == sorted(str(k) for k in table)
-    assert 25 == len(table[None])
+    assert 27 == len(table[None])
+    assert 2 == len(table['chipseq_diff_loci'])
     assert 2 == len(table['zinbra_consensus'])
     assert 2 == len(table['zinbra_median_consensus'])
     assert ['1.bed', '2.bed', '3.bed', '4.bed', '5.bed', '6.bed', '7.bed', '8.bed', '9.bed',
@@ -58,7 +64,8 @@ def test_collect_loci(tmp_dir):
             'boo.bed', 'boo.bed',
             'cd14_chromhmm.hg19.10_EnhA2.bed', 'cd14_chromhmm.hg19.12_ZNF_Rpts.bed',
             'cd14_chromhmm.hg19.1_TssA.bed', 'cd14_chromhmm.hg19.2_TssFlnk.bed',
-            'cd14_chromhmm.hg19.9_EnhA1.bed', 'doo.bed', 'foo.bed'] == (
+            'cd14_chromhmm.hg19.9_EnhA1.bed',
+            'diff1.bed', 'diff2.bed', 'doo.bed', 'foo.bed'] == (
         [t.name for t in table[None]]
     )
     assert 15 == len(table['default'])
