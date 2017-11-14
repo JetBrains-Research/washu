@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import datetime
 
 from pathlib import Path
 import pandas as pd
@@ -70,42 +71,43 @@ def _cli():
     report("interesting_pathways", loi_dict, results_dir, threads,
            itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
 
+    # TODO: chromhmm -> fix files names
     # TODO: tfs
 
 
 def report_default(loi_dict, outdir, threads):
     result_plot_path = outdir / "default.pdf"
     with PdfPages(str(result_plot_path)) as pdf:
-
+        init_pdf_info(pdf)
         bm.process_intersection_metric(
             loi_dict['default'], loi_dict['default'],
             outdir / "default.csv", pdf,
-            row_cluster=True, col_cluster=True, threads=threads, figsize=(15, 15),
+            row_cluster=True, col_cluster=True, threads=threads, figsize=(20, 20),
             annotate_age=False, hist_mode=None)
 
         bm.process_intersection_metric(
             loi_dict['default'], loi_dict['chromhmm'],
             outdir / "default@chromhmm.csv", pdf,
-            row_cluster=False, col_cluster=False, threads=threads, figsize=(8, 15),
+            row_cluster=False, col_cluster=False, threads=threads, figsize=(12, 20),
             annotate_age=False, hist_mode=None)
 
 
 def report_consensus(loi_dict, outdir, threads, consensus_type="median_consensus"):
     result_plot_path = outdir / "{}.pdf".format(consensus_type)
     with PdfPages(str(result_plot_path)) as pdf:
-
+        init_pdf_info(pdf)
         consensus = loi_dict['zinbra_{}'.format(consensus_type)] \
                     + loi_dict['golden_{}'.format(consensus_type)]
         bm.process_intersection_metric(
             consensus, loi_dict['default'],
             outdir / "{}@default.csv".format(consensus_type), pdf,
-            row_cluster=True, col_cluster=True, threads=threads, figsize=(15, 15),
+            row_cluster=True, col_cluster=True, threads=threads, figsize=(20, 15),
             annotate_age=False, hist_mode=None)
 
         bm.process_intersection_metric(
             consensus, consensus,
             outdir / "{}.csv".format(consensus_type), pdf,
-            row_cluster=False, col_cluster=False, threads=threads, figsize=(8, 8),
+            row_cluster=False, col_cluster=False, threads=threads, figsize=(12, 12),
             annotate_age=False, hist_mode=None)
 
         # YDS or ODS, but not "_ODS_without_YDS_median_consensus.bed"
@@ -113,7 +115,7 @@ def report_consensus(loi_dict, outdir, threads, consensus_type="median_consensus
         bm.process_intersection_metric(
             yo_consensus, yo_consensus,
             outdir / "{}_yo.csv".format(consensus_type), pdf,
-            row_cluster=False, col_cluster=False, threads=threads, figsize=(8, 8),
+            row_cluster=False, col_cluster=False, threads=threads, figsize=(10, 10),
             annotate_age=False, hist_mode=None)
 
 
@@ -122,6 +124,7 @@ def report_donors(tool, peaks_map, loi_dict, outdir, threads, outliers_df):
 
     result_plot_path = outdir / "{}_by_donor.pdf".format(tool)
     with PdfPages(str(result_plot_path)) as pdf:
+        init_pdf_info(pdf)
         for hist in sorted(peaks_dict.keys()):
             bm.process_intersection_metric(
                 peaks_dict[hist], loi_dict['default'],
@@ -136,6 +139,7 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
     result_plot_path = outdir / "{}.pdf".format(key)
 
     with PdfPages(str(result_plot_path)) as pdf:
+        init_pdf_info(pdf)
         if itself:
             bm.process_intersection_metric(
                 loi_dict[key], loi_dict[key],
@@ -147,7 +151,7 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
         # loci_key set:
         loci = []
         if chromhmm:
-            loci.append(("chromhmm", 8))
+            loci.append(("chromhmm", 10))
         if default:
             loci.append(("default", 15))
         if repeats:
@@ -187,6 +191,18 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
                 outdir / "{}@{}_yo.csv".format(key, consensus_type), pdf,
                 row_cluster=True, col_cluster=False, threads=threads, figsize=(8, 15),
                 annotate_age=False, hist_mode=None)
+
+
+def init_pdf_info(pdf):
+    # TODO: titles
+
+    d = pdf.infodict()
+    d['Title'] = 'Report: Intersection metric at different loci'
+    d['Author'] = 'JetBrains Research BioLabs'
+    d['Subject'] = 'outliers'
+    # d['Keywords'] = 'outliers jetbrains aging'
+    d['CreationDate'] = datetime.datetime.today()
+    d['ModDate'] = datetime.datetime.today()
 
 
 if __name__ == "__main__":
