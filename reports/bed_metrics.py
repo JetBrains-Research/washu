@@ -319,8 +319,6 @@ def process_intersection_metric(a_paths: List[Path], b_paths: List[Path],
         save_to=save_to,
         row_color_annotator=annotator,
         col_color_annotator=annotator,
-        row_label_converter=label_converter_donor_and_tool,
-        col_label_converter=label_converter_donor_and_tool,
         **kw
     )
     return df

@@ -130,7 +130,9 @@ def report_donors(tool, peaks_map, loi_dict, outdir, threads, outliers_df):
                 peaks_dict[hist], loi_dict['default'],
                 outdir / "{}_{}@default.csv".format(tool, hist), pdf,
                 row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 10),
-                annotate_age=False, outliers_df=outliers_df, hist_mode=hist)
+                annotate_age=False, outliers_df=outliers_df, hist_mode=hist,
+                row_label_converter=bm.label_converter_donor_and_tool,
+            )
 
 
 def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="median_consensus",
