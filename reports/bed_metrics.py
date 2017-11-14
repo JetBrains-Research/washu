@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 from multiprocessing import Pool
 from typing import List, Tuple
 from collections import defaultdict
@@ -172,20 +173,20 @@ def color_annotator_outlier(outliers_df, data_type):
 
 
 def label_converter_donor_and_tool(name):
-    if name.endswith("Peak"):
-        tool = "macs2"
-    elif name.endswith("island.bed"):
-        tool = "sicer"
-    else:
-        tool = None
+    chunks = []
+    suffix_tool_map = {"Peak": "macs2", "island.bed": "sicer", "peaks.bed": "zinbra"}
+    match = re.match("(?:^|.*_)([yo]d(?:s|\d+)).*", name, flags=re.IGNORECASE)
 
-    if tool:
-        for ch in name.split('_'):
-            lch = ch.lower()
-            if len(lch) > 2 and (lch.startswith("od") or lch.startswith("yd")):
-                return ch + "_" + tool
+    if match:
+        chunks.append(match.group(1))
+    if "consensus" in name:
+        chunks.append("consensus")
 
-    return name
+    for suffix, tool in suffix_tool_map.items():
+        if tool in name or name.endswith(suffix):
+            chunks.append(tool)
+
+    return "_".join(chunks)
 
 
 def plot_metric_heatmap(title, df, figsize=(14, 14),
@@ -233,11 +234,11 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
             for item in items:
                 for k, v in color_fun(item):
                     data[k].append(v)
-            assert len({len(colors) for col, colors in data.items()}) == 1,\
+            assert len({len(colors) for col, colors in data.items()}) == 1, \
                 "All color list should be equal size:\n{}\n{}".format(
                     items,
                     {col: len(colors) for col, colors in data.items()}
-            )
+                )
 
             df = pd.DataFrame.from_dict(data)
             df.index = items
@@ -267,6 +268,10 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
                         right=adjustments.get('right', 0.8),
                         top=adjustments.get('top', 0.8),
                         bottom=adjustments.get('bottom', 0.2))
+    save_plot(save_to)
+
+
+def save_plot(save_to):
     if save_to is None:
         plt.show()
     elif isinstance(save_to, str):
