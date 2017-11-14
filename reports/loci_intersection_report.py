@@ -5,6 +5,7 @@ import argparse
 from pathlib import Path
 import pandas as pd
 
+
 def _cli():
     # data_root = Path("/Volumes/BigData/bio")
     data_root = Path("/mnt/stripe/bio")
@@ -60,7 +61,7 @@ def _cli():
     report("interesting_pathways", loi_dict, results_dir, threads,
            itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
 
-    #TODO: tfs
+    # TODO: tfs
 
 
 def report_default(loi_dict, outdir, threads):
