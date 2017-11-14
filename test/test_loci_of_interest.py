@@ -61,8 +61,11 @@ def test_collect_loci(tmpdir):
             'cd14_chromhmm.hg19.9_EnhA1.bed', 'doo.bed', 'foo.bed'] == (
         [t.name for t in table[None]]
     )
-    assert 10 == len(table['default'])
+    assert 15 == len(table['default'])
     assert ['1.bed', '2.bed', '3.bed', '4.bed', 'boo.bed', 'boo.bed', 'boo.bed', 'boo.bed',
+            'cd14_chromhmm.hg19.10_EnhA2.bed', 'cd14_chromhmm.hg19.12_ZNF_Rpts.bed',
+            'cd14_chromhmm.hg19.1_TssA.bed', 'cd14_chromhmm.hg19.2_TssFlnk.bed',
+            'cd14_chromhmm.hg19.9_EnhA1.bed',
             'doo.bed', 'foo.bed'] == [t.name for t in table['default']]
 
 
