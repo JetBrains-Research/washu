@@ -71,8 +71,21 @@ def _cli():
     report("interesting_pathways", loi_dict, results_dir, threads,
            itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
 
-    # TODO: chromhmm -> fix files names
     # TODO: tfs
+
+
+def _adjustment():
+    return dict(left=0.15, top=0.95, right=0.65, bottom=0.25)
+
+
+def _label_converter_shorten_loci(name):
+    if "chromhmm" in name:
+        return loi.chromhmm_state_descr(name)
+
+    name = name.replace(".bed", "")
+    name = name.replace("median_consensus", "mcs")
+    name = name.replace("without", "w/o")
+    return name
 
 
 def report_default(loi_dict, outdir, threads):
@@ -82,13 +95,19 @@ def report_default(loi_dict, outdir, threads):
         bm.process_intersection_metric(
             loi_dict['default'], loi_dict['default'],
             outdir / "default.csv", pdf,
-            row_cluster=True, col_cluster=True, threads=threads, figsize=(20, 20),
+            adjustments=_adjustment(),
+            col_label_converter=_label_converter_shorten_loci,
+            row_label_converter=_label_converter_shorten_loci,
+            row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 16),
             annotate_age=False, hist_mode=None)
 
         bm.process_intersection_metric(
             loi_dict['default'], loi_dict['chromhmm'],
             outdir / "default@chromhmm.csv", pdf,
-            row_cluster=False, col_cluster=False, threads=threads, figsize=(12, 20),
+            adjustments=_adjustment(),
+            col_label_converter=_label_converter_shorten_loci,
+            row_label_converter=_label_converter_shorten_loci,
+            row_cluster=False, col_cluster=False, threads=threads, figsize=(15, 15),
             annotate_age=False, hist_mode=None)
 
 
@@ -96,18 +115,36 @@ def report_consensus(loi_dict, outdir, threads, consensus_type="median_consensus
     result_plot_path = outdir / "{}.pdf".format(consensus_type)
     with PdfPages(str(result_plot_path)) as pdf:
         init_pdf_info(pdf)
-        consensus = loi_dict['zinbra_{}'.format(consensus_type)] \
-            + loi_dict['golden_{}'.format(consensus_type)]
+        consensus = sorted(
+            loi_dict['zinbra_{}'.format(consensus_type)] + loi_dict['golden_{}'.format(
+                consensus_type)],
+            key=lambda f: f.name
+        )
         bm.process_intersection_metric(
             consensus, loi_dict['default'],
             outdir / "{}@default.csv".format(consensus_type), pdf,
-            row_cluster=True, col_cluster=True, threads=threads, figsize=(20, 15),
+            col_label_converter=_label_converter_shorten_loci,
+            row_label_converter=_label_converter_shorten_loci,
+            adjustments=dict(left=0.15, top=0.95, right=0.65, bottom=0.3),
+            row_cluster=False, col_cluster=True, threads=threads, figsize=(20, 15),
+            annotate_age=False, hist_mode=None)
+
+        bm.process_intersection_metric(
+            consensus, loi_dict['chromhmm'],
+            outdir / "{}@chromhmm.csv".format(consensus_type), pdf,
+            adjustments=_adjustment(),
+            col_label_converter=_label_converter_shorten_loci,
+            row_label_converter=_label_converter_shorten_loci,
+            row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15),
             annotate_age=False, hist_mode=None)
 
         bm.process_intersection_metric(
             consensus, consensus,
             outdir / "{}.csv".format(consensus_type), pdf,
-            row_cluster=False, col_cluster=False, threads=threads, figsize=(12, 12),
+            adjustments=_adjustment(),
+            col_label_converter=_label_converter_shorten_loci,
+            row_label_converter=_label_converter_shorten_loci,
+            row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15),
             annotate_age=False, hist_mode=None)
 
         # YDS or ODS, but not "_ODS_without_YDS_median_consensus.bed"
@@ -115,6 +152,9 @@ def report_consensus(loi_dict, outdir, threads, consensus_type="median_consensus
         bm.process_intersection_metric(
             yo_consensus, yo_consensus,
             outdir / "{}_yo.csv".format(consensus_type), pdf,
+            # adjustments=_adjustment(),
+            col_label_converter=_label_converter_shorten_loci,
+            row_label_converter=_label_converter_shorten_loci,
             row_cluster=False, col_cluster=False, threads=threads, figsize=(10, 10),
             annotate_age=False, hist_mode=None)
 
@@ -126,11 +166,14 @@ def report_donors(tool, peaks_map, loi_dict, outdir, threads, outliers_df):
     with PdfPages(str(result_plot_path)) as pdf:
         init_pdf_info(pdf)
         for hist in sorted(peaks_dict.keys()):
+            print("@@@@@@@ !!!!!", hist, outliers_df.shape())
             bm.process_intersection_metric(
                 peaks_dict[hist], loi_dict['default'],
                 outdir / "{}_{}@default.csv".format(tool, hist), pdf,
+                adjustments=dict(left=0.2, top=0.9, right=0.9, botom=0.3),
                 row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 10),
                 annotate_age=False, outliers_df=outliers_df, hist_mode=hist,
+                col_label_converter=_label_converter_shorten_loci,
                 row_label_converter=bm.label_converter_donor_and_tool,
             )
 
@@ -155,7 +198,7 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
         if chromhmm:
             loci.append(("chromhmm", 10))
         if default:
-            loci.append(("default", 15))
+            loci.append(("default", 20))
         if repeats:
             loci.append(("repeats", 15))
 
@@ -163,6 +206,7 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
             bm.process_intersection_metric(
                 loi_dict[key], loi_dict[loci_key],
                 outdir / "{}@{}.csv".format(key, loci_key), pdf,
+                adjustments=dict(left=0.1, top=0.9, right=0.7, botom=0.3),
                 row_cluster=True, col_cluster=False, threads=threads,
                 figsize=(loci_side_size, key_side_size),
                 annotate_age=False, hist_mode=None)
@@ -170,13 +214,17 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
             bm.process_intersection_metric(
                 loi_dict[loci_key], loi_dict[key],
                 outdir / "{}@{}.csv".format(loci_key, key), pdf,
+                adjustments=dict(left=0.2, top=0.9, right=0.7, botom=0.3),
                 row_cluster=False, col_cluster=True, threads=threads,
                 figsize=(key_side_size, loci_side_size),
                 annotate_age=False, hist_mode=None)
 
         # consensus
-        consensus_paths = loi_dict['zinbra_{}'.format(consensus_type)] \
-            + loi_dict['golden_{}'.format(consensus_type)]
+        consensus_paths = sorted(
+            loi_dict['zinbra_{}'.format(consensus_type)] + loi_dict['golden_{}'.format(
+                consensus_type)],
+            key=lambda f: f.name
+        )
         if consensus:
             bm.process_intersection_metric(
                 loi_dict[key], consensus_paths,
@@ -191,7 +239,8 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
             bm.process_intersection_metric(
                 loi_dict[key], consensus_yo_paths,
                 outdir / "{}@{}_yo.csv".format(key, consensus_type), pdf,
-                row_cluster=True, col_cluster=False, threads=threads, figsize=(8, 15),
+                adjustments=dict(left=0.1, top=0.9, right=0.7, botom=0.3),
+                row_cluster=True, col_cluster=False, threads=threads, figsize=(10, 15),
                 annotate_age=False, hist_mode=None)
 
 
