@@ -194,12 +194,12 @@ if __name__ == "__main__":
     project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
     sys.path.insert(0, project_root)
 
-    import reports.bed_metrics as bm
-    import reports.loci_of_interest as loi
-
     # Force matplotlib to not use any Xwindows backend.
     import matplotlib
     matplotlib.use('Agg')
+
+    import reports.bed_metrics as bm
+    import reports.loci_of_interest as loi
 
     from matplotlib.backends.backend_pdf import PdfPages
 
