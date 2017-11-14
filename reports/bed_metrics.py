@@ -262,7 +262,11 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
         plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
 
     plt.title(title)
-    plt.subplots_adjust(left=0.2, right=0.8, top=0.8, bottom=0.2)
+    adjustments = kw.get('adjustments', {})
+    plt.subplots_adjust(left=adjustments.get('left', 0.2),
+                        right=adjustments.get('right', 0.8),
+                        top=adjustments.get('top', 0.8),
+                        bottom=adjustments.get('bottom', 0.2))
     if save_to is None:
         plt.show()
     elif isinstance(save_to, str):
