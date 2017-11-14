@@ -107,7 +107,8 @@ def process_diffbind_scores(data_path, data, sizes):
     # Difference between DBA_SCORE_TMM_MINUS_FULL and DBA_SCORE_TMM_MINUS_FULL_CPM is in bCMP
     print('TMM Scores DBA_SCORE_TMM_MINUS_FULL_CPM')
     scores_tmm = pd.read_csv(tmm_file, sep='\t') * 10000000
-    save_scores(re.sub('.tsv', '_scores_tmm.tsv', data_path), data, scores_tmm, 'diffbind TMM scores')
+    save_scores(re.sub('.tsv', '_scores_tmm.tsv', data_path),
+                data, scores_tmm, 'diffbind TMM scores')
 
 
 def save_scores(path, data, scores, name):
@@ -136,7 +137,8 @@ def process_scores(data, sizes, records):
     for cond, cont, g in records:
         scale = sizes.loc[cond]['size'] / sizes.loc[cont]['size']
         prefix = '' if g is None else g.prefix
-        scores_processed[prefix + cond] = [score(z[0], z[1], scale) for z in zip(data[cond], data[cont])]
+        scores_processed[prefix + cond] = \
+            [score(z[0], z[1], scale) for z in zip(data[cond], data[cont])]
         sizes_processed.loc[len(sizes_processed)] = (prefix + cond, sizes.loc[cond]['size'])
     return scores_processed, sizes_processed
 
@@ -148,7 +150,7 @@ def main():
         print("ARGUMENTS:  <data_path.tsv> <sizes.tsv> [<peaks.sizes.tsv>]\n"
               "     <data_path.tsv>: tsv file from signal_bw.sh\n"
               "     <sizes.tsv>: libraries sizes, used for RPM normalization\n"
-              "     <peaks.sizes.tsv>: libraries sizes in peaks regions, used for RPM_peaks normalization\n\n"
+              "     <peaks.sizes.tsv>: libraries sizes in peaks, for RPM_peaks normalization\n\n"
               "ARGS: " + ",".join(args))
         sys.exit(1)
 

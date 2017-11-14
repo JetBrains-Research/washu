@@ -1,17 +1,16 @@
 import matplotlib
-
-# Force matplotlib to not use any Xwindows backend.
-matplotlib.use('Agg')
-
 from enum import Enum
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from scripts.util import *
 from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
+
+# Force matplotlib to not use any Xwindows backend.
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt  # nopep8
+import seaborn as sns  # nopep8
 
 
 def signal_pca(x0,
@@ -26,7 +25,8 @@ def signal_pca(x0,
     x_r = pca.fit_transform(x)
     for g in set(groups):
         group_filter = np.asarray([g == n for n in groups])
-        plt.scatter(x_r[group_filter, 0], x_r[group_filter, 1], color=g.color, alpha=.8, label=g.name)
+        plt.scatter(x_r[group_filter, 0], x_r[group_filter, 1],
+                    color=g.color, alpha=.8, label=g.name)
 
     for g, label, x, y in zip(groups, [age(n) for n in x0.index], x_r[:, 0], x_r[:, 1]):
         plt.annotate(g.prefix + label,
@@ -58,7 +58,8 @@ def signal_pca_all(x, title, groups=None):
     plt.subplot(1, 4, 3)
     e_log = signal_pca(np.log1p(x), 'LOG {}'.format(title), groups=groups)
     plt.subplot(1, 4, 4)
-    e_scaled_log = signal_pca(np.log1p(x), 'SCALED LOG {}'.format(title), groups=groups, scaled=True)
+    e_scaled_log = signal_pca(np.log1p(x), 'SCALED LOG {}'.format(title),
+                              groups=groups, scaled=True)
     return e, e_scaled, e_log, e_scaled_log
 
 
@@ -122,7 +123,8 @@ def mean_boxplots(df, title, ax):
     signal.loc[signal.index.str.startswith("y"), "age"] = "YDS"
 
     age_labels = list(reversed(sorted(set(signal['age']))))
-    sns.boxplot(x="age", y="value", data=signal, palette="Set3", linewidth=1.0, order=age_labels, ax=ax)
+    sns.boxplot(x="age", y="value", data=signal, palette="Set3",
+                linewidth=1.0, order=age_labels, ax=ax)
     sns.swarmplot(x="age", y="value", data=signal, color=".25", order=age_labels, ax=ax)
 
     for i, age_label in enumerate(age_labels):
@@ -148,15 +150,19 @@ def visualize(f, name):
         else:
             signal = df.drop(['chr', 'start', 'end'], axis=1)
         plt.figure(figsize=(20, 5))
-        mean_regions(df, title=name, ax=plt.subplot(1, 4, 1), plot_type=Plot.SCATTER)
-        mean_regions(df, title='MA {}'.format(name), ax=plt.subplot(1, 4, 2), plot_type=Plot.MA)
-        mean_regions(df, title='LOG {}'.format(name), ax=plt.subplot(1, 4, 3), plot_type=Plot.HISTOGRAM)
+        mean_regions(df, title=name, ax=plt.subplot(1, 4, 1),
+                     plot_type=Plot.SCATTER)
+        mean_regions(df, title='MA {}'.format(name), ax=plt.subplot(1, 4, 2),
+                     plot_type=Plot.MA)
+        mean_regions(df, title='LOG {}'.format(name), ax=plt.subplot(1, 4, 3),
+                     plot_type=Plot.HISTOGRAM)
         means = mean_boxplots(signal.T, title=name, ax=plt.subplot(1, 4, 4))
         plt.savefig(re.sub('.tsv', '.png', f))
         plt.close()
 
         # Save means signal to df
-        pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_data.csv', f), index=True, header=None)
+        pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_data.csv', f),
+                                            index=True, header=None)
 
         e, e_scaled, e_log, e_scaled_log = signal_pca_all(signal.T, name)
         plt.savefig(re.sub('.tsv', '_pca.png', f))

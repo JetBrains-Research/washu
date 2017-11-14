@@ -103,7 +103,8 @@ def test_bam2tags():
 def test_reads2bam():
     os.chdir(os.path.expanduser("~"))
     bam = run([["bash", "/washu/scripts/reads2bam.sh",
-                "/root/data/reads.bed", "/root/index/hg19/hg19.chrom.sizes"]])[0].decode('utf-8').strip()
+                "/root/data/reads.bed", "/root/index/hg19/hg19.chrom.sizes"]])[0]. \
+        decode('utf-8').strip()
     assert "/root/data/reads.bam" == bam
     reads1 = Path("/root/data/reads.bed").read_text()
     reads2 = run([["bedtools", "bamtobed", "-i", bam]])[0].decode('utf-8')
@@ -112,7 +113,8 @@ def test_reads2bam():
 
 def test_tags2bdg():
     os.chdir(os.path.expanduser("~"))
-    bdg = run([["bash", "/washu/scripts/tags2bdg.sh", "/root/data/bam2tags.tag"]])[0].decode('utf-8')
+    bdg = run([["bash", "/washu/scripts/tags2bdg.sh", "/root/data/bam2tags.tag"]])[0]. \
+        decode('utf-8')
     assert Path("./data/bam2tags.bdg").read_text() == bdg
 
 
@@ -123,7 +125,8 @@ def test_signals():
     if os.path.exists("./fastq_bams_bws/regions"):
         shutil.rmtree("./fastq_bams_bws/regions")
     call(["bash", "/washu/parallel/signals_bw.sh",
-          "/root/fastq_bams_bws", "/root/data/regions.bed", "regions", "/root/index/hg19/hg19.chrom.sizes"])
+          "/root/fastq_bams_bws", "/root/data/regions.bed", "regions",
+          "/root/index/hg19/hg19.chrom.sizes"])
 
     os.chdir(os.path.expanduser("~"))
     check_files("./fastq_bams_bws/hg19.chrom.sizes.tsv", 1)
@@ -132,4 +135,4 @@ def test_signals():
     check_files("./fastq_bams_bws/regions/regions_raw.tsv", 1)
     check_files("./fastq_bams_bws/regions/regions.tsv", 1)
     assert Path("./fastq_bams_bws/regions/regions_raw.tsv").read_text() == \
-           Path("./data/regions_raw.tsv").read_text()
+           Path("./data/regions_raw.tsv").read_text()  # nopep8
