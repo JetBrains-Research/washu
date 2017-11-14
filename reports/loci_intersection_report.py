@@ -97,7 +97,7 @@ def report_consensus(loi_dict, outdir, threads, consensus_type="median_consensus
     with PdfPages(str(result_plot_path)) as pdf:
         init_pdf_info(pdf)
         consensus = loi_dict['zinbra_{}'.format(consensus_type)] \
-                    + loi_dict['golden_{}'.format(consensus_type)]
+            + loi_dict['golden_{}'.format(consensus_type)]
         bm.process_intersection_metric(
             consensus, loi_dict['default'],
             outdir / "{}@default.csv".format(consensus_type), pdf,
