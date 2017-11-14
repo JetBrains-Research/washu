@@ -268,6 +268,8 @@ def test_plot_multiple_col_fun(tmp_dir, test_data, fdf, fname, col, row):
     ("boo_macs2_YDS_boo_consensus.bed", "YDS_consensus_macs2"),
     ("boo_macs2_boo_consensus.bed", "consensus_macs2"),
     ("not_tool.bed", "not_tool.bed"),
+    ("H3K4me1_consensus.bed", "consensus"),
+    ("H3K36me3_consensus.bed", "consensus"),
 ])
 def test_label_converter_donor_and_tool(label, value):
     assert value == label_converter_donor_and_tool(label)
