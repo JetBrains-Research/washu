@@ -166,7 +166,6 @@ def report_donors(tool, peaks_map, loi_dict, outdir, threads, outliers_df):
     with PdfPages(str(result_plot_path)) as pdf:
         init_pdf_info(pdf)
         for hist in sorted(peaks_dict.keys()):
-            print("@@@@@@@ !!!!!", hist, outliers_df.shape())
             bm.process_intersection_metric(
                 peaks_dict[hist], loi_dict['default'],
                 outdir / "{}_{}@default.csv".format(tool, hist), pdf,
