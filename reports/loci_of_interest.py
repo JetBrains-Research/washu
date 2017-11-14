@@ -25,7 +25,7 @@ def collect_loci(loci_root: Path):
     # Default annotations: top level + selected folders (~ FIXED, doesn't depend on to peak
     # calling)
     default_paths = list(top_level_paths)
-    for key in ["enhancers", "tfs", "regulatory", "repeats"]:
+    for key in ["enhancers", "tfs", "regulatory", "repeats", 'chromhmm']:
         default_paths.extend(annotations[key])
     annotations["default"] = sorted(default_paths, key=sort_by_fname)
 
@@ -94,23 +94,3 @@ def _collect_golden_peaks(golden_peaks_root, exclude_outliers):
             sub_folder = "bed" if exclude_outliers else "bed_all"
             golden_peaks[folder.name] = _collect_peaks_in_folder(folder / sub_folder)
     return golden_peaks
-
-
-if __name__ == "__main__":
-    # data_root = Path("/Volumes/BigData/bio")
-    data_root = Path("/mnt/stripe/bio")
-    loci_root = data_root / "raw-data/aging/loci_of_interest"
-    signal_root = data_root / "experiments/signal"
-
-    exclude_outliers = True
-
-    golden_peaks_root = data_root / "experiments/aging/peak_calling"
-    zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}".format(
-        "" if exclude_outliers else "_full"
-    )
-
-    peaks_map = {
-        "zinbra": _collect_zinbra_peaks(zinbra_peaks_root),
-        "golden": _collect_golden_peaks(golden_peaks_root, exclude_outliers)
-    }
-    pass
