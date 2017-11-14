@@ -13,8 +13,8 @@ SCRIPT_DIR="$(project_root_dir)"
 ################################################################################
 
 >&2 echo "macs_bdgdiff: $@"
-if [ $# -lt 2 ]; then
-    echo "Need 2 parameters! <NAME> <WORKDIR> <DIFF_MACS_POOLED>"
+if [ $# -lt 3 ]; then
+    echo "Need 3 parameters! <NAME> <WORKDIR> <DIFF_MACS_POOLED>"
     exit 1
 fi
 

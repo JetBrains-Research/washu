@@ -119,5 +119,7 @@ SCRIPT
 
 wait_complete $QSUB_ID
 
+rm Y_tags.tag O_tags.tag
+
 # TMP dir cleanup:
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
