@@ -135,6 +135,7 @@ wait_complete ${TASKS[@]}
 check_logs
 
 # Cleanup: remove tmp directory and everything except for island.bed, rip.csv, log and sh script.
+# Also leave the BAM symlinks, they will be removed separately.
 rm -r ${WORK_DIR}/sicer_tmp
-for file in $(ls ${WORK_DIR} | grep -vE "(\.log|island\.bed|_rip\.csv|\.sh)$"); do rm ${WORK_DIR}/${file}; done;
+for file in $(ls ${WORK_DIR} | grep -vE "(\.log|island\.bed|_rip\.csv|\.sh|\.bam)$"); do rm ${WORK_DIR}/${file}; done;
 >&2 echo "Done. Batch sicer $@"
