@@ -325,6 +325,16 @@ def _cli():
     plot_path = prefix + ".pdf"
     df_path = Path(prefix + ".df")
 
+    # Df
+    if df_path.exists():
+        df = pd.DataFrame.from_csv(str(df_path))
+        print("[Skipped]: Already exists", str(df_path))
+    else:
+        print("Calculating metrics: ", str(df_path))
+        df = bed_metric_table(a_paths, b_paths)
+        df.to_csv(str(df_path))
+        print("  [Saved]")
+
     anns = []
     # age
     if args.age:
@@ -336,16 +346,6 @@ def _cli():
         if hist_mod in outliers_df.columns:
             anns.append(color_annotator_outlier(outliers_df, hist_mod))
     annotator = None if not anns else color_annotator_chain(*anns)
-
-    # Df
-    if df_path.exists():
-        df = pd.DataFrame.from_csv(str(df_path))
-        print("[Skipped]: Already exists", str(df_path))
-    else:
-        print("Calculating metrics: ", str(df_path))
-        df = bed_metric_table(a_paths, b_paths)
-        df.to_csv(str(df_path))
-        print("  [Saved]")
 
     # Do plot:
     plot_metric_heatmap("IM: {}".format(df_path.name), df,
