@@ -12,11 +12,11 @@ def _cli():
     data_root = Path("/mnt/stripe/bio")
     loci_root = data_root / "raw-data/aging/loci_of_interest"
     # signal_root = data_root / "experiments/signal"
-    tuned_peaks = False
 
     ########################################################################
     parser = argparse.ArgumentParser(
-        description="Generates intersection reports for predefined loci sets"
+        description="Generates intersection reports for predefined loci sets",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument('-o', '--out', required=True, metavar="PATH",
                         help="Output dir")

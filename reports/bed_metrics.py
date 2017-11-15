@@ -292,7 +292,8 @@ def save_plot(save_to):
 
 def _cli():
     parser = argparse.ArgumentParser(
-        description="For given two loci paths sets build intersection heatmap pdf"
+        description="For given two loci paths sets build intersection heatmap pdf",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("-a", required=True, action='append', metavar="PATHS",
                         help="First set: comma separated list of files. Could be used multiple "
