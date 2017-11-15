@@ -107,16 +107,6 @@ def _adjustment_wrc():
     return dict(left=0.15, top=0.95, right=0.62, bottom=0.3)
 
 
-def _label_converter_shorten_loci(name):
-    if "chromhmm" in name:
-        return loi.chromhmm_state_descr(name)
-
-    name = name.replace(".bed", "")
-    name = name.replace("median_consensus", "mcs")
-    name = name.replace("without", "w/o")
-    return name
-
-
 def report_default(loi_dict, outdir, threads):
     result_plot_path = outdir / "default.pdf"
     with PdfPages(str(result_plot_path)) as pdf:
@@ -125,16 +115,16 @@ def report_default(loi_dict, outdir, threads):
             loi_dict['default'], loi_dict['default'],
             outdir / "default.csv", pdf,
             adjustments=_adjustment(),
-            col_label_converter=_label_converter_shorten_loci,
-            row_label_converter=_label_converter_shorten_loci,
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
             row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 16))
 
         process_intersection_metric(
             loi_dict['default'], loi_dict['chromhmm'],
             outdir / "default@chromhmm.csv", pdf,
             adjustments=_adjustment(),
-            col_label_converter=_label_converter_shorten_loci,
-            row_label_converter=_label_converter_shorten_loci,
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
             row_cluster=False, col_cluster=False, threads=threads, figsize=(15, 15))
 
 
@@ -150,8 +140,8 @@ def report_consensus(loi_dict, outdir, threads, consensus_type="median_consensus
         process_intersection_metric(
             consensus, loi_dict['default'],
             outdir / "{}@default.csv".format(consensus_type), pdf,
-            col_label_converter=_label_converter_shorten_loci,
-            row_label_converter=_label_converter_shorten_loci,
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
             adjustments=_adjustment_wrc(),
             row_cluster=False, col_cluster=True, threads=threads, figsize=(20, 15))
 
@@ -159,23 +149,23 @@ def report_consensus(loi_dict, outdir, threads, consensus_type="median_consensus
             consensus, loi_dict['chromhmm'],
             outdir / "{}@chromhmm.csv".format(consensus_type), pdf,
             adjustments=_adjustment(),
-            col_label_converter=_label_converter_shorten_loci,
-            row_label_converter=_label_converter_shorten_loci,
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
             row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15))
 
         process_intersection_metric(
             consensus, consensus,
             outdir / "{}.csv".format(consensus_type), pdf,
             adjustments=_adjustment(),
-            col_label_converter=_label_converter_shorten_loci,
-            row_label_converter=_label_converter_shorten_loci,
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
             row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15))
 
         process_intersection_metric(
             consensus, loi_dict['repeats'],
             outdir / "{}@repeats.csv".format(consensus_type), pdf,
-            col_label_converter=_label_converter_shorten_loci,
-            row_label_converter=_label_converter_shorten_loci,
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
             adjustments=_adjustment_wrc(),
             row_cluster=False, col_cluster=True, threads=threads, figsize=(20, 15))
 
@@ -185,8 +175,8 @@ def report_consensus(loi_dict, outdir, threads, consensus_type="median_consensus
             yo_consensus, yo_consensus,
             outdir / "{}_yo.csv".format(consensus_type), pdf,
             adjustments=dict(left=0.15, top=0.95, right=0.75, bottom=0.25),
-            col_label_converter=_label_converter_shorten_loci,
-            row_label_converter=_label_converter_shorten_loci,
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
             row_cluster=False, col_cluster=False, threads=threads, figsize=(10, 10))
 
 
@@ -209,7 +199,7 @@ def report_donors(tool, peaks_map, loi_dict, outdir, threads, outliers_df):
                 adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
                 row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15),
                 row_color_annotator=annotator,
-                col_label_converter=_label_converter_shorten_loci,
+                col_label_converter=loi.label_converter_shorten_loci,
                 row_label_converter=bm.label_converter_donor_and_tool,
             )
 
@@ -226,8 +216,8 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
                 loi_dict[key], loi_dict[key],
                 outdir / "{}.csv".format(key), pdf,
                 adjustments=_adjustment_wrc(),
-                col_label_converter=_label_converter_shorten_loci,
-                row_label_converter=_label_converter_shorten_loci,
+                col_label_converter=loi.label_converter_shorten_loci,
+                row_label_converter=loi.label_converter_shorten_loci,
                 row_cluster=True, col_cluster=True, threads=threads,
                 figsize=(key_side_size, key_side_size))
 
@@ -245,8 +235,8 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
                 loi_dict[key], loi_dict[loci_key],
                 outdir / "{}@{}.csv".format(key, loci_key), pdf,
                 adjustments=_adjustment() if loci_key not in {"default"} else _adjustment_wrc(),
-                col_label_converter=_label_converter_shorten_loci,
-                row_label_converter=_label_converter_shorten_loci,
+                col_label_converter=loi.label_converter_shorten_loci,
+                row_label_converter=loi.label_converter_shorten_loci,
                 row_cluster=True, col_cluster=False, threads=threads,
                 figsize=(loci_side_size, key_side_size))
 
@@ -254,8 +244,8 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
                 loi_dict[loci_key], loi_dict[key],
                 outdir / "{}@{}.csv".format(loci_key, key), pdf,
                 adjustments=_adjustment() if key not in {"default"} else _adjustment_wrc(),
-                col_label_converter=_label_converter_shorten_loci,
-                row_label_converter=_label_converter_shorten_loci,
+                col_label_converter=loi.label_converter_shorten_loci,
+                row_label_converter=loi.label_converter_shorten_loci,
                 row_cluster=False, col_cluster=True, threads=threads,
                 figsize=(key_side_size, loci_side_size))
 
@@ -270,8 +260,8 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
                 loi_dict[key], consensus_paths,
                 outdir / "{}@{}.csv".format(key, consensus_type), pdf,
                 adjustments=_adjustment(),
-                col_label_converter=_label_converter_shorten_loci,
-                row_label_converter=_label_converter_shorten_loci,
+                col_label_converter=loi.label_converter_shorten_loci,
+                row_label_converter=loi.label_converter_shorten_loci,
                 row_cluster=True, col_cluster=False, threads=threads, figsize=(20, key_side_size))
 
         # YDS or ODS, but not "_ODS_without_YDS_median_consensus.bed"
@@ -282,8 +272,8 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
                 loi_dict[key], consensus_yo_paths,
                 outdir / "{}@{}_yo.csv".format(key, consensus_type), pdf,
                 adjustments=_adjustment(),
-                col_label_converter=_label_converter_shorten_loci,
-                row_label_converter=_label_converter_shorten_loci,
+                col_label_converter=loi.label_converter_shorten_loci,
+                row_label_converter=loi.label_converter_shorten_loci,
                 row_cluster=True, col_cluster=False, threads=threads, figsize=(12, key_side_size))
 
 

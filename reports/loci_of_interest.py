@@ -85,6 +85,16 @@ def donor_order_id(path):
     return (path.name, 0)
 
 
+def label_converter_shorten_loci(name):
+    if "chromhmm" in name:
+        return chromhmm_state_descr(name)
+
+    name = name.replace(".bed", "")
+    name = name.replace("median_consensus", "mcs")
+    name = name.replace("without", "w/o")
+    return name
+
+
 def _collect_peaks_in_folder(peaks_root):
     return sorted(chain(peaks_root.glob("*_peaks.bed"),
                         peaks_root.glob("*-island.bed"),

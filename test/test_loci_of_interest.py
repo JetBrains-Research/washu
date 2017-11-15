@@ -1,11 +1,11 @@
 from pathlib import Path
 import pytest
-from test.fixtures import test_data, tmp_dir
+from test.fixtures import test_data, tmp_path
 import reports.loci_of_interest as loi
 
 
-def test_collect_chromhmm(tmp_dir):
-    loci_root = Path(tmp_dir)
+def test_collect_chromhmm(tmp_path):
+    loci_root = tmp_path
     generate_test_data_chromhmm(loci_root)
     (loci_root / "foo.bed").touch()
     for folder in ["enhancers", "tfs", "regulatory", "repeats", 'chromhmm']:
@@ -30,8 +30,8 @@ def test_chromhmm_state_descr(fname, descr):
     assert descr == loi.chromhmm_state_descr(fname)
 
 
-def test_collect_loci(tmp_dir):
-    loci_root = Path(tmp_dir)
+def test_collect_loci(tmp_path):
+    loci_root = tmp_path
     generate_test_data_chromhmm(loci_root)
     (loci_root / "foo.bed").touch()
     (loci_root / "doo.bed").touch()
@@ -85,8 +85,8 @@ def test_collect_loci(tmp_dir):
     ("peaks/H3K27ac", "H3K27ac_zinbra_weak_consensus.bed", False, "H3K27ac"),
     ("peaks/H3K27ac", "H3K27ac_zinbra_weak_consensus.bed", False, "H3K27ac"),
 ])
-def test_collect_zinbra_peaks(tmp_dir, root, relative_path, selected, mod):
-    data_root = Path(tmp_dir)
+def test_collect_zinbra_peaks(tmp_path, root, relative_path, selected, mod):
+    data_root = tmp_path
     file = data_root / root / relative_path
     file.parent.mkdir(parents=True)
     file.touch()
@@ -131,8 +131,8 @@ def test_collect_zinbra_peaks(tmp_dir, root, relative_path, selected, mod):
     ("H3K27ac/bed_all", "OD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", False),
     ("H3K27ac/bed_all", "YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac", True),
 ])
-def test_collect_golden_peaks(tmp_dir, root, relative_path, selected, mod, exclude_outliers):
-    data_root = Path(tmp_dir)
+def test_collect_golden_peaks(tmp_path, root, relative_path, selected, mod, exclude_outliers):
+    data_root = tmp_path
 
     file = data_root / root / relative_path
     file.parent.mkdir(parents=True)
@@ -160,8 +160,8 @@ def test_collect_golden_peaks(tmp_dir, root, relative_path, selected, mod, exclu
     ("H3K27ac_golden_ODS_weak_consensus.bed", False),
     ("H3K36me3_golden_weak_consensus.bed", False),
 ])
-def test_collect_peaks_in_folder(tmp_dir, relative_path, selected):
-    peaks_root = Path(tmp_dir)
+def test_collect_peaks_in_folder(tmp_path, relative_path, selected):
+    peaks_root = tmp_path
 
     file = peaks_root / relative_path
     file.touch()
@@ -170,8 +170,8 @@ def test_collect_peaks_in_folder(tmp_dir, relative_path, selected):
     assert selected == (file in res)
 
 
-def test_collect_peaks_in_folder_sorted(tmp_dir):
-    peaks_root = Path(tmp_dir)
+def test_collect_peaks_in_folder_sorted(tmp_path):
+    peaks_root = tmp_path
 
     names = [
         "YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed",
@@ -192,6 +192,21 @@ def test_collect_peaks_in_folder_sorted(tmp_dir):
             'OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed', 'OD10_k27ac_hg19_broad_peaks.broadPeak',
             'YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed', 'YD4_k4me3_hg19_fdr_peaks.narrowPeak',
             'YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed'] == [f.name for f in res]
+
+
+@pytest.mark.parametrize("fname,expected", [
+    ("YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed", ('YD', 4)),
+    ("OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed", ('OD', 7)),
+    ("YD9_k27ac_hg19_broad_peaks.broadPeak", ('YD', 9)),
+    ("YD4_k4me3_hg19_fdr_peaks.narrowPeak", ('YD', 4)),
+    ("YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", ('YD', 16)),
+
+    ("H3K27ac_zinbra_ODS_weak_consensus.bed", ('ODS', 'H3K27ac_zinbra_ODS_weak_consensus.bed')),
+    ("H3K27ac_zinbra_weak_consensus.bed", ('H3K27ac_zinbra_weak_consensus.bed', 0)),
+    ("H3K36me3_golden_weak_consensus.bed", ("H3K36me3_golden_weak_consensus.bed", 0)),
+])
+def test_donor_order_id(tmp_path, fname, expected):
+    assert expected == loi.donor_order_id(tmp_path / fname)
 
 
 def generate_test_data_chromhmm(loci_root):

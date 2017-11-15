@@ -1,6 +1,6 @@
 import os
 import pytest
-
+from pathlib import Path
 from bed.bedtrace import _cleanup
 
 
@@ -33,3 +33,8 @@ def tmp_dir(tmpdir):
     #
     # So in order to support 3.5, let's create fixture which returns string obj
     return str(tmpdir)
+
+
+@pytest.fixture
+def tmp_path(tmpdir):
+    return Path(str(tmpdir))
