@@ -27,8 +27,6 @@ def _cli():
     parser.add_argument('--outliers', metavar="PATH",
                         default="/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv",
                         help="Outliers *.csv path")
-    parser.add_argument('--tuned', action="store_true",
-                        help="Use tuned donors peaks (doesn't affect consensus peaks)")
     args = parser.parse_args()
 
     threads = args.threads
@@ -40,18 +38,20 @@ def _cli():
 
     loi_dict = loi.collect_loci(loci_root)
 
-    if not args.tuned:
-        golden_peaks_root = data_root / "experiments/aging/peak_calling"
-        zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
-            "" if exclude_outliers else "_full"
-        )
-    else:
-        zinbra_peaks_root = data_root / "experiments/configs/Y20O20_full/benchmark_peaks"
-        golden_peaks_root = data_root / "experiments/aging/peak_calling/benchmark_peaks"
+    # default peaks
+    golden_peaks_root = data_root / "experiments/aging/peak_calling"
+    zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
+        "" if exclude_outliers else "_full"
+    )
+    # tuned peaks
+    zinbra_peaks_root_tuned = data_root / "experiments/configs/Y20O20_full/benchmark_peaks"
+    golden_peaks_root_tuned = data_root / "experiments/aging/peak_calling/benchmark_peaks"
 
     peaks_map = {
         "zinbra": loi._collect_zinbra_peaks(zinbra_peaks_root),
-        "golden": loi._collect_golden_peaks(golden_peaks_root, exclude_outliers)
+        "golden": loi._collect_golden_peaks(golden_peaks_root, exclude_outliers),
+        "zinbra_tuned": loi._collect_zinbra_peaks(zinbra_peaks_root_tuned),
+        "golden_tuned": loi._collect_golden_peaks(golden_peaks_root_tuned, None)
     }
 
     outliers_df = None
@@ -65,10 +65,9 @@ def _cli():
     print("----- [Report]: Consensus ----")
     report_consensus(loi_dict, results_dir, threads)
 
-    print("----- [Report]: Donors Zinbra ----")
-    report_donors("zinbra", peaks_map, loi_dict, results_dir, threads, outliers_df)
-    print("----- [Report]: Donors Golden ----")
-    report_donors("golden", peaks_map, loi_dict, results_dir, threads, outliers_df)
+    for key in sorted(peaks_map.keys()):
+        print("----- [Report]: Donors {} ----".format(key))
+        report_donors(key, peaks_map, loi_dict, results_dir, threads, outliers_df)
 
     print("----- [Report]: Repeats ----")
     report("repeats", loi_dict, results_dir, threads,
