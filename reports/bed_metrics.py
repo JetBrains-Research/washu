@@ -189,12 +189,14 @@ def label_converter_donor_and_tool(name):
     return "_".join(chunks) if chunks else name
 
 
-def plot_metric_heatmap(title, df, figsize=(14, 14),
+def plot_metric_heatmap(title, df, *, figsize=(14, 14),
                         save_to=None,
                         vmin=0, vmax=1,
                         col_color_annotator=None, row_color_annotator=None,
                         col_label_converter=None, row_label_converter=None,
-                        col_cluster=False, row_cluster=False, **kw):
+                        col_cluster=False, row_cluster=False,
+                        adjustments=None,
+                        **kw):
 
     """
     :param title: Plot title
@@ -210,6 +212,7 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
     :param row_label_converter: Function which modifies rows names
     :param col_cluster: see seaborn.clustermap(..) details
     :param row_cluster: see seaborn.clustermap(..) details
+    :param adjustments: Right / left / top /  bottom insets dict
     :param kw: extra arguments for easier API usages
     """
     ncol, nrow = df.shape
@@ -266,7 +269,7 @@ def plot_metric_heatmap(title, df, figsize=(14, 14),
         plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
 
     plt.title(title)
-    adjustments = kw.get('adjustments', {})
+    adjustments = adjustments or {}
     plt.subplots_adjust(left=adjustments.get('left', 0.2),
                         right=adjustments.get('right', 0.8),
                         top=adjustments.get('top', 0.8),
@@ -285,46 +288,6 @@ def save_plot(save_to):
         plt.close()
     else:
         raise ValueError("Unsupported value type: {}".format(type(save_to)))
-
-
-def process_intersection_metric(a_paths: List[Path], b_paths: List[Path],
-                                df_path: Path,
-                                save_to=None,
-                                outliers_df=None, hist_mod=None,
-                                annotate_age=True,
-                                verbose=True,
-                                **kw):
-
-    if df_path.exists():
-        df = pd.DataFrame.from_csv(str(df_path))
-        if verbose:
-            print("[Skipped]: Already exists", str(df_path))
-    else:
-        if verbose:
-            print("Calculating metrics: ", str(df_path))
-        df = bed_metric_table(a_paths, b_paths, **kw)
-        df.to_csv(str(df_path))
-        if verbose:
-            print("  [Saved]")
-
-    anns = []
-    if annotate_age:
-        anns.append(color_annotator_age)
-    if hist_mod and outliers_df is not None:
-        if hist_mod in outliers_df.columns:
-            anns.append(color_annotator_outlier(outliers_df, hist_mod))
-    annotator = None if not anns else color_annotator_chain(*anns)
-
-    # print to pdf:
-    plot_metric_heatmap(
-        "Intersection metric: {}".format(df_path.name),
-        df,
-        save_to=save_to,
-        row_color_annotator=annotator,
-        col_color_annotator=annotator,
-        **kw
-    )
-    return df
 
 
 def _cli():
@@ -362,14 +325,36 @@ def _cli():
     plot_path = prefix + ".pdf"
     df_path = Path(prefix + ".df")
 
-    outliers_df = pd.read_csv(args.outliers, delimiter="\t", skiprows=1,
-                              index_col="donor")
-    process_intersection_metric(a_paths, b_paths, df_path, plot_path, outliers_df,
-                                hist_mode=args.hist,
-                                row_cluster=args.rowc, col_cluster=args.colc,
-                                annotate_age=args.age,
-                                figsize=args.size,
-                                threads=args.threads)
+    anns = []
+    # age
+    if args.age:
+        anns.append(color_annotator_age)
+    # outliers
+    hist_mod = args.hist
+    outliers_df = pd.read_csv(args.outliers, delimiter="\t", skiprows=1, index_col="donor")
+    if hist_mod and outliers_df is not None:
+        if hist_mod in outliers_df.columns:
+            anns.append(color_annotator_outlier(outliers_df, hist_mod))
+    annotator = None if not anns else color_annotator_chain(*anns)
+
+    # Df
+    if df_path.exists():
+        df = pd.DataFrame.from_csv(str(df_path))
+        print("[Skipped]: Already exists", str(df_path))
+    else:
+        print("Calculating metrics: ", str(df_path))
+        df = bed_metric_table(a_paths, b_paths)
+        df.to_csv(str(df_path))
+        print("  [Saved]")
+
+    # Do plot:
+    plot_metric_heatmap("IM: {}".format(df_path.name), df,
+                        save_to=plot_path,
+                        row_cluster=args.rowc, col_cluster=args.colc,
+                        row_color_annotator=annotator,
+                        cow_color_annotator=annotator,
+                        figsize=args.size,
+                        threads=args.threads)
 
 
 if __name__ == "__main__":

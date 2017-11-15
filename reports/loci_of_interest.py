@@ -46,7 +46,7 @@ def chromhmm_state_descr(fname):
     if len(chunks) > 2:
         state = chunks[2]
         if state in _CHROMHMM_ST_MAP:
-            return "{} ({})".format(_CHROMHMM_ST_MAP.get(chunks[2]), chunks[2])
+            return "{} ({})".format(chunks[2], _CHROMHMM_ST_MAP.get(chunks[2]))
     return fname
 
 
