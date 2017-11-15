@@ -326,14 +326,7 @@ def _cli():
     df_path = Path(prefix + ".df")
 
     # Df
-    if df_path.exists():
-        df = pd.DataFrame.from_csv(str(df_path))
-        print("[Skipped]: Already exists", str(df_path))
-    else:
-        print("Calculating metrics: ", str(df_path))
-        df = bed_metric_table(a_paths, b_paths)
-        df.to_csv(str(df_path))
-        print("  [Saved]")
+    df = load_or_build_metrics_table(a_paths, b_paths, df_path)
 
     anns = []
     # age
@@ -355,6 +348,18 @@ def _cli():
                         cow_color_annotator=annotator,
                         figsize=args.size,
                         threads=args.threads)
+
+
+def load_or_build_metrics_table(a_paths, b_paths, df_path):
+    if df_path.exists():
+        df = pd.DataFrame.from_csv(str(df_path))
+        print("[Skipped]: Already exists", str(df_path))
+    else:
+        print("Calculating metrics: ", str(df_path))
+        df = bed_metric_table(a_paths, b_paths)
+        df.to_csv(str(df_path))
+        print("  [Saved]")
+    return df
 
 
 if __name__ == "__main__":

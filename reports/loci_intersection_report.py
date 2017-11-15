@@ -288,15 +288,7 @@ def report(key, loi_dict, outdir, threads, key_side_size=15, consensus_type="med
 
 
 def process_intersection_metric(a_paths, b_paths, df_path: Path, pdf, **kw):
-
-    if df_path.exists():
-        df = pd.DataFrame.from_csv(str(df_path))
-        print("[Skipped]: Already exists", str(df_path))
-    else:
-        print("Calculating metrics: ", str(df_path))
-        df = bm.bed_metric_table(a_paths, b_paths, **kw)
-        df.to_csv(str(df_path))
-        print("  [Saved]")
+    df = bm.load_or_build_metrics_table(a_paths, b_paths, df_path)
 
     # print to pdf:
     bm.plot_metric_heatmap("IM: {}".format(df_path.name), df, save_to=pdf, **kw)
