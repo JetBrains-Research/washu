@@ -389,4 +389,4 @@ def _cleanup():
             os.remove(path)
 
 
-atexit.register(_cleanup())
+atexit.register(_cleanup)
