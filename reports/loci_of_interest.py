@@ -92,5 +92,11 @@ def _collect_golden_peaks(golden_peaks_root, exclude_outliers):
     for folder in golden_peaks_root.iterdir():
         if folder.is_dir() and folder.name.startswith("H"):
             sub_folder = "bed" if exclude_outliers else "bed_all"
-            golden_peaks[folder.name] = _collect_peaks_in_folder(folder / sub_folder)
+            # TODO: temporary solution while directories layout not fixed
+            if (folder / sub_folder).exists():
+                # legacy
+                golden_peaks[folder.name] = _collect_peaks_in_folder(folder / sub_folder)
+            else:
+                # new version
+                golden_peaks[folder.name] = _collect_peaks_in_folder(folder)
     return golden_peaks

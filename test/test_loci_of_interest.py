@@ -96,6 +96,11 @@ def test_collect_zinbra_peaks(tmp_dir, root, relative_path, selected, mod):
 
 
 @pytest.mark.parametrize("root,relative_path,selected,mod,exclude_outliers", [
+    # Macs2 broad: new layout
+    ("H3K27ac", "YD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", True),
+    ("H3K27ac", "OD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", True),
+    ("H3K27ac", "YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False, "H3K27ac", True),
+
     # Macs2 broad
     ("H3K27ac/bed", "YD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", True),
     ("H3K27ac/bed", "OD9_k27ac_hg19_broad_peaks.broadPeak", True, "H3K27ac", True),

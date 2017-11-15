@@ -12,6 +12,7 @@ def _cli():
     data_root = Path("/mnt/stripe/bio")
     loci_root = data_root / "raw-data/aging/loci_of_interest"
     # signal_root = data_root / "experiments/signal"
+    tuned_peaks = False
 
     ########################################################################
     parser = argparse.ArgumentParser(
@@ -26,6 +27,8 @@ def _cli():
     parser.add_argument('--outliers', metavar="PATH",
                         default="/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv",
                         help="Outliers *.csv path")
+    parser.add_argument('--tuned', action="store_true",
+                        help="Use tuned donors peaks (doesn't affect consensus peaks)")
     args = parser.parse_args()
 
     threads = args.threads
@@ -36,10 +39,14 @@ def _cli():
 
     loi_dict = loi.collect_loci(loci_root)
 
-    golden_peaks_root = data_root / "experiments/aging/peak_calling"
-    zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}".format(
-        "" if exclude_outliers else "_full"
-    )
+    if not args.tuned:
+        golden_peaks_root = data_root / "experiments/aging/peak_calling"
+        zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}".format(
+            "" if exclude_outliers else "_full"
+        )
+    else:
+        zinbra_peaks_root = data_root / "experiments/configs/Y20O20_full/benchmark_peaks"
+        golden_peaks_root = data_root / "experiments/aging/peak_calling/benchmark_peaks"
 
     peaks_map = {
         "zinbra": loi._collect_zinbra_peaks(zinbra_peaks_root),
