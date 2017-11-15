@@ -6,11 +6,10 @@ import datetime
 import pandas as pd
 from pathlib import Path
 from itertools import chain
+import argparse
 
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
-Usage: peak_metrics.py [peaks folder] [output pdf path] [top peaks count (optional)]
-
 Script creates pdf report with ChIP-seq peaks statistics:
  1) median peak consensus venn diagram
  2) median peak consensus bar plot
@@ -26,23 +25,30 @@ outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="
 loci_root = Path("/mnt/stripe/bio/raw-data/aging/loci_of_interest")
 
 
-def main():
-    args = sys.argv
+def _cli():
+    parser = argparse.ArgumentParser(description=help_data,
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("peaks", help="Peaks folder")
+    parser.add_argument("output", help="Output pdf path")
+    parser.add_argument("--count", type=int, help="Top peaks count")
+    parser.add_argument('-p', '--threads', help="Threads number for parallel processing",
+                        type=int, default=30)
 
-    if len(args) < 2:
-        print(help_data)
-        sys.exit(1)
+    args = parser.parse_args()
+    folder_path = args.peaks
+    threads_num = args.threads
+    pdf_path = args.output
+    top_peaks_count = args.top_count
 
-    folder_path = Path(args[1])
     paths = sorted([str(f) for f in folder_path.iterdir() if regions_extension(f.name)])
     tmp_dir = Path(tempfile.gettempdir())
     filtered_paths = []
 
-    if len(args) == 4:
+    if top_peaks_count:
         for path in paths:
-            tmp_path = tmp_dir / "{}_{}.bed".format(Path(path).stem, args[3])
+            tmp_path = tmp_dir / "{}_{}.bed".format(Path(path).stem, top_peaks_count)
             with open(str(tmp_path), 'w') as f:
-                run((["sort", "-k9nr", str(path)], ["head", "-n", args[3]]), stdout=f)
+                run((["sort", "-k9nr", str(path)], ["head", "-n", top_peaks_count]), stdout=f)
                 filtered_paths.append(tmp_path.name)
     else:
         filtered_paths = paths
@@ -71,7 +77,7 @@ def main():
     loi_dict = loi.collect_loci(loci_root)
     df_loci = bm.bed_metric_table(peaks_paths, loi_dict['default'], threads=threads_num)
 
-    with PdfPages(args[2]) as pdf:
+    with PdfPages(pdf_path) as pdf:
         print("Calculating median consensus")
         od_consensus_bed, yd_consensus_bed, yd_od_int_bed = \
             pm.calc_consensus(od_paths_map, yd_paths_map, 2.0)
@@ -129,5 +135,4 @@ if __name__ == "__main__":
     import reports.loci_of_interest as loi
     import reports.peak_metrics as pm
 
-    threads_num = 30
-    main()
+    _cli()
