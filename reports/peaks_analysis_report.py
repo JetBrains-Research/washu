@@ -38,7 +38,7 @@ def _cli():
     folder_path = args.peaks
     threads_num = args.threads
     pdf_path = args.output
-    top_peaks_count = args.top_count
+    top_peaks_count = args.count
 
     paths = sorted([str(f) for f in folder_path.iterdir() if regions_extension(f.name)])
     tmp_dir = Path(tempfile.gettempdir())
