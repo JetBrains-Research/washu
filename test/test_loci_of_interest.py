@@ -22,8 +22,8 @@ def test_collect_chromhmm(tmp_dir):
 
 
 @pytest.mark.parametrize("fname,descr", [
-    ("cd14_chromhmm.hg19.1_TssA.bed", "Active TSS (1_TssA)"),
-    ("cd14_chromhmm.hg19.12_ZNF_Rpts.bed", "ZNF genes & repeats (12_ZNF_Rpts)"),
+    ("cd14_chromhmm.hg19.1_TssA.bed", "1_TssA (Active TSS)"),
+    ("cd14_chromhmm.hg19.12_ZNF_Rpts.bed", "12_ZNF_Rpts (ZNF genes & repeats)"),
     ("boo.bed", "boo.bed"),
 ])
 def test_chromhmm_state_descr(fname, descr):
