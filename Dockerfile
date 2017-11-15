@@ -34,6 +34,7 @@ RUN source activate py3.5 &&\
     conda install --channel bioconda bwa bowtie2 star \
     deeptools sra-tools rseg ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed &&\
     conda install --channel conda-forge matplotlib-venn &&\
+    # seaborn should be >= 0.8
     conda install pandas numpy scikit-learn pytest pytest-pep8 seaborn &&\
     pip install multiqc teamcity-messages
 
