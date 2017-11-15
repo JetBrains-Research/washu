@@ -170,6 +170,30 @@ def test_collect_peaks_in_folder(tmp_dir, relative_path, selected):
     assert selected == (file in res)
 
 
+def test_collect_peaks_in_folder_sorted(tmp_dir):
+    peaks_root = Path(tmp_dir)
+
+    names = [
+        "YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed",
+        "OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed",
+        "YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed",
+        "OD1_k27ac_hg19_broad_peaks.broadPeak",
+        "OD10_k27ac_hg19_broad_peaks.broadPeak",
+        "OD4_k4me3_hg19_fdr_peaks.narrowPeak",
+        "YD4_k4me3_hg19_fdr_peaks.narrowPeak"
+    ]
+    files = [peaks_root / name for name in names]
+    for f in files:
+        f.touch()
+
+    res = loi._collect_peaks_in_folder(peaks_root)
+    print([f.name for f in res])
+    assert ['OD1_k27ac_hg19_broad_peaks.broadPeak', 'OD4_k4me3_hg19_fdr_peaks.narrowPeak',
+            'OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed', 'OD10_k27ac_hg19_broad_peaks.broadPeak',
+            'YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed', 'YD4_k4me3_hg19_fdr_peaks.narrowPeak',
+            'YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed'] == [f.name for f in res]
+
+
 def generate_test_data_chromhmm(loci_root):
     chromhmm_root = loci_root / "chromhmm"
     chromhmm_root.mkdir()

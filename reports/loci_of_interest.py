@@ -72,10 +72,24 @@ _CHROMHMM_ST_MAP = {
 }
 
 
+def donor_order_id(path):
+    chunks = path.name.split('_')
+    cands = list(filter(lambda s: len(s) > 2 and (s.startswith("OD") or s.startswith("YD")),
+                        chunks))
+    if len(cands) > 0:
+        donor_id = cands[0]
+        if donor_id[2] != "S":
+            return (donor_id[:2], int(donor_id[2:]))
+        else:
+            return (donor_id[:3], path.name)
+    return (path.name, 0)
+
+
 def _collect_peaks_in_folder(peaks_root):
     return sorted(chain(peaks_root.glob("*_peaks.bed"),
                         peaks_root.glob("*-island.bed"),
-                        peaks_root.glob("*.*Peak")))
+                        peaks_root.glob("*.*Peak")),
+                  key=donor_order_id)
 
 
 def _collect_zinbra_peaks(zinbra_peaks_root):
