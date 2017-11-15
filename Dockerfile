@@ -39,8 +39,8 @@ RUN source activate py3.5 &&\
     pip install multiqc teamcity-messages
 
 # Workaround for TeamCity CI, temp folders are created with root permissions, unacessible for USER
-#RUN groupadd -r washu && useradd -ms /bin/bash -g washu user
-#WORKDIR /home/user
+# RUN groupadd -r washu && useradd -ms /bin/bash -g washu user
+# WORKDIR /home/user
 # USER user
 
 # Download Picard tools
@@ -55,9 +55,7 @@ RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/downlo
 RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
 
 # Create module command alias
-COPY ./scripts/module.sh /opt/
-COPY ./scripts/qsub.sh /opt/
-# RUN ln -s /opt/qsub.sh /usr/bin/qsub
 # We need this for "which module" command
+COPY ./scripts/module.sh /opt/
 
 ENV PATH=$PATH:/opt/conda/envs/bedtools/bin/
