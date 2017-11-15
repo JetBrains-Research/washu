@@ -41,7 +41,7 @@ def _cli():
 
     if not args.tuned:
         golden_peaks_root = data_root / "experiments/aging/peak_calling"
-        zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}".format(
+        zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
             "" if exclude_outliers else "_full"
         )
     else:

@@ -80,7 +80,7 @@ def _collect_peaks_in_folder(peaks_root):
 
 def _collect_zinbra_peaks(zinbra_peaks_root):
     zinbra_peaks = {}
-    for folder in (zinbra_peaks_root / "peaks").iterdir():
+    for folder in zinbra_peaks_root.iterdir():
         if folder.is_dir() and folder.name.startswith("H"):
             zinbra_peaks[folder.name] = _collect_peaks_in_folder(folder)
 

@@ -91,7 +91,7 @@ def test_collect_zinbra_peaks(tmp_dir, root, relative_path, selected, mod):
     file.parent.mkdir(parents=True)
     file.touch()
 
-    peaks = loi._collect_zinbra_peaks(data_root)
+    peaks = loi._collect_zinbra_peaks(data_root / "peaks")
     assert selected == (file in peaks[mod])
 
 
