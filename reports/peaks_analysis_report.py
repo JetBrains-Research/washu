@@ -94,7 +94,7 @@ def _cli():
                                row_label_converter=bm.label_converter_donor_and_tool,
                                col_label_converter=bm.label_converter_donor_and_tool)
         bm.plot_metric_heatmap(
-            "IM peaks@loci", df_loci, figsize=(20, 15), save_to=pdf,
+            "IM peaks@loci", df_loci, figsize=(15, 8), save_to=pdf,
             adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
             row_cluster=False, col_cluster=False,
             row_color_annotator=annotator,
