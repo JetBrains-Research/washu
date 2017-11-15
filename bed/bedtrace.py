@@ -32,6 +32,7 @@ author oleg.shpynov@jetbrains.com
 import os
 import subprocess
 import tempfile
+import atexit
 
 from matplotlib_venn import venn2
 from matplotlib_venn import venn3
@@ -382,7 +383,10 @@ def metapeaks(filesmap):
         print(out)
 
 
-def cleanup():
+def _cleanup():
     for path in TEMPFILES:
         if Path(path).is_file():
             os.remove(path)
+
+
+atexit.register(_cleanup())

@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from bed.bedtrace import cleanup
+from bed.bedtrace import _cleanup
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def bedtrace_cleanup():
     # Before test section
     yield
     # After test section
-    cleanup()
+    _cleanup()
 
 
 @pytest.fixture
