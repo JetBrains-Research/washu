@@ -35,7 +35,7 @@ def _cli():
                         type=int, default=30)
 
     args = parser.parse_args()
-    folder_path = args.peaks
+    folder_path = Path(args.peaks)
     threads_num = args.threads
     pdf_path = args.output
     top_peaks_count = args.count
