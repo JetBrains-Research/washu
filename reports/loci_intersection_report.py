@@ -35,6 +35,7 @@ def _cli():
     outliers_df_path = args.outliers
     exclude_outliers = not args.all
     results_dir = Path(args.out)  # data_root / "experiments/aging/loci_of_interest.tables"
+    results_dir.mkdir(parents=True, exist_ok=True)
     ########################################################################
 
     loi_dict = loi.collect_loci(loci_root)
