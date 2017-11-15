@@ -96,9 +96,8 @@ def test_color_annotator_age(name, color):
 
 # To replace images use:
 # cd ~/work/washu/test/testdata/metrics
-# PLATFORM_SRC=".darwin";PLATFORM_TARGET=".darwin";find . -name "test_plot*.png" | xargs -I fname
-#   bash -c "echo fname | sed s/test_plot.*#//g | sed s/.$PLATFORM_SRC.png//g |
-#   xargs -I nname cp fname nname.$PLATFORM_TARGET.png"
+# find . -name "test_plot*.png" | xargs -I fname bash -c "echo fname | sed s/test_plot.*#//g |
+#   xargs -I nname echo cp fname nname"
 def assert_image(expected_path, actual_path):
     os_platform = platform.system().lower()
     assert os_platform in ["linux", "darwin"], \
