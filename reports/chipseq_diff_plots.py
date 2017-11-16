@@ -103,9 +103,9 @@ class ChangeCollector:
             if self.change_type == "both":
                 pattern = "{}_*_cond*.bed"
             elif self.change_type == "young":
-                pattern = "{}_*_cond2.bed"
-            elif self.change_type == "old":
                 pattern = "{}_*_cond1.bed"
+            elif self.change_type == "old":
+                pattern = "{}_*_cond2.bed"
             else:
                 raise ValueError("Wrong change_type")
 
