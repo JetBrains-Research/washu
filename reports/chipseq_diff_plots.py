@@ -66,7 +66,8 @@ class ChangeCollector:
 
     def process_zinbra(self):
         zinbra_base_path = "/mnt/stripe/bio/experiments/configs/Y20O20/enrichment"
-        for file in glob.glob(os.path.join(zinbra_base_path, "diff_OD_YD_{}_zinbra*".format(self.mark))):
+        pattern = os.path.join(zinbra_base_path, "diff_OD_YD_{}_zinbra*".format(self.mark))
+        for file in glob.glob(pattern):
             base_name = os.path.basename(file)
             if "cond" in base_name:
                 continue
