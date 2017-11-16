@@ -346,8 +346,10 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
 
         # Stat test for each locus: Old vs Young
         if stats_df_path.exists():
+            print("    Already exists, loading:", str(stats_df_path))
             loci_pvalues_df = pd.read_csv(stats_df_path, index_col=0)
         else:
+            print("    Calculating:", str(stats_df_path))
             mask_od_group, mask_yd_group = split_by_age(hist, outliers_df, peaks_paths)
             df_ods = df[mask_od_group]
             df_yds = df[mask_yd_group]
@@ -387,7 +389,10 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
                 thr001 = loci_passed_thr(loci_pvalues_df, col, 0.01)
                 thr005 = loci_passed_thr(loci_pvalues_df, col, 0.05)
                 thr01 = loci_passed_thr(loci_pvalues_df, col, 0.1)
-                print("Loci passing", title, "threshold", col, len(thr01))
+
+                print("Loci passing", title, "threshold 0.1", col, len(thr01))
+                print("Loci passing", title, "threshold 0.005", col, len(thr005))
+                print("Loci passing", title, "threshold 0.001", col, len(thr001))
                 if thr01:
                     bm.plot_metric_heatmap(
                         "IM {} with for {} < 0.1".format(stats_df_path.name, title),
@@ -395,7 +400,10 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
                         save_to=pdf,
                         adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
                         row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15),
-                        col_color_annotator=_pvalues_above_thr(thr005, thr001),
+                        col_color_annotator=_pvalues_above_thr(
+                            {loi.label_converter_shorten_loci(s) for s in thr005},
+                            {loi.label_converter_shorten_loci(s) for s in thr001}
+                        ),
                         row_color_annotator=row_annotator,
                         col_label_converter=loi.label_converter_shorten_loci,
                         row_label_converter=bm.label_converter_donor_and_tool,
