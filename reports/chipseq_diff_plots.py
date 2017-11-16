@@ -3,6 +3,9 @@ import shutil
 import tempfile
 import pandas as pd
 import glob
+import subprocess
+
+import sys
 from matplotlib_venn import venn2, venn3
 
 
@@ -14,25 +17,52 @@ def count_lines(file):
         return len(lines)
 
 
-class DiffProcessor:
-    def __init__(self, input, output, mark):
+def count_if_exists(bed):
+    if os.path.exists(bed):
+        return count_lines(bed)
+    else:
+        return 0
+
+
+class ChangeCollector:
+    def __init__(self, input, output, mark, change_type):
+        assert change_type in ["young", "old", "both"]
+
         self.input_path = os.path.join(input, mark)
+
+        if not os.path.exists(output):
+            os.makedirs(output)
+
         self.output = output
+
         self.mark = mark
-        self.diff_counts = []
-        self.bed_files_produced = []
+        self.change_type = change_type
+        self.change_counts = []
+
+        self.change_files_produced = []
 
     def process_diff_bind(self):
-        diff_bind_path = os.path.join(self.input_path, "{}_diffbind".format(self.mark))
+        diff_bind_path = os.path.join(self.input_path, "diff_bind")
         for file in glob.glob(os.path.join(diff_bind_path, '*_difference.csv')):
             base_name = os.path.basename(file)
             df = pd.read_csv(file)
-            self.diff_counts.append(("diffbind_" + base_name, df.shape[0]))
+            if len(df) == 0.0:
+                self.change_counts.append(("diffbind_" + base_name, 0))
+                continue
+
+            if self.change_type == "both":
+                self.change_counts.append(("diffbind_" + base_name, df.shape[0]))
+
+            if self.change_type == "young":
+                self.change_counts.append(("diffbind_" + base_name, df[df["Fold"] > 0.0].shape[0]))
+
+            if self.change_type == "old":
+                self.change_counts.append(("diffbind_" + base_name, df[df["Fold"] < 0.0].shape[0]))
 
     def add_bed_file(self, base_name, file):
-        self.diff_counts.append((base_name, count_lines(file)))
+        self.change_counts.append((base_name, count_lines(file)))
         shutil.copyfile(file, os.path.join(self.output, base_name))
-        self.bed_files_produced.append(base_name)
+        self.change_files_produced.append(base_name)
 
     def process_zinbra(self):
         zinbra_base_path = "/mnt/stripe/bio/experiments/configs/Y20O20/enrichment"
@@ -41,36 +71,50 @@ class DiffProcessor:
             if "cond" in base_name:
                 continue
 
-            self.diff_counts.append((base_name, count_lines(file)))
+            if self.change_type == "young":
+                file = os.path.splitext(file)[0] + "_cond2.bed"
 
-            os.system("cut -f1-3 {} > {}".format(file, os.path.join(self.output, base_name)))
+            if self.change_type == "old":
+                file = os.path.splitext(file)[0] + "_cond1.bed"
 
-            self.bed_files_produced.append(base_name)
+            self.change_counts.append((base_name, count_if_exists(file)))
+
+            if os.path.exists(file):
+                os.system("cut -f1-3 {} > {}".format(file, os.path.join(self.output, base_name)))
+
+            self.change_files_produced.append(base_name)
 
     def process_macs_bg_diff(self):
-        folder_name = "{}_macs_bdgdiff".format(self.mark)
+        folder_name = "macs_bdgdiff"
         macs_bdgdiff = os.path.join(self.input_path, folder_name)
         size = 0
         for file in glob.glob(os.path.join(macs_bdgdiff, "{}_*_cond*.bed".format(self.mark))):
             size += count_lines(file) - 1
-        self.diff_counts.append((folder_name, size))
+        self.change_counts.append((folder_name, size))
 
     def process_macs_pooled(self):
-        folder_name = "{}_macs_pooled".format(self.mark)
+        folder_name = "diff_macs_pooled"
         macs_pooled = os.path.join(self.input_path, folder_name)
 
         size = 0
         result_base_file_name = "{}.bed".format(folder_name)
         with open(os.path.join(self.output, result_base_file_name), "w") as out:
-            for file in glob.glob(os.path.join(macs_pooled, "{}_*_cond*.bed".format(self.mark))):
+            if self.change_type == "both":
+                pattern = "{}_*_cond*.bed"
+            elif self.change_type == "young":
+                pattern = "{}_*_cond2.bed"
+            elif self.change_type == "old":
+                pattern = "{}_*_cond1.bed"
+
+            for file in glob.glob(os.path.join(macs_pooled, pattern.format(self.mark))):
                 size += count_lines(file)
 
                 with open(file) as f:
                     out.writelines(f.readlines())
 
-        self.bed_files_produced.append(result_base_file_name)
+        self.change_files_produced.append(result_base_file_name)
 
-        self.diff_counts.append((folder_name, size))
+        self.change_counts.append((folder_name, size))
 
     def process_macs_pooled_Y_vs_O(self):
         folder_name = "{}_macs_pooled_Y_vs_O".format(self.mark)
@@ -85,21 +129,31 @@ class DiffProcessor:
                 with open(file) as f:
                     out.writelines(f.readlines())
 
-        self.diff_counts.append((folder_name, size))
-        self.bed_files_produced.append(result_base_file_name)
+        self.change_counts.append((folder_name, size))
+        self.change_files_produced.append(result_base_file_name)
 
-    def process_diffreps(self):
-        folder_name = os.path.join("/mnt/stripe/bio/experiments/configs/Y20O20/diffreps", self.mark)
+    def process_diffreps(self, folder_name):
+        folder = os.path.join(self.input_path, folder_name)
 
-        self.add_bed_file("diffreps_{}.bed".format(self.mark), os.path.join(folder_name, "hotspot.bed"))
+        if self.change_type == "both":
+            name = "enriched.bed"
+        elif self.change_type == "young":
+            name = "enriched_down.bed"
+        elif self.change_type == "old":
+            name = "enriched_up.bed"
+        else:
+            raise ValueError("Wrong folder_name: {}".format(folder_name))
 
-    def process_diffreps_not_uniqe(self):
-        folder_name = os.path.join("/mnt/stripe/kurbatsky/configs/Y20O20/diffreps", self.mark)
+        self.add_bed_file("{}_{}.bed".format(folder_name, self.mark),
+                          os.path.join(folder, name))
 
-        self.add_bed_file("diffreps_not_uniqe_{}.bed".format(self.mark), os.path.join(folder_name, "hotspot.bed"))
+        if self.change_type == "both":
+            self.add_bed_file("{}_{}_hotspot.bed".format(folder_name, self.mark),
+                              os.path.join(folder, "hotspot.bed"))
+        else:
+            self.change_counts.append(("{}_{}_hotspot.bed".format(folder_name, self.mark), 0))
 
-    def compare_difference(self):
-
+    def collect_difference(self):
         self.process_diff_bind()
 
         self.process_zinbra()
@@ -110,9 +164,9 @@ class DiffProcessor:
 
         self.process_macs_pooled_Y_vs_O()
 
-        self.process_diffreps()
+        self.process_diffreps("diffReps")
 
-        self.process_diffreps_not_uniqe()
+        self.process_diffreps("diffReps_broad")
 
     def count_intersections(self):
         temp_dir = tempfile.mkdtemp(suffix=".tmp")
@@ -123,15 +177,19 @@ class DiffProcessor:
 
         result = {}
 
-        for p1 in self.bed_files_produced:
-            for p2 in self.bed_files_produced:
+        for p1 in self.change_files_produced:
+            for p2 in self.change_files_produced:
                 union_file = os.path.join(temp_dir, "counts.bed")
                 command = "bash {} {} {} >{}".format(
                     union_sh,
                     os.path.join(self.output, p1),
                     os.path.join(self.output, p2),
                     union_file)
-                os.system(command)
+                run_result = subprocess.run(command, shell=True, stderr=subprocess.PIPE)
+                if run_result.returncode != 0:
+                    print(run_result)
+                    print(run_result.stderr, file=sys.stderr)
+                    raise Exception("command failed: {}".format(command))
 
                 intersection = 0.0
 
@@ -145,6 +203,53 @@ class DiffProcessor:
         shutil.rmtree(temp_dir)
         return result
 
+
+class DiffProcessor:
+    def __init__(self, input, output, mark):
+
+        self.young = ChangeCollector(input, os.path.join(output, "young"), mark, "young")
+        self.old = ChangeCollector(input, os.path.join(output, "old"), mark, "old")
+        self.both = ChangeCollector(input, os.path.join(output, "both"), mark, "both")
+
+        self.input_path = os.path.join(input, mark)
+
+        if not os.path.exists(output):
+            os.makedirs(output)
+
+        self.output = output
+
+        self.mark = mark
+
+    def get_counts(self):
+        result = []
+        for (file, count) in self.both.change_counts:
+            result.append([file, count])
+
+        young_dict = dict(self.young.change_counts)
+
+        for r in result:
+            name = r[0]
+            r.append(young_dict[name])
+
+        old_dict = dict(self.old.change_counts)
+
+        for r in result:
+            name = r[0]
+            r.append(old_dict[name])
+
+        return result
+
+    def collect_difference(self):
+        self.young.collect_difference()
+        self.old.collect_difference()
+        self.both.collect_difference()
+
+    def count_intersections(self):
+        return self.both.count_intersections()
+
+    def get_bed_files_produced(self):
+        return self.both.change_files_produced
+
     def plot_venn2(self, f1, f2):
         temp_dir = tempfile.mkdtemp(suffix=".tmp")
 
@@ -156,11 +261,12 @@ class DiffProcessor:
         union_file = os.path.join(temp_dir, "counts.bed")
         command = "bash {} {} {} >{}".format(
             union_sh,
-            os.path.join(self.output, f1),
-            os.path.join(self.output, f2),
+            os.path.join(self.both.output, f1),
+            os.path.join(self.both.output, f2),
             union_file)
         print(command)
-        os.system(command)
+        status = os.system(command)
+        print(status)
 
         with open(union_file) as f:
             for l in f.readlines():
@@ -184,9 +290,9 @@ class DiffProcessor:
         union_file = os.path.join(temp_dir, "counts.bed")
         command = "bash {} {} {} {} >{}".format(
             union_sh,
-            os.path.join(self.output, f1),
-            os.path.join(self.output, f2),
-            os.path.join(self.output, f3),
+            os.path.join(self.both.output, f1),
+            os.path.join(self.both.output, f2),
+            os.path.join(self.both.output, f3),
             union_file)
         print(command)
         os.system(command)
@@ -199,8 +305,6 @@ class DiffProcessor:
                 if f3 in l: index += 4
                 result[index - 1] += 1
 
-
         shutil.rmtree(temp_dir)
 
         venn3(subsets=result, set_labels=(f1, f2, f3))
-
