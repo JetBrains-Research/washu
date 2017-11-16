@@ -30,12 +30,12 @@ RUN conda create -q -n java --channel bioconda fastqc
 
 # Install env py3.5
 RUN conda create -n py3.5 python=3.5
+# seaborn should be >= 0.8
 RUN source activate py3.5 &&\
     conda install --channel bioconda bwa bowtie2 star \
-    deeptools sra-tools rseg ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed &&\
-    conda install --channel conda-forge matplotlib-venn &&\
-    # seaborn should be >= 0.8
-    conda install pandas numpy scikit-learn pytest pytest-pep8 seaborn &&\
+    deeptools sra-tools rseg ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed && \
+    conda install --channel conda-forge matplotlib-venn && \
+    conda install pandas numpy scikit-learn pytest pytest-pep8 seaborn && \
     pip install multiqc teamcity-messages
 
 # Workaround for TeamCity CI, temp folders are created with root permissions, unacessible for USER
@@ -53,9 +53,3 @@ RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/downlo
 
 # To prevent problems with Java interfierence just move execuble to emulate module
 RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
-
-# Create module command alias
-# We need this for "which module" command
-COPY ./scripts/module.sh /opt/
-
-ENV PATH=$PATH:/opt/conda/envs/bedtools/bin/

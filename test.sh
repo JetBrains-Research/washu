@@ -66,12 +66,16 @@ if [ ! -f ~/zinbra.jar ]; then
     echo "Zinbra not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"
 fi
 
+# Create module command alias
+# We need this for "which module" command
+
 ln -s /bin/echo /usr/bin/module
 
-module() { source /opt/module.sh $@; }
+module() { source ./test/module.sh $@; }
 export -f module
 
 export IS_TEST=TRUE
+export PATH=$PATH:/opt/conda/envs/bedtools/bin/
 
 # Launch all the tests
 python -m pytest test/*.py
