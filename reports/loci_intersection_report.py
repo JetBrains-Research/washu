@@ -356,6 +356,9 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
             # Save results:
             loci_pvalues_df.to_csv(str(stats_df_path))
 
+        # TODO: temp code: move to cacl section
+        loci_pvalues_df = loci_pvalues_df.sort_values(by=["dfr_bh", "pvalue"])
+        loci_pvalues_df.to_csv(str(stats_df_path))
         # print(loci_pvalues_df)
 
         # Plots
