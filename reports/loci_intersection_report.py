@@ -105,7 +105,6 @@ def _cli():
         for loci_key in loci_dict:
             test_donors(key, peaks_map, loci_dict, loci_key, results_dir, threads, outliers_df)
         # test_donors(key, peaks_map, loci_dict, "default", results_dir, threads, outliers_df)
-        break
 
 
 def _adjustment():
