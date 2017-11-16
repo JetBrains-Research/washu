@@ -409,8 +409,9 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
 def calc_loci_pvalues(df_ods, df_yds, ha):
     pvalues = []
 
-    n = df_ods.shape[1]
-    assert n == df_yds.shape[1]
+    columns = df_ods.columns.tolist()
+    assert columns == df_yds.columns.tolist()
+    n = len(columns)
 
     for i in range(n):
         try:
@@ -418,10 +419,10 @@ def calc_loci_pvalues(df_ods, df_yds, ha):
                 mannwhitneyu(df_ods.iloc[:, i], df_yds.iloc[:, i], alternative=ha).pvalue
             )
         except ValueError as e:
-            print("Error: {} in file:\n{}".format(e, df.columns[i]))
+            print("Error: {} in file:\n{}".format(e, columns[i]))
             # TODO: problem_files.append(file)
             pvalues.append(np.nan)
-    loci_pvalues_df = pd.DataFrame.from_dict(dict(loci=df.columns, pvalue=pvalues))
+    loci_pvalues_df = pd.DataFrame.from_dict(dict(loci=columns, pvalue=pvalues))
     loci_pvalues_df.index = loci_pvalues_df.loci
     loci_pvalues_df.drop("loci", inplace=True, axis=1)
     print("Not corrected pvalue, first 10 lowest pvalues:")
