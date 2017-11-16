@@ -53,3 +53,6 @@ RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/downlo
 
 # To prevent problems with Java interfierence just move execuble to emulate module
 RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
+
+
+COPY ./test/module.sh /opt/

@@ -70,8 +70,7 @@ fi
 # We need this for "which module" command
 
 ln -s /bin/echo /usr/bin/module
-
-module() { source ./test/module.sh $@; }
+module() { source /opt/module.sh $@; }
 export -f module
 
 export IS_TEST=TRUE
