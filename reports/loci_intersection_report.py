@@ -352,7 +352,7 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
             df_ods = df[mask_od_group]
             df_yds = df[mask_yd_group]
             print("    Dfs: OD = {}, YD = {}".format(df_ods.shape, df_yds.shape))
-            loci_pvalues_df = calc_loci_pvalues(df_ods, df_yds, ha, stats_df_path)
+            loci_pvalues_df = calc_loci_pvalues(df_ods, df_yds, ha)
             # Save results:
             loci_pvalues_df.to_csv(str(stats_df_path))
 
