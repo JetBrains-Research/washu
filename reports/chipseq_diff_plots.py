@@ -105,6 +105,8 @@ class ChangeCollector:
                 pattern = "{}_*_cond2.bed"
             elif self.change_type == "old":
                 pattern = "{}_*_cond1.bed"
+            else:
+                raise ValueError("Wrong change_type")
 
             for file in glob.glob(os.path.join(macs_pooled, pattern.format(self.mark))):
                 size += count_lines(file)
@@ -123,7 +125,8 @@ class ChangeCollector:
         size = 0
         result_base_file_name = "{}.bed".format(folder_name)
         with open(os.path.join(self.output, result_base_file_name), "w") as out:
-            for file in glob.glob(os.path.join(macs_pooled_Y_vs_O, "{}_*.broadPeak".format(self.mark))):
+            pattern = os.path.join(macs_pooled_Y_vs_O, "{}_*.broadPeak".format(self.mark))
+            for file in glob.glob(pattern):
                 size += count_lines(file)
 
                 with open(file) as f:
@@ -271,8 +274,10 @@ class DiffProcessor:
         with open(union_file) as f:
             for l in f.readlines():
                 index = 0
-                if f1 in l: index += 1
-                if f2 in l: index += 2
+                if f1 in l:
+                    index += 1
+                if f2 in l:
+                    index += 2
                 result[index - 1] += 1
 
         shutil.rmtree(temp_dir)
@@ -300,9 +305,12 @@ class DiffProcessor:
         with open(union_file) as f:
             for l in f.readlines():
                 index = 0
-                if f1 in l: index += 1
-                if f2 in l: index += 2
-                if f3 in l: index += 4
+                if f1 in l:
+                    index += 1
+                if f2 in l:
+                    index += 2
+                if f3 in l:
+                    index += 4
                 result[index - 1] += 1
 
         shutil.rmtree(temp_dir)
