@@ -6,6 +6,8 @@ import datetime
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from scipy.stats import mannwhitneyu
+from statsmodels.stats.multitest import multipletests
 
 
 def _cli():
@@ -342,78 +344,18 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
             threads=threads
         )
 
-        # Split: Old / Young donors
-        donors_age_id = [loi.donor_order_id(p) for p in peaks_paths]
-        groups = np.asarray([age for age, _id in donors_age_id])
-        mask_od_group = groups == "OD"
-        mask_yd_group = groups == "YD"
-        print("    Peaks: [{}], OD: [{}], YD: [{}]".format(
-            len(peaks_paths), np.sum(mask_od_group), np.sum(mask_yd_group)
-        ))
-
-        # Load Outliers info
-        mask_not_outlier = None
-        if hist and outliers_df is not None:
-            if hist in outliers_df.columns:
-                col = outliers_df.loc[:, hist]
-                outliers_codes = [col["{}{}".format(age, id)] for age, id in donors_age_id]
-                mask_not_outlier = np.asarray(outliers_codes) == 0
-        if mask_not_outlier is None:
-            print("    {}: No outliers info, use all donors".format(hist))
-            mask_not_outlier = np.ones((len(peaks_paths), 1), dtype=bool)
-
-        print("    Not outliers: [{}]".format(np.sum(mask_not_outlier)))
-
-        # Young/old group without outliers
-        mask_od_group = mask_od_group * mask_not_outlier
-        mask_yd_group = mask_yd_group * mask_not_outlier
-        print("    Peaks: OD w/o outliers: [{}], YD w/o outliers: [{}]".format(
-            np.sum(mask_od_group),
-            np.sum(mask_yd_group))
-        )
-
         # Stat test for each locus: Old vs Young
-        from scipy.stats import mannwhitneyu
-        from statsmodels.stats.multitest import multipletests
+        if stats_df_path.exists():
+            loci_pvalues_df = pd.read_csv(stats_df_path, index_col=0)
+        else:
+            mask_od_group, mask_yd_group = split_by_age(hist, outliers_df, peaks_paths)
+            df_ods = df[mask_od_group]
+            df_yds = df[mask_yd_group]
+            print("    Dfs: OD = {}, YD = {}".format(df_ods.shape, df_yds.shape))
+            loci_pvalues_df = calc_loci_pvalues(df_ods, df_yds, ha, stats_df_path)
+            # Save results:
+            loci_pvalues_df.to_csv(str(stats_df_path))
 
-        df_ods = df[mask_od_group]
-        df_yds = df[mask_yd_group]
-        print("    Dfs: OD = {}, YD = {}".format(df_ods.shape, df_yds.shape))
-
-        pvalues = []
-        for i in range(df.shape[1]):
-            try:
-                pvalues.append(
-                    mannwhitneyu(df_ods.iloc[:, i], df_yds.iloc[:, i], alternative=ha).pvalue
-                )
-            except ValueError as e:
-                print("Error: {} in file:\n{}".format(e, df.columns[i]))
-                # TODO: problem_files.append(file)
-                pvalues.append(np.nan)
-
-        loci_pvalues_df = pd.DataFrame.from_dict(dict(loci=df.columns, pvalue=pvalues))
-        loci_pvalues_df.index = loci_pvalues_df.loci
-        loci_pvalues_df.drop("loci", inplace=True, axis=1)
-
-        print("Not corrected pvalue, first 10 lowest pvalues:")
-        print(loci_pvalues_df.sort_values(by="pvalue").head(10))
-
-        # P-values correction
-        #   see: http://www.statsmodels.org/dev/_modules/statsmodels/stats/multitest.html
-        pvalues_col = loci_pvalues_df["pvalue"]
-        pvalues_not_nan_mask = ~np.isnan(pvalues_col)
-
-        _reject, pvals_corrected, *_ = multipletests(
-            pvals=pvalues_col[pvalues_not_nan_mask],
-            # fdr_bh, holm-sidak, bonferroni
-            alpha=0.05, method="fdr_bh"
-        )
-
-        loci_pvalues_df["dfr_bh"] = np.nan
-        loci_pvalues_df.loc[pvalues_not_nan_mask, "dfr_bh"] = pvals_corrected
-
-        # Save results:
-        loci_pvalues_df.to_csv(str(stats_df_path))
         # print(loci_pvalues_df)
 
         # Plots
@@ -459,6 +401,71 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
             plot_significant("pvalue", "not-adjusted pvalues")
             plot_significant("dfr_bh", "adjusted pvalues (BH fdr)")
     pass
+
+
+def calc_loci_pvalues(df_ods, df_yds, ha):
+    pvalues = []
+
+    n = df_ods.shape[1]
+    assert n == df_yds.shape[1]
+
+    for i in range(n):
+        try:
+            pvalues.append(
+                mannwhitneyu(df_ods.iloc[:, i], df_yds.iloc[:, i], alternative=ha).pvalue
+            )
+        except ValueError as e:
+            print("Error: {} in file:\n{}".format(e, df.columns[i]))
+            # TODO: problem_files.append(file)
+            pvalues.append(np.nan)
+    loci_pvalues_df = pd.DataFrame.from_dict(dict(loci=df.columns, pvalue=pvalues))
+    loci_pvalues_df.index = loci_pvalues_df.loci
+    loci_pvalues_df.drop("loci", inplace=True, axis=1)
+    print("Not corrected pvalue, first 10 lowest pvalues:")
+    print(loci_pvalues_df.sort_values(by="pvalue").head(10))
+    # P-values correction
+    #   see: http://www.statsmodels.org/dev/_modules/statsmodels/stats/multitest.html
+    pvalues_col = loci_pvalues_df["pvalue"]
+    pvalues_not_nan_mask = ~np.isnan(pvalues_col)
+    _reject, pvals_corrected, *_ = multipletests(
+        pvals=pvalues_col[pvalues_not_nan_mask],
+        # fdr_bh, holm-sidak, bonferroni
+        alpha=0.05, method="fdr_bh"
+    )
+    loci_pvalues_df["dfr_bh"] = np.nan
+    loci_pvalues_df.loc[pvalues_not_nan_mask, "dfr_bh"] = pvals_corrected
+
+    return loci_pvalues_df
+
+
+def split_by_age(hist, outliers_df, peaks_paths):
+    # Split: Old / Young donors
+    donors_age_id = [loi.donor_order_id(p) for p in peaks_paths]
+    groups = np.asarray([age for age, _id in donors_age_id])
+    mask_od_group = groups == "OD"
+    mask_yd_group = groups == "YD"
+    print("    Peaks: [{}], OD: [{}], YD: [{}]".format(
+        len(peaks_paths), np.sum(mask_od_group), np.sum(mask_yd_group)
+    ))
+    # Load Outliers info
+    mask_not_outlier = None
+    if hist and outliers_df is not None:
+        if hist in outliers_df.columns:
+            col = outliers_df.loc[:, hist]
+            outliers_codes = [col["{}{}".format(age, id)] for age, id in donors_age_id]
+            mask_not_outlier = np.asarray(outliers_codes) == 0
+    if mask_not_outlier is None:
+        print("    {}: No outliers info, use all donors".format(hist))
+        mask_not_outlier = np.ones((len(peaks_paths), 1), dtype=bool)
+    print("    Not outliers: [{}]".format(np.sum(mask_not_outlier)))
+    # Young/old group without outliers
+    mask_od_group = mask_od_group * mask_not_outlier
+    mask_yd_group = mask_yd_group * mask_not_outlier
+    print("    Peaks: OD w/o outliers: [{}], YD w/o outliers: [{}]".format(
+        np.sum(mask_od_group),
+        np.sum(mask_yd_group))
+    )
+    return mask_od_group, mask_yd_group
 
 
 def manhattan_plot(pvalues_df, col_name, correction="Uncorrected",
