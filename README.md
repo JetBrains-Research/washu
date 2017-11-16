@@ -19,7 +19,7 @@ Project
 
 Scripts
 -------
-Useful scripts for batch processing. Suitable to work with Portable Batch System and on single machine
+Scripts for batch processing.
 * `fastqc.sh`   - Quality control for raw-reads using [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) 
 and [MultiQC](http://multiqc.info/) for aggregated report  
 * `bowtie.sh`   - Bowtie alignment of all the read files in a folder. Creates summary report:
@@ -40,6 +40,11 @@ Creates summary report, with (**R**eads **I**n **P**eaks) and (**F**raction of *
 
 All the scripts are designed for batch processing, and print all the necessary tools and arguments.
 
+Parallel execution
+------------------
+All the scripts from `/paralles` are suitable to work with Portable Batch System and on single machine.
+Parallelism level on local machine can be configured via **WASHU_PARALLELISM** environment variable.
+ 
 Pipelines
 ---------
 * `pipeline_chipseq.py`         - Pipeline for batch ULI-ChIP-Seq processing, including QC, alignment, peak calling
