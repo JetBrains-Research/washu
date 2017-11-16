@@ -4,7 +4,7 @@ import re
 import datetime
 import pandas as pd
 from pathlib import Path
-# from itertools import chain
+from itertools import chain
 
 # Force matplotlib to not use any Xwindows backend.
 import matplotlib
@@ -14,12 +14,12 @@ parent_dir = os.path.dirname(os.path.realpath(__file__))
 project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
 sys.path.insert(0, project_root)
 
-# import seaborn as sns  # nopep8
+import seaborn as sns  # nopep8
 from matplotlib.backends.backend_pdf import PdfPages  # nopep8
 from bed.bedtrace import Bed  # nopep8
-# from reports.bed_metrics import color_annotator_chain, color_annotator_outlier, \
-#     color_annotator_age, bed_metric_table, plot_metric_heatmap, \
-#     label_converter_donor_and_tool  # nopep8
+from reports.bed_metrics import color_annotator_chain, color_annotator_outlier, \
+    color_annotator_age, bed_metric_table, plot_metric_heatmap, \
+    label_converter_donor_and_tool  # nopep8
 from reports.peak_metrics import calc_consensus_file, bar_consensus  # nopep8
 
 __author__ = 'petr.tsurinov@jetbrains.com'
@@ -31,7 +31,7 @@ Script creates pdf report with ChIP-seq peaks statistics:
  1) median peak consensus bar plot
  2) Metric #1 heatmap
 """
-outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20_21.11.17.outliers.csv"
+outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20_30.11.17.outliers.csv"
 outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="donor")
 
 
@@ -63,25 +63,27 @@ def main():
                         Bed(track_path) for track_path in tracks_paths
                     if re.match('.*YD\\d+.*\.(?:broadPeak|bed|narrowPeak)$', track_path)}
 
-    # anns = [color_annotator_age]
+    anns = [color_annotator_age]
     hist_mod = re.match(".*(h3k\d{1,2}(?:me\d|ac)).*", str(zinbra_folder_path),
                         flags=re.IGNORECASE).group(1)
-    # if hist_mod in outliers_df.columns:
-    #     anns.append(color_annotator_outlier(outliers_df, hist_mod))
-    # annotator = color_annotator_chain(*anns)
+    if hist_mod in outliers_df.columns:
+        anns.append(color_annotator_outlier(outliers_df, hist_mod))
+    annotator = color_annotator_chain(*anns)
 
-    # peaks_paths = sorted(chain(zinbra_folder_path.glob("*golden*consensus*"),
-    #                            zinbra_folder_path.glob("*zinbra*consensus*"),
-    #                            zinbra_folder_path.glob("*Peak"),
-    #                            zinbra_folder_path.glob("*-island.bed"),
-    #                            zinbra_folder_path.glob("*peaks.bed")), key=loi.donor_order_id) + \
-    #               sorted(chain(standard_folder_path.glob("*golden*consensus*"),
-    #                            standard_folder_path.glob("*zinbra*consensus*"),
-    #                            standard_folder_path.glob("*Peak"),
-    #                            standard_folder_path.glob("*-island.bed"),
-    #                            standard_folder_path.glob("*peaks.bed")), key=loi.donor_order_id)
-    # df = bed_metric_table(peaks_paths, peaks_paths, threads=threads_num)
-    # df_no_out = df.copy()
+    peaks_paths = sorted(chain(zinbra_folder_path.glob("*macs2*consensus*"),
+                               zinbra_folder_path.glob("*sicer*consensus*"),
+                               zinbra_folder_path.glob("*zinbra*consensus*"),
+                               zinbra_folder_path.glob("*Peak"),
+                               zinbra_folder_path.glob("*-island.bed"),
+                               zinbra_folder_path.glob("*peaks.bed")), key=loi.donor_order_id) + \
+                  sorted(chain(standard_folder_path.glob("*macs2*consensus*"),
+                               standard_folder_path.glob("*sicer*consensus*"),
+                               standard_folder_path.glob("*zinbra*consensus*"),
+                               standard_folder_path.glob("*Peak"),
+                               standard_folder_path.glob("*-island.bed"),
+                               standard_folder_path.glob("*peaks.bed")), key=loi.donor_order_id)
+    df = bed_metric_table(peaks_paths, peaks_paths, threads=threads_num)
+    df_no_out = df.copy()
     for donor in outliers_df.loc[:, hist_mod].index:
         if outliers_df.loc[:, hist_mod][donor] == 1:
             for od_path_key in list(od_paths_map.keys()):
@@ -90,10 +92,10 @@ def main():
             for yd_path_key in list(yd_paths_map.keys()):
                 if (donor + "_") in yd_path_key:
                     del yd_paths_map[yd_path_key]
-    #         for df_index in df_no_out.index:
-    #             if (donor + "_") in df_index or (donor + ".") in df_index:
-    #                 del df_no_out[df_index]
-    #                 df_no_out = df_no_out.drop(df_index)
+            for df_index in df_no_out.index:
+                if (donor + "_") in df_index or (donor + ".") in df_index:
+                    del df_no_out[df_index]
+                    df_no_out = df_no_out.drop(df_index)
 
     with PdfPages(args[3]) as pdf:
         print("Calculating median consensus")
@@ -103,13 +105,13 @@ def main():
         plt.rc('font', size=8)
         bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed,
                       yd_od_int_bed, threads_num, pdf)
-        # print("Calculating metric #1 indexes")
+        print("Calculating metric #1 indexes")
 
-        # for curr_df in (df, df_no_out):
-        #     plot_metric_heatmap("Intersection metric", curr_df, figsize=(14, 14), save_to=pdf,
-        #                         row_color_annotator=annotator, col_color_annotator=annotator,
-        #                         row_label_converter=label_converter_donor_and_tool,
-        #                         col_label_converter=label_converter_donor_and_tool)
+        for curr_df in (df, df_no_out):
+            plot_metric_heatmap("Intersection metric", curr_df, figsize=(14, 14), save_to=pdf,
+                                row_color_annotator=annotator, col_color_annotator=annotator,
+                                row_label_converter=label_converter_donor_and_tool,
+                                col_label_converter=label_converter_donor_and_tool)
 
         desc = pdf.infodict()
         desc['Title'] = 'Report: Combined peaks plots for different callers'
@@ -128,6 +130,6 @@ if __name__ == "__main__":
     matplotlib.use('Agg')
 
     import matplotlib.pyplot as plt  # nopep8
-    # import reports.loci_of_interest as loi
+    import reports.loci_of_interest as loi
 
     main()
