@@ -61,6 +61,50 @@ SCRIPT
 done
 wait_complete ${TASKS}
 
+
+INPUTS_Y=${BAM_DIR}/YD_input.bam
+INPUTS_O=${BAM_DIR}/OD_input.bam
+
+
+if [ -f ${INPUTS_Y} ]; then
+    # Submit task
+    run_parallel << SCRIPT
+#!/bin/sh
+#PBS -N bamtobed_YD_input.bam
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
+#PBS -j oe
+#PBS -o ${FOLDER}/${NAME}_bamtobed.log
+
+# This is necessary because qsub default working dir is user home
+cd ${FOLDER}
+module load bedtools2
+
+bedtools bamtobed -i ${INPUTS_Y} >YD_input.bed
+
+SCRIPT
+
+    wait_complete $QSUB_ID
+
+    # Submit task
+    run_parallel << SCRIPT
+#!/bin/sh
+#PBS -N bamtobed_YD_input.bam
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
+#PBS -j oe
+#PBS -o ${FOLDER}/${NAME}_bamtobed.log
+
+# This is necessary because qsub default working dir is user home
+cd ${FOLDER}
+module load bedtools2
+
+bedtools bamtobed -i ${INPUTS_O} >OD_input.bed
+
+SCRIPT
+    wait_complete $QSUB_ID
+fi
+
+
+
 run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N diffReps
@@ -72,12 +116,24 @@ run_parallel << SCRIPT
 cd ${FOLDER}
 module load bedtools2
 
-diffReps.pl -co YD*.bed \
+if [ -f YD_input.bed ]; then
+    diffReps.pl \
+            -co YD*.bed \
+            --bco YD_input.bed \
+            -tr OD*.bed \
+            --btr OD_input.bed \
+            --chrlen ${CHROM_SIZES} \
+            -re diff.nb.txt \
+            ${DIFFREPS_PARAMS} \
+            --nproc 8
+else
+    diffReps.pl -co YD*.bed \
             -tr OD*.bed \
             --chrlen ${CHROM_SIZES} \
             -re diff.nb.txt \
             ${DIFFREPS_PARAMS} \
             --nproc 8
+fi
 SCRIPT
 
 wait_complete ${TASKS}
