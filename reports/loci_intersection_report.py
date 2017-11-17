@@ -102,11 +102,18 @@ def _cli():
            itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
 
     # Stat tests:
-    for key in ["zinbra_tuned", "golden_tuned"]:
-        print("----- [Stat tests]: Donors {} ----".format(key))
-        for loci_key in loci_dict:
+    loci = set(loci_dict.keys())
+    # lets check large pathways and all data after all other loci:
+    loci.remove(None)
+    loci.remove("other_pathways")
+    loci.remove("interesting_pathways")
+    loci = sorted(loci)
+    # loci.extend(["interesting_pathways", "other_pathways", None])
+    loci.extend(["interesting_pathways", "other_pathways"])
+    for loci_key in loci:
+        for key in ["zinbra_tuned", "golden_tuned"]:
+            print("----- [Stat tests]: Donors {}@{} ----".format(key, loci_key))
             test_donors(key, peaks_map, loci_dict, loci_key, results_dir, threads, outliers_df)
-        # test_donors(key, peaks_map, loci_dict, "default", results_dir, threads, outliers_df)
 
 
 def _adjustment():
@@ -118,7 +125,7 @@ def _adjustment_wrc():
 
 
 def report_default(loci_dict, outdir, threads):
-    result_plot_path = outdir / "default.pdf"
+    result_plot_path = outdir / "plot_default.pdf"
     with PdfPages(str(result_plot_path)) as pdf:
         init_pdf_info(pdf)
         process_intersection_metric(
@@ -139,7 +146,7 @@ def report_default(loci_dict, outdir, threads):
 
 
 def report_consensus(loci_dict, outdir, threads, consensus_type="median_consensus"):
-    result_plot_path = outdir / "{}.pdf".format(consensus_type)
+    result_plot_path = outdir / "plot_{}.pdf".format(consensus_type)
     with PdfPages(str(result_plot_path)) as pdf:
         init_pdf_info(pdf)
         consensus = sorted(
@@ -193,7 +200,7 @@ def report_consensus(loci_dict, outdir, threads, consensus_type="median_consensu
 def report_donors(tool, peaks_map, loci_dict, outdir, threads, outliers_df):
     peaks_dict = peaks_map[tool]
 
-    result_plot_path = outdir / "{}_by_donor.pdf".format(tool)
+    result_plot_path = outdir / "plot_{}_by_donor.pdf".format(tool)
     with PdfPages(str(result_plot_path)) as pdf:
         init_pdf_info(pdf)
         for hist in sorted(peaks_dict.keys()):
@@ -217,7 +224,7 @@ def report_donors(tool, peaks_map, loci_dict, outdir, threads, outliers_df):
 def report(key, loci_dict, outdir, threads, key_side_size=15, consensus_type="median_consensus",
            itself=True, chromhmm=True, default=True, repeats=True, consensus=True,
            consensus_yo=True):
-    result_plot_path = outdir / "{}.pdf".format(key)
+    result_plot_path = outdir / "plot_{}.pdf".format(key)
 
     with PdfPages(str(result_plot_path)) as pdf:
         init_pdf_info(pdf)
@@ -325,9 +332,6 @@ def _pvalues_above_thr(thr005, thr001):
 
 
 def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_df):
-    ha = "two-sided"  # 'less', 'two-sided', or 'greater'
-
-    ################################################################################
     peaks_dict = peaks_map[tool]
     tool = tool or "all"  # presentable text for labels, we use 'None' for all loci
 
@@ -335,83 +339,110 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
 
     for hist in sorted(peaks_dict.keys()):
         peaks_paths = peaks_dict[hist]
+        peaks_key = "{}_{}".format(tool, hist)
 
-        result_plot_path = outdir / "{}_{}@{}_stat.pdf".format(tool, hist, loci_key)
-        stats_df_path = outdir / "{}_{}@{}_stat.csv".format(tool, hist, loci_key)
-        df = bm.load_or_build_metrics_table(
-            peaks_paths, loci_paths,
-            outdir / "{}_{}@{}.csv".format(tool, hist, loci_key),
-            threads=threads
-        )
+        result_plot_path = outdir / "plot_{}-{}_stat.pdf".format(peaks_key, loci_key)
 
-        # Stat test for each locus: Old vs Young
-        if stats_df_path.exists():
-            print("    Already exists, loading:", str(stats_df_path))
-            loci_pvalues_df = pd.read_csv(stats_df_path, index_col=0)
-        else:
-            print("    Calculating:", str(stats_df_path))
-            mask_od_group, mask_yd_group = split_by_age(hist, outliers_df, peaks_paths)
-            df_ods = df[mask_od_group]
-            df_yds = df[mask_yd_group]
-            print("    Dfs: OD = {}, YD = {}".format(df_ods.shape, df_yds.shape))
-            loci_pvalues_df = calc_loci_pvalues(df_ods, df_yds, ha)
-            # Save results:
-            loci_pvalues_df.to_csv(str(stats_df_path))
-
-        # TODO: temp code: move to cacl section
-        loci_pvalues_df = loci_pvalues_df.sort_values(by=["dfr_bh", "pvalue"])
-        loci_pvalues_df.to_csv(str(stats_df_path))
-        # print(loci_pvalues_df)
-
-        # Plots
         with PdfPages(str(result_plot_path)) as pdf:
             init_pdf_info(pdf)
 
-            # TODO: to one plot: pvalues + colors for adjusted threshold ?
-            manhattan_plot(loci_pvalues_df.sort_values(by="pvalue"), "pvalue",
-                           save_to=pdf, xticks=False)
+            # Intersection metric: peaks@loci
+            test_donors_by_metric(
+                bm.load_or_build_metrics_table(peaks_paths, loci_paths,
+                                               outdir / "{}@{}.csv".format(peaks_key, loci_key),
+                                               threads=threads),
+                hist, outliers_df, peaks_paths, pdf,
+                outdir / "{}@{}_stat.csv".format(peaks_key, loci_key)
+            )
 
-            manhattan_plot(loci_pvalues_df.sort_values(by="dfr_bh"), "dfr_bh",
-                           correction="Benjamini–Hochberg corrected",
-                           save_to=pdf, xticks=False)
-
-            # Heatmap with selected cols:
-            anns = [bm.color_annotator_age]
-            if hist and outliers_df is not None:
-                if hist in outliers_df.columns:
-                    anns.append(bm.color_annotator_outlier(outliers_df, hist))
-            row_annotator = None if not anns else bm.color_annotator_chain(*anns)
-
-            def loci_passed_thr(df, col, thr):
-                return set(df.index[df[col] < thr].tolist())
-
-            def plot_significant(col, title):
-                thr001 = loci_passed_thr(loci_pvalues_df, col, 0.01)
-                thr005 = loci_passed_thr(loci_pvalues_df, col, 0.05)
-                thr01 = loci_passed_thr(loci_pvalues_df, col, 0.1)
-
-                print("Loci passing", title, "threshold 0.1", col, len(thr01))
-                print("Loci passing", title, "threshold 0.005", col, len(thr005))
-                print("Loci passing", title, "threshold 0.001", col, len(thr001))
-                if thr01:
-                    bm.plot_metric_heatmap(
-                        "IM {} with for {} < 0.1".format(stats_df_path.name, title),
-                        df.loc[:, thr01],
-                        save_to=pdf,
-                        adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
-                        row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15),
-                        col_color_annotator=_pvalues_above_thr(
-                            {loi.label_converter_shorten_loci(s) for s in thr005},
-                            {loi.label_converter_shorten_loci(s) for s in thr001}
-                        ),
-                        row_color_annotator=row_annotator,
-                        col_label_converter=loi.label_converter_shorten_loci,
-                        row_label_converter=bm.label_converter_donor_and_tool,
-                    )
-
-            plot_significant("pvalue", "not-adjusted pvalues")
-            plot_significant("dfr_bh", "adjusted pvalues (BH fdr)")
+            # Intersection metric: loci@peaks, e.g. for small loci, transpose to make plots
+            # have donors at OY, loci at OX
+            test_donors_by_metric(
+                bm.load_or_build_metrics_table(loci_paths, peaks_paths,
+                                               outdir / "{}@{}.csv".format(loci_key, peaks_key),
+                                               threads=threads).T,
+                hist, outliers_df, peaks_paths, pdf,
+                outdir / "{}@{}_stat.csv".format(loci_key, peaks_key)
+            )
     pass
+
+
+def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path):
+    ha = "two-sided"  # 'less', 'two-sided', or 'greater'
+
+    ##########################################################################################
+    # Stat test for each locus: Old vs Young
+    if stats_df_path.exists():
+        print("    Already exists, loading:", str(stats_df_path))
+        loci_pvalues_df = pd.read_csv(stats_df_path, index_col=0)
+    else:
+        print("    Calculating:", str(stats_df_path))
+        mask_od_group, mask_yd_group = split_by_age(hist, outliers_df, peaks_paths)
+        df_ods = df[mask_od_group]
+        df_yds = df[mask_yd_group]
+        print("    Dfs: OD = {}, YD = {}".format(df_ods.shape, df_yds.shape))
+        loci_pvalues_df = calc_loci_pvalues(df_ods, df_yds, ha)
+        # Save results:
+        loci_pvalues_df.to_csv(str(stats_df_path))
+
+    # TODO: temp code: move to cacl section
+    loci_pvalues_df = loci_pvalues_df.sort_values(by=["dfr_bh", "pvalue"])
+    loci_pvalues_df.to_csv(str(stats_df_path))
+    # print(loci_pvalues_df)
+
+    # Plots
+
+    # TODO: to one plot: pvalues + colors for adjusted threshold ?
+    manhattan_plot(loci_pvalues_df.sort_values(by="pvalue"),
+                   "pvalue",
+                   "[{}] Mann whitney u test pvalues".format(stats_df_path.name),
+                   correction="Uncorrected",
+                   save_to=pdf,
+                   xticks=len(loci_pvalues_df) < 100)
+
+    manhattan_plot(loci_pvalues_df.sort_values(by="dfr_bh"),
+                   "dfr_bh",
+                   "[{}] Mann whitney u test pvalues".format(stats_df_path.name),
+                   correction="Benjamini–Hochberg corrected",
+                   save_to=pdf,
+                   xticks=len(loci_pvalues_df) < 100)
+
+    # Heatmap with selected cols:
+    anns = [bm.color_annotator_age]
+    if hist and outliers_df is not None:
+        if hist in outliers_df.columns:
+            anns.append(bm.color_annotator_outlier(outliers_df, hist))
+    row_annotator = None if not anns else bm.color_annotator_chain(*anns)
+
+    def loci_passed_thr(df, col, thr):
+        return set(df.index[df[col] < thr].tolist())
+
+    def plot_significant(col, title):
+        thr001 = loci_passed_thr(loci_pvalues_df, col, 0.01)
+        thr005 = loci_passed_thr(loci_pvalues_df, col, 0.05)
+        thr01 = loci_passed_thr(loci_pvalues_df, col, 0.1)
+
+        print("Loci passing", title, "threshold 0.1", col, len(thr01))
+        print("Loci passing", title, "threshold 0.005", col, len(thr005))
+        print("Loci passing", title, "threshold 0.001", col, len(thr001))
+        if thr01:
+            bm.plot_metric_heatmap(
+                "IM {} with for {} < 0.1".format(stats_df_path.name, title),
+                df.loc[:, thr01],
+                save_to=pdf,
+                adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
+                row_cluster=False, col_cluster=False, figsize=(20, 15),
+                col_color_annotator=_pvalues_above_thr(
+                    {loi.label_converter_shorten_loci(s) for s in thr005},
+                    {loi.label_converter_shorten_loci(s) for s in thr001}
+                ),
+                row_color_annotator=row_annotator,
+                col_label_converter=loi.label_converter_shorten_loci,
+                row_label_converter=bm.label_converter_donor_and_tool,
+            )
+
+    plot_significant("pvalue", "not-adjusted pvalues")
+    plot_significant("dfr_bh", "adjusted pvalues (BH fdr)")
 
 
 def calc_loci_pvalues(df_ods, df_yds, ha):
@@ -480,7 +511,7 @@ def split_by_age(hist, outliers_df, peaks_paths):
     return mask_od_group, mask_yd_group
 
 
-def manhattan_plot(pvalues_df, col_name, correction="Uncorrected",
+def manhattan_plot(pvalues_df, col_name, title, correction,
                    save_to=None, adjustments=None, xticks=True):
     plt.figure(figsize=(15, 8))
     n = pvalues_df.shape[0]
@@ -492,7 +523,7 @@ def manhattan_plot(pvalues_df, col_name, correction="Uncorrected",
     ax.axhline(y=1/0.05, xmin=0, xmax=n, color="r", linestyle='dotted')
     ax.set_ylabel("{} pvalues (-log(p) scale )".format(correction))
     ax.set_yscale("log")
-    ax.set_title("[Peaks@loci] Mann whitney u test pvalues")
+    ax.set_title("{} ({})".format(title, correction))
     if xticks:
         plt.xticks(range(n),
                    [loi.label_converter_shorten_loci(l) for l in pvalues_df.index],
