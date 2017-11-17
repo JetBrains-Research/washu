@@ -22,6 +22,7 @@ if __name__ == "__main__":
     # Force matplotlib to not use any Xwindows backend.
     import matplotlib
     matplotlib.use('Agg')
+    sns.set()
 
 from scripts.util import run  # nopep8
 from pipeline_utils import PROJECT_ROOT_PATH  # nopep8
@@ -196,6 +197,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
                         col_label_converter=None, row_label_converter=None,
                         col_cluster=False, row_cluster=False,
                         adjustments=None,
+                        cbar=True,
                         **kw):
 
     """
@@ -255,6 +257,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
         # TODO: for jaccard use dist function? matrix could be not square here
         g = sns.clustermap(
             df, figsize=figsize, cmap="rainbow",
+            # cbar_kws={"orientation": "horizontal", "label": "Metric"},
             col_cluster=col_cluster, row_cluster=row_cluster,
             metric="chebyshev",
             col_colors=c_colors, row_colors=r_colors,
@@ -262,6 +265,9 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
             # linewidths=0.75,  # separator line width
             robust=True,  # robust=True: ignore color outliers
         )
+        # Turn off color bar
+        if not cbar:
+            g.cax.set_visible(False)
 
         plt.setp(g.ax_heatmap.get_xticklabels(), rotation=-90)
         if g.row_colors is not None:
