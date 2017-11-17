@@ -75,8 +75,7 @@ def _cli():
     df = bm.bed_metric_table(peaks_paths, peaks_paths, threads=threads_num)
 
     loi_dict = loi.collect_loci(loci_root)
-    df_loci1 = bm.bed_metric_table(peaks_paths, loi_dict['default'], threads=threads_num)
-    df_loci2 = bm.bed_metric_table(loi_dict['default'], peaks_paths, threads=threads_num)
+    df_loci = bm.bed_metric_table(peaks_paths, loi_dict['default'], threads=threads_num)
 
     with PdfPages(pdf_path) as pdf:
         print("Calculating median consensus")
@@ -95,20 +94,12 @@ def _cli():
                                row_label_converter=bm.label_converter_donor_and_tool,
                                col_label_converter=bm.label_converter_donor_and_tool)
         bm.plot_metric_heatmap(
-            "IM peaks@loci", df_loci1, figsize=(15, 8), save_to=pdf,
+            "IM peaks@loci", df_loci, figsize=(15, 8), save_to=pdf,
             adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
             row_cluster=False, col_cluster=False,
             row_color_annotator=annotator,
             col_label_converter=loi.label_converter_shorten_loci,
             row_label_converter=bm.label_converter_donor_and_tool,
-        )
-        bm.plot_metric_heatmap(
-            "loci@IM peaks", df_loci2, figsize=(8, 15), save_to=pdf,
-            adjustments=dict(left=0.15, top=0.95, right=0.7, bottom=0.1),
-            row_cluster=False, col_cluster=False,
-            col_color_annotator=annotator,
-            row_label_converter=loi.label_converter_shorten_loci,
-            col_label_converter=bm.label_converter_donor_and_tool,
         )
 
         print("Calculating frip vs age")
