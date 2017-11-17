@@ -150,3 +150,25 @@ def test_run_error_piped(capfd):
     # assert stderr is None  # should be: b"error!\n"
     assert out == ""
     assert err == ""
+
+
+def test_check_logs(tmp_dir, capfd):
+    with open(os.path.join(tmp_dir, "macs2.log"), 'a') as f:
+        f.write("""INFO  @ Fri, 17 Nov 2017 04:06:27: #3 Call peaks for each chromosome...
+ValueError: cannot resize this array: it does not own its data
+Exception ValueError: 'cannot resize this array: it does not own its data' in 'MACS2.IO.CallPeakUnit.clean_up_ndarray' ignored
+ValueError: cannot resize this array: it does not own its data
+Exception ValueError: 'cannot resize this array: it does not own its data' in 'MACS2.IO.CallPeakUnit.clean_up_ndarray' ignored
+ValueError: cannot resize this array: it does not own its data
+Exception ValueError: 'cannot resize this array: it does not own its data' in 'MACS2.IO.CallPeakUnit.clean_up_ndarray' ignored
+INFO  @ Fri, 17 Nov 2017 04:13:35: #4 Write output xls file...
+INFO  @ Fri, 17 Nov 2017 04:13:36: Done!
+""")
+    with open(os.path.join(tmp_dir, "foo.sh"), 'a') as f:
+        f.write("cd {}\n"
+                "source {}/parallel/util.sh\n"
+                "check_logs\n".format(tmp_dir, PROJECT_ROOT_PATH))
+    run("bash", "{}/foo.sh".format(tmp_dir))
+    out, _err = capfd.readouterr()
+    assert _err.replace(tmp_dir, ".") == "WASHU_PARALLELISM LEVEL: 8\n"
+    assert out.replace(tmp_dir, ".") == "bash ./foo.sh\n"

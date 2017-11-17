@@ -128,7 +128,9 @@ project_root_dir() {
 # Checks for errors in logs, stops the world
 check_logs()
 {
-    ERRORS=$(find . -name "*.log" | xargs grep -i -E "error|exception")
+    # IGNORE macs2 ValueError
+    # See for details: https://github.com/JetBrains-Research/washu/issues/14
+    ERRORS=$(find . -name "*.log" | xargs grep -i -E "error|exception" | grep -v "ValueError")
     if [ ! -z "$ERRORS" ]; then
         echo "ERRORS found"
         echo "$ERRORS"
