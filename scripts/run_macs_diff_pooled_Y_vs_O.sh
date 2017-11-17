@@ -30,10 +30,10 @@ READS_O=$(find . -name 'OD*.bam' | sed 's#\./##g' | grep -v 'input' | tr '\n' ' 
 
 INPUTS_O=OD_input.bam
 
-cd MACS_POOLED_Y_VS_O
+cd ${MACS_POOLED_Y_VS_O}
 
 echo "MACS_POOLED_Y_VS_O"
-echo $MACS_POOLED_Y_VS_O
+echo ${MACS_POOLED_Y_VS_O}
 
 echo
 echo "Processing MACS2 pooled Y vs O as control and vice versa"
