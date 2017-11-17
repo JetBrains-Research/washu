@@ -1,81 +1,51 @@
 #!/usr/bin/env bash
 
-# module load tool
-echo
+# Create module command alias
+# We need this for "which module" command
+ln -s /bin/echo /usr/bin/module
+module() { source /opt/module.sh $@; }
+export -f module
 
-R=$(which R)
-echo "R: $R"
-RSCRIPT=$(which Rscript)
-echo "Rscript: $RSCRIPT"
-echo "TODO: HIDE until module load R"
+module load bedtools2
+module load R
+export IS_TEST=TRUE
+export PYTHONPATH="/washu:$PYTHONPATH"
 
-BEDTOOLS=$(which bedtools)
-echo "bedtools: $BEDTOOLS"
-echo "TODO: HIDE until module load bedtools2"
+#############
+# Fast tests#
+#############
+python -m pytest test/*.py
+python -m pytest --pep8 -m pep8
 
-BOWTIE=$(which bowtie)
-echo "bowtie: $BOWTIE"
-echo "TODO: HIDE until module load bowtie"
+##################
+# Pipeline tests #
+##################
+echo "Check tools available by module load"
+which R &>/dev/null && { echo "R: HIDE until module load R"; exit 1; }
+which Rscript &>/dev/null && { echo "Rscript: HIDE until module load R"; exit 1; }
+which bedtools &>/dev/null && { echo "bedtools: HIDE until module load bedtools2"; exit 1; }
+which bowtie &>/dev/null && { echo "bowtie: HIDE until module load bowtie"; exit 1; }
+which bowtie2 &>/dev/null && { echo "bowtie2: HIDE until module load bowtie2"; exit 1; }
+which samtools &>/dev/null && { echo "samtools: HIDE until module load samtools"; exit 1; }
+which fastq-dump &>/dev/null && { echo "fastq-dump: HIDE until module load sratoolkit"; exit 1; }
+which fastqc &>/dev/null && { echo "fastqc: HIDE until module load fastqc"; exit 1; }
+which java &>/dev/null && { echo "java: HIDE until module load java"; exit 1; }
 
-BOWTIE2=$(which bowtie2)
-echo "bowtie2: $BOWTIE2"
-echo "TODO: HIDE until module load bowtie2"
+echo "Check tools required by other scripts"
+which macs2 &>/dev/null || { echo "macs2 not found"; exit 1; }
+which SICER.sh &>/dev/null || { echo "SICER.sh not found"; exit 1; }
+which rseg &>/dev/null || { echo "rseg not found"; exit 1; }
+which bedGraphToBigWig &>/dev/null || { echo "bedGraphToBigWig not found"; exit 1; }
+which bedClip &>/dev/null || { echo "bedClip not found"; exit 1; }
+which bigWigAverageOverBed &>/dev/null || { echo "bigWigAverageOverBed not found"; exit 1; }
+which multiqc &>/dev/null || { echo "multiqc not found"; exit 1; }
+which bamCoverage &>/dev/null || { echo "bamCoverage not found"; exit 1; }
 
-SAMTOOLS=$(which samtools)
-echo "samtools: $SAMTOOLS"
-echo "TODO: HIDE until module load samtools"
-
-FASTQDUMP=$(which fastq-dump)
-echo "fastq-dump: $FASTQDUMP"
-echo "TODO: HIDE until module load sratoolkit"
-
-FASTQC=$(which fastqc)
-echo "fastqc: $FASTQC"
-echo "TODO: HIDE until module load fastqc"
-
-JAVA=$(which java)
-echo "java: $JAVA"
-echo "TODO: HIDE until module load java"
-
-
-# Tools required by other scripts
-echo
-MACS2=$(which macs2)
-echo "MACS2: $MACS2"
-SICER=$(which SICER.sh)
-echo "SICER: $SICER"
-RSEG=$(which rseg)
-echo "rseg: $RSEG"
-BDGTOBW=$(which bedGraphToBigWig)
-echo "bedGraphToBigWig: $BDGTOBW"
-BEDCLIP=$(which bedClip)
-echo "bedClip: $BEDCLIP"
-BWAVGOVERBED=$(which bigWigAverageOverBed)
-echo "bigWigAverageOverBed: $BWAVGOVERBED"
-MULTIQC=$(which multiqc)
-echo "multiqc: $MULTIQC"
-BAMCOVERAGE=$(which bamCoverage)
-echo "bamcoverage: $BAMCOVERAGE"
-
-# Check downloadable files
-echo
+echo "Check downloaded files"
 if [ ! -f ~/picard.jar ]; then
     echo "Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"
 fi
 if [ ! -f ~/zinbra.jar ]; then
     echo "Zinbra not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"
 fi
-
-# Create module command alias
-# We need this for "which module" command
-
-ln -s /bin/echo /usr/bin/module
-module() { source /opt/module.sh $@; }
-export -f module
-
-export IS_TEST=TRUE
-export PATH=$PATH:/opt/conda/envs/bedtools/bin/
-
-# Launch all the tests
-python -m pytest test/*.py
-python -m pytest --pep8 -m pep8
+python -m pytest test/pipeline/*.py

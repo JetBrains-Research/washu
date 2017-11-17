@@ -4,29 +4,15 @@
 This is a chip-seq technical pipeline.
 
 Usage:
-  * Launch FastQC, visualization
+  * FastQC
+  * Visualization
   * Decide whether trimming or subsampling is required
   * Modify inplace copy of this pipeline
   * Launch pipeline
 
 Conventions:
-This pipeline uses folder naming as a steps, i.e. next step appends _suffix \
-for the working folder,
+This pipeline uses folder naming as a steps, i.e. next step appends _suffix for the working folder,
 stores results in new folder and change working folder if necessary.
-
-Steps:
-  * FactQC + multiqc
-  * Alignment
-  * Remove duplicates
-  * Visualization
-  * RPKM visualization
-  * Optional subsampling
-  * Peak calling
-    * MACS2
-    * MACS2 --broad
-    * MACS14
-    * RSEG
-    * SICER
 
 NOTE: python3 required
 > source activate py3.5
@@ -84,14 +70,18 @@ process_bowtie_logs(WORK_DIR)
 run_bash("parallel/bigwig.sh", CHROM_SIZES, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"])
 
-# Batch RPKM visualization
-run_bash("parallel/rpkm.sh", WORK_DIR)
-move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"])
-
 # Remove duplicates
 run_bash("parallel/remove_duplicates.sh", PICARD_TOOLS, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_unique",
              ["*_unique*", "*_metrics.txt", "*duplicates.log"])
+
+# Tags BW visualization
+run_bash("parallel/tags_bigwig.sh", CHROM_SIZES, 150, WORK_DIR + "_unique")
+move_forward(WORK_DIR + "_unique", WORK_DIR + "_unique_tags_bws", ["*bw*"])
+
+# Batch RPKM visualization
+run_bash("parallel/rpkm.sh", WORK_DIR)
+move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"])
 
 # Batch subsampling to 15mln reads
 # READS = 15
@@ -107,8 +97,6 @@ move_forward(WORK_DIR, WORK_DIR + "_unique",
 ########################
 # Peak calling section #
 ########################
-# Bedtools is necessary for filter script
-subprocess.run('module load bedtools2', shell=True)
 
 # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1 in example
 folder = run_macs2(GENOME, CHROM_SIZES,
