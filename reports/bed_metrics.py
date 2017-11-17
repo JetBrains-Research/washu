@@ -115,20 +115,20 @@ def bed_metric_table(a_paths: List[Path], b_paths: List[Path],
 
     inner_metric = _run_metric_jaccard if jaccard else _run_metric_intersection
 
-    pool = Pool(processes=threads)
-    multiple_results = [pool.apply_async(inner_metric, (a, b, ij), kw)
-                        for a, b, ij in path_pairs]
-    values = [res.get(timeout=3600 * timeout_hours) for res in
-              multiple_results]
+    with Pool(processes=threads) as pool:
+        multiple_results = [pool.apply_async(inner_metric, (a, b, ij), kw)
+                            for a, b, ij in path_pairs]
+        values = [res.get(timeout=3600 * timeout_hours) for res in
+                  multiple_results]
 
-    x = np.zeros((len(a_paths), len(b_paths)), np.float32)
-    for value, (i, j) in values:
-        x[i, j] = value
+        x = np.zeros((len(a_paths), len(b_paths)), np.float32)
+        for value, (i, j) in values:
+            x[i, j] = value
 
-    df = pd.DataFrame(x,
-                      index=[f.name for f in a_paths],
-                      columns=[f.name for f in b_paths])
-    return df
+        df = pd.DataFrame(x,
+                          index=[f.name for f in a_paths],
+                          columns=[f.name for f in b_paths])
+        return df
 
 
 def color_annotator_age(label) -> Tuple[Tuple[str, str]]:
