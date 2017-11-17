@@ -154,15 +154,9 @@ def test_run_error_piped(capfd):
 
 def test_check_logs(tmp_dir, capfd):
     with open(os.path.join(tmp_dir, "macs2.log"), 'a') as f:
-        f.write("""INFO  @ Fri, 17 Nov 2017 04:06:27: #3 Call peaks for each chromosome...
+        f.write("""
 ValueError: cannot resize this array: it does not own its data
-Exception ValueError: 'cannot resize this array: it does not own its data' in 'MACS2.IO.CallPeakUnit.clean_up_ndarray' ignored
-ValueError: cannot resize this array: it does not own its data
-Exception ValueError: 'cannot resize this array: it does not own its data' in 'MACS2.IO.CallPeakUnit.clean_up_ndarray' ignored
-ValueError: cannot resize this array: it does not own its data
-Exception ValueError: 'cannot resize this array: it does not own its data' in 'MACS2.IO.CallPeakUnit.clean_up_ndarray' ignored
-INFO  @ Fri, 17 Nov 2017 04:13:35: #4 Write output xls file...
-INFO  @ Fri, 17 Nov 2017 04:13:36: Done!
+Exception ValueError: 'cannot resize this array: it does not own its data' in ...
 """)
     with open(os.path.join(tmp_dir, "foo.sh"), 'a') as f:
         f.write("cd {}\n"
