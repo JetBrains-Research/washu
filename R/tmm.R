@@ -20,7 +20,7 @@ require_or_install <- function(..., bioc = FALSE) {
         require(p, character.only = TRUE)
     }
 }
-require_or_install("edgeR")
+require_or_install("edgeR", bioc=TRUE)
 
 normalize <- function(input_path, libsizes_path, output_path) {
     df = read.table(input_path, header = TRUE)
