@@ -359,7 +359,7 @@ def load_or_build_metrics_table(a_paths, b_paths, df_path, **kw):
         print("Calculating metrics: ", str(df_path))
         df = bed_metric_table(a_paths, b_paths, **kw)
         df.to_csv(str(df_path))
-        print("  [Saved]")
+        print("  [Saved]", str(df_path))
     return df
 
 
