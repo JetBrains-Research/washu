@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import datetime
+from collections import defaultdict
 
 from pathlib import Path
 import pandas as pd
@@ -26,6 +27,8 @@ def _cli():
                         help="Threads number for parallel processing")
     parser.add_argument('--all', action="store_true",
                         help="Include outliers")
+    parser.add_argument('--tuned', action="store_true",
+                        help="Use tuned peaks")
     parser.add_argument('--outliers', metavar="PATH",
                         default="/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv",
                         help="Outliers *.csv path")
@@ -43,22 +46,36 @@ def _cli():
     loci_dict = loi.collect_loci(loci_root)
 
     if not args.peaks:
-        # default peaks
-        golden_peaks_root = data_root / "experiments/aging/peak_calling"
-        zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
-            "" if exclude_outliers else "_full"
-        )
-        # tuned peaks
-        zinbra_peaks_root_tuned = data_root / "experiments/configs/Y20O20_full/benchmark_peaks"
-        golden_peaks_root_tuned = data_root / "experiments/aging/peak_calling/benchmark_peaks"
+        if args.tuned:
+            peaks_map = defaultdict(dict)
+            bench_root = data_root / "experiments/configs/benchmark/benchmark"
+            for hist_dir in (
+                    d for d in bench_root.iterdir() if d.is_dir() and d.name.startswith("H")
+            ):
+                hist = hist_dir.name
+                for tool_dir in (d for d in hist_dir.iterdir() if d.is_dir()):
+                    tool = tool_dir.name
+                    peaks = loi._collect_peaks_in_folder(tool_dir)
+                    if peaks:
+                        peaks_map[tool][hist] = peaks
+            tools_for_stat_test = sorted(peaks_map.keys())
+        else:
+            # default peaks
+            golden_peaks_root = data_root / "experiments/aging/peak_calling"
+            zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
+                "" if exclude_outliers else "_full"
+            )
+            # tuned peaks
+            zinbra_peaks_root_tuned = data_root / "experiments/configs/Y20O20_full/benchmark_peaks"
+            golden_peaks_root_tuned = data_root / "experiments/aging/peak_calling/benchmark_peaks"
 
-        peaks_map = {
-            "zinbra": loi._collect_zinbra_peaks(zinbra_peaks_root),
-            "golden": loi._collect_golden_peaks(golden_peaks_root, exclude_outliers),
-            "zinbra_tuned": loi._collect_zinbra_peaks(zinbra_peaks_root_tuned),
-            "golden_tuned": loi._collect_golden_peaks(golden_peaks_root_tuned, None)
-        }
-        tools_for_stat_test = ["zinbra_tuned", "golden_tuned"]
+            peaks_map = {
+                "zinbra": loi._collect_zinbra_peaks(zinbra_peaks_root),
+                "golden": loi._collect_golden_peaks(golden_peaks_root, exclude_outliers),
+                "zinbra_tuned": loi._collect_zinbra_peaks(zinbra_peaks_root_tuned),
+                "golden_tuned": loi._collect_golden_peaks(golden_peaks_root_tuned, None)
+            }
+            tools_for_stat_test = ["zinbra_tuned", "golden_tuned"]
     else:
         tool = "tool"
         peaks_map = {tool: {
@@ -412,8 +429,6 @@ def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path
     if stats_df_path.exists():
         print("    Already exists, loading:", str(stats_df_path))
         loci_pvalues_df = pd.read_csv(stats_df_path, index_col=0)
-        # TODO: tmp bad col names converter
-        loci_pvalues_df.columns=["pvalue", "fdr_bh"]
     else:
         print("    Calculating:", str(stats_df_path))
         mask_od_group, mask_yd_group = split_by_age(hist, outliers_df, peaks_paths)
