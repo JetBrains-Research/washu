@@ -200,6 +200,7 @@ def test_collect_peaks_in_folder_sorted(tmp_path):
     ("YD9_k27ac_hg19_broad_peaks.broadPeak", ('YD', 9)),
     ("YD4_k4me3_hg19_fdr_peaks.narrowPeak", ('YD', 4)),
     ("YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", ('YD', 16)),
+    ("YD4.broadPeak", ('YD', 4)),
 
     ("H3K27ac_zinbra_ODS_weak_consensus.bed", ('ODS', 'H3K27ac_zinbra_ODS_weak_consensus.bed')),
     ("H3K27ac_zinbra_weak_consensus.bed", ('H3K27ac_zinbra_weak_consensus.bed', 0)),

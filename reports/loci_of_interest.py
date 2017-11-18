@@ -73,7 +73,7 @@ _CHROMHMM_ST_MAP = {
 
 
 def donor_order_id(path):
-    chunks = path.name.split('_')
+    chunks = path.stem.split('_')
     cands = list(filter(lambda s: len(s) > 2 and (s.startswith("OD") or s.startswith("YD")),
                         chunks))
     if len(cands) > 0:
