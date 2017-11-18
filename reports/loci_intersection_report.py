@@ -11,7 +11,6 @@ from statsmodels.stats.multitest import multipletests
 
 
 def _cli():
-    # data_root = Path("/Volumes/BigData/bio")
     data_root = Path("/mnt/stripe/bio")
     loci_root = data_root / "raw-data/aging/loci_of_interest"
     # signal_root = data_root / "experiments/signal"
@@ -30,6 +29,8 @@ def _cli():
     parser.add_argument('--outliers', metavar="PATH",
                         default="/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv",
                         help="Outliers *.csv path")
+    parser.add_argument('--peaks', metavar="PATH",
+                        help="Custom peaks folder to use instead of predefined peaks list")
     args = parser.parse_args()
 
     threads = args.threads
@@ -41,54 +42,36 @@ def _cli():
 
     loci_dict = loi.collect_loci(loci_root)
 
-    # default peaks
-    golden_peaks_root = data_root / "experiments/aging/peak_calling"
-    zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
-        "" if exclude_outliers else "_full"
-    )
-    # tuned peaks
-    zinbra_peaks_root_tuned = data_root / "experiments/configs/Y20O20_full/benchmark_peaks"
-    golden_peaks_root_tuned = data_root / "experiments/aging/peak_calling/benchmark_peaks"
+    if not args.peaks:
+        # default peaks
+        golden_peaks_root = data_root / "experiments/aging/peak_calling"
+        zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
+            "" if exclude_outliers else "_full"
+        )
+        # tuned peaks
+        zinbra_peaks_root_tuned = data_root / "experiments/configs/Y20O20_full/benchmark_peaks"
+        golden_peaks_root_tuned = data_root / "experiments/aging/peak_calling/benchmark_peaks"
 
-    peaks_map = {
-        "zinbra": loi._collect_zinbra_peaks(zinbra_peaks_root),
-        "golden": loi._collect_golden_peaks(golden_peaks_root, exclude_outliers),
-        "zinbra_tuned": loi._collect_zinbra_peaks(zinbra_peaks_root_tuned),
-        "golden_tuned": loi._collect_golden_peaks(golden_peaks_root_tuned, None)
-    }
+        peaks_map = {
+            "zinbra": loi._collect_zinbra_peaks(zinbra_peaks_root),
+            "golden": loi._collect_golden_peaks(golden_peaks_root, exclude_outliers),
+            "zinbra_tuned": loi._collect_zinbra_peaks(zinbra_peaks_root_tuned),
+            "golden_tuned": loi._collect_golden_peaks(golden_peaks_root_tuned, None)
+        }
+        tools_for_stat_test = ["zinbra_tuned", "golden_tuned"]
+    else:
+        tool = "tool"
+        peaks_map = {tool: {
+            "histmod": loi._collect_peaks_in_folder(Path(args.peaks))
+        }}
+        tools_for_stat_test = [tool]
 
     outliers_df = None
     if outliers_df_path:
         outliers_df = pd.read_csv(outliers_df_path, delimiter="\t", skiprows=1,
                                   index_col="donor")
     ########################################################################
-
-    print("----- [Report]: Default ----")
-    report_default(loci_dict, results_dir, threads)
-    print("----- [Report]: Consensus ----")
-    report_consensus(loci_dict, results_dir, threads)
-
-    for key in sorted(peaks_map.keys()):
-        print("----- [Report]: Donors {} ----".format(key))
-        report_donors(key, peaks_map, loci_dict, results_dir, threads, outliers_df)
-
-    print("----- [Report]: Repeats ----")
-    report("repeats", loci_dict, results_dir, threads,
-           consensus_yo=False, default=False)
-    print("----- [Report]: TFs ----")
-    report("tfs", loci_dict, results_dir, threads,
-           consensus_yo=False, default=False)
-    print("----- [Report]: Differential ChipSeq ----")
-    report("chipseq_diff_loci", loci_dict, results_dir, threads)
-    print("----- [Report]: Differential RnaSeq ----")
-    report("rna_diff", loci_dict, results_dir, threads)
-
-    print("----- [Report]: Pathways interesting ----")
-    report("interesting_pathways", loci_dict, results_dir, threads,
-           key_side_size=200,
-           itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
-
-    print("----- [Report]: Pathways NOTCH ----")
+    # NOTCH pathways as loci:
     notch_pathways = [p for p in (loci_root / "interesting_pathways").glob('R-HSA-266082*.bed')]
     notch_pathways.extend(
         [p for p in (loci_root / "interesting_pathways").glob('R-HSA-1912399*.bed')])
@@ -97,9 +80,37 @@ def _cli():
     notch_pathways.sort(key=lambda p: p.name)
     loci_dict["notch_pathways"] = notch_pathways
 
-    report("notch_pathways", loci_dict, results_dir, threads,
-           key_side_size=20,
-           itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
+    ########################################################################
+    for tool in sorted(peaks_map.keys()):
+        print("----- [Report]: Donors {} ----".format(tool))
+        report_donors(tool, peaks_map, loci_dict, "default", results_dir, threads, outliers_df)
+
+    if not args.peaks:
+        print("----- [Report]: Default ----")
+        report_default(loci_dict, results_dir, threads)
+        print("----- [Report]: Consensus ----")
+        report_consensus(loci_dict, results_dir, threads)
+
+        print("----- [Report]: Repeats ----")
+        report("repeats", loci_dict, results_dir, threads,
+               consensus_yo=False, default=False)
+        print("----- [Report]: TFs ----")
+        report("tfs", loci_dict, results_dir, threads,
+               consensus_yo=False, default=False)
+        print("----- [Report]: Differential ChipSeq ----")
+        report("chipseq_diff_loci", loci_dict, results_dir, threads)
+        print("----- [Report]: Differential RnaSeq ----")
+        report("rna_diff", loci_dict, results_dir, threads)
+
+        print("----- [Report]: Pathways interesting ----")
+        report("interesting_pathways", loci_dict, results_dir, threads,
+               key_side_size=200,
+               itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
+
+        print("----- [Report]: Pathways NOTCH ----")
+        report("notch_pathways", loci_dict, results_dir, threads,
+               key_side_size=20,
+               itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
 
     # Stat tests:
     loci = set(loci_dict.keys())
@@ -112,11 +123,11 @@ def _cli():
     loci.extend(["interesting_pathways"])
     significant_loci = []
 
-    lk_pairs = [(loci_key, key) for loci_key in loci for key in ["zinbra_tuned", "golden_tuned"]]
-    for i, (loci_key, key) in enumerate(lk_pairs, 1):
-        print("----- {}/{} [Stat tests]: Donors {}@{} ----".format(i, len(lk_pairs), key,
+    loci_tool_pairs = [(loci_key, tool) for loci_key in loci for tool in tools_for_stat_test]
+    for i, (loci_key, tool) in enumerate(loci_tool_pairs, 1):
+        print("----- {}/{} [Stat tests]: Donors {}@{} ----".format(i, len(loci_tool_pairs), tool,
                                                                    loci_key))
-        test_donors(key, peaks_map, loci_dict, loci_key, results_dir, threads, outliers_df,
+        test_donors(tool, peaks_map, loci_dict, loci_key, results_dir, threads, outliers_df,
                     significant_loci)
     df_significant_loci = pd.DataFrame.from_records(significant_loci)
     df_significant_loci.columns = ["file", "locus", "pvalue", "fdr_bh"]
@@ -206,7 +217,7 @@ def report_consensus(loci_dict, outdir, threads, consensus_type="median_consensu
             row_cluster=False, col_cluster=False, threads=threads, figsize=(10, 10))
 
 
-def report_donors(tool, peaks_map, loci_dict, outdir, threads, outliers_df):
+def report_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_df):
     peaks_dict = peaks_map[tool]
 
     result_plot_path = outdir / "plot_{}_by_donor.pdf".format(tool)
@@ -220,8 +231,8 @@ def report_donors(tool, peaks_map, loci_dict, outdir, threads, outliers_df):
             annotator = None if not anns else bm.color_annotator_chain(*anns)
 
             process_intersection_metric(
-                peaks_dict[hist], loci_dict['default'],
-                outdir / "{}_{}@default.csv".format(tool, hist), pdf,
+                peaks_dict[hist], loci_dict[loci_key],
+                outdir / "{}_{}@{}.csv".format(tool, hist, loci_key), pdf,
                 adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
                 row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15),
                 row_color_annotator=annotator,
