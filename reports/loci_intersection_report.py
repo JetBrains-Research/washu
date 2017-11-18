@@ -148,6 +148,7 @@ def _cli():
         print("----- {}/{} [Stat tests]: Donors {}@{} ----".format(i, len(loci_tool_pairs), tool,
                                                                    loci_key))
         test_donors(tool, peaks_map, loci_dict, loci_key, results_dir, threads, outliers_df,
+                    exclude_outliers,
                     significant_loci, not_significant_loci)
 
     save_as_df(not_significant_loci, results_dir / "not_significant_loci.csv")
@@ -383,6 +384,7 @@ def _pvalues_above_thr(thr005, thr001):
 
 
 def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_df,
+                exclude_outliers,
                 significant_loci, not_significant_loci):
     peaks_dict = peaks_map[tool]
     tool = tool or "all"  # presentable text for labels, we use 'None' for all loci
@@ -405,6 +407,7 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
                                                threads=threads),
                 hist, outliers_df, peaks_paths, pdf,
                 outdir / "{}@{}_stat.csv".format(peaks_key, loci_key),
+                exclude_outliers,
                 significant_loci, not_significant_loci
             )
 
@@ -416,12 +419,14 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
                                                threads=threads).T,
                 hist, outliers_df, peaks_paths, pdf,
                 outdir / "{}@{}_stat.csv".format(loci_key, peaks_key),
+                exclude_outliers,
                 significant_loci, not_significant_loci
             )
     pass
 
 
 def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path,
+                          exclude_outliers,
                           significant_loci, not_significant_loci):
     ha = "two-sided"  # 'less', 'two-sided', or 'greater'
 
@@ -432,7 +437,7 @@ def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path
         loci_pvalues_df = pd.read_csv(stats_df_path, index_col=0)
     else:
         print("    Calculating:", str(stats_df_path))
-        mask_od_group, mask_yd_group = split_by_age(hist, outliers_df, peaks_paths)
+        mask_od_group, mask_yd_group = split_by_age(hist, outliers_df, peaks_paths, exclude_outliers)
         df_ods = df[mask_od_group]
         df_yds = df[mask_yd_group]
         print("    Dfs: OD = {}, YD = {}".format(df_ods.shape, df_yds.shape))
@@ -545,7 +550,7 @@ def calc_loci_pvalues(df_ods, df_yds, ha):
     return loci_pvalues_df
 
 
-def split_by_age(hist, outliers_df, peaks_paths):
+def split_by_age(hist, outliers_df, peaks_paths, exclude_outliers):
     # Split: Old / Young donors
     donors_age_id = [loi.donor_order_id(p) for p in peaks_paths]
     groups = np.asarray([age for age, _id in donors_age_id])
@@ -556,14 +561,22 @@ def split_by_age(hist, outliers_df, peaks_paths):
     ))
     # Load Outliers info
     mask_not_outlier = None
-    if hist and outliers_df is not None:
-        if hist in outliers_df.columns:
-            col = outliers_df.loc[:, hist]
-            outliers_codes = [col["{}{}".format(age, id)] for age, id in donors_age_id]
-            mask_not_outlier = np.asarray(outliers_codes) == 0
-    if mask_not_outlier is None:
-        print("    {}: No outliers info, use all donors".format(hist))
+    if exclude_outliers:
+        if hist and outliers_df is not None:
+            if hist in outliers_df.columns:
+                col = outliers_df.loc[:, hist]
+                outliers_codes = [col["{}{}".format(age, id)] for age, id in donors_age_id]
+                mask_not_outlier = np.asarray(outliers_codes) == 0
+
+        if mask_not_outlier is None:
+            print(
+                "    {}: No outliers info, but exclude outliers option passed".format(hist)
+            )
+            sys.exit(1)
+    else:
+        print("    {}: use all donors".format(hist))
         mask_not_outlier = np.ones((len(peaks_paths), 1), dtype=bool)
+
     print("    Not outliers: [{}]".format(np.sum(mask_not_outlier)))
     # Young/old group without outliers
     mask_od_group = mask_od_group * mask_not_outlier
