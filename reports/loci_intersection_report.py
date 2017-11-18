@@ -14,11 +14,12 @@ from statsmodels.stats.multitest import multipletests
 def _cli():
     data_root = Path("/mnt/stripe/bio")
     loci_root = data_root / "raw-data/aging/loci_of_interest"
-    # signal_root = data_root / "experiments/signal"
 
     ########################################################################
     parser = argparse.ArgumentParser(
-        description="Generates intersection reports for predefined loci sets",
+        description="Generates intersection reports for predefined loci sets and find loci"
+                    "with significant intersection change between OLD and YOUNG donors group ("
+                    "using Mann whitney u test)",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument('-o', '--out', required=True, metavar="PATH",
@@ -39,7 +40,7 @@ def _cli():
     threads = args.threads
     outliers_df_path = args.outliers
     exclude_outliers = not args.all
-    results_dir = Path(args.out)  # data_root / "experiments/aging/loci_of_interest.tables"
+    results_dir = Path(args.out)
     results_dir.mkdir(parents=True, exist_ok=True)
     ########################################################################
 
@@ -448,52 +449,18 @@ def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path
                    "pvalue",
                    "[{}] Mann whitney u test pvalues".format(stats_df_path.name),
                    correction="Uncorrected",
-                   save_to=pdf,
-                   xticks=len(loci_pvalues_df) < 100)
+                   save_to=pdf)
 
     manhattan_plot(loci_pvalues_df.sort_values(by="fdr_bh"),
                    "fdr_bh",
                    "[{}] Mann whitney u test pvalues".format(stats_df_path.name),
                    correction="Benjamini–Hochberg corrected",
-                   save_to=pdf,
-                   xticks=len(loci_pvalues_df) < 100)
+                   save_to=pdf)
 
-    # Heatmap with selected cols:
-    anns = [bm.color_annotator_age]
-    if hist and outliers_df is not None:
-        if hist in outliers_df.columns:
-            anns.append(bm.color_annotator_outlier(outliers_df, hist))
-    row_annotator = None if not anns else bm.color_annotator_chain(*anns)
-
-    def loci_passed_thr(df, col, thr):
-        return set(df.index[df[col] < thr].tolist())
-
-    def plot_significant(col, title):
-        thr001 = loci_passed_thr(loci_pvalues_df, col, 0.01)
-        thr005 = loci_passed_thr(loci_pvalues_df, col, 0.05)
-        thr01 = loci_passed_thr(loci_pvalues_df, col, 0.1)
-
-        print("Loci passing", title, "threshold 0.1", col, len(thr01))
-        print("Loci passing", title, "threshold 0.005", col, len(thr005))
-        print("Loci passing", title, "threshold 0.001", col, len(thr001))
-        if thr01:
-            bm.plot_metric_heatmap(
-                "IM {} with for {} < 0.1".format(stats_df_path.name, title),
-                df.loc[:, thr01],
-                save_to=pdf,
-                adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
-                row_cluster=False, col_cluster=False, figsize=(20, 15),
-                col_color_annotator=_pvalues_above_thr(
-                    {loi.label_converter_shorten_loci(s) for s in thr005},
-                    {loi.label_converter_shorten_loci(s) for s in thr001}
-                ),
-                row_color_annotator=row_annotator,
-                col_label_converter=loi.label_converter_shorten_loci,
-                row_label_converter=bm.label_converter_donor_and_tool,
-            )
-
-    plot_significant("pvalue", "not-adjusted pvalues")
-    plot_significant("fdr_bh", "adjusted pvalues (BH fdr)")
+    _plot_donors_at_significant_loci(df, loci_pvalues_df, "pvalue", "not-adjusted pvalues",
+                                     outliers_df, hist, stats_df_path.name, pdf)
+    _plot_donors_at_significant_loci(df, loci_pvalues_df, "fdr_bh", "adjusted pvalues (BH fdr)",
+                                     outliers_df, hist, stats_df_path.name, pdf)
 
     pvalue001_df = loci_pvalues_df[loci_pvalues_df["pvalue"] < 0.01]
     for idx, row in pvalue001_df.iterrows():
@@ -502,6 +469,44 @@ def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path
     bh005_df = loci_pvalues_df[loci_pvalues_df["fdr_bh"] < 0.05]
     for idx, row in bh005_df.iterrows():
         significant_loci.append((stats_df_path.name, idx, row.pvalue, row.fdr_bh))
+
+
+def _plot_donors_at_significant_loci(df,
+                                     loci_pvalues_df, col,
+                                     title, outliers_df, hist, table_name,
+                                     pdf):
+    # Heatmap with selected cols:
+    def loci_passed_thr(df, col, thr):
+        return set(df.index[df[col] < thr].tolist())
+
+    anns = [bm.color_annotator_age]
+    if hist and outliers_df is not None:
+        if hist in outliers_df.columns:
+            anns.append(bm.color_annotator_outlier(outliers_df, hist))
+    row_annotator = None if not anns else bm.color_annotator_chain(*anns)
+
+    thr001 = loci_passed_thr(loci_pvalues_df, col, 0.01)
+    thr005 = loci_passed_thr(loci_pvalues_df, col, 0.05)
+    thr01 = loci_passed_thr(loci_pvalues_df, col, 0.1)
+
+    print("Loci passing", title, "threshold 0.1", col, len(thr01))
+    print("Loci passing", title, "threshold 0.005", col, len(thr005))
+    print("Loci passing", title, "threshold 0.001", col, len(thr001))
+    if thr01:
+        bm.plot_metric_heatmap(
+            "IM {} with for {} < 0.1".format(table_name, title),
+            df.loc[:, thr01],
+            save_to=pdf,
+            adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
+            row_cluster=False, col_cluster=False, figsize=(20, 15),
+            col_color_annotator=_pvalues_above_thr(
+                {loi.label_converter_shorten_loci(s) for s in thr005},
+                {loi.label_converter_shorten_loci(s) for s in thr001}
+            ),
+            row_color_annotator=row_annotator,
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=bm.label_converter_donor_and_tool,
+        )
 
 
 def calc_loci_pvalues(df_ods, df_yds, ha):
@@ -571,7 +576,18 @@ def split_by_age(hist, outliers_df, peaks_paths):
 
 
 def manhattan_plot(pvalues_df, col_name, title, correction,
-                   save_to=None, adjustments=None, xticks=True):
+                   save_to=None, adjustments=None,
+                   xticks=None):
+
+    if xticks is None:
+        xticks = len(pvalues_df) < 100
+
+    # TODO: --- hack!!! >>>>>>
+    import matplotlib.pyplot as plt
+    import reports.loci_of_interest as loi
+    import reports.bed_metrics as bm
+    # TODO: <<<<< hack!!! -----
+
     plt.figure(figsize=(15, 8))
     n = pvalues_df.shape[0]
 
