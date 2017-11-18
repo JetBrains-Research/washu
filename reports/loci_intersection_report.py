@@ -121,18 +121,31 @@ def _cli():
     loci = sorted(loci)
     # loci.extend(["interesting_pathways", "other_pathways", None])
     loci.extend(["interesting_pathways"])
+
     significant_loci = []
+    not_significant_loci = []
 
     loci_tool_pairs = [(loci_key, tool) for loci_key in loci for tool in tools_for_stat_test]
     for i, (loci_key, tool) in enumerate(loci_tool_pairs, 1):
         print("----- {}/{} [Stat tests]: Donors {}@{} ----".format(i, len(loci_tool_pairs), tool,
                                                                    loci_key))
         test_donors(tool, peaks_map, loci_dict, loci_key, results_dir, threads, outliers_df,
-                    significant_loci)
-    df_significant_loci = pd.DataFrame.from_records(significant_loci)
+                    significant_loci, not_significant_loci)
+
+    save_as_df(not_significant_loci, results_dir / "not_significant_loci.csv")
+    save_as_df(significant_loci, results_dir / "significant_loci.csv")
+
+
+def save_as_df(loci_info, result_path: Path):
+    if not loci_info:
+        print("No loci, empty file: ", str(result_path))
+        open(str(result_path), mode="w").close()
+        return
+
+    df_significant_loci = pd.DataFrame.from_records(loci_info)
     df_significant_loci.columns = ["file", "locus", "pvalue", "fdr_bh"]
     df_significant_loci.sort_values(by=["fdr_bh", "pvalue"], inplace=True)
-    df_significant_loci.to_csv(str(results_dir / "significant_loci.csv"))
+    df_significant_loci.to_csv(str(result_path))
     print(df_significant_loci.to_string(line_width=200, index=False))
 
 
@@ -352,7 +365,7 @@ def _pvalues_above_thr(thr005, thr001):
 
 
 def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_df,
-                significant_loci):
+                significant_loci, not_significant_loci):
     peaks_dict = peaks_map[tool]
     tool = tool or "all"  # presentable text for labels, we use 'None' for all loci
 
@@ -374,7 +387,7 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
                                                threads=threads),
                 hist, outliers_df, peaks_paths, pdf,
                 outdir / "{}@{}_stat.csv".format(peaks_key, loci_key),
-                significant_loci
+                significant_loci, not_significant_loci
             )
 
             # Intersection metric: loci@peaks, e.g. for small loci, transpose to make plots
@@ -385,13 +398,13 @@ def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_
                                                threads=threads).T,
                 hist, outliers_df, peaks_paths, pdf,
                 outdir / "{}@{}_stat.csv".format(loci_key, peaks_key),
-                significant_loci
+                significant_loci, not_significant_loci
             )
     pass
 
 
 def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path,
-                          significant_loci):
+                          significant_loci, not_significant_loci):
     ha = "two-sided"  # 'less', 'two-sided', or 'greater'
 
     ##########################################################################################
@@ -466,6 +479,10 @@ def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path
 
     plot_significant("pvalue", "not-adjusted pvalues")
     plot_significant("fdr_bh", "adjusted pvalues (BH fdr)")
+
+    pvalue001_df = loci_pvalues_df[loci_pvalues_df["pvalue"] < 0.01]
+    for idx, row in pvalue001_df.iterrows():
+        not_significant_loci.append((stats_df_path.name, idx, row.pvalue, row.fdr_bh))
 
     bh005_df = loci_pvalues_df[loci_pvalues_df["fdr_bh"] < 0.05]
     for idx, row in bh005_df.iterrows():
