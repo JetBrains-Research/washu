@@ -75,60 +75,50 @@ source $(dirname $0)/../parallel/util.sh 2> /dev/null
 FOLDER=$1
 
 if [ ${COUNT} -gt 0 ]; then
-    ALL_COUNT=${COUNT}
-    OD_COUNT=${COUNT}
-    YD_COUNT=${COUNT}
+    ALL_COUNT=`expr ${COUNT} - 1`
+    OD_COUNT=`expr ${COUNT} - 1`
+    YD_COUNT=`expr ${COUNT} - 1`
 fi
 
-# comments about percent and count
-for WORK_DIR in $(find $FOLDER -type d -name "H*"); do :
-    WORK_DIR_NAME=${WORK_DIR##*/}
-    echo  "!${WORK_DIR_NAME}"
+FOLDER_NAME=${FOLDER##*/}
+cd ${FOLDER}
 
-    cd ${WORK_DIR}
+if [ $(find . -wholename "./*island.bed" | grep -v outlier | wc -l) -gt 0 ]; then
+    TOOL="sicer"
+fi
+if [ $(find . -wholename "./*Peak" | grep -v outlier | wc -l) -gt 0 ]; then
+    TOOL="macs2"
+fi
+if [ $(find . -wholename "./*_peaks.bed" | grep -v outlier | wc -l) -gt 0 ]; then
+    TOOL="zinbra"
+fi
 
-    if [ $(find . -wholename "./bed/*island.bed" | grep -v outlier | wc -l) -gt 0 ]; then
-        TOOL="sicer"
-    fi
-    if [ $(find . -wholename "./bed/*Peak" | grep -v outlier | wc -l) -gt 0 ]; then
-        TOOL="macs2"
-    fi
-    if [ $(find . -wholename "./bed/*_peaks.bed" | grep -v outlier | wc -l) -gt 0 ]; then
-        TOOL="zinbra"
-    fi
+if [ ${PERCENT} -gt 0 ]; then
+    ALL_COUNT=$(echo $(find . \( -wholename "*island.bed" -or -wholename "*Peak" -or \
+        -wholename "*_peaks.bed" \) | grep -v outlier | wc -l) " * ${PERCENT} / 100.0 - 1" | bc)
+    OD_COUNT=$(echo $(find . \( -wholename "*OD*island.bed" -or -wholename "*OD*Peak" -or \
+        -wholename "*OD*_peaks.bed" \) | grep -v outlier | wc -l) " * ${PERCENT} / 100.0 - 1" | bc)
+    YD_COUNT=$(echo $(find . \( -wholename "*YD*island.bed" -or -wholename "*YD*Peak" -or \
+        -wholename "*YD*_peaks.bed" \) | grep -v outlier | wc -l) " * ${PERCENT} / 100.0 - 1" | bc)
+fi
 
-    if [ ${PERCENT} -gt 0 ]; then
-        ALL_COUNT=$(echo $(find . \( -wholename "./bed/*island.bed" -or -wholename "./bed/*Peak" -or
-            -wholename "./bed/*_peaks.bed" \) |
-            grep -v outlier | wc -l) * \(${PERCENT} / 100.0\) - 1 | bc)
-        OD_COUNT=$(echo $(find . \( -wholename "./bed/*OD*island.bed" -or
-            -wholename "./bed/*OD*Peak" -or -wholename "./bed/*OD*_peaks.bed" \) |
-            grep -v outlier | wc -l) * \(${PERCENT} / 100.0\) - 1 | bc)
-        YD_COUNT=$(echo $(find . \( -wholename "./bed/*YD*island.bed" -or
-            -wholename "./bed/*YD*Peak" -or -wholename "./bed/*YD*_peaks.bed" \) |
-            grep -v outlier | wc -l) * \(${PERCENT} / 100.0\) - 1 | bc)
-    fi
-
-    find . \( -wholename "./bed/*island.bed" -or -wholename "./bed/*Peak" -or
-        -wholename "./bed/*_peaks.bed" \) | grep -v outlier |
-        sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g' |
-        xargs -0 bash /mnt/stripe/washu/bed/union.sh | grep '\(|.*\)\{'${ALL_COUNT}'\}' |
-        awk -v OFS='\t' '{print $1,$2,$3}' > ${WORK_DIR_NAME}_${TOOL}_median_consensus.bed
-    find . \( -wholename "./bed/*OD*island.bed" -or -wholename "./bed/*OD*Peak" -or
-        -wholename "./bed/*OD*_peaks.bed" \) | grep -v outlier |
-        sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g' | xargs -0 bash /mnt/stripe/washu/bed/union.sh |
-        grep '\(|.*\)\{'${OD_COUNT}'\}' | awk -v OFS='\t' '{print $1,$2,$3}'
-        > ${WORK_DIR_NAME}_${TOOL}_ODS_median_consensus.bed
-    find . \( -wholename "./bed/*YD*island.bed" -or -wholename "./bed/*YD*Peak" -or
-        -wholename "./bed/*YD*_peaks.bed" \) | grep -v outlier |
-        sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g' | xargs -0 bash /mnt/stripe/washu/bed/union.sh |
-        grep '\(|.*\)\{'${YD_COUNT}'\}' | awk -v OFS='\t' '{print $1,$2,$3}'
-        > ${WORK_DIR_NAME}_${TOOL}_YDS_median_consensus.bed
-    bedtools intersect -v -a ${WORK_DIR_NAME}_${TOOL}_ODS_median_consensus.bed -b
-        ${WORK_DIR_NAME}_${TOOL}_YDS_median_consensus.bed
-        > ${WORK_DIR_NAME}_${TOOL}_ODS_without_YDS_median_consensus.bed
-    bedtools intersect -v -a ${WORK_DIR_NAME}_${TOOL}_YDS_median_consensus.bed -b
-        ${WORK_DIR_NAME}_${TOOL}_ODS_median_consensus.bed
-        > ${WORK_DIR_NAME}_${TOOL}_YDS_without_ODS_median_consensus.bed
-    #echo $(pwd)
-done
+find . \( -wholename "*_peaks.bed" -or -wholename "*Peak" -or -wholename "*island.bed" \) |
+    grep -v outlier | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g' |
+    xargs -0 bash /mnt/stripe/washu/bed/union.sh | grep '\(|.*\)\{'${ALL_COUNT}'\}'|
+    awk -v OFS='\t' '{print $1,$2,$3}' > ${FOLDER_NAME}_${TOOL}_consensus.bed
+find . \( -wholename "*OD*island.bed" -or -wholename "*OD*Peak" -or -wholename "*OD*_peaks.bed" \) |
+    grep -v outlier | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g' |
+    xargs -0 bash /mnt/stripe/washu/bed/union.sh |
+    grep '\(|.*\)\{'${OD_COUNT}'\}' | awk -v OFS='\t' '{print $1,$2,$3}' \
+    > ${FOLDER_NAME}_${TOOL}_ODS_consensus.bed
+find . \( -wholename "*YD*island.bed" -or -wholename "*YD*Peak" -or -wholename "*YD*_peaks.bed" \) |
+    grep -v outlier | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g' |
+    xargs -0 bash /mnt/stripe/washu/bed/union.sh |
+    grep '\(|.*\)\{'${YD_COUNT}'\}' | awk -v OFS='\t' '{print $1,$2,$3}' \
+    > ${FOLDER_NAME}_${TOOL}_YDS_consensus.bed
+bedtools intersect -v -a ${FOLDER_NAME}_${TOOL}_ODS_consensus.bed \
+    -b ${FOLDER_NAME}_${TOOL}_YDS_consensus.bed \
+    > ${FOLDER_NAME}_${TOOL}_ODS_without_YDS_consensus.bed
+bedtools intersect -v -a ${FOLDER_NAME}_${TOOL}_YDS_consensus.bed \
+    -b ${FOLDER_NAME}_${TOOL}_ODS_consensus.bed \
+    > ${FOLDER_NAME}_${TOOL}_YDS_without_ODS_consensus.bed
