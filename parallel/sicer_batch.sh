@@ -83,7 +83,7 @@ cd ${WORK_DIR}
 
 # SICER works with BED only
 export LC_ALL=C
-if [! -e ../${FILE_BED}]; then
+if [ ! -e ../${FILE_BED}]; then
     bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${WORK_DIR}/../${FILE_BED}
 fi
 
