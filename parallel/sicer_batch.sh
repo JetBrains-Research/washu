@@ -100,7 +100,7 @@ if [ ! -e ../${INPUT_BED} ]; then
 fi
 
 if [ ! -e ${INPUT_FOLDER}/${INPUT_BED} ];
-then ln -s ../${INPUT_BED} ${INPUT_FOLDER}/${INPUT_BED}
+then ln -s ${WORK_DIR}/../${INPUT_BED} ${INPUT_FOLDER}/${INPUT_BED}
 fi
 
 cd ${INPUT_FOLDER}
