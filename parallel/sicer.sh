@@ -91,11 +91,11 @@ if [ ! -f ${INPUT_BED} ]; then
     bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${INPUT_FOLDER}/${INPUT_BED}
     # Check that we are the first in async calls, not 100% safe
     if [ ! -f ${INPUT_BED} ]; then
-        cp ${INPUT_FOLDER}/${INPUT_BED} ${WORK_DIR}
+        mv ${INPUT_FOLDER}/${INPUT_BED} ${WORK_DIR}/
     fi
-else
-    cp ${INPUT_BED} ${INPUT_FOLDER}
 fi
+# Symlink
+ln -s ${WORK_DIR}/${INPUT_BED} ${INPUT_FOLDER}/${INPUT_BED}
 
 cd ${INPUT_FOLDER}
 
@@ -111,10 +111,9 @@ cd ${INPUT_FOLDER}
 echo "SICER.sh ${INPUT_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}"
 
 SICER.sh ${INPUT_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
-cp -f ${OUT_FOLDER}/* ${WORK_DIR}
-rm -r ${INPUT_FOLDER}
 
-# Output files:
+# SICER generates lots of output
+#
 # -normalized.wig. This file is in WIG format and could be uploaded to the UCSC genome browser for visualization of the ChIP library with redundancy-removed but before island-filtering (ES_H3K27me3-1-removed.bed) with desired window size.
 # .scoreisland. This file stores all identified islands with respective scores and could be used to evaluate the choice of gap size.
 # -islands-summary. This 8-column file is a summary of all islands identified in the ChIP library. The format is chromosome, start, end, read count in ChIP library, read count in control library, p-value, fold change, FDR).
@@ -122,11 +121,25 @@ rm -r ${INPUT_FOLDER}
 # -islandfiltered.bed. This file is in BED format and contains all reads that are within significant islands.
 # -islandfiltered-normalized.wig. This file is in WIG format and could be uploaded directly to UCSC genome browser for visualization of the island-filtered ChIP library.
 # -removed.bed. This file contains reads after redundancy removed.
+#
+# IGNORE it: Resulting BED and logs only.
+# See https://github.com/JetBrains-Research/washu/issues/27
+mv ${OUT_FOLDER}/*sicer.log ${WORK_DIR}
+mv ${OUT_FOLDER}/*island.bed ${WORK_DIR}
+
+# Prepare for rip.sh
+mv ${INPUT_FOLDER}/${INPUT_BED} ${WORK_DIR}/${NAME}_pileup.bed
+
+# Cleanup else SICER output
+rm -r ${INPUT_FOLDER}
 
 cd ${WORK_DIR}
 
 # Compute Reads in Peaks
 bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${NAME}*island.bed
+
+# Cleanup
+rm ${NAME}_pileup.bed
 SCRIPT
 
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
@@ -138,5 +151,4 @@ check_logs
 # Cleanup: remove tmp directory and everything except for island.bed, rip.csv, log and sh script.
 # Also leave the BAM symlinks, they will be removed separately.
 rm -r ${WORK_DIR}/sicer_tmp
-for file in $(ls ${WORK_DIR} | grep -vE "(\.log|island\.bed|_rip\.csv|\.sh|\.bam)$"); do rm ${WORK_DIR}/${file}; done;
 >&2 echo "Done. Batch sicer $@"
