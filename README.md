@@ -69,10 +69,12 @@ Docker
 --------------------
 There is a Docker configuration with all the necessary tools for pipeline.
 ```bash
-# Build Docker
+# Build Docker image with all the tools and TeamCity test runner
 docker build -t washu .
-# Launch tests with Teamcity tests runner
-docker run -v <path_to_washu_project>:/washu -t -i washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
+# FAST tests
+docker run -v <project_path>:/washu -t -i washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
+# SLOW tests 
+docker run -v <project_path>:/washu -t -i washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
 ```
 
 Data standards and pipelines
