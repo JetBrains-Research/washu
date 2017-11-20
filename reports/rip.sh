@@ -18,6 +18,7 @@ PILEUP_BED=${READS_PREFIX}_pileup.bed
 RIP_FILE=${PEAKS_FILE}_rip.csv
 
 echo "BAM_FILE: ${READS_BAM}"
+echo "PEAKS_FILE: ${PEAKS_FILE}"
 echo "PILEUP_BED: ${PILEUP_BED}"
 echo "RIP_FILE: ${RIP_FILE}"
 
@@ -57,21 +58,22 @@ else
     fi
 fi
 READS=$(wc -l ${PILEUP_BED} | awk '{print $1}')
+echo "READS: $READS"
 
 # To sorted bed
 cat ${PEAKS_FILE} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMPDIR} > ${PEAKS_FILE_SORTED}
 PEAKS=$(wc -l ${PEAKS_FILE_SORTED} | awk '{print $1}')
+echo "PEAKS: $PEAKS"
 
 # Compute number of reads, intersecting with peaks
 intersectBed -a ${PILEUP_BED} -b ${PEAKS_FILE_SORTED} -c -f 0.20 > ${INTERSECT_BED}
-RIP=$(awk '{sum += $4} END {print sum}' ${INTERSECT_BED})
+# _pileup.bed can have different number of columns
+COLS=$(cat ${PILEUP_BED} | head -1 | awk '{ print NF }')
+RIP=$(awk -v COLS=$COLS '{sum += $(COLS+1)} END {print sum}' ${INTERSECT_BED})
+echo "RIP: $RIP"
 
-# Show result
 echo "file,peaks_file,reads,peaks,rip" > ${RIP_FILE}
 echo "${READS_BAM},${PEAKS_FILE},${READS},${PEAKS},${RIP}" >> ${RIP_FILE}
-
-echo "${RIP_FILE}"
-cat ${RIP_FILE}
 
 # Cleanup
 rm ${PEAKS_FILE_SORTED} ${INTERSECT_BED}
