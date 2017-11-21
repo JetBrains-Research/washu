@@ -390,8 +390,8 @@ def report(key, loci_dict, outdir, threads, key_side_size=15, consensus_type="me
                 row_cluster=True, col_cluster=False, threads=threads, figsize=(12, key_side_size))
 
 
-def process_intersection_metric(a_paths, b_paths, df_path: Path, pdf, **kw):
-    df = bm.load_or_build_metrics_table(a_paths, b_paths, df_path)
+def process_intersection_metric(a_paths, b_paths, df_path: Path, pdf, threads=4, **kw):
+    df = bm.load_or_build_metrics_table(a_paths, b_paths, df_path, threads=threads)
 
     # print to pdf:
     bm.plot_metric_heatmap("IM: {}".format(df_path.name), df, save_to=pdf, **kw)
