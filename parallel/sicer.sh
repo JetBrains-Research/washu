@@ -70,13 +70,6 @@ do :
         fi
         INPUT_BED=${INPUT/.bam/.bed}
 
-        # Create tmpfile in advance, because of interpolation of qsub call
-        SICER_FOLDER=${TMPDIR}/${ID}
-        SICER_OUT_FOLDER=${SICER_FOLDER}/out
-        # Create folders
-        mkdir -p ${SICER_FOLDER}
-        mkdir -p ${SICER_OUT_FOLDER}
-
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
@@ -85,37 +78,41 @@ do :
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}_sicer.log
 
-module load bedtools2
-
 source "${SCRIPT_DIR}/parallel/util.sh"
+
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
+SICER_FOLDER=\${TMPDIR}/${ID}
+SICER_OUT_FOLDER=\${SICER_FOLDER}/out
+# Create folders
+mkdir -p \${SICER_FOLDER}
+mkdir -p \${SICER_OUT_FOLDER}
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
+module load bedtools2
 
 # SICER works with BED only, reuse _pileup.bed if possible
 if [ -f ${WORK_DIR}/${PILEUP_BED} ]; then
     echo "Pileup file already exists: ${PILEUP_BED}"
-    ln -s ${WORK_DIR}/${PILEUP_BED} ${SICER_FOLDER}/${FILE_BED}
+    ln -s ${WORK_DIR}/${PILEUP_BED} \${SICER_FOLDER}/${FILE_BED}
 else
     export LC_ALL=C
-    bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${SICER_FOLDER}/${FILE_BED}
+    bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > \${SICER_FOLDER}/${FILE_BED}
 fi
 
 # Use tmp files to reduced async problems with same input parallel processing
 echo "${FILE}: control file found: ${INPUT}"
 if [ ! -f ${INPUT_BED} ]; then
-    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${SICER_FOLDER}/${INPUT_BED}
+    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > \${SICER_FOLDER}/${INPUT_BED}
     # Check that we are the first in async calls, not 100% safe
     if [ ! -f ${INPUT_BED} ]; then
-        mv ${SICER_FOLDER}/${INPUT_BED} ${WORK_DIR}/${INPUT_BED}
+        mv \${SICER_FOLDER}/${INPUT_BED} ${WORK_DIR}/${INPUT_BED}
     fi
 fi
 # Symlink
-ln -sf ${WORK_DIR}/${INPUT_BED} ${SICER_FOLDER}/${INPUT_BED}
+ln -sf ${WORK_DIR}/${INPUT_BED} \${SICER_FOLDER}/${INPUT_BED}
 
-cd ${SICER_FOLDER}
-
+cd \${SICER_FOLDER}
 # Usage: SICER.sh [InputDir] [bed file] [control file] [OutputDir] [Species]
 #   [redundancy threshold] [window size (bp)] [fragment size] [effective genome fraction] [gap size (bp)] [FDR]
 # Defaults:
@@ -123,22 +120,20 @@ cd ${SICER_FOLDER}
 #   window size (bp)        = 200
 #   fragment size           = 150
 #   gap size (bp)           = 600
+echo "SICER.sh \${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} \${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}"
 
-
-echo "SICER.sh ${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} ${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}"
-
-SICER.sh ${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} ${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
+SICER.sh \${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} \${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
 
 # SICER generates lots of output, ignore it: resulting BED and logs only.
 # See https://github.com/JetBrains-Research/washu/issues/27
-mv ${SICER_OUT_FOLDER}/*sicer.log ${WORK_DIR}
-mv ${SICER_OUT_FOLDER}/*island.bed ${WORK_DIR}
+mv \${SICER_OUT_FOLDER}/*sicer.log ${WORK_DIR}
+mv \${SICER_OUT_FOLDER}/*island.bed ${WORK_DIR}
 # Prepare for rip.sh
 if [ ! -f ${WORK_DIR}/${PILEUP_BED} ]; then
-    mv ${SICER_FOLDER}/${FILE_BED} ${WORK_DIR}/${PILEUP_BED}
+    mv \${SICER_FOLDER}/${FILE_BED} ${WORK_DIR}/${PILEUP_BED}
 fi
 # Cleanup other SICER output
-rm -r ${SICER_FOLDER}
+rm -r \${SICER_FOLDER}
 
 cd ${WORK_DIR}
 
@@ -149,6 +144,7 @@ bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${NAME}*island.bed
 if [ -z ${BATCH_MODE} ]; then
     rm ${PILEUP_BED}
 fi
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 SCRIPT
 
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
