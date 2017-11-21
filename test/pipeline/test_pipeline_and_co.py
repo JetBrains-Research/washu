@@ -104,11 +104,10 @@ def test_pipeline_rseg():
 
 
 def test_pipeline_sicer():
-    check_files("./fastq_bams_sicer_0.01/*-island.bed", 4)
-    check_files("./fastq_bams_sicer_0.01/*-island.bed_rip.csv", 4)
-    check_files("./fastq_bams_sicer_0.01/*-removed-1.bed", 0)
-    check_files("./fastq_bams_sicer_0.01/*_pileup.bed", 0)
-    check_files("./fastq_bams_sicer_0.01/*", 13)
+    check_files("./fastq_bams_sicer/*island.bed", 4)
+    check_files("./fastq_bams_sicer/*island.bed_rip.csv", 4)
+    check_files("./fastq_bams_sicer/*removed-1.bed", 0)
+    check_files("./fastq_bams_sicer/*pileup.bed", 0)
 
 
 def test_bam2tags():
