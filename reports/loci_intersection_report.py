@@ -300,7 +300,7 @@ def report_donors(tool, peaks_map, loci_dict, loci_key, key_side_size,
                   outdir, threads, outliers_df):
     peaks_dict = peaks_map[tool]
 
-    result_plot_path = outdir / "plot_{}_by_donor.pdf".format(tool)
+    result_plot_path = outdir / "plot_{}@{}_by_donor.pdf".format(tool, loci_key)
     with PdfPages(str(result_plot_path)) as pdf:
         init_pdf_info(pdf)
         for hist in sorted(peaks_dict.keys()):
