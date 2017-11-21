@@ -108,7 +108,7 @@ if [ ! -f ${INPUT_BED} ]; then
     bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${SICER_FOLDER}/${INPUT_BED}
     # Check that we are the first in async calls, not 100% safe
     if [ ! -f ${INPUT_BED} ]; then
-        mv ${SICER_FOLDER}/${INPUT_BED} ${WORK_DIR}/
+        mv ${SICER_FOLDER}/${INPUT_BED} ${WORK_DIR}/${INPUT_BED}
     fi
 fi
 # Symlink
