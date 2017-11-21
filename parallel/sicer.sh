@@ -37,8 +37,6 @@ GENOME=$2
 CHROM_SIZES=$3
 FDR=$4
 
-cd ${WORK_DIR}
-
 EFFECTIVE_GENOME_FRACTION=$(python ${SCRIPT_DIR}/scripts/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
 echo "EFFECTIVE_GENOME_FRACTION: ${EFFECTIVE_GENOME_FRACTION}"
 
@@ -50,10 +48,14 @@ fi
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p ${TMPDIR}
 
+cd ${WORK_DIR}
+
 TASKS=()
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
     NAME=${FILE%%.bam} # file name without extension
+    ID=${NAME}_F${FRAGMENT_SIZE}_W${WINDOW_SIZE}_G${GAP_SIZE}_FDR${FDR}
+
     # Check if file already processed
     # Naming example: OD_OD10_H3K27me3-W200-G0-FDR0.01-island.bed
     if [ ! -f "${NAME}-W${WINDOW_SIZE}-G${GAP_SIZE}-FDR${FDR}-island.bed" ]; then
@@ -69,19 +71,19 @@ do :
         INPUT_BED=${INPUT%%.bam}.bed
 
         # Create tmpfile in advance, because of interpolation of qsub call
-        SICER_TMP_FOLDER=${TMPDIR}/${NAME}_F${FRAGMENT_SIZE}_W${WINDOW_SIZE}_G${GAP_SIZE}_FDR${FDR}
-        OUT_FOLDER=${SICER_TMP_FOLDER}/out
+        INPUT_FOLDER=${TMPDIR}/${ID}
+        OUTPUT_FOLDER=${INPUT_FOLDER}/out
         # Create folders
-        mkdir -p ${SICER_TMP_FOLDER}
-        mkdir -p ${OUT_FOLDER}
+        mkdir -p ${INPUT_FOLDER}
+        mkdir -p ${OUTPUT_FOLDER}
 
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
-#PBS -N sicer_${NAME}_${FDR}
+#PBS -N sicer_${ID}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${NAME}_${FDR}_sicer.log
+#PBS -o ${WORK_DIR}/${ID}_sicer.log
 
 module load bedtools2
 
@@ -94,24 +96,25 @@ cd ${WORK_DIR}
 # SICER works with BED only, reuse _pileup.bed if possible
 if [ -f ${PILEUP_BED} ]; then
     echo "Pileup file already exists: ${PILEUP_BED}"
-    ln -s ${NAME}_pileup.bed ${SICER_TMP_FOLDER}/${FILE_BED}
+    ln -s ${NAME}_pileup.bed ${INPUT_FOLDER}/${FILE_BED}
 else
     export LC_ALL=C
-    bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${SICER_TMP_FOLDER}/${FILE_BED}
+    bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${INPUT_FOLDER}/${FILE_BED}
 fi
 # Use tmp files to reduced async problems with same input parallel processing
 echo "${FILE}: control file found: ${INPUT}"
 if [ ! -f ${INPUT_BED} ]; then
-    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${SICER_TMP_FOLDER}/${INPUT_BED}
+    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${INPUT_FOLDER}/${INPUT_BED}
     # Check that we are the first in async calls, not 100% safe
     if [ ! -f ${INPUT_BED} ]; then
-        mv ${SICER_TMP_FOLDER}/${INPUT_BED} ${WORK_DIR}/
+        mv ${INPUT_FOLDER}/${INPUT_BED} ${WORK_DIR}/
     fi
 fi
-# Symlink
-ln -s ${WORK_DIR}/${INPUT_BED} ${SICER_TMP_FOLDER}/${INPUT_BED}
 
-cd ${SICER_TMP_FOLDER}
+# Symlink
+ln -s ${WORK_DIR}/${INPUT_BED} ${INPUT_FOLDER}/${INPUT_BED}
+
+cd ${INPUT_FOLDER}
 
 # Usage: SICER.sh [InputDir] [bed file] [control file] [OutputDir] [Species]
 #   [redundancy threshold] [window size (bp)] [fragment size] [effective genome fraction] [gap size (bp)] [FDR]
@@ -122,22 +125,22 @@ cd ${SICER_TMP_FOLDER}
 #   gap size (bp)           = 600
 
 
-echo "SICER.sh ${SICER_TMP_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}"
+echo "SICER.sh ${INPUT_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUTPUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}"
 
-SICER.sh ${SICER_TMP_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
+SICER.sh ${INPUT_FOLDER} ${FILE_BED} ${INPUT_BED} ${OUTPUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
 
 # SICER generates lots of output, ignore it: resulting BED and logs only.
 # See https://github.com/JetBrains-Research/washu/issues/27
-mv ${OUT_FOLDER}/*sicer.log ${WORK_DIR}
-mv ${OUT_FOLDER}/*island.bed ${WORK_DIR}
+mv ${OUTPUT_FOLDER}/*sicer.log ${WORK_DIR}
+mv ${OUTPUT_FOLDER}/*island.bed ${WORK_DIR}
 
 # Prepare for rip.sh
 if [ ! -f ${NAME}_pileup.bed ]; then
-    mv ${SICER_TMP_FOLDER}/${INPUT_BED} ${WORK_DIR}/${PILEUP_BED}
+    mv ${INPUT_FOLDER}/${INPUT_BED} ${WORK_DIR}/${PILEUP_BED}
 fi
 
 # Cleanup other SICER output
-rm -r ${SICER_TMP_FOLDER}
+rm -r ${INPUT_FOLDER}
 
 cd ${WORK_DIR}
 
