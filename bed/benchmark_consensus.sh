@@ -24,3 +24,5 @@ for HIST_DIR in $(find . -type d -name "H*" -maxdepth 1); do
         cp "${DIR}/*_consensus.bed" ${LOCI_ROOT} ${HIST_NAME}
     done
 done
+
+>&2 echo "Done. benchmark_consensus $@"
