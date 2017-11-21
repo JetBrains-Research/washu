@@ -54,26 +54,29 @@ TASKS=()
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
     NAME=${FILE%%.bam} # file name without extension
-    FILE_BED=${NAME}.bed # It is used for results naming
-    PILEUP_BED=${NAME}_pileup.bed
+    # Check if file already processed
+    # Naming example: OD_OD10_H3K27me3-W200-G0-FDR0.01-island.bed
+    if [ -f "${NAME}-W${WINDOW_SIZE}-G${GAP_SIZE}-FDR${FDR}-island.bed" ]; then
+        FILE_BED=${NAME}.bed # It is used for results naming
+        PILEUP_BED=${NAME}_pileup.bed
 
-    INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
-    echo "${FILE} input: ${INPUT}"
-    if [ ! -f "${INPUT}" ]; then
-        echo "SICER requires control"
-        continue
-    fi
-    INPUT_BED=${INPUT%%.bam}.bed
+        INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
+        echo "${FILE} input: ${INPUT}"
+        if [ ! -f "${INPUT}" ]; then
+            echo "SICER requires control"
+            continue
+        fi
+        INPUT_BED=${INPUT%%.bam}.bed
 
-    # Create tmpfile in advance, because of interpolation of qsub call
-    SICER_TMP_FOLDER=${TMPDIR}/${NAME}_F${FRAGMENT_SIZE}_W${WINDOW_SIZE}_G${GAP_SIZE}_FDR${FDR}
-    OUT_FOLDER=${SICER_TMP_FOLDER}/out
-    # Create folders
-    mkdir -p ${SICER_TMP_FOLDER}
-    mkdir -p ${OUT_FOLDER}
+        # Create tmpfile in advance, because of interpolation of qsub call
+        SICER_TMP_FOLDER=${TMPDIR}/${NAME}_F${FRAGMENT_SIZE}_W${WINDOW_SIZE}_G${GAP_SIZE}_FDR${FDR}
+        OUT_FOLDER=${SICER_TMP_FOLDER}/out
+        # Create folders
+        mkdir -p ${SICER_TMP_FOLDER}
+        mkdir -p ${OUT_FOLDER}
 
-    # Submit task
-    run_parallel << SCRIPT
+        # Submit task
+        run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N sicer_${NAME}_${FDR}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
@@ -147,8 +150,9 @@ if [ -z ${BATCH_MODE} ]; then
 fi
 SCRIPT
 
-    echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
-    TASKS+=("$QSUB_ID")
+        echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
+        TASKS+=("$QSUB_ID")
+    fi
 done
 wait_complete ${TASKS[@]}
 check_logs
