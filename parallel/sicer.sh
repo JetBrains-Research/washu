@@ -97,13 +97,13 @@ if [ -f ${WORK_DIR}/${PILEUP_BED} ]; then
     ln -s ${WORK_DIR}/${PILEUP_BED} \${SICER_FOLDER}/${FILE_BED}
 else
     export LC_ALL=C
-    bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > \${SICER_FOLDER}/${FILE_BED}
+    bedtools bamtobed -i ${FILE} > \${SICER_FOLDER}/${FILE_BED}
 fi
 
 # Use tmp files to reduced async problems with same input parallel processing
 echo "${FILE}: control file found: ${INPUT}"
 if [ ! -f ${INPUT_BED} ]; then
-    bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > \${SICER_FOLDER}/${INPUT_BED}
+    bedtools bamtobed -i ${INPUT} > \${SICER_FOLDER}/${INPUT_BED}
     # Check that we are the first in async calls, not 100% safe
     if [ ! -f ${INPUT_BED} ]; then
         mv \${SICER_FOLDER}/${INPUT_BED} ${WORK_DIR}/${INPUT_BED}

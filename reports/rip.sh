@@ -48,7 +48,7 @@ else
     # file state let's change file in atomic like way
     TMPFILE=$(mktemp $TMPDIR/pileup.XXXXXX.bed)
     echo "Calculate pileup file in tmp file: ${TMPFILE}"
-    bedtools bamtobed -i ${READS_BAM} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMPDIR} -o ${TMPFILE}
+    bedtools bamtobed -i ${READS_BAM} | awk -v OFS='\t' '{print $1,$2,$3}' -o ${TMPFILE}
     if [ -f ${PILEUP_BED} ]; then
         echo "  Ignore result, file has been already calculated by smb else: ${PILEUP_BED}"
     else
@@ -60,13 +60,11 @@ fi
 READS=$(wc -l ${PILEUP_BED} | awk '{print $1}')
 echo "READS: $READS"
 
-# To sorted bed
-cat ${PEAKS_FILE} | awk -v OFS='\t' '{print $1,$2,$3}' | sort -k1,1 -k2,2n -T ${TMPDIR} > ${PEAKS_FILE_SORTED}
-PEAKS=$(wc -l ${PEAKS_FILE_SORTED} | awk '{print $1}')
+PEAKS=$(wc -l ${PEAKS_FILE} | awk '{print $1}')
 echo "PEAKS: $PEAKS"
 
 # Compute number of reads, intersecting with peaks
-intersectBed -a ${PILEUP_BED} -b ${PEAKS_FILE_SORTED} -c -f 0.20 > ${INTERSECT_BED}
+intersectBed -a ${PILEUP_BED} -b ${PEAKS} -c -f 0.20 > ${INTERSECT_BED}
 # _pileup.bed can have different number of columns
 COLS=$(cat ${PILEUP_BED} | head -1 | awk '{ print NF }')
 RIP=$(awk -v COLS=$COLS '{sum += $(COLS+1)} END {print sum}' ${INTERSECT_BED})
