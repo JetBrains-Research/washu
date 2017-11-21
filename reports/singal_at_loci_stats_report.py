@@ -38,6 +38,7 @@ def _cli():
 
 def stats_test(results_dir, signal_root):
     signal_pvalues_df_path = results_dir / "signal_pvalues.csv"
+    signal_adjusted_pvalues_df_path = results_dir / "signal_adjusted_pvalues.csv"
 
     if signal_pvalues_df_path.exists():
         signal_pvalues_df = pd.read_csv(signal_pvalues_df_path, index_col=0)
@@ -67,6 +68,8 @@ def stats_test(results_dir, signal_root):
         signal_pvalues_bh_df.loc[pvalues_not_nan_mask, c] = pvalues_corrected
     signal_pvalues_bh_df["min"] = signal_pvalues_bh_df.min(axis=1, skipna=True)
     signal_pvalues_bh_sorted_df = signal_pvalues_bh_df.sort_values(by="min")
+    signal_pvalues_bh_sorted_df.to_csv(str(signal_adjusted_pvalues_df_path))
+
     # Passing FDR correction
     signal_pvalues_bh_sorted_df_005 = signal_pvalues_bh_sorted_df[
         signal_pvalues_bh_sorted_df["min"] < 0.05]
@@ -135,13 +138,20 @@ def plot_signal_at_signif_loci(title, df, col, pdf, signal_root):
             adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
             row_cluster=False, col_cluster=False, figsize=(20, 15),
             col_color_annotator=loir._pvalues_above_thr(
-                {loi.label_converter_shorten_loci(s) for s in thr005},
-                {loi.label_converter_shorten_loci(s) for s in thr001}
+                {label_converter_shorten_loci(s) for s in thr005},
+                {label_converter_shorten_loci(s) for s in thr001}
             ),
             row_color_annotator=row_annotator,
-            col_label_converter=loi.label_converter_shorten_loci,
+            col_label_converter=label_converter_shorten_loci,
             row_label_converter=bm.label_converter_donor_and_tool,
         )
+
+
+def label_converter_shorten_loci(name):
+    name = name.replace(".bed", "")
+    name = name.replace("median_consensus", "mcs")
+    name = name.replace("without", "w/o")
+    return name
 
 
 def calc_signal_pvalues(pvalues_df_path, signal_root):
