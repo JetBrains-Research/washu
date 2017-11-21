@@ -63,4 +63,4 @@ RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/downlo
 RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
 
 
-COPY ./test/module.sh /opt/
+COPY ./module.sh /opt/

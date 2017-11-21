@@ -1,11 +1,12 @@
-Technical pipelines for ChIP-Seq, RNA-Seq, RRBS processing on Portable Batch System (qsub)
-==========
+Technical pipelines
+===================
+Technical pipelines for ChIP-Seq, RNA-Seq, RRBS processing on Portable Batch System (qsub).
 
 Project
 -------
 
 * `/bed`            - BED files manipulations - intersection, ChromHMM enrichment, etc.
-* `/dockertestdata` - Docker file with testdata: fastq, indices, etc. Used for `pipeline_chipseq.py` testing.
+* `/docker`         - Docker configuration files with tools and test data. Used for `pipeline_chipseq.py` testing.
 * `/notebooks`      - Jupiter notebooks
 * `/parallel`       - Scripts for parallel execution of PBS greed using `qsub` queue management
 * `/R`              - R scripts
@@ -60,21 +61,22 @@ Add the following to `~/.bashrc` (Linux) or `~/.bash_profile` (MacOS):
 ```bash
 # Allow pipeline execution from anywhere
 export PYTHONPATH="<PATH_TO_REPOSITORY>:$PYTHONPATH"
-
-# Enable 3rd party tools
-export PATH="<TOOL1>:<TOOL2>:...:<TOOL_N>:$PATH"
 ```
 
 Docker
---------------------
-There is a Docker configuration with all the necessary tools for pipeline.
+------
+There is a Docker hub image `biolabs/washu` with all the necessary data and tools for pipeline and tests.
+Docker configurations are available under `/docker` folder.
+
+
+Tests
+-----
 ```bash
-# Build Docker image with all the tools and TeamCity test runner
-docker build -t washu .
 # FAST tests
-docker run -v <project_path>:/washu -t -i washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
+docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
+
 # SLOW tests 
-docker run -v <project_path>:/washu -t -i washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
+docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
 ```
 
 Data standards and pipelines
