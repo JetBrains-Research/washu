@@ -3,6 +3,7 @@ import sys
 import argparse
 import datetime
 from collections import defaultdict
+from itertools import chain
 
 from pathlib import Path
 import pandas as pd
@@ -13,7 +14,6 @@ from statsmodels.stats.multitest import multipletests
 
 def _cli():
     data_root = Path("/mnt/stripe/bio")
-    loci_root = data_root / "raw-data/aging/loci_of_interest"
 
     ########################################################################
     parser = argparse.ArgumentParser(
@@ -24,6 +24,10 @@ def _cli():
     )
     parser.add_argument('-o', '--out', required=True, metavar="PATH",
                         help="Output dir")
+    parser.add_argument('--loci', metavar="PATH",
+                        # data_root / "experiments/loci_of_interest"
+                        default=str(data_root / "raw-data/aging/loci_of_interest"),
+                        help="Loci dir")
     parser.add_argument('-p', '--threads', type=int, default=4,
                         help="Threads number for parallel processing")
     parser.add_argument('--all', action="store_true",
@@ -42,6 +46,7 @@ def _cli():
     exclude_outliers = not args.all
     results_dir = Path(args.out)
     results_dir.mkdir(parents=True, exist_ok=True)
+    loci_root = Path(args.loci)
     ########################################################################
 
     loci_dict = loi.collect_loci(loci_root)
@@ -50,17 +55,26 @@ def _cli():
         if args.tuned:
             peaks_map = defaultdict(dict)
             bench_root = data_root / "experiments/configs/benchmark/benchmark"
-            for hist_dir in (
-                    d for d in bench_root.iterdir() if d.is_dir() and d.name.startswith("H")
-            ):
+
+            for hist_dir in (d for d in bench_root.glob("H*") if d.is_dir()):
                 hist = hist_dir.name
                 for tool_dir in (d for d in hist_dir.iterdir() if d.is_dir()):
                     tool = tool_dir.name
+
+                    if tool == "macs_narrow":
+                        # We decided to ignore Macs2 narrow
+                        continue
+
+                    if tool == "sicer":
+                        # TODO: not calculated yet, partial results in folders
+                        continue
+
                     peaks = loi._collect_peaks_in_folder(tool_dir)
                     if peaks:
                         peaks_map[tool][hist] = peaks
             tools_for_stat_test = sorted(peaks_map.keys())
         else:
+            # TODO: legacy peaks, cleanup required
             # default peaks
             golden_peaks_root = data_root / "experiments/aging/peak_calling"
             zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
@@ -90,63 +104,84 @@ def _cli():
                                   index_col="donor")
     ########################################################################
     # NOTCH pathways as loci:
-    notch_pathways = [p for p in (loci_root / "interesting_pathways").glob('R-HSA-266082*.bed')]
+    notch_pathways = [p for p in (loci_root / "aging_pathways").glob('R-HSA-266082*.bed')]
     notch_pathways.extend(
-        [p for p in (loci_root / "interesting_pathways").glob('R-HSA-1912399*.bed')])
+        [p for p in (loci_root / "aging_pathways").glob('R-HSA-1912399*.bed')])
     notch_pathways.extend(
-        [p for p in (loci_root / "interesting_pathways").glob('R-HSA-264460*_cds.bed')])
+        [p for p in (loci_root / "aging_pathways").glob('R-HSA-264460*_cds.bed')])
     notch_pathways.sort(key=lambda p: p.name)
     loci_dict["notch_pathways"] = notch_pathways
 
+    loci_dict["wo_pathways"] = sorted(set(
+        chain(*[loci_dict[lt] for lt in loci_dict.keys() if lt and ("pathways" not in lt)])),
+        key=lambda p: p.name
+    )
     ########################################################################
-    for tool in sorted(peaks_map.keys()):
-        print("----- [Report]: Donors {} ----".format(tool))
-        report_donors(tool, peaks_map, loci_dict, "default", results_dir, threads, outliers_df)
 
+    for tool in sorted(peaks_map.keys()):
+        print("----- [Report]: Donors {}@default ----".format(tool))
+        report_donors(tool, peaks_map, loci_dict, "default", 20, results_dir, threads,
+                      outliers_df)
+        print("----- [Report]: Donors {}@wo_pathways ----".format(tool))
+        report_donors(tool, peaks_map, loci_dict, "wo_pathways", 40, results_dir, threads,
+                      outliers_df)
+
+    # If custom peaks folder, skip plots, calc only stat test
     if not args.peaks:
+        processed_loci = set()
         print("----- [Report]: Default ----")
         report_default(loci_dict, results_dir, threads)
+        processed_loci.add("default")
+
         print("----- [Report]: Consensus ----")
-        report_consensus(loci_dict, results_dir, threads)
+        if ("median_consensus" in loci_dict):
+            report_consensus(loci_dict, results_dir, threads, "median_consensus")
+            processed_loci.add("median_consensus")
 
-        print("----- [Report]: Repeats ----")
-        report("repeats", loci_dict, results_dir, threads,
-               consensus_yo=False, default=False)
-        print("----- [Report]: TFs ----")
-        report("tfs", loci_dict, results_dir, threads,
-               consensus_yo=False, default=False)
-        print("----- [Report]: Differential ChipSeq ----")
-        report("chipseq_diff_loci", loci_dict, results_dir, threads)
-        print("----- [Report]: Differential RnaSeq ----")
-        report("rna_diff", loci_dict, results_dir, threads)
-
-        print("----- [Report]: Pathways interesting ----")
-        report("interesting_pathways", loci_dict, results_dir, threads,
-               key_side_size=200,
-               itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
+        print("----- [Report]: Pathways aging ----")
+        if "aging_pathways" in loci_dict:
+            report("aging_pathways", loci_dict, results_dir, threads,
+                   key_side_size=200,
+                   itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
+            processed_loci.add("aging_pathways")
 
         print("----- [Report]: Pathways NOTCH ----")
         report("notch_pathways", loci_dict, results_dir, threads,
                key_side_size=20,
                itself=False, chromhmm=False, default=False, repeats=False, consensus=False)
+        processed_loci.add("notch_pathways")
+
+        # Other loci:
+        for lt in sorted({k for k in loci_dict if k is not None} - processed_loci):
+            print("----- [Report]: {} ----".format(lt))
+
+            if "pathways" in lt:
+                print("   [Ignored] Size: ", len(loci_dict[lt]))
+                continue
+
+            report(lt, loci_dict, results_dir, threads)
+
+    ########################################################################
 
     # Stat tests:
-    loci = set(loci_dict.keys())
-    # lets check large pathways and all data after all other loci:
-    loci.remove(None)
-    loci.remove("other_pathways")
-    loci.remove("interesting_pathways")
-    loci = sorted(loci)
-    # loci.extend(["interesting_pathways", "other_pathways", None])
-    loci.extend(["interesting_pathways"])
+    stats_test_loci = {
+        "wo_pathways": loci_dict["wo_pathways"],
+        # "other_pathways": loci_dict.get("other_pathways", []),
+        "aging_pathways": loci_dict.get("aging_pathways", []),
+    }
 
     significant_loci = []
     not_significant_loci = []
 
-    loci_tool_pairs = [(loci_key, tool) for loci_key in loci for tool in tools_for_stat_test]
+    loci_tool_pairs = [(loci_key, tool) for loci_key in stats_test_loci for tool in
+                       tools_for_stat_test]
     for i, (loci_key, tool) in enumerate(loci_tool_pairs, 1):
         print("----- {}/{} [Stat tests]: Donors {}@{} ----".format(i, len(loci_tool_pairs), tool,
                                                                    loci_key))
+        if not loci_dict[loci_key]:
+            print("  [Skipped] No loci paths")
+            continue
+
         test_donors(tool, peaks_map, loci_dict, loci_key, results_dir, threads, outliers_df,
                     exclude_outliers,
                     significant_loci, not_significant_loci)
@@ -197,17 +232,12 @@ def report_default(loci_dict, outdir, threads):
             row_cluster=False, col_cluster=False, threads=threads, figsize=(15, 15))
 
 
-def report_consensus(loci_dict, outdir, threads, consensus_type="median_consensus"):
+def report_consensus(loci_dict, outdir, threads, consensus_type):
     result_plot_path = outdir / "plot_{}.pdf".format(consensus_type)
     with PdfPages(str(result_plot_path)) as pdf:
         init_pdf_info(pdf)
-        consensus = sorted(
-            loci_dict['zinbra_{}'.format(consensus_type)] + loci_dict['golden_{}'.format(
-                consensus_type)],
-            key=lambda f: f.name
-        )
         process_intersection_metric(
-            consensus, loci_dict['default'],
+            loci_dict[consensus_type], loci_dict['default'],
             outdir / "{}@default.csv".format(consensus_type), pdf,
             col_label_converter=loi.label_converter_shorten_loci,
             row_label_converter=loi.label_converter_shorten_loci,
@@ -215,7 +245,15 @@ def report_consensus(loci_dict, outdir, threads, consensus_type="median_consensu
             row_cluster=False, col_cluster=True, threads=threads, figsize=(20, 15))
 
         process_intersection_metric(
-            consensus, loci_dict['chromhmm'],
+            loci_dict['default'], loci_dict[consensus_type],
+            outdir / "default@{}.csv".format(consensus_type), pdf,
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
+            adjustments=_adjustment_wrc(),
+            row_cluster=True, col_cluster=False, threads=threads, figsize=(15, 20))
+
+        process_intersection_metric(
+            loci_dict[consensus_type], loci_dict['chromhmm'],
             outdir / "{}@chromhmm.csv".format(consensus_type), pdf,
             adjustments=_adjustment(),
             col_label_converter=loi.label_converter_shorten_loci,
@@ -223,7 +261,15 @@ def report_consensus(loci_dict, outdir, threads, consensus_type="median_consensu
             row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15))
 
         process_intersection_metric(
-            consensus, consensus,
+            loci_dict['chromhmm'], loci_dict[consensus_type],
+            outdir / "chromhmm@{}.csv".format(consensus_type), pdf,
+            adjustments=_adjustment(),
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
+            row_cluster=False, col_cluster=False, threads=threads, figsize=(15, 20))
+
+        process_intersection_metric(
+            loci_dict[consensus_type], loci_dict[consensus_type],
             outdir / "{}.csv".format(consensus_type), pdf,
             adjustments=_adjustment(),
             col_label_converter=loi.label_converter_shorten_loci,
@@ -231,7 +277,7 @@ def report_consensus(loci_dict, outdir, threads, consensus_type="median_consensu
             row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15))
 
         process_intersection_metric(
-            consensus, loci_dict['repeats'],
+            loci_dict[consensus_type], loci_dict['repeats'],
             outdir / "{}@repeats.csv".format(consensus_type), pdf,
             col_label_converter=loi.label_converter_shorten_loci,
             row_label_converter=loi.label_converter_shorten_loci,
@@ -239,7 +285,8 @@ def report_consensus(loci_dict, outdir, threads, consensus_type="median_consensu
             row_cluster=False, col_cluster=True, threads=threads, figsize=(20, 15))
 
         # YDS or ODS, but not "_ODS_without_YDS_median_consensus.bed"
-        yo_consensus = [p for p in consensus if "DS" in p.name and "without" not in p.name]
+        yo_consensus = [p for p in loci_dict[consensus_type] if "DS" in p.name and "without" not
+                        in p.name]
         process_intersection_metric(
             yo_consensus, yo_consensus,
             outdir / "{}_yo.csv".format(consensus_type), pdf,
@@ -249,7 +296,8 @@ def report_consensus(loci_dict, outdir, threads, consensus_type="median_consensu
             row_cluster=False, col_cluster=False, threads=threads, figsize=(10, 10))
 
 
-def report_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_df):
+def report_donors(tool, peaks_map, loci_dict, loci_key, key_side_size,
+                  outdir, threads, outliers_df):
     peaks_dict = peaks_map[tool]
 
     result_plot_path = outdir / "plot_{}_by_donor.pdf".format(tool)
@@ -266,7 +314,8 @@ def report_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outlier
                 peaks_dict[hist], loci_dict[loci_key],
                 outdir / "{}_{}@{}.csv".format(tool, hist, loci_key), pdf,
                 adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
-                row_cluster=False, col_cluster=False, threads=threads, figsize=(20, 15),
+                row_cluster=False, col_cluster=False, threads=threads,
+                figsize=(key_side_size, 15),
                 row_color_annotator=annotator,
                 col_label_converter=loi.label_converter_shorten_loci,
                 row_label_converter=bm.label_converter_donor_and_tool,
@@ -319,14 +368,9 @@ def report(key, loci_dict, outdir, threads, key_side_size=15, consensus_type="me
                 figsize=(key_side_size, loci_side_size))
 
         # consensus
-        consensus_paths = sorted(
-            loci_dict['zinbra_{}'.format(consensus_type)] + loci_dict['golden_{}'.format(
-                consensus_type)],
-            key=lambda f: f.name
-        )
         if consensus:
             process_intersection_metric(
-                loci_dict[key], consensus_paths,
+                loci_dict[key], loci_dict[consensus_type],
                 outdir / "{}@{}.csv".format(key, consensus_type), pdf,
                 adjustments=_adjustment(),
                 col_label_converter=loi.label_converter_shorten_loci,
@@ -335,8 +379,8 @@ def report(key, loci_dict, outdir, threads, key_side_size=15, consensus_type="me
 
         # YDS or ODS, but not "_ODS_without_YDS_median_consensus.bed"
         if consensus_yo:
-            consensus_yo_paths\
-                = [p for p in consensus_paths if "DS" in p.name and "without" not in p.name]
+            consensus_yo_paths = [p for p in loci_dict[consensus_type] if "DS" in p.name and
+                                  "without" not in p.name]
             process_intersection_metric(
                 loci_dict[key], consensus_yo_paths,
                 outdir / "{}@{}_yo.csv".format(key, consensus_type), pdf,
