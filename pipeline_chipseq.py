@@ -142,10 +142,10 @@ if not os.path.exists(WORK_DIR + rseg_suffix):
     process_peaks_logs(WORK_DIR + rseg_suffix)
 
 # Batch SICER
-Q = 0.01
-sicer_suffix = '_sicer_{}'.format(Q)
+sicer_suffix = '_sicer'
 if not os.path.exists(WORK_DIR + sicer_suffix):
-    run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, str(Q))
+    # <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)] [batch] # nopep8
+    run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, "0.01", "200", "150", "0")
     move_forward(WORK_DIR, WORK_DIR + sicer_suffix,
-                 ['*sicer.log', '*-removed.bed', '*-W*', '*rip.csv'])
+                 ['*sicer.log', '*island.bed', '*rip.csv'])
     process_peaks_logs(WORK_DIR + sicer_suffix)
