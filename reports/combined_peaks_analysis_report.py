@@ -80,7 +80,14 @@ def main():
                                standard_folder_path.glob("*Peak"),
                                standard_folder_path.glob("*-island.bed"),
                                standard_folder_path.glob("*peaks.bed")), key=loi.donor_order_id)
-    df = bed_metric_table(peaks_paths, peaks_paths, jaccard=True, threads=threads_num)
+    df = bed_metric_table(peaks_paths, peaks_paths, threads=threads_num)
+    df_no_out = df.copy()
+    for donor in outliers_df.loc[:, hist_mod].index:
+        if outliers_df.loc[:, hist_mod][donor] == 1:
+            for df_index in df_no_out.index:
+                if (donor + "_") in df_index or (donor + ".") in df_index:
+                    del df_no_out[df_index]
+                    df_no_out = df_no_out.drop(df_index)
 
     with PdfPages(args[3]) as pdf:
         # print("Calculating median consensus")
@@ -90,10 +97,11 @@ def main():
         #               yd_od_int_bed, threads_num, pdf)
         print("Calculating metric #1 indexes")
         sns.set(font_scale=0.5)
-        plot_metric_heatmap("Intersection metric", df, figsize=(14, 14), save_to=pdf,
-                            row_color_annotator=annotator, col_color_annotator=annotator,
-                            row_label_converter=label_converter_donor_and_tool,
-                            col_label_converter=label_converter_donor_and_tool)
+        for curr_df in (df, df_no_out):
+            plot_metric_heatmap("Intersection metric", curr_df, figsize=(14, 14), save_to=pdf,
+                                row_color_annotator=annotator, col_color_annotator=annotator,
+                                row_label_converter=label_converter_donor_and_tool,
+                                col_label_converter=label_converter_donor_and_tool)
 
         desc = pdf.infodict()
         desc['Title'] = 'Report: Combined peaks plots for different callers'
