@@ -437,7 +437,8 @@ def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path
         loci_pvalues_df = pd.read_csv(stats_df_path, index_col=0)
     else:
         print("    Calculating:", str(stats_df_path))
-        mask_od_group, mask_yd_group = split_by_age(hist, outliers_df, peaks_paths, exclude_outliers)
+        mask_od_group, mask_yd_group = split_by_age(hist, outliers_df, peaks_paths,
+                                                    exclude_outliers)
         df_ods = df[mask_od_group]
         df_yds = df[mask_yd_group]
         print("    Dfs: OD = {}, YD = {}".format(df_ods.shape, df_yds.shape))

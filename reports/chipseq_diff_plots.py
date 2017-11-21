@@ -97,7 +97,7 @@ class ChangeCollector:
         size = 0
         for file in glob.glob(os.path.join(macs_bdgdiff, "{}_*_cond*.bed".format(self.mark))):
             size += count_lines(file) - 1
-        self.change_counts.append((folder_name +"_" + self.mark, size))
+        self.change_counts.append((folder_name + "_" + self.mark, size))
 
     def process_macs_pooled(self):
         folder_name = "diff_macs_pooled"
