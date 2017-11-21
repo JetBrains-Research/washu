@@ -56,7 +56,7 @@ do :
     NAME=${FILE%%.bam} # file name without extension
     # Check if file already processed
     # Naming example: OD_OD10_H3K27me3-W200-G0-FDR0.01-island.bed
-    if [ -f "${NAME}-W${WINDOW_SIZE}-G${GAP_SIZE}-FDR${FDR}-island.bed" ]; then
+    if [ ! -f "${NAME}-W${WINDOW_SIZE}-G${GAP_SIZE}-FDR${FDR}-island.bed" ]; then
         FILE_BED=${NAME}.bed # It is used for results naming
         PILEUP_BED=${NAME}_pileup.bed
 
@@ -157,7 +157,5 @@ done
 wait_complete ${TASKS[@]}
 check_logs
 
-# Cleanup: remove tmp directory and everything except for island.bed, rip.csv, log and sh script.
-# Also leave the BAM symlinks, they will be removed separately.
-rm -r ${WORK_DIR}/sicer_tmp
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 >&2 echo "Done. Batch sicer $@"
