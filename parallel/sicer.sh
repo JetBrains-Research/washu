@@ -16,7 +16,7 @@ SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch sicer $@"
 if [ $# -lt 4 ]; then
-    echo "Need at least 4 parameters! <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)] [cleanup_beds] [batch]"
+    echo "Need at least 4 parameters! <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)] [batch]"
     exit 1
 fi
 
