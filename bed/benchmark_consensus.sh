@@ -18,7 +18,9 @@ for HIST_DIR in $(find ${BENCHMARK_ROOT} -maxdepth 1 -type d -name "H*"); do
 
     # We decided to exclude MACS2 narrow peaks
     # Sicer not ready yet, let's exclude it too
-    for DIR in $(find ${HIST_DIR} -maxdepth 1 -type d ! -path . ! -path "./macs_narrow" ! -path "./sicer"); do
+    cd ${HIST_DIR}
+    # exclude from find results: same dir ('.')v, and some tools
+    for DIR in $(find . -maxdepth 1 -type d ! -path . ! -path "./macs_narrow" ! -path "./sicer"); do
         echo "Processing: $(expand_path ${DIR})"
         bash /home/user/work/tsurinov/washu/bed/consensus.sh -p 50 ${DIR} ${HIST_NAME}
         # bash "$(project_root_dir)/bed/consensus.sh" -p 50  ${DIR} ${HIST_NAME}
