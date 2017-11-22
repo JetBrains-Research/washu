@@ -29,12 +29,11 @@ if [[ -f ${RIP_FILE} ]]; then
     exit 0
 fi
 
-PEAKS_FILE_SORTED=${PEAKS_FILE}.sorted
-INTERSECT_BED=${PEAKS_FILE}.intersect.bed
-
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
+
+INTERSECT_BED=$(mktemp $TMPDIR/intersect.XXXXXX.bed)
 
 # To pileup bed
 if [ -f ${PILEUP_BED} ]; then
@@ -64,7 +63,8 @@ PEAKS=$(wc -l ${PEAKS_FILE} | awk '{print $1}')
 echo "PEAKS: $PEAKS"
 
 # Compute number of reads, intersecting with peaks
-intersectBed -a ${PILEUP_BED} -b ${PEAKS} -c -f 0.20 > ${INTERSECT_BED}
+bedtools intersect -a ${PILEUP_BED} -b ${PEAKS_FILE} -c -f 0.20 > ${INTERSECT_BED}
+
 # _pileup.bed can have different number of columns
 COLS=$(cat ${PILEUP_BED} | head -1 | awk '{ print NF }')
 RIP=$(awk -v COLS=$COLS '{sum += $(COLS+1)} END {print sum}' ${INTERSECT_BED})
@@ -74,5 +74,4 @@ echo "file,peaks_file,reads,peaks,rip" > ${RIP_FILE}
 echo "${READS_BAM},${PEAKS_FILE},${READS},${PEAKS},${RIP}" >> ${RIP_FILE}
 
 # Cleanup
-rm ${PEAKS_FILE_SORTED} ${INTERSECT_BED}
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
