@@ -91,7 +91,7 @@ def test_macs2_narrow():
     # Peak calling steps with different settings MACS2 narrow
     check_files("./fastq_bams_macs2_q0.01/*.narrowPeak", 4)
     check_files("./fastq_bams_macs2_q0.01/*.narrowPeak_rip.csv", 4)
-    check_files("./fastq_bams_macs2_q0.01/masc2_report.csv", 4)
+    check_files("./fastq_bams_macs2_q0.01/macs2_report.csv", 1)
 
 
 def test_rseg():
