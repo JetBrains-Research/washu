@@ -11,8 +11,6 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import seaborn as sns
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
 
 if __name__ == "__main__":
     parent_dir = os.path.dirname(os.path.realpath(__file__))
@@ -24,6 +22,8 @@ if __name__ == "__main__":
     matplotlib.use('Agg')
     sns.set()
 
+import matplotlib.pyplot as plt  # nopep8
+from matplotlib.backends.backend_pdf import PdfPages  # nopep8
 from scripts.util import run  # nopep8
 from pipeline_utils import PROJECT_ROOT_PATH  # nopep8
 
