@@ -94,7 +94,8 @@ class ChangeCollector:
             if os.path.exists(file):
                 result_file_name = self.get_file_name(result_name)
 
-                os.system("cut -f1-3 {} > {}".format(file, os.path.join(self.output, result_file_name)))
+                os.system("cut -f1-3 {} > {}".format(file, os.path.join(self.output,
+                                                                        result_file_name)))
 
                 self.change_files_produced.append(result_file_name)
 
@@ -161,6 +162,32 @@ class ChangeCollector:
         self.change_counts.append((result_name, size))
         self.change_files_produced.append(result_file_name)
 
+    def process_median_consensus(self, tool):
+        consensus_path = "/mnt/stripe/bio/raw-data/aging/loci_of_interest/median_consensus"
+
+        if self.change_type == "both":
+            pattern = "*_without_*"
+        elif self.change_type == "young":
+            pattern = "YDS_without_ODS"
+        elif self.change_type == "old":
+            pattern = "ODS_without_YDS"
+        else:
+            raise ValueError("Wrong change_type: {}".format(self.change_type))
+
+        result_name = "median_consensus_{}_{}".format(tool, self.mark)
+        result_file_name = self.get_file_name(result_name)
+
+        size = 0
+        with open(os.path.join(self.output, result_file_name), "w") as out:
+            for file in glob.glob(
+                    os.path.join(consensus_path, "{}_{}_{}*.bed".format(self.mark, tool, pattern))):
+                size += count_lines(file)
+                with open(file) as f:
+                    out.writelines(f.readlines())
+
+        self.change_counts.append((result_name, size))
+        self.change_files_produced.append(result_file_name)
+
     def process_diffreps(self, folder_name):
         folder = os.path.join(self.input_path, folder_name)
 
@@ -171,7 +198,7 @@ class ChangeCollector:
         elif self.change_type == "old":
             name = "enriched_up.bed"
         else:
-            raise ValueError("Wrong folder_name: {}".format(folder_name))
+            raise ValueError("Wrong change_type: {}".format(self.change_type))
 
         self.add_bed_file("{}_{}".format(folder_name, self.mark),
                           os.path.join(folder, name))
@@ -211,6 +238,9 @@ class ChangeCollector:
         self.process_macs_pooled()
 
         self.process_macs_pooled_Y_vs_O()
+
+        self.process_median_consensus("zinbra")
+        self.process_median_consensus("macs2")
 
         self.process_diffreps("diffReps")
         self.process_diffreps("diffReps_broad")
