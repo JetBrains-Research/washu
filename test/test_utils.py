@@ -20,7 +20,7 @@ def test_lcs():
 @pytest.mark.parametrize("input,donor", [
     ("", "40_donor6_input.bam"),
     ("40_donor6_input.bam", "37_donor6_k27ac.bam"),
-    ("44_donor7_input.bam", "41_donor7_k27ac.bam"),
+    ("44_DONOR7_INPUT.bam", "41_donor7_k27ac.bam"),
     ("jcl320_wt1_gm_input_ctrl.1919_8.R1_mm10.bam",
      "jcl320_ko_gm_h3k27ac_chipd_dna.1919_8.R1_mm10.bam"),
     ("jcl320_wt1_gm_input_ctrl.1919_8.R1_mm10.bam",

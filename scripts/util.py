@@ -117,8 +117,8 @@ def lcs(x, y):
 
 
 def find_input(bam):
-    filename = os.path.basename(bam)
-    if 'input' in filename:
+    bam_name = os.path.basename(bam).lower()
+    if 'input' in bam_name:
         return ''
 
     # Find all the files within folder
@@ -129,9 +129,9 @@ def find_input(bam):
         break
 
     def sort_function(x):
-        return lcs(filename, x)
+        return lcs(bam_name, x.lower())
 
-    inputs = [x for x in f if re.match('.*input.*\\.bam$', x)]
+    inputs = [x for x in f if re.match('.*input.*\\.bam$', x, flags=re.IGNORECASE)]
     if len(inputs) > 0:
         return max(inputs, key=sort_function)
     else:
