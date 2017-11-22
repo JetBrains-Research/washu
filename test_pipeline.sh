@@ -41,4 +41,12 @@ fi
 if [ ! -f ~/zinbra.jar ]; then
     echo "FAILED: Zinbra not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"
 fi
+
+# Limit parallelism level for tests
+export WASHU_PARALLELISM=2
+
 python -m pytest test/pipeline/*.py
+
+# For the ease of troubleshooting
+mkdir -p /washu/out
+cp -r /root/fastq* /washu/out
