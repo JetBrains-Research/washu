@@ -88,38 +88,19 @@ move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"])
 # run_bash("subsample.sh", WORK_DIR, str(READS))
 # WORK_DIR = move_forward(WORK_DIR, WORK_DIR + "_{}mln".format(READS),
 #                         ["*{}*".format(READS)])
-#
-# # Batch BigWig visualization
-# run_bash("bigwig.sh", CHROM_SIZES, WORK_DIR)
-# move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"],
-#              chdir=False)
 
 ########################
 # Peak calling section #
 ########################
 
 # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1 in example
-folder = run_macs2(GENOME, CHROM_SIZES,
-                   'broad_0.1', '--broad', '--broad-cutoff', 0.1,
-                   work_dirs=[WORK_DIR])[0]
-peaks_folder = folder.replace('0.1', '0.05')
-run_bash('bed/macs2_filter_fdr.sh', folder, peaks_folder, 0.1, 0.05, WORK_DIR)
-run_bash('parallel/peaks_frip.sh', peaks_folder, WORK_DIR)
-
-peaks_folder = folder.replace('0.1', '0.01')
-run_bash('bed/macs2_filter_fdr.sh', folder, peaks_folder, 0.1, 0.01, WORK_DIR)
-run_bash('parallel/peaks_frip.sh', peaks_folder, WORK_DIR)
+run_macs2(GENOME, CHROM_SIZES,
+          'broad_0.1', '--broad', '--broad-cutoff', 0.1,
+          work_dirs=[WORK_DIR])
 
 # MACS2 Regular peak calling (https://github.com/taoliu/MACS) Q=0.01 in example
-folder = run_macs2(GENOME, CHROM_SIZES, 'q0.1', '-q', 0.1,
-                   work_dirs=[WORK_DIR])[0]
-peaks_folder = folder.replace('0.1', '0.05')
-run_bash('bed/macs2_filter_fdr.sh', folder, peaks_folder, 0.1, 0.05, WORK_DIR)
-run_bash('parallel/peaks_frip.sh', peaks_folder, WORK_DIR)
-
-peaks_folder = folder.replace('0.1', '0.01')
-run_bash('bed/macs2_filter_fdr.sh', folder, peaks_folder, 0.1, 0.01, WORK_DIR)
-run_bash('parallel/peaks_frip.sh', peaks_folder, WORK_DIR)
+run_macs2(GENOME, CHROM_SIZES, 'q0.01', '-q', 0.01,
+          work_dirs=[WORK_DIR])
 
 # MACS1.4 P=1e-5 is default
 # P = 0.00001
@@ -144,8 +125,9 @@ if not os.path.exists(WORK_DIR + rseg_suffix):
 # Batch SICER
 sicer_suffix = '_sicer'
 if not os.path.exists(WORK_DIR + sicer_suffix):
-    # <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)] [batch] # nopep8
-    run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, "0.01", "200", "150", "0")
+    # <work_dir> <genome> <chrom.s  izes> <FDR> [window size (bp)] [fragment size] [gap size (bp)] [batch] # nopep8
+    run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, "0.01",
+             "200", "150", "0", "TRUE")
     move_forward(WORK_DIR, WORK_DIR + sicer_suffix,
-                 ['*sicer.log', '*island.bed', '*rip.csv'])
+                 ['*sicer.log', '*.bed', '*rip.csv'])
     process_peaks_logs(WORK_DIR + sicer_suffix)
