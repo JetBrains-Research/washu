@@ -31,7 +31,7 @@ Script creates pdf report with ChIP-seq peaks statistics:
  1) median peak consensus bar plot
  2) Metric #1 heatmap
 """
-outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv"
+outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20_21.11.17.outliers.csv"
 outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="donor")
 
 
