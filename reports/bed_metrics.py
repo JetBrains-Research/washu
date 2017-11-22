@@ -320,6 +320,8 @@ def _cli():
     parser.add_argument('--hist', help="Histone modification name (is used for outliers "
                                        "highlighting), e.g. H3K4me3")
     parser.add_argument('--age', help="Highlight donors age", action="store_true")
+    parser.add_argument('--jaccard', help="Use Jaccard metric instead intersection",
+                        action="store_true")
     parser.add_argument('--size', help="Figure size: width and height separated by space",
                         type=int, nargs=2, metavar="INT",
                         default=[14, 14])
@@ -333,7 +335,7 @@ def _cli():
     df_path = Path(prefix + ".df")
 
     # Df
-    df = load_or_build_metrics_table(a_paths, b_paths, df_path)
+    df = load_or_build_metrics_table(a_paths, b_paths, df_path, jaccard=args.jaccard)
 
     anns = []
     # age
