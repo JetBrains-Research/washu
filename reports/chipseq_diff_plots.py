@@ -41,12 +41,14 @@ class ChangeCollector:
 
         self.change_files_produced = []
 
+    def get_file_name(self, result_name):
+        return result_name + "_" + self.change_type + ".bed"
+
     def process_diff_bind(self, name):
         diff_bind_path = os.path.join(self.input_path, name)
         for file in glob.glob(os.path.join(diff_bind_path, '*_difference.csv')):
-            base_name = os.path.splitext(os.path.basename(file))[0] + ".bed"
             df = pd.read_csv(file)
-            result_name = "{}_{}".format(name, base_name)
+            result_name = "{}_{}".format(name, os.path.splitext(os.path.basename(file))[0])
             if len(df) == 0.0:
                 self.change_counts.append((result_name, 0))
                 continue
@@ -59,16 +61,18 @@ class ChangeCollector:
 
             self.change_counts.append((result_name, df.shape[0]))
 
-            with open(os.path.join(self.output, result_name), "w") as f:
+            result_file_name = self.get_file_name(result_name)
+            with open(os.path.join(self.output, result_file_name), "w") as f:
                 for i, row in df.iterrows():
                     f.write("{}\t{}\t{}\n".format(row["seqnames"], row["start"], row["end"]))
 
-            self.change_files_produced.append(result_name)
+            self.change_files_produced.append(result_file_name)
 
-    def add_bed_file(self, base_name, file):
-        self.change_counts.append((base_name, count_lines(file)))
-        shutil.copyfile(file, os.path.join(self.output, base_name))
-        self.change_files_produced.append(base_name)
+    def add_bed_file(self, result_name, file):
+        self.change_counts.append((result_name, count_lines(file)))
+        result_file_name = self.get_file_name(result_name)
+        shutil.copyfile(file, os.path.join(self.output, result_file_name))
+        self.change_files_produced.append(result_file_name)
 
     def process_zinbra(self):
         zinbra_base_path = "/mnt/stripe/bio/experiments/configs/Y20O20/enrichment"
@@ -84,12 +88,15 @@ class ChangeCollector:
             if self.change_type == "old":
                 file = os.path.splitext(file)[0] + "_cond1.bed"
 
-            self.change_counts.append((base_name, count_if_exists(file)))
+            result_name = os.path.splitext(base_name)[0]
+            self.change_counts.append((result_name, count_if_exists(file)))
 
             if os.path.exists(file):
-                os.system("cut -f1-3 {} > {}".format(file, os.path.join(self.output, base_name)))
+                result_file_name = self.get_file_name(result_name)
 
-            self.change_files_produced.append(base_name)
+                os.system("cut -f1-3 {} > {}".format(file, os.path.join(self.output, result_file_name)))
+
+                self.change_files_produced.append(result_file_name)
 
     def process_macs_bg_diff(self):
         folder_name = "macs_bdgdiff"
@@ -104,8 +111,10 @@ class ChangeCollector:
         macs_pooled = os.path.join(self.input_path, folder_name)
 
         size = 0
-        result_base_file_name = "diff_macs_pooled_{}.bed".format(self.mark)
-        with open(os.path.join(self.output, result_base_file_name), "w") as out:
+        result_name = "diff_macs_pooled_{}".format(self.mark)
+
+        result_file_name = self.get_file_name(result_name)
+        with open(os.path.join(self.output, result_file_name), "w") as out:
             if self.change_type == "both":
                 pattern = "{}_*_cond*.bed"
             elif self.change_type == "young":
@@ -121,17 +130,18 @@ class ChangeCollector:
                 with open(file) as f:
                     out.writelines(f.readlines())
 
-        self.change_files_produced.append(result_base_file_name)
+        self.change_files_produced.append(result_file_name)
 
-        self.change_counts.append((result_base_file_name, size))
+        self.change_counts.append((result_name, size))
 
     def process_macs_pooled_Y_vs_O(self):
         folder_name = "diff_macs_pooled_Y_O"
         macs_pooled_Y_vs_O = os.path.join(self.input_path, folder_name)
 
         size = 0
-        result_base_file_name = "{}_{}.bed".format(folder_name, self.mark)
-        with open(os.path.join(self.output, result_base_file_name), "w") as out:
+        result_name = folder_name + "_" + self.mark
+        result_file_name = self.get_file_name(result_name)
+        with open(os.path.join(self.output, result_file_name), "w") as out:
 
             if self.change_type == "both":
                 pattern = os.path.join(macs_pooled_Y_vs_O, "{}_*.broadPeak".format(self.mark))
@@ -148,8 +158,8 @@ class ChangeCollector:
                 with open(file) as f:
                     out.writelines(f.readlines())
 
-        self.change_counts.append((folder_name + "_" + self.mark, size))
-        self.change_files_produced.append(result_base_file_name)
+        self.change_counts.append((result_name, size))
+        self.change_files_produced.append(result_file_name)
 
     def process_diffreps(self, folder_name):
         folder = os.path.join(self.input_path, folder_name)
@@ -163,14 +173,14 @@ class ChangeCollector:
         else:
             raise ValueError("Wrong folder_name: {}".format(folder_name))
 
-        self.add_bed_file("{}_{}.bed".format(folder_name, self.mark),
+        self.add_bed_file("{}_{}".format(folder_name, self.mark),
                           os.path.join(folder, name))
 
         if self.change_type == "both":
-            self.add_bed_file("{}_{}_hotspot.bed".format(folder_name, self.mark),
+            self.add_bed_file("{}_{}_hotspot".format(folder_name, self.mark),
                               os.path.join(folder, "hotspot.bed"))
         else:
-            self.change_counts.append(("{}_{}_hotspot.bed".format(folder_name, self.mark), 0))
+            self.change_counts.append(("{}_{}_hotspot".format(folder_name, self.mark), 0))
 
     def process_chip_diff(self):
         folder = os.path.join(self.input_path, "chipdiff")
