@@ -19,6 +19,8 @@ if __name__ == "__main__":
     # Force matplotlib to not use any Xwindows backend.
     import matplotlib
     matplotlib.use('Agg')
+
+    import seaborn as sns
     sns.set()
 
 import seaborn as sns  # nopep8
