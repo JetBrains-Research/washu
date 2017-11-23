@@ -12,18 +12,21 @@ from statsmodels.stats.multitest import multipletests
 
 
 def _cli():
-    data_root = Path("/mnt/stripe/bio")
-    signal_root = data_root / "experiments/signal"
-
     ########################################################################
     parser = argparse.ArgumentParser(
         description="Check whether loci changed or not by signal metrics (raw, rpm, "
                     "rpkm) for interesting loci sets",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+    parser.add_argument('--signal', metavar="PATH",
+                        # /mnt/stripe/bio/experiments/signal_consensus_peaks/
+                        # /mnt/stripe/bio/experiments/signal_loci_of_interest/
+                        default="/mnt/stripe/bio/experiments/signal",
+                        help="Processed signal dir")
     parser.add_argument('-o', '--out', required=True, metavar="PATH",
                         help="Output dir")
     args = parser.parse_args()
+    signal_root = Path(args.signal)
 
     # /mnt/stripe/bio/experiments/aging/signal@loci_stats
     results_dir = Path(args.out)
