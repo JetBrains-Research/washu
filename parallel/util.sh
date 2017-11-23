@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-if [ -z $WASHU_PARALLELISM ]; then
-    WASHU_PARALLELISM=8
-fi
->&2 echo "WASHU_PARALLELISM LEVEL: $WASHU_PARALLELISM"
-
 # MOCK for module command
 type module &>/dev/null || module() { echo "[mock] module $@"; }
 
@@ -43,6 +38,11 @@ if which qsub &>/dev/null; then
         echo "Done. Waiting for tasks"
     }
 else
+    if [ -z $WASHU_PARALLELISM ]; then
+        WASHU_PARALLELISM=8
+    fi
+    >&2 echo "Local tasks WASHU_PARALLELISM=$WASHU_PARALLELISM"
+
     # Local qsub emulation
     qsub()
     {
