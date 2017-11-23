@@ -73,15 +73,18 @@ fi
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
 
 FOLDER=$1
+FOLDER_NAME=${FOLDER##*/}
+MOD=$(echo ${FOLDER} | sed 's/.*\([hH]3[kK][0-9][0-9]*[am][ec][0-9]*\).*/\1/')
+if [ "$MOD" = "$FOLDER" ]; then
+    MOD=${FOLDER_NAME}
+fi
+cd ${FOLDER}
 
 if [ ${COUNT} -gt 0 ]; then
     ALL_COUNT=`expr ${COUNT} - 1`
     OD_COUNT=`expr ${COUNT} - 1`
     YD_COUNT=`expr ${COUNT} - 1`
 fi
-
-FOLDER_NAME=${FOLDER##*/}
-cd ${FOLDER}
 
 if [ $(find . -maxdepth 1 -wholename "./*island.bed" | grep -v outlier | wc -l) -gt 0 ]; then
     TOOL="sicer"
@@ -104,23 +107,20 @@ if [ ${PERCENT} -gt 0 ]; then
         grep -v outlier | wc -l) " * ${PERCENT} / 100.0 - 1" | bc)
 fi
 
-find . -maxdepth 1 \( -wholename "*_peaks.bed" -or -wholename "*Peak" -or \
-    -wholename "*island.bed" \) | grep -v outlier | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g' |
-    xargs -0 bash /mnt/stripe/washu/bed/union.sh | grep '\(|.*\)\{'${ALL_COUNT}'\}'|
-    awk -v OFS='\t' '{print $1,$2,$3}' > ${FOLDER_NAME}_${TOOL}_consensus.bed
-find . -maxdepth 1 \( -wholename "*OD*island.bed" -or -wholename "*OD*Peak" -or \
-    -wholename "*OD*_peaks.bed" \) | grep -v outlier | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g' |
-    xargs -0 bash /mnt/stripe/washu/bed/union.sh |
-    grep '\(|.*\)\{'${OD_COUNT}'\}' | awk -v OFS='\t' '{print $1,$2,$3}' \
-    > ${FOLDER_NAME}_${TOOL}_ODS_consensus.bed
-find . -maxdepth 1 \( -wholename "*YD*island.bed" -or -wholename "*YD*Peak" -or \
-    -wholename "*YD*_peaks.bed" \) | grep -v outlier | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g' |
-    xargs -0 bash /mnt/stripe/washu/bed/union.sh |
-    grep '\(|.*\)\{'${YD_COUNT}'\}' | awk -v OFS='\t' '{print $1,$2,$3}' \
-    > ${FOLDER_NAME}_${TOOL}_YDS_consensus.bed
-bedtools intersect -v -a ${FOLDER_NAME}_${TOOL}_ODS_consensus.bed \
-    -b ${FOLDER_NAME}_${TOOL}_YDS_consensus.bed \
-    > ${FOLDER_NAME}_${TOOL}_ODS_without_YDS_consensus.bed
-bedtools intersect -v -a ${FOLDER_NAME}_${TOOL}_YDS_consensus.bed \
-    -b ${FOLDER_NAME}_${TOOL}_ODS_consensus.bed \
-    > ${FOLDER_NAME}_${TOOL}_YDS_without_ODS_consensus.bed
+bedtools multiinter -i $(find . -maxdepth 1 \( -wholename "*_peaks.bed" -or -wholename "*Peak" -or \
+    -wholename "*island.bed" \) | grep -v outlier | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g') |\
+    grep '\(,.*\)\{'${ALL_COUNT}'\}' | bedtools merge > ${MOD}_${TOOL}_consensus.bed
+bedtools multiinter -i $(find . -maxdepth 1 \( -wholename "*OD*island.bed" -or \
+    -wholename "*OD*Peak" -or -wholename "*OD*_peaks.bed" \) | grep -v outlier | \
+    sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g') | grep '\(,.*\)\{'${OD_COUNT}'\}' | \
+    bedtools merge > ${MOD}_${TOOL}_ODS_consensus.bed
+bedtools multiinter -i $(find . -maxdepth 1 \( -wholename "*YD*island.bed" -or \
+    -wholename "*YD*Peak" -or -wholename "*YD*_peaks.bed" \) | grep -v outlier | \
+    sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g') | grep '\(,.*\)\{'${YD_COUNT}'\}' | \
+    bedtools merge > ${MOD}_${TOOL}_YDS_consensus.bed
+bedtools intersect -v -a ${MOD}_${TOOL}_ODS_consensus.bed \
+    -b ${MOD}_${TOOL}_YDS_consensus.bed \
+    > ${MOD}_${TOOL}_ODS_without_YDS_consensus.bed
+bedtools intersect -v -a ${MOD}_${TOOL}_YDS_consensus.bed \
+    -b ${MOD}_${TOOL}_ODS_consensus.bed \
+    > ${MOD}_${TOOL}_YDS_without_ODS_consensus.bed
