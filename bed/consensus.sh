@@ -73,11 +73,7 @@ fi
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
 
 FOLDER=$1
-FOLDER_NAME=${FOLDER##*/}
-MOD=$(echo ${FOLDER} | sed 's/.*\([hH]3[kK][0-9][0-9]*[am][ec][0-9]*\).*/\1/')
-if [ "$MOD" = "$FOLDER" ]; then
-    MOD=${FOLDER_NAME}
-fi
+MOD=$2
 cd ${FOLDER}
 
 if [ ${COUNT} -gt 0 ]; then

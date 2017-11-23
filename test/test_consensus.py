@@ -62,7 +62,7 @@ def test_consensus(capfd, tmp_dir, test_data, folder, consensus_folder, percent,
     for file in os.listdir(test_data("bed/" + folder)):
         shutil.copy(test_data("bed/" + folder) + "/" + file, tmp_dir + "/bed")
 
-    args = [tmp_dir + "/bed"]
+    args = [tmp_dir + "/bed", "H3K4me3"]
     if percent:
         args.insert(0, "-p")
         args.insert(1, percent)
@@ -77,15 +77,16 @@ def test_consensus(capfd, tmp_dir, test_data, folder, consensus_folder, percent,
 
     out, _err = capfd.readouterr()
     res = out.replace(test_data("bed/"), "").replace(PROJECT_ROOT_PATH, ".")
-    assert "bash ./bed/consensus.sh {}{}{}\n".format(
+    assert "bash ./bed/consensus.sh {}{}{} {}\n".format(
         ("-p %d " % percent) if percent else "",
         ("-c %d " % count) if count else "",
         tmp_dir + "/bed",
+        "H3K4me3"
     ) == res
 
     for file_suff in files_suff:
         print("Comparing %s" % file_suff)
-        with open(tmp_dir + "/bed/bed" + file_suff) as act_cons_file:
+        with open(tmp_dir + "/bed/H3K4me3" + file_suff) as act_cons_file:
             act_cons = act_cons_file.readlines()
             with open(test_data("bed/" + consensus_folder + "/" + consensus_folder + file_suff)) as\
                     exp_cons_file:
