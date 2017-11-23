@@ -66,7 +66,7 @@ echo "Calculate intersection in tmp file: ${INTERSECT_TMP}"
 bedtools intersect -a ${PILEUP_BED} -b ${PEAKS_FILE} -c -f 0.20 > ${INTERSECT_TMP}
 
 # _pileup.bed can have different number of columns
-COLS=$(cat ${PILEUP_BED} | head -1 | awk '{ print NF }')
+COLS=$(cat ${PILEUP_BED} | head -n 1 | awk '{ print NF }')
 RIP=$(awk -v COLS=$COLS '{sum += $(COLS+1)} END {print sum}' ${INTERSECT_TMP})
 echo "RIP: $RIP"
 
