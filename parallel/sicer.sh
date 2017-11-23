@@ -58,7 +58,8 @@ do :
 
     # Check if file already processed
     # Naming example: OD_OD10_H3K27me3-W200-G0-FDR0.01-island.bed
-    if [ ! -f "${NAME}-W${WINDOW_SIZE}-G${GAP_SIZE}-FDR${FDR}-island.bed" ]; then
+    ISLAND_BED="${NAME}-W${WINDOW_SIZE}-G${GAP_SIZE}-FDR${FDR}-island.bed"
+    if [ ! -f "${ISLAND_BED}" ]; then
         FILE_BED=${NAME}.bed # It is used for results naming
         PILEUP_BED=${NAME}_pileup.bed
 
@@ -143,7 +144,7 @@ rm -r \${SICER_FOLDER}
 cd ${WORK_DIR}
 
 # Compute Reads in Peaks
-bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${NAME}*island.bed
+bash ${SCRIPT_DIR}/reports/rip.sh ${ISLAND_BED}
 
 # Cleanup
 if [ -z ${BATCH_MODE} ]; then
