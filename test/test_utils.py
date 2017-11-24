@@ -164,5 +164,5 @@ Exception ValueError: 'cannot resize this array: it does not own its data' in ..
                 "check_logs\n".format(tmp_dir, PROJECT_ROOT_PATH))
     run("bash", "{}/foo.sh".format(tmp_dir))
     out, _err = capfd.readouterr()
-    assert _err.replace(tmp_dir, ".") == "WASHU_PARALLELISM LEVEL: 8\n"
+    assert _err.replace(tmp_dir, ".") == "Local tasks WASHU_PARALLELISM=8\n"
     assert out.replace(tmp_dir, ".") == "bash ./foo.sh\n"
