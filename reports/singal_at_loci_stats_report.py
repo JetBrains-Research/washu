@@ -185,8 +185,10 @@ def calc_signal_pvalues(pvalues_df_path, signal_root):
             pvalues = {}
             for norm, path in dic.items():
                 df = pd.read_csv(path, index_col=0)
-                df_ods = df.loc[[d for d in df.index if d.startswith("o")], :]
-                df_yds = df.loc[[d for d in df.index if d.startswith("y")], :]
+                df.index = [str.upper(s) for s in df.index]
+                df.columns = [str.upper(s) for s in df.columns]
+                df_ods = df.loc[[d for d in df.index if d.startswith("O")], :]
+                df_yds = df.loc[[d for d in df.index if d.startswith("Y")], :]
                 try:
                     pvalue = mannwhitneyu(df_ods.iloc[:, 0], df_yds.iloc[:, 0],
                                           alternative=ha).pvalue
