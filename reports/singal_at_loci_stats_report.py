@@ -54,7 +54,9 @@ def stats_test(results_dir, signal_root):
     signal_pvalues_df.drop("name", inplace=True, axis=1)
     print("Not corrected pval, first 10 lowerest pvalues:")
     signal_pvalues_df["min"] = signal_pvalues_df.min(axis=1)
-    print(signal_pvalues_df.sort_values(by="min").head(10).to_string(line_width=300))
+    signal_pvalues_df_sorted_by_min = signal_pvalues_df.sort_values(by="min")
+    signal_pvalues_df_sorted_by_min.to_csv(results_dir / "signal_pvalues_sorted.csv")
+    print(signal_pvalues_df_sorted_by_min.head(10).to_string(line_width=300))
     # P-values correction
     # see: http://www.statsmodels.org/dev/_modules/statsmodels/stats/multitest.html
     print("Adjust pvalues..")
