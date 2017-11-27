@@ -132,23 +132,23 @@ def _cli():
 
     for cons in [key for key in loci_dict if "consensus" in key]:
         loci_dict[cons + "_yo"] \
-            = [p for p in loci_dict[key] if "DS" in p.name and "without" not in p.name]
+            = [p for p in loci_dict[cons] if "DS" in p.name and "without" not in p.name]
         plot_sizes[cons + "_yo"] = 10
 
         loci_dict[cons + "_common"] \
-            = [p for p in loci_dict[key] if not "DS" in p.name]
+            = [p for p in loci_dict[cons] if not "DS" in p.name]
         plot_sizes[cons + "_common"] = 10
 
     # ########## For donors #############################################################
     for tool in sorted(peaks_map.keys()):
-        loci_dict_copy = {**loci_dict}
         for lt in ["default", "wo_pathways",
                    "median_consensus", "median_consensus_common",
                    "weak_consensus", "weak_consensus_common"]:
 
-            print("----- [Report]: Donors {}@{} ----".format(tool, lt))
-            report_donors(tool, peaks_map, loci_dict_copy, lt, plot_sizes.get(lt, 20),
-                          results_dir, threads, outliers_df)
+            if lt in loci_dict:
+                print("----- [Report]: Donors {}@{} ----".format(tool, lt))
+                report_donors(tool, peaks_map, loci_dict, lt, plot_sizes.get(lt, 20),
+                              results_dir, threads, outliers_df)
 
     # ########## For loci #############################################################
     # If custom peaks folder, skip plots, calc only stat test
