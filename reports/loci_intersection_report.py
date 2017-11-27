@@ -134,6 +134,7 @@ def _cli():
         processed_loci.add("default")
 
         print("----- [Report]: Consensus ----")
+        # TODO: weak cons
         if ("median_consensus" in loci_dict):
             report_consensus(loci_dict, results_dir, threads, "median_consensus")
             processed_loci.add("median_consensus")
@@ -685,4 +686,6 @@ if __name__ == "__main__":
 
     from matplotlib.backends.backend_pdf import PdfPages
 
+    import seaborn as sns
+    sns.set(font_scale=0.7)
     _cli()
