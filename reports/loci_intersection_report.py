@@ -127,15 +127,27 @@ def _cli():
         "aging_pathways": 200,
         "chromhmm": 10,
         "repeats": 15,
-        "wo_pathways": 20
+        "wo_pathways": 20,
     }
 
-    # ########## For donors #############################################################
+    for cons in [key for key in loci_dict if "consensus" in key]:
+        loci_dict[cons + "_yo"] \
+            = [p for p in loci_dict[key] if "DS" in p.name and "without" not in p.name]
+        plot_sizes[cons + "_yo"] = 10
 
+        loci_dict[cons + "_common"] \
+            = [p for p in loci_dict[key] if not "DS" in p.name]
+        plot_sizes[cons + "_common"] = 10
+
+    # ########## For donors #############################################################
     for tool in sorted(peaks_map.keys()):
-        for lt in ["default", "wo_pathways", "median_consensus", "weak_consensus"]:
+        loci_dict_copy = {**loci_dict}
+        for lt in ["default", "wo_pathways",
+                   "median_consensus", "median_consensus_common",
+                   "weak_consensus", "weak_consensus_common"]:
+
             print("----- [Report]: Donors {}@{} ----".format(tool, lt))
-            report_donors(tool, peaks_map, loci_dict, lt, plot_sizes.get(lt, 20),
+            report_donors(tool, peaks_map, loci_dict_copy, lt, plot_sizes.get(lt, 20),
                           results_dir, threads, outliers_df)
 
     # ########## For loci #############################################################
@@ -154,11 +166,11 @@ def _cli():
                        plot_sizes.get(lt_a, 20), plot_sizes.get(lt_b, 20))
 
         # Pathways:
-        if "aging_pathways" in loci_dict:
-            pass
-
-        if "notch_pathways" in loci_dict:
-            pass
+        for lt_a in [key for key in ["aging_pathways", "notch_pathways"] if key in loci_dict]:
+            for lt_b in [k for k in loci_dict if k.endswith("_consensus_yo")]:
+                print("----- [Report]: {}@{} ----".format(lt_a, lt_b))
+                report(lt_a, lt_b, loci_dict, results_dir, threads,
+                       plot_sizes.get(lt_a, 20), plot_sizes.get(lt_b, 20))
 
     # ########## Stat tests #############################################################
     stats_test_loci = {
@@ -235,32 +247,15 @@ def report_donors(tool, peaks_map, loci_dict, loci_key, key_side_size,
 
 
 def report(a_key, b_key, loci_dict, outdir, threads, a_key_side, b_key_side):
-    a_args = [(a_key, loci_dict[a_key], a_key_side)]
-    b_args = [(b_key, loci_dict[b_key], b_key_side)]
-
-    for key, args in [(a_key, a_args), (b_key, b_args)]:
-        if "consensus" in key:
-            args.append((
-                key + "_yo",
-                [p for p in loci_dict[key] if "DS" in p.name and "without" not in p.name],
-                10
-            ))
-
-            args.append((key + "_common",
-                        [p for p in loci_dict[key] if "DS" not in p.name],
-                         10))
-
-    for (a_key, a_paths, a_key_side) in a_args:
-        for (b_key, b_paths, b_key_side) in b_args:
-            process_intersection_metric(
-                a_paths, b_paths,
-                outdir / "{}@{}.csv".format(a_key, b_key),
-                outdir / "plot_{}@{}.png".format(a_key, b_key),
-                adjustments=_adjustment_wrc(),
-                col_label_converter=loi.label_converter_shorten_loci,
-                row_label_converter=loi.label_converter_shorten_loci,
-                row_cluster=True, col_cluster=True, threads=threads,
-                figsize=(a_key_side, b_key_side))
+    process_intersection_metric(
+        loci_dict[a_key], loci_dict[b_key],
+        outdir / "{}@{}.csv".format(a_key, b_key),
+        outdir / "plot_{}@{}.png".format(a_key, b_key),
+        adjustments=_adjustment_wrc(),
+        col_label_converter=loi.label_converter_shorten_loci,
+        row_label_converter=loi.label_converter_shorten_loci,
+        row_cluster=True, col_cluster=True, threads=threads,
+        figsize=(a_key_side, b_key_side))
 
 
 def process_intersection_metric(a_paths, b_paths, df_path: Path, pdf, threads=4, **kw):
