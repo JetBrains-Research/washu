@@ -262,7 +262,11 @@ def process_intersection_metric(a_paths, b_paths, df_path: Path, save_to, thread
     df = bm.load_or_build_metrics_table(a_paths, b_paths, df_path, threads=threads)
 
     # print to pdf:
-    bm.plot_metric_heatmap("IM: {}".format(df_path.name), df, save_to=save_to, **kw)
+    try:
+        bm.plot_metric_heatmap("IM: {}".format(df_path.name), df, save_to=save_to, **kw)
+    except ValueError as e:
+        print(e, file=sys.stderr)
+
     return df
 
 
