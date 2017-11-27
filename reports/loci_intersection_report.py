@@ -250,7 +250,7 @@ def report(a_key, b_key, loci_dict, outdir, threads, a_key_side, b_key_side):
     process_intersection_metric(
         loci_dict[a_key], loci_dict[b_key],
         outdir / "{}@{}.csv".format(a_key, b_key),
-        outdir / "plot_{}@{}.png".format(a_key, b_key),
+        str(outdir / "plot_{}@{}.png".format(a_key, b_key)),
         adjustments=_adjustment_wrc(),
         col_label_converter=loi.label_converter_shorten_loci,
         row_label_converter=loi.label_converter_shorten_loci,
@@ -258,11 +258,11 @@ def report(a_key, b_key, loci_dict, outdir, threads, a_key_side, b_key_side):
         figsize=(a_key_side, b_key_side))
 
 
-def process_intersection_metric(a_paths, b_paths, df_path: Path, pdf, threads=4, **kw):
+def process_intersection_metric(a_paths, b_paths, df_path: Path, save_to, threads=4, **kw):
     df = bm.load_or_build_metrics_table(a_paths, b_paths, df_path, threads=threads)
 
     # print to pdf:
-    bm.plot_metric_heatmap("IM: {}".format(df_path.name), df, save_to=pdf, **kw)
+    bm.plot_metric_heatmap("IM: {}".format(df_path.name), df, save_to=save_to, **kw)
     return df
 
 
