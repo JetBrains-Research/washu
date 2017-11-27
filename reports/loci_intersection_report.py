@@ -153,7 +153,7 @@ def _cli():
     # ########## For loci #############################################################
     # If custom peaks folder, skip plots, calc only stat test
     if not args.peaks:
-        loci = sorted({k for k in loci_dict if (k is not None) and ("pathways" not in k)})
+        loci = sorted({k for k in loci_dict if "pathways" not in k})
         for i, lt_a in enumerate(loci):
             for j, lt_b in enumerate(loci):
                 idx = i * len(loci) + j + 1
@@ -167,7 +167,7 @@ def _cli():
 
         # Pathways:
         for lt_a in [key for key in ["aging_pathways", "notch_pathways"] if key in loci_dict]:
-            for lt_b in [k for k in loci_dict if k.endswith("_consensus_yo")]:
+            for lt_b in [k for k in loci_dict if k and k.endswith("_consensus_yo")]:
                 print("----- [Report]: {}@{} ----".format(lt_a, lt_b))
                 report(lt_a, lt_b, loci_dict, results_dir, threads,
                        plot_sizes.get(lt_a, 20), plot_sizes.get(lt_b, 20))

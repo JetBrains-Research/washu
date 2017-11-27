@@ -24,10 +24,6 @@ def collect_loci(loci_root: Path):
             # add top level files
             top_level_paths.append(f)
 
-    # All annotations:
-    annotations[None] = sorted(chain(top_level_paths, *annotations.values()),
-                               key=sort_by_fname)
-
     annotations["top_level_paths"] = sorted(top_level_paths, key=sort_by_fname)
 
     return annotations
