@@ -65,10 +65,6 @@ def _cli():
                         # We decided to ignore Macs2 narrow
                         continue
 
-                    if tool == "sicer":
-                        # TODO: not calculated yet, partial results in folders
-                        continue
-
                     peaks = loi._collect_peaks_in_folder(tool_dir)
                     if peaks:
                         peaks_map[tool][hist] = peaks
