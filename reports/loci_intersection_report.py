@@ -126,8 +126,8 @@ def _cli():
     for tool in sorted(peaks_map.keys()):
         for lt in ["default", "wo_pathways", "median_consensus", "weak_consensus"]:
             print("----- [Report]: Donors {}@{} ----".format(tool, lt))
-            report_donors(tool, peaks_map, loci_dict, lt, plot_sizes[lt], results_dir, threads,
-                          outliers_df)
+            report_donors(tool, peaks_map, loci_dict, lt, plot_sizes.get(lt, 20),
+                          results_dir, threads, outliers_df)
 
     # ########## For loci #############################################################
     # If custom peaks folder, skip plots, calc only stat test
