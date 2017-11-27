@@ -136,7 +136,7 @@ def _cli():
         plot_sizes[cons + "_yo"] = 10
 
         loci_dict[cons + "_common"] \
-            = [p for p in loci_dict[cons] if not "DS" in p.name]
+            = [p for p in loci_dict[cons] if "DS" not in p.name]
         plot_sizes[cons + "_common"] = 10
 
     # ########## For donors #############################################################
