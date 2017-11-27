@@ -113,6 +113,15 @@ def _cli():
         key=lambda p: p.name
     )
 
+    # Some predefined loci set:
+    default_paths = []
+    for key in ["top_level_paths", "enhancers", "regulatory", "repeats", 'chromhmm']:
+        if key in loci_dict:
+            default_paths.extend(loci_dict[key])
+        else:
+            print("Annotations not found:", str(loci_root / key), sys.stderr)
+    loci_dict["default"] = sorted(default_paths, key=lambda p: p.name)
+
     plot_sizes = {
         "notch_pathways": 20,
         "aging_pathways": 200,

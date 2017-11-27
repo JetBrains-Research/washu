@@ -49,8 +49,8 @@ def test_collect_loci(tmp_path):
         (folder / "{}.bed".format(i + 1)).touch()
 
     table = loi.collect_loci(loci_root)
-    assert 14 == len(table)
-    assert ['None', 'chipseq_diff_loci', 'chromhmm', 'default', 'else', 'enhancers',
+    assert 13 == len(table)
+    assert ['None', 'chipseq_diff_loci', 'chromhmm', 'else', 'enhancers',
             'golden_consensus', 'golden_median_consensus',
             'regulatory', 'repeats', 'tfs', 'top_level_paths',
             'zinbra_consensus', 'zinbra_median_consensus'
@@ -69,12 +69,6 @@ def test_collect_loci(tmp_path):
             'diff1.bed', 'diff2.bed', 'doo.bed', 'foo.bed'] == (
         [t.name for t in table[None]]
     )
-    assert 13 == len(table['default'])
-    assert ['1.bed', '3.bed', '4.bed', 'boo.bed', 'boo.bed', 'boo.bed',
-            'cd14_chromhmm.hg19.10_EnhA2.bed', 'cd14_chromhmm.hg19.12_ZNF_Rpts.bed',
-            'cd14_chromhmm.hg19.1_TssA.bed', 'cd14_chromhmm.hg19.2_TssFlnk.bed',
-            'cd14_chromhmm.hg19.9_EnhA1.bed',
-            'doo.bed', 'foo.bed'] == [t.name for t in table['default']]
 
 
 @pytest.mark.parametrize("root,relative_path,selected,mod", [

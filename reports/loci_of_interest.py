@@ -1,5 +1,6 @@
 from itertools import chain
 from pathlib import Path
+import sys
 
 
 def collect_loci(loci_root: Path):
@@ -28,13 +29,6 @@ def collect_loci(loci_root: Path):
                                key=sort_by_fname)
 
     annotations["top_level_paths"] = sorted(top_level_paths, key=sort_by_fname)
-
-    # Default annotations: top level + selected folders (~ FIXED, doesn't depend on to peak
-    # calling)
-    default_paths = list(top_level_paths)
-    for key in ["enhancers", "regulatory", "repeats", 'chromhmm']:
-        default_paths.extend(annotations[key])
-    annotations["default"] = sorted(default_paths, key=sort_by_fname)
 
     return annotations
 

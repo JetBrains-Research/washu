@@ -74,8 +74,16 @@ def _cli():
 
     df = bm.bed_metric_table(peaks_paths, peaks_paths, threads=threads_num)
 
-    loi_dict = loi.collect_loci(loci_root)
-    df_loci = bm.bed_metric_table(peaks_paths, loi_dict['default'], threads=threads_num)
+    loci_dict = loi.collect_loci(loci_root)
+    default_paths = []
+    for key in ["top_level_paths", "enhancers", "regulatory", "repeats", 'chromhmm']:
+        if key in loci_dict:
+            default_paths.extend(loci_dict[key])
+        else:
+            print("Annotations not found:", str(loci_root / key), sys.stderr)
+    loci_dict["default"] = sorted(default_paths, key=lambda p: p.name)
+
+    df_loci = bm.bed_metric_table(peaks_paths, loci_dict['default'], threads=threads_num)
 
     with PdfPages(pdf_path) as pdf:
         print("Calculating median consensus")
