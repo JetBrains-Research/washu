@@ -228,6 +228,7 @@ class ChangeCollector:
     def collect_difference(self):
         self.process_diff_bind("diff_bind")
         self.process_diff_bind("diff_bind_zinbra")
+        self.process_diff_bind("diff_bind_cons_zinbra")
 
         self.process_chip_diff()
 
@@ -245,6 +246,7 @@ class ChangeCollector:
         self.process_diffreps("diffReps")
         self.process_diffreps("diffReps_broad")
         self.process_diffreps("diffReps_broad_input")
+        self.process_diffreps("diffReps_input")
 
     def count_intersections(self):
         temp_dir = tempfile.mkdtemp(suffix=".tmp")
