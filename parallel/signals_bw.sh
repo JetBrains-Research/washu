@@ -141,9 +141,6 @@ then
 fi
 cd $RESULTS_FOLDER
 python ${SCRIPT_DIR}/scripts/signals.py ${RESULTS_FOLDER}/${ID}.tsv ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
-
-# Cleanup
-rm ${RESULTS_FOLDER}/*.tsv
 SCRIPT
 wait_complete $QSUB_ID
 
