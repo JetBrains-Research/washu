@@ -30,6 +30,18 @@ def test_chromhmm_state_descr(fname, descr):
     assert descr == loi.chromhmm_state_descr(fname)
 
 
+@pytest.mark.parametrize("fname,descr", [
+    ("foo.bed", "foo"),
+    ("cd14_chromhmm.hg19.12_ZNF_Rpts.bed", "cd14_12_ZNF_Rpts (ZNF genes & repeats)"),
+    ("cgi_cd14_chromhmm.hg19.12_ZNF_Rpts.bed", "cgi_cd14_12_ZNF_Rpts (ZNF genes & repeats)"),
+    ("boo_without_doo.bed", "boo_w/o_doo"),
+    ("boo_weak_consensus.bed", "boo_wcs"),
+    ("boo_median_consensus.bed", "boo_mcs"),
+])
+def test_label_converter_shorten_loci(fname, descr):
+    assert descr == loi.label_converter_shorten_loci(fname)
+
+
 def test_collect_loci(tmp_path):
     loci_root = tmp_path
     generate_test_data_chromhmm(loci_root)
