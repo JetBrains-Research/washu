@@ -181,10 +181,11 @@ def _cli():
 
     # ########## Stat tests #############################################################
     loci_sets = [
-        ("wo_pathways",)
+        ("wo_pathways",),
         ("wo_pathways", "aging_pathways")
     ]
     if all_pathways:
+        # noinspection PyTypeChecker
         loci_sets.append(("wo_pathways", "aging_pathways", "other_pathways"))
 
     for i, loci_set in enumerate(loci_sets):
