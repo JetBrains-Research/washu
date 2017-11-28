@@ -105,15 +105,16 @@ fi
 
 bedtools multiinter -i $(find . -maxdepth 1 \( -wholename "*_peaks.bed" -or -wholename "*Peak" -or \
     -wholename "*island.bed" \) | grep -v outlier | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g') |\
-    grep '\(,.*\)\{'${ALL_COUNT}'\}' | bedtools merge > ${MOD}_${TOOL}_consensus.bed
+    grep '\(,.*\)\{'${ALL_COUNT}'\}' | sort -k1,1 -k2,2n | \
+    bedtools merge > ${MOD}_${TOOL}_consensus.bed
 bedtools multiinter -i $(find . -maxdepth 1 \( -wholename "*OD*island.bed" -or \
     -wholename "*OD*Peak" -or -wholename "*OD*_peaks.bed" \) | grep -v outlier | \
     sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g') | grep '\(,.*\)\{'${OD_COUNT}'\}' | \
-    bedtools merge > ${MOD}_${TOOL}_ODS_consensus.bed
+    sort -k1,1 -k2,2n | bedtools merge > ${MOD}_${TOOL}_ODS_consensus.bed
 bedtools multiinter -i $(find . -maxdepth 1 \( -wholename "*YD*island.bed" -or \
     -wholename "*YD*Peak" -or -wholename "*YD*_peaks.bed" \) | grep -v outlier | \
     sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g') | grep '\(,.*\)\{'${YD_COUNT}'\}' | \
-    bedtools merge > ${MOD}_${TOOL}_YDS_consensus.bed
+    sort -k1,1 -k2,2n | bedtools merge > ${MOD}_${TOOL}_YDS_consensus.bed
 bedtools intersect -v -a ${MOD}_${TOOL}_ODS_consensus.bed \
     -b ${MOD}_${TOOL}_YDS_consensus.bed \
     > ${MOD}_${TOOL}_ODS_without_YDS_consensus.bed
