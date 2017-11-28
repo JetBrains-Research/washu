@@ -32,6 +32,10 @@ def _cli():
                         help="Threads number for parallel processing")
     parser.add_argument('--all', action="store_true",
                         help="Include outliers")
+    parser.add_argument('--stats', action="store_true",
+                        help="Calc only statistics, skip plots @ loci")
+    parser.add_argument('--allpws', action="store_true",
+                        help="Stat tests on all pathways")
     parser.add_argument('--tuned', action="store_true",
                         help="Use tuned peaks")
     parser.add_argument('--outliers', metavar="PATH",
@@ -47,11 +51,13 @@ def _cli():
     results_dir = Path(args.out)
     results_dir.mkdir(parents=True, exist_ok=True)
     loci_root = Path(args.loci)
+    all_pathways = args.allpws
+    stats_only = args.stats
     ########################################################################
 
     loci_dict = loi.collect_loci(loci_root)
 
-    if not args.peaks:
+    if stats_only:
         if args.tuned:
             peaks_map = defaultdict(dict)
             bench_root = data_root / "experiments/configs/benchmark/benchmark"
@@ -173,43 +179,26 @@ def _cli():
                        plot_sizes.get(lt_a, 20), plot_sizes.get(lt_b, 20))
 
     # ########## Stat tests #############################################################
-    stats_test_loci = {
-        "wo_pathways": loci_dict["wo_pathways"],
-        # "other_pathways": loci_dict.get("other_pathways", []),
-        "aging_pathways": loci_dict.get("aging_pathways", []),
-    }
+    loci_sets = [
+        ("wo_pathways",)
+        ("wo_pathways", "aging_pathways")
+    ]
+    if all_pathways:
+        loci_sets.append(("wo_pathways", "aging_pathways", "other_pathways"))
 
-    significant_loci = []
-    not_significant_loci = []
+    for i, loci_set in enumerate(loci_sets):
+        desc = "-".join(loci_set).replace("_pathways", "") + "_pathways"
+        print("----- {}/{} [Stat tests]: {} ----".format(i, len(loci_sets), loci_sets))
 
-    loci_tool_pairs = [(loci_key, tool) for loci_key in stats_test_loci for tool in
-                       tools_for_stat_test]
-    for i, (loci_key, tool) in enumerate(loci_tool_pairs, 1):
-        print("----- {}/{} [Stat tests]: Donors {}@{} ----".format(i, len(loci_tool_pairs), tool,
-                                                                   loci_key))
-        if not loci_dict[loci_key]:
-            print("  [Skipped] No loci paths")
+        for lt in [lt for lt in loci_set if lt not in loci_dict]:
+            print("  [Skipped] No loci paths for: ", lt)
             continue
 
-        test_donors(tool, peaks_map, loci_dict, loci_key, results_dir, threads, outliers_df,
-                    exclude_outliers,
-                    significant_loci, not_significant_loci)
+        paths = sorted(set(chain(*[loci_dict.get(lt, []) for lt in loci_set])),
+                       key=lambda p: p.name)
 
-    save_as_df(not_significant_loci, results_dir / "not_significant_loci.csv")
-    save_as_df(significant_loci, results_dir / "significant_loci.csv")
-
-
-def save_as_df(loci_info, result_path: Path):
-    if not loci_info:
-        print("No loci, empty file: ", str(result_path))
-        open(str(result_path), mode="w").close()
-        return
-
-    df_significant_loci = pd.DataFrame.from_records(loci_info)
-    df_significant_loci.columns = ["file", "locus", "pvalue", "fdr_bh"]
-    df_significant_loci.sort_values(by=["fdr_bh", "pvalue"], inplace=True)
-    df_significant_loci.to_csv(str(result_path))
-    print(df_significant_loci.to_string(line_width=200, index=False))
+        test_donors(tools_for_stat_test, peaks_map, desc, paths, results_dir,
+                    outliers_df, exclude_outliers, threads)
 
 
 def _adjustment():
@@ -299,51 +288,82 @@ def _pvalues_above_thr(thr005, thr001):
     return inner
 
 
-def test_donors(tool, peaks_map, loci_dict, loci_key, outdir, threads, outliers_df,
-                exclude_outliers,
-                significant_loci, not_significant_loci):
-    peaks_dict = peaks_map[tool]
-    tool = tool or "all"  # presentable text for labels, we use 'None' for all loci
+def test_donors(tools, peaks_map, loci_desc, loci_paths, outdir,
+                outliers_df, exclude_outliers, threads):
+    pvalue_dfs = []
 
-    loci_paths = loci_dict[loci_key]
+    for tool in tools:
+        peaks_dict = peaks_map[tool]
 
-    for hist in sorted(peaks_dict.keys()):
-        peaks_paths = peaks_dict[hist]
-        peaks_key = "{}_{}".format(tool, hist)
+        for hist in sorted(peaks_dict.keys()):
+            peaks_paths = peaks_dict[hist]
+            peaks_key = "{}_{}".format(tool, hist)
+            result_plot_path = outdir / "plot-stat_{}-{}.pdf".format(peaks_key, loci_desc)
 
-        result_plot_path = outdir / "plot_{}-{}_stat.pdf".format(peaks_key, loci_key)
+            with PdfPages(str(result_plot_path)) as pdf:
+                init_pdf_info(pdf)
 
-        with PdfPages(str(result_plot_path)) as pdf:
-            init_pdf_info(pdf)
+                pvalue_dfs.append(
+                    test_donors_by_metric(
+                        bm.load_or_build_metrics_table(
+                            peaks_paths, loci_paths,
+                            outdir / "{}@{}.csv".format(peaks_key, loci_desc),
+                            threads=threads
+                        ),
+                        hist, outliers_df, peaks_paths, pdf,
+                        outdir / "stat-{}@{}.csv".format(peaks_key, loci_desc),
+                        exclude_outliers,
+                    ))
 
-            # Intersection metric: peaks@loci
-            test_donors_by_metric(
-                bm.load_or_build_metrics_table(peaks_paths, loci_paths,
-                                               outdir / "{}@{}.csv".format(peaks_key, loci_key),
-                                               threads=threads),
-                hist, outliers_df, peaks_paths, pdf,
-                outdir / "{}@{}_stat.csv".format(peaks_key, loci_key),
-                exclude_outliers,
-                significant_loci, not_significant_loci
-            )
+                # Intersection metric: loci@peaks, e.g. for small loci, transpose to make plots
+                # have donors at OY, loci at OX
+                pvalue_dfs.append(
+                    test_donors_by_metric(
+                        bm.load_or_build_metrics_table(
+                            loci_paths, peaks_paths,
+                            outdir / "{}@{}.csv".format(loci_desc, peaks_key),
+                            threads=threads
+                        ).T,
+                        hist, outliers_df, peaks_paths, pdf,
+                        outdir / "stat-{}@{}.csv".format(loci_desc, peaks_key),
+                        exclude_outliers,
+                    )
+                )
+    # sign, not_sign, all
+    loci_pvalues_df = pd.concat(*pvalue_dfs)
+    loci_pvalues_df.sort_values(by="pvalue", inplace=True)
 
-            # Intersection metric: loci@peaks, e.g. for small loci, transpose to make plots
-            # have donors at OY, loci at OX
-            test_donors_by_metric(
-                bm.load_or_build_metrics_table(loci_paths, peaks_paths,
-                                               outdir / "{}@{}.csv".format(loci_key, peaks_key),
-                                               threads=threads).T,
-                hist, outliers_df, peaks_paths, pdf,
-                outdir / "{}@{}_stat.csv".format(loci_key, peaks_key),
-                exclude_outliers,
-                significant_loci, not_significant_loci
-            )
-    pass
+    # P-values correction
+    #   see: http://www.statsmodels.org/dev/_modules/statsmodels/stats/multitest.html
+    pvalues_col = loci_pvalues_df["pvalue"]
+    pvalues_not_nan_mask = ~np.isnan(pvalues_col)
+    _reject, pvals_corrected, *_ = multipletests(
+        pvals=pvalues_col[pvalues_not_nan_mask],
+        # fdr_bh, holm-sidak, bonferroni
+        alpha=0.05, method="fdr_bh"
+    )
+    loci_pvalues_df["fdr_bh"] = np.nan
+    loci_pvalues_df.loc[pvalues_not_nan_mask, "fdr_bh"] = pvals_corrected
+    loci_pvalues_df.sort_values(by=["fdr_bh", "pvalue"], inplace=True)
+    all_pvalues_path = outdir / "stats.{}.all_pvalues.csv".format(loci_desc)
+    loci_pvalues_df.to_csv(str(all_pvalues_path))
+    print("Done. All pvalues: ", str(all_pvalues_path))
+
+    pvalue001_df = loci_pvalues_df[loci_pvalues_df["pvalue"] < 0.01]
+    pvalue001_df.to_csv(str(outdir / "stats.{}.notadjusted_pvalues0.01.csv".format(loci_desc)))
+    print("Not adjusted pvalues < 0.01, first 10:")
+    print(pvalue001_df.head(10).to_string(line_width=200, index=False))
+
+    bh01_df = loci_pvalues_df[loci_pvalues_df["fdr_bh"] < 0.1]
+    bh01_df.to_csv(str(outdir / "stats.{}.bh_pvalues0.1.csv".format(loci_desc)))
+    print("BH adjusted pvalues, FDR < 0.1, first 10:")
+    print(bh01_df.head(10).to_string(line_width=200, index=False))
+
+    # TODO: plots pvalues
 
 
 def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path,
-                          exclude_outliers,
-                          significant_loci, not_significant_loci):
+                          exclude_outliers):
     ha = "two-sided"  # 'less', 'two-sided', or 'greater'
 
     ##########################################################################################
@@ -360,12 +380,12 @@ def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path
         print("    Dfs: OD = {}, YD = {}".format(df_ods.shape, df_yds.shape))
         loci_pvalues_df = calc_loci_pvalues(df_ods, df_yds, ha)
         # sort
-        loci_pvalues_df.sort_values(by=["fdr_bh", "pvalue"], inplace=True)
+        loci_pvalues_df.sort_values(by="pvalue", inplace=True)
         # Save results:
+        print("    Done: ", str(stats_df_path))
         loci_pvalues_df.to_csv(str(stats_df_path))
 
     # Plots
-
     # TODO: to one plot: pvalues + colors for adjusted threshold ?
     manhattan_plot(loci_pvalues_df.sort_values(by="pvalue"),
                    "pvalue",
@@ -373,24 +393,10 @@ def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path
                    correction="Uncorrected",
                    save_to=pdf)
 
-    manhattan_plot(loci_pvalues_df.sort_values(by="fdr_bh"),
-                   "fdr_bh",
-                   "[{}] Mann whitney u test pvalues".format(stats_df_path.name),
-                   correction="Benjamini–Hochberg corrected",
-                   save_to=pdf)
-
     _plot_donors_at_significant_loci(df, loci_pvalues_df, "pvalue", "not-adjusted pvalues",
                                      outliers_df, hist, stats_df_path.name, pdf)
-    _plot_donors_at_significant_loci(df, loci_pvalues_df, "fdr_bh", "adjusted pvalues (BH fdr)",
-                                     outliers_df, hist, stats_df_path.name, pdf)
 
-    pvalue001_df = loci_pvalues_df[loci_pvalues_df["pvalue"] < 0.01]
-    for idx, row in pvalue001_df.iterrows():
-        not_significant_loci.append((stats_df_path.name, idx, row.pvalue, row.fdr_bh))
-
-    bh005_df = loci_pvalues_df[loci_pvalues_df["fdr_bh"] < 0.05]
-    for idx, row in bh005_df.iterrows():
-        significant_loci.append((stats_df_path.name, idx, row.pvalue, row.fdr_bh))
+    return loci_pvalues_df
 
 
 def _plot_donors_at_significant_loci(df,
@@ -450,19 +456,6 @@ def calc_loci_pvalues(df_ods, df_yds, ha):
     loci_pvalues_df = pd.DataFrame.from_dict(dict(loci=columns, pvalue=pvalues))
     loci_pvalues_df.index = loci_pvalues_df.loci
     loci_pvalues_df.drop("loci", inplace=True, axis=1)
-    print("Not corrected pvalue, first 10 lowest pvalues:")
-    print(loci_pvalues_df.sort_values(by="pvalue").head(10))
-    # P-values correction
-    #   see: http://www.statsmodels.org/dev/_modules/statsmodels/stats/multitest.html
-    pvalues_col = loci_pvalues_df["pvalue"]
-    pvalues_not_nan_mask = ~np.isnan(pvalues_col)
-    _reject, pvals_corrected, *_ = multipletests(
-        pvals=pvalues_col[pvalues_not_nan_mask],
-        # fdr_bh, holm-sidak, bonferroni
-        alpha=0.05, method="fdr_bh"
-    )
-    loci_pvalues_df["fdr_bh"] = np.nan
-    loci_pvalues_df.loc[pvalues_not_nan_mask, "fdr_bh"] = pvals_corrected
 
     return loci_pvalues_df
 
