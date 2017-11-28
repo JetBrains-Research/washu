@@ -57,7 +57,7 @@ def _cli():
 
     loci_dict = loi.collect_loci(loci_root)
 
-    if not stats_only:
+    if not args.peaks:
         if args.tuned:
             peaks_map = defaultdict(dict)
             bench_root = data_root / "experiments/configs/benchmark/benchmark"
@@ -157,8 +157,7 @@ def _cli():
                               results_dir, threads, outliers_df)
 
     # ########## For loci #############################################################
-    # If custom peaks folder, skip plots, calc only stat test
-    if not args.peaks:
+    if not stats_only:
         loci = sorted({k for k in loci_dict if "pathways" not in k})
         for i, lt_a in enumerate(loci):
             for j, lt_b in enumerate(loci):
