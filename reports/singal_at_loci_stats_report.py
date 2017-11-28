@@ -116,40 +116,45 @@ def plot_signal_at_signif_loci(title, df, col, pdf, signal_root):
     def loci_passed_thr(df, col, thr):
         return set(df.index[df[col] < thr].tolist())
 
-    series_list = []
     thr01 = sorted(loci_passed_thr(df, col, 0.1))
     thr005 = sorted(loci_passed_thr(df, col, 0.05))
     thr001 = sorted(loci_passed_thr(df, col, 0.01))
-    for label in thr01:
-        datatype, loci = label.split('@')
-        path = signal_root / datatype / loci / "{}_{}_data.csv".format(loci, col)
-        series = pd.read_csv(path, index_col=0).iloc[:, 0]
-        series.name = label
-        series_list.append(series)
 
-    if series_list:
-        df = pd.DataFrame(series_list, ).T
+    def plot_selected(labels, thr_str):
+        series_list = []
+        for label in labels:
+            datatype, loci = label.split('@')
+            path = signal_root / datatype / loci / "{}_{}_data.csv".format(loci, col)
+            series = pd.read_csv(path, index_col=0).iloc[:, 0]
+            series.name = label
+            series_list.append(series)
 
-        # Normalize by columns (by loci across all donors)
-        df = ((df - np.min(df, axis=0)) / (np.max(df, axis=0) - np.min(df, axis=0)))
+        if series_list:
+            df = pd.DataFrame(series_list, ).T
 
-        row_annotator = bm.color_annotator_age
+            # Normalize by columns (by loci across all donors)
+            df = ((df - np.min(df, axis=0)) / (np.max(df, axis=0) - np.min(df, axis=0)))
 
-        bm.plot_metric_heatmap(
-            "Average [{}] signal normalized in each loci to 0..1, significant {} pvalues < "
-            "0.1".format(col, title),
-            df,
-            save_to=pdf,
-            adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
-            row_cluster=False, col_cluster=False, figsize=(20, 15),
-            col_color_annotator=loir._pvalues_above_thr(
-                {label_converter_shorten_loci(s) for s in thr005},
-                {label_converter_shorten_loci(s) for s in thr001}
-            ),
-            row_color_annotator=row_annotator,
-            col_label_converter=label_converter_shorten_loci,
-            row_label_converter=bm.label_converter_donor_and_tool,
-        )
+            row_annotator = bm.color_annotator_age
+
+            bm.plot_metric_heatmap(
+                "Average [{}] signal normalized in each loci to 0..1, significant {} pvalues < "
+                "{}".format(col, title, thr_str),
+                df,
+                save_to=pdf,
+                adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
+                row_cluster=False, col_cluster=False, figsize=(20, 15),
+                col_color_annotator=loir._pvalues_above_thr(
+                    {label_converter_shorten_loci(s) for s in thr005},
+                    {label_converter_shorten_loci(s) for s in thr001}
+                ),
+                row_color_annotator=row_annotator,
+                col_label_converter=label_converter_shorten_loci,
+                row_label_converter=bm.label_converter_donor_and_tool,
+            )
+    plot_selected(thr01, "0.1")
+    plot_selected(thr005, "0.05")
+    plot_selected(thr001, "0.01")
 
 
 def label_converter_shorten_loci(name):
