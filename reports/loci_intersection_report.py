@@ -195,17 +195,13 @@ def _cli():
             loci_sets.append(("wo_pathways", "aging_pathways", "other_pathways"))
 
         for i, loci_set in enumerate(loci_sets, 1):
-            desc = "-".join(loci_set).replace("_pathways", "") + "_pathways"
             print("----- {}/{} [Stat tests]: {} ----".format(i, len(loci_sets), loci_set))
 
             for lt in [lt for lt in loci_set if lt not in loci_dict]:
                 print("  [Skipped] No loci paths for: ", lt)
                 continue
 
-            paths = sorted(set(chain(*[loci_dict.get(lt, []) for lt in loci_set])),
-                           key=lambda p: p.name)
-
-            test_donors(tools_for_stat_test, peaks_map, desc, paths, results_dir,
+            test_donors(tools_for_stat_test, peaks_map, loci_set, results_dir,
                         outliers_df, exclude_outliers, threads)
 
 
@@ -296,50 +292,59 @@ def _pvalues_above_thr(thr005, thr001):
     return inner
 
 
-def test_donors(tools, peaks_map, loci_desc, loci_paths, outdir,
+def test_donors(tools, peaks_map, loci_set, loci_dict, outdir,
                 outliers_df, exclude_outliers, threads):
     pvalue_dfs = []
 
-    for tool in tools:
-        peaks_dict = peaks_map[tool]
+    for lt in loci_set:
+        loci_paths = loci_dict.get(lt, [])
+        if not loci_paths:
+            continue
 
-        for hist in sorted(peaks_dict.keys()):
-            peaks_paths = peaks_dict[hist]
-            peaks_key = "{}_{}".format(tool, hist)
-            result_plot_path = outdir / "plot-stat_{}-{}.pdf".format(peaks_key, loci_desc)
+        for tool in tools:
+            peaks_dict = peaks_map[tool]
 
-            with PdfPages(str(result_plot_path)) as pdf:
-                init_pdf_info(pdf)
+            for hist in sorted(peaks_dict.keys()):
+                peaks_paths = peaks_dict[hist]
+                peaks_key = "{}_{}".format(tool, hist)
+                result_plot_path = outdir / "plot-stat_{}-{}.pdf".format(peaks_key, lt)
 
-                df = test_donors_by_metric(
-                    bm.load_or_build_metrics_table(
-                        peaks_paths, loci_paths,
-                        outdir / "{}@{}.csv".format(peaks_key, loci_desc),
-                        threads=threads
-                    ),
-                    hist, outliers_df, peaks_paths, pdf,
-                    outdir / "stat-{}@{}.csv".format(peaks_key, loci_desc),
-                    exclude_outliers,
-                )
-                df.index = ["{}@{}".format(peaks_key, s) for s in df.index]
-                pvalue_dfs.append(df)
+                with PdfPages(str(result_plot_path)) as pdf:
+                    init_pdf_info(pdf)
 
-                # Intersection metric: loci@peaks, e.g. for small loci, transpose to make plots
-                # have donors at OY, loci at OX
-                df = test_donors_by_metric(
-                    bm.load_or_build_metrics_table(
-                        loci_paths, peaks_paths,
-                        outdir / "{}@{}.csv".format(loci_desc, peaks_key),
-                        threads=threads
-                    ).T,
-                    hist, outliers_df, peaks_paths, pdf,
-                    outdir / "stat-{}@{}.csv".format(loci_desc, peaks_key),
-                    exclude_outliers,
-                )
-                df.index = ["{}@{}".format(s, peaks_key) for s in df.index]
-                pvalue_dfs.append(df)
+                    df = test_donors_by_metric(
+                        bm.load_or_build_metrics_table(
+                            peaks_paths, loci_paths,
+                            outdir / "{}@{}.csv".format(peaks_key, lt),
+                            threads=threads
+                        ),
+                        hist, outliers_df, peaks_paths, pdf,
+                        outdir / "stat-{}@{}.csv".format(peaks_key, lt),
+                        exclude_outliers,
+                    )
+                    df.index = ["{}@{}".format(peaks_key, s) for s in df.index]
+                    pvalue_dfs.append(df)
+
+                    # Intersection metric: loci@peaks, e.g. for small loci, transpose to make plots
+                    # have donors at OY, loci at OX
+                    df = test_donors_by_metric(
+                        bm.load_or_build_metrics_table(
+                            loci_paths, peaks_paths,
+                            outdir / "{}@{}.csv".format(lt, peaks_key),
+                            threads=threads
+                        ).T,
+                        hist, outliers_df, peaks_paths, pdf,
+                        outdir / "stat-{}@{}.csv".format(lt, peaks_key),
+                        exclude_outliers,
+                    )
+                    df.index = ["{}@{}".format(s, peaks_key) for s in df.index]
+                    pvalue_dfs.append(df)
+
+    # Summary report:
+    loci_desc = "-".join(loci_set).replace("_pathways", "") + "_pathways"
 
     # sign, not_sign, all
+    # TODO: remove duplicates
     loci_pvalues_df = pd.concat(pvalue_dfs)
     loci_pvalues_df.sort_values(by="pvalue", inplace=True)
 
