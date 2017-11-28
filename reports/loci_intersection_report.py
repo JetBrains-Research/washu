@@ -325,18 +325,20 @@ def test_donors(tools, peaks_map, loci_set, loci_dict, outdir,
                 with PdfPages(str(result_plot_path)) as pdf:
                     init_pdf_info(pdf)
 
-                    df = test_donors_by_metric(
-                        bm.load_or_build_metrics_table(
-                            peaks_paths, loci_paths,
-                            outdir / "{}@{}.csv".format(peaks_key, lt),
-                            threads=threads
-                        ),
-                        hist, outliers_df, peaks_paths, pdf,
-                        outdir / "stat-{}@{}.csv".format(peaks_key, lt),
-                        exclude_outliers,
-                    )
-                    df.index = ["{}@{}".format(peaks_key, s) for s in df.index]
-                    pvalue_dfs.append(df)
+                    if "pathways" not in lt:
+                        # pathways are small, no sense in peaks@pathways
+                        df = test_donors_by_metric(
+                            bm.load_or_build_metrics_table(
+                                peaks_paths, loci_paths,
+                                outdir / "{}@{}.csv".format(peaks_key, lt),
+                                threads=threads
+                            ),
+                            hist, outliers_df, peaks_paths, pdf,
+                            outdir / "stat-{}@{}.csv".format(peaks_key, lt),
+                            exclude_outliers,
+                        )
+                        df.index = ["{}@{}".format(peaks_key, s) for s in df.index]
+                        pvalue_dfs.append(df)
 
                     # Intersection metric: loci@peaks, e.g. for small loci, transpose to make plots
                     # have donors at OY, loci at OX
@@ -387,7 +389,24 @@ def test_donors(tools, peaks_map, loci_set, loci_dict, outdir,
     print("BH adjusted pvalues, FDR < 0.1, first 10:")
     print(bh01_df.head(10).to_string(line_width=200, index=True))
 
-    # TODO: plots pvalues
+    # # TODO: plots pvalues    for label in thr01:
+    # def foo(df):
+    #     for s in df.index:
+    #         a, b = s.split('@', maxsplit=2)
+    #         if a.endswith(".bed"):
+    #             loci = a
+    #         else:
+    #             loci = b
+    #         print()
+    # # ['cd14_chromhmm18.hg19.17_ReprPCWk.bed', 'macs_broad_H3K27ac']
+    # # ['macs_broad_H3K27ac', 'cd14_chromhmm18.hg19.17_ReprPCWk.bed']
+    #
+    #
+    # #     datatype, loci = label.split('@')
+    # #     path = signal_root / datatype / loci / "{}_{}_data.csv".format(loci, col)
+    # #     series = pd.read_csv(path, index_col=0).iloc[:, 0]
+    # #     series.name = label
+    # #     series_list.append(series)
 
 
 def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path,
