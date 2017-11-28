@@ -79,10 +79,13 @@ def donor_order_id(path):
 
 def label_converter_shorten_loci(name):
     if "chromhmm" in name:
-        return chromhmm_state_descr(name)
+        idx = name.index("chromhmm")
+        suffix = name[:idx]
+        return suffix + chromhmm_state_descr(name[idx:])
 
     name = name.replace(".bed", "")
     name = name.replace("median_consensus", "mcs")
+    name = name.replace("weak_consensus", "wcs")
     name = name.replace("without", "w/o")
     return name
 
