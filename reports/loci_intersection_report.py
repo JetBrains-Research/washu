@@ -201,7 +201,7 @@ def _cli():
                 print("  [Skipped] No loci paths for: ", lt)
                 continue
 
-            test_donors(tools_for_stat_test, peaks_map, loci_set, results_dir,
+            test_donors(tools_for_stat_test, peaks_map, loci_set, loci_dict, results_dir,
                         outliers_df, exclude_outliers, threads)
 
 
