@@ -146,36 +146,38 @@ def _cli():
         plot_sizes[cons + "_common"] = 10
 
     # ########## For donors #############################################################
-    for tool in sorted(peaks_map.keys()):
-        for lt in ["default", "wo_pathways",
-                   "median_consensus", "median_consensus_common",
-                   "weak_consensus", "weak_consensus_common"]:
-
-            if lt in loci_dict:
-                print("----- [Report]: Donors {}@{} ----".format(tool, lt))
-                report_donors(tool, peaks_map, loci_dict, lt, plot_sizes.get(lt, 20),
-                              results_dir, threads, outliers_df)
-
-    # ########## For loci #############################################################
     if not stats_only:
-        loci = sorted({k for k in loci_dict if "pathways" not in k})
-        for i, lt_a in enumerate(loci):
-            for j, lt_b in enumerate(loci):
-                idx = i * len(loci) + j + 1
-                print("----- {}/{} [Report]: {}@{} ----".format(
-                    idx, len(loci) * len(loci),
-                    lt_a, lt_b)
-                )
+        for tool in sorted(peaks_map.keys()):
+            for lt in ["default", "wo_pathways",
+                       "median_consensus", "median_consensus_common",
+                       "weak_consensus", "weak_consensus_common"]:
 
-                report(lt_a, lt_b, loci_dict, results_dir, threads,
-                       plot_sizes.get(lt_a, 20), plot_sizes.get(lt_b, 20))
+                if lt in loci_dict:
+                    print("----- [Report]: Donors {}@{} ----".format(tool, lt))
+                    report_donors(tool, peaks_map, loci_dict, lt, plot_sizes.get(lt, 20),
+                                  results_dir, threads, outliers_df)
 
-        # Pathways:
-        for lt_a in [key for key in ["aging_pathways", "notch_pathways"] if key in loci_dict]:
-            for lt_b in [k for k in loci_dict if k and k.endswith("_consensus_yo")]:
-                print("----- [Report]: {}@{} ----".format(lt_a, lt_b))
-                report(lt_a, lt_b, loci_dict, results_dir, threads,
-                       plot_sizes.get(lt_a, 20), plot_sizes.get(lt_b, 20))
+        # ########## For loci #############################################################
+        # If custom peaks folder, skip plots, calc only stat test
+        if not args.peaks:
+            loci = sorted({k for k in loci_dict if "pathways" not in k})
+            for i, lt_a in enumerate(loci):
+                for j, lt_b in enumerate(loci):
+                    idx = i * len(loci) + j + 1
+                    print("----- {}/{} [Report]: {}@{} ----".format(
+                        idx, len(loci) * len(loci),
+                        lt_a, lt_b)
+                    )
+
+                    report(lt_a, lt_b, loci_dict, results_dir, threads,
+                           plot_sizes.get(lt_a, 20), plot_sizes.get(lt_b, 20))
+
+            # Pathways:
+            for lt_a in [key for key in ["aging_pathways", "notch_pathways"] if key in loci_dict]:
+                for lt_b in [k for k in loci_dict if k and k.endswith("_consensus_yo")]:
+                    print("----- [Report]: {}@{} ----".format(lt_a, lt_b))
+                    report(lt_a, lt_b, loci_dict, results_dir, threads,
+                           plot_sizes.get(lt_a, 20), plot_sizes.get(lt_b, 20))
 
     # ########## Stat tests #############################################################
     loci_sets = [
