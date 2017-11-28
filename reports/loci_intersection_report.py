@@ -32,8 +32,10 @@ def _cli():
                         help="Threads number for parallel processing")
     parser.add_argument('--all', action="store_true",
                         help="Include outliers")
-    parser.add_argument('--stats', action="store_true",
-                        help="Calc only statistics, skip plots @ loci")
+    parser.add_argument('--skip-plots', action="store_true",
+                        help="Do not calc plots @ loci")
+    parser.add_argument('--skip-stats', action="store_true",
+                        help="Do not calc stats tests")
     parser.add_argument('--allpws', action="store_true",
                         help="Stat tests on all pathways")
     parser.add_argument('--tuned', action="store_true",
@@ -52,7 +54,8 @@ def _cli():
     results_dir.mkdir(parents=True, exist_ok=True)
     loci_root = Path(args.loci)
     all_pathways = args.allpws
-    stats_only = args.stats
+    skip_plots = args.skip_plots
+    skip_stats = args.skip_stats
     ########################################################################
 
     loci_dict = loi.collect_loci(loci_root)
@@ -132,6 +135,8 @@ def _cli():
         "notch_pathways": 20,
         "aging_pathways": 200,
         "chromhmm": 10,
+        "chromhmm2": 10,
+        "genes": 10,
         "repeats": 15,
         "wo_pathways": 20,
     }
@@ -146,7 +151,7 @@ def _cli():
         plot_sizes[cons + "_common"] = 10
 
     # ########## For donors #############################################################
-    if not stats_only:
+    if not skip_plots:
         for tool in sorted(peaks_map.keys()):
             for lt in ["default", "wo_pathways",
                        "median_consensus", "median_consensus_common",
@@ -180,27 +185,28 @@ def _cli():
                            plot_sizes.get(lt_a, 20), plot_sizes.get(lt_b, 20))
 
     # ########## Stat tests #############################################################
-    loci_sets = [
-        ("wo_pathways",),
-        ("wo_pathways", "aging_pathways")
-    ]
-    if all_pathways:
-        # noinspection PyTypeChecker
-        loci_sets.append(("wo_pathways", "aging_pathways", "other_pathways"))
+    if not skip_stats:
+        loci_sets = [
+            ("wo_pathways",),
+            ("wo_pathways", "aging_pathways")
+        ]
+        if all_pathways:
+            # noinspection PyTypeChecker
+            loci_sets.append(("wo_pathways", "aging_pathways", "other_pathways"))
 
-    for i, loci_set in enumerate(loci_sets, 1):
-        desc = "-".join(loci_set).replace("_pathways", "") + "_pathways"
-        print("----- {}/{} [Stat tests]: {} ----".format(i, len(loci_sets), loci_set))
+        for i, loci_set in enumerate(loci_sets, 1):
+            desc = "-".join(loci_set).replace("_pathways", "") + "_pathways"
+            print("----- {}/{} [Stat tests]: {} ----".format(i, len(loci_sets), loci_set))
 
-        for lt in [lt for lt in loci_set if lt not in loci_dict]:
-            print("  [Skipped] No loci paths for: ", lt)
-            continue
+            for lt in [lt for lt in loci_set if lt not in loci_dict]:
+                print("  [Skipped] No loci paths for: ", lt)
+                continue
 
-        paths = sorted(set(chain(*[loci_dict.get(lt, []) for lt in loci_set])),
-                       key=lambda p: p.name)
+            paths = sorted(set(chain(*[loci_dict.get(lt, []) for lt in loci_set])),
+                           key=lambda p: p.name)
 
-        test_donors(tools_for_stat_test, peaks_map, desc, paths, results_dir,
-                    outliers_df, exclude_outliers, threads)
+            test_donors(tools_for_stat_test, peaks_map, desc, paths, results_dir,
+                        outliers_df, exclude_outliers, threads)
 
 
 def _adjustment():
@@ -334,7 +340,7 @@ def test_donors(tools, peaks_map, loci_desc, loci_paths, outdir,
                 pvalue_dfs.append(df)
 
     # sign, not_sign, all
-    loci_pvalues_df = pd.concat(*pvalue_dfs)
+    loci_pvalues_df = pd.concat(pvalue_dfs)
     loci_pvalues_df.sort_values(by="pvalue", inplace=True)
 
     # P-values correction
@@ -356,12 +362,12 @@ def test_donors(tools, peaks_map, loci_desc, loci_paths, outdir,
     pvalue001_df = loci_pvalues_df[loci_pvalues_df["pvalue"] < 0.01]
     pvalue001_df.to_csv(str(outdir / "stats.{}.notadjusted_pvalues0.01.csv".format(loci_desc)))
     print("Not adjusted pvalues < 0.01, first 10:")
-    print(pvalue001_df.head(10).to_string(line_width=200, index=False))
+    print(pvalue001_df.head(10).to_string(line_width=200, index=True))
 
     bh01_df = loci_pvalues_df[loci_pvalues_df["fdr_bh"] < 0.1]
     bh01_df.to_csv(str(outdir / "stats.{}.bh_pvalues0.1.csv".format(loci_desc)))
     print("BH adjusted pvalues, FDR < 0.1, first 10:")
-    print(bh01_df.head(10).to_string(line_width=200, index=False))
+    print(bh01_df.head(10).to_string(line_width=200, index=True))
 
     # TODO: plots pvalues
 
