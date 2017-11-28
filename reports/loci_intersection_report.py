@@ -240,7 +240,7 @@ def report_donors(tool, peaks_map, loci_dict, loci_key, key_side_size,
 
 
 def report(a_key, b_key, loci_dict, outdir, threads, a_key_side, b_key_side):
-    with PdfPages(str(outdir / "plot_{}@{}.png".format(a_key, b_key))) as pdf:
+    with PdfPages(str(outdir / "plot_{}@{}.pdf".format(a_key, b_key))) as pdf:
         init_pdf_info(pdf)
 
         process_intersection_metric(
