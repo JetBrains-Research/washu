@@ -188,7 +188,7 @@ def _cli():
         # noinspection PyTypeChecker
         loci_sets.append(("wo_pathways", "aging_pathways", "other_pathways"))
 
-    for i, loci_set in enumerate(loci_sets):
+    for i, loci_set in enumerate(loci_sets, 1):
         desc = "-".join(loci_set).replace("_pathways", "") + "_pathways"
         print("----- {}/{} [Stat tests]: {} ----".format(i, len(loci_sets), loci_sets))
 
