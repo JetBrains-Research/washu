@@ -240,15 +240,28 @@ def report_donors(tool, peaks_map, loci_dict, loci_key, key_side_size,
 
 
 def report(a_key, b_key, loci_dict, outdir, threads, a_key_side, b_key_side):
-    process_intersection_metric(
-        loci_dict[a_key], loci_dict[b_key],
-        outdir / "{}@{}.csv".format(a_key, b_key),
-        str(outdir / "plot_{}@{}.png".format(a_key, b_key)),
-        adjustments=_adjustment_wrc(),
-        col_label_converter=loi.label_converter_shorten_loci,
-        row_label_converter=loi.label_converter_shorten_loci,
-        row_cluster=True, col_cluster=True, threads=threads,
-        figsize=(a_key_side, b_key_side))
+    with PdfPages(str(outdir / "plot_{}@{}.png".format(a_key, b_key))) as pdf:
+        init_pdf_info(pdf)
+
+        process_intersection_metric(
+            loci_dict[a_key], loci_dict[b_key],
+            outdir / "{}@{}.csv".format(a_key, b_key),
+            pdf,
+            adjustments=_adjustment_wrc(),
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
+            row_cluster=False, col_cluster=False, threads=threads,
+            figsize=(a_key_side, b_key_side))
+
+        process_intersection_metric(
+            loci_dict[a_key], loci_dict[b_key],
+            outdir / "{}@{}.csv".format(a_key, b_key),
+            pdf,
+            adjustments=_adjustment_wrc(),
+            col_label_converter=loi.label_converter_shorten_loci,
+            row_label_converter=loi.label_converter_shorten_loci,
+            row_cluster=True, col_cluster=True, threads=threads,
+            figsize=(a_key_side, b_key_side))
 
 
 def process_intersection_metric(a_paths, b_paths, df_path: Path, save_to, threads=4, **kw):
