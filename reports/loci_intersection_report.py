@@ -305,32 +305,34 @@ def test_donors(tools, peaks_map, loci_desc, loci_paths, outdir,
             with PdfPages(str(result_plot_path)) as pdf:
                 init_pdf_info(pdf)
 
-                pvalue_dfs.append(
-                    test_donors_by_metric(
-                        bm.load_or_build_metrics_table(
-                            peaks_paths, loci_paths,
-                            outdir / "{}@{}.csv".format(peaks_key, loci_desc),
-                            threads=threads
-                        ),
-                        hist, outliers_df, peaks_paths, pdf,
-                        outdir / "stat-{}@{}.csv".format(peaks_key, loci_desc),
-                        exclude_outliers,
-                    ))
+                df = test_donors_by_metric(
+                    bm.load_or_build_metrics_table(
+                        peaks_paths, loci_paths,
+                        outdir / "{}@{}.csv".format(peaks_key, loci_desc),
+                        threads=threads
+                    ),
+                    hist, outliers_df, peaks_paths, pdf,
+                    outdir / "stat-{}@{}.csv".format(peaks_key, loci_desc),
+                    exclude_outliers,
+                )
+                df.index = ["{}@{}".format(peaks_key, s) for s in df.index]
+                pvalue_dfs.append(df)
 
                 # Intersection metric: loci@peaks, e.g. for small loci, transpose to make plots
                 # have donors at OY, loci at OX
-                pvalue_dfs.append(
-                    test_donors_by_metric(
-                        bm.load_or_build_metrics_table(
-                            loci_paths, peaks_paths,
-                            outdir / "{}@{}.csv".format(loci_desc, peaks_key),
-                            threads=threads
-                        ).T,
-                        hist, outliers_df, peaks_paths, pdf,
-                        outdir / "stat-{}@{}.csv".format(loci_desc, peaks_key),
-                        exclude_outliers,
-                    )
+                df = test_donors_by_metric(
+                    bm.load_or_build_metrics_table(
+                        loci_paths, peaks_paths,
+                        outdir / "{}@{}.csv".format(loci_desc, peaks_key),
+                        threads=threads
+                    ).T,
+                    hist, outliers_df, peaks_paths, pdf,
+                    outdir / "stat-{}@{}.csv".format(loci_desc, peaks_key),
+                    exclude_outliers,
                 )
+                df.index = ["{}@{}".format(s, peaks_key) for s in df.index]
+                pvalue_dfs.append(df)
+
     # sign, not_sign, all
     loci_pvalues_df = pd.concat(*pvalue_dfs)
     loci_pvalues_df.sort_values(by="pvalue", inplace=True)
