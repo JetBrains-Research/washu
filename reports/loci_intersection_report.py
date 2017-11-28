@@ -190,7 +190,7 @@ def _cli():
 
     for i, loci_set in enumerate(loci_sets, 1):
         desc = "-".join(loci_set).replace("_pathways", "") + "_pathways"
-        print("----- {}/{} [Stat tests]: {} ----".format(i, len(loci_sets), loci_sets))
+        print("----- {}/{} [Stat tests]: {} ----".format(i, len(loci_sets), loci_set))
 
         for lt in [lt for lt in loci_set if lt not in loci_dict]:
             print("  [Skipped] No loci paths for: ", lt)
