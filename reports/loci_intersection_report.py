@@ -57,7 +57,7 @@ def _cli():
 
     loci_dict = loi.collect_loci(loci_root)
 
-    if stats_only:
+    if not stats_only:
         if args.tuned:
             peaks_map = defaultdict(dict)
             bench_root = data_root / "experiments/configs/benchmark/benchmark"
