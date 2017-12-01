@@ -191,9 +191,8 @@ def calc_signal_pvalues(pvalues_df_path, signal_root):
         for (loci, dic) in loci_norm_paths:
             pvalues = {}
             for norm, path in dic.items():
-                df = pd.read_csv(path, index_col=0)
+                df = pd.read_csv(path, index_col=0, header=None)
                 df.index = [str.upper(s) for s in df.index]
-                df.columns = [str.upper(s) for s in df.columns]
                 df_ods = df.loc[[d for d in df.index if d.startswith("O")], :]
                 df_yds = df.loc[[d for d in df.index if d.startswith("Y")], :]
                 try:
@@ -207,15 +206,12 @@ def calc_signal_pvalues(pvalues_df_path, signal_root):
             signal_pvalues["name"].append("{}@{}".format(data_type, loci))
             for norm in normalizations:
                 signal_pvalues[norm].append(pvalues.get(norm, np.nan))  # 1.0
-
     print("Missed files: ", len(missed_data))
     if missed_data:
         print("  first 10:", *missed_data[0:10])
-
     print("Errors occurred in files: ", len(problem_files))
     if problem_files:
         print("  first 10:", *problem_files[0:10])
-
     signal_pvalues_df = pd.DataFrame.from_dict(signal_pvalues)
     signal_pvalues_df.to_csv(str(pvalues_df_path))
     return signal_pvalues_df
