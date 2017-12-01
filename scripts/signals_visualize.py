@@ -12,6 +12,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # nopep8
 import seaborn as sns  # nopep8
 
+# Explicitly setup style
+plt.style.use('seaborn-darkgrid')
+
 
 def signal_pca(x0,
                title,
