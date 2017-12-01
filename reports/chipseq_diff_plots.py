@@ -188,6 +188,27 @@ class ChangeCollector:
         self.change_counts.append((result_name, size))
         self.change_files_produced.append(result_file_name)
 
+    def process_diffreps_ira(self):
+        if self.mark != "H3K27me3":
+            return
+
+        folder_name = "diffreps_ira"
+
+        if self.change_type == "both":
+            name = "enriched_.bed"
+        elif self.change_type == "young":
+            name = "enriched_down.bed"
+        elif self.change_type == "old":
+            name = "enriched_up.bed"
+        else:
+            raise ValueError("Wrong change_type: {}".format(self.change_type))
+
+        folder = "/mnt/stripe/kurbatsky/diffreps-ira"
+
+        self.add_bed_file("{}_{}".format(folder_name, self.mark),
+                          os.path.join(folder, name))
+
+
     def process_diffreps(self, folder_name):
         folder = os.path.join(self.input_path, folder_name)
 
@@ -243,6 +264,7 @@ class ChangeCollector:
         self.process_median_consensus("zinbra")
         self.process_median_consensus("macs2")
 
+        self.process_diffreps_ira()
         self.process_diffreps("diffReps")
         self.process_diffreps("diffReps_broad")
         self.process_diffreps("diffReps_broad_input")
