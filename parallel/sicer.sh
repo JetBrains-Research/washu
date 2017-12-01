@@ -144,7 +144,7 @@ rm -r \${SICER_FOLDER}
 cd ${WORK_DIR}
 
 # Compute Reads in Peaks
-bash ${SCRIPT_DIR}/reports/rip.sh ${ISLAND_BED}
+bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ISLAND_BED}
 
 # Cleanup
 if [ -z ${BATCH_MODE} ]; then
