@@ -43,7 +43,7 @@ RUN source activate py3.5 && \
     conda install --channel bioconda star rseg \
     ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed && \
     conda install --channel conda-forge matplotlib-venn && \
-    conda install pandas numpy scikit-learn pytest pytest-pep8 seaborn && \
+    conda install pandas numpy scikit-learn pytest pytest-pep8 seaborn lxml && \
     pip install multiqc teamcity-messages
 
 # Workaround for TeamCity CI, temp folders are created with root permissions, unacessible for USER
