@@ -11,6 +11,11 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 >&2 echo "union: $@"
 
+if [[ $# -eq 0 ]]; then
+  echo "Empty arguments list"
+  exit 1
+fi
+
 # Use temp file since folder can be read-only
 TMP=$(mktemp)
 if [ -f ${TMP} ]; then

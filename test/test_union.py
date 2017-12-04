@@ -22,3 +22,12 @@ chr1	600	750	1_A.bed|2_B.bed
 chr1	800	850	3_C.bed
 """
     assert expected in res
+
+
+def test_union_empty():
+    try:
+        run_bash("bed/union.sh")
+        # Should fail with error code 1
+        assert False
+    except:
+        pass
