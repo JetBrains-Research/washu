@@ -46,6 +46,7 @@ MINUS_SH = os.path.dirname(os.path.abspath(__file__)) + '/minus.sh'
 COMPARE_SH = os.path.dirname(os.path.abspath(__file__)) + '/compare.sh'
 METAPEAKS_SH = os.path.dirname(os.path.abspath(__file__)) + '/metapeaks.sh'
 JACCARD_SH = os.path.dirname(os.path.abspath(__file__)) + '/jaccard.sh'
+STREAM_CONSENSUS_SH = os.path.dirname(os.path.abspath(__file__)) + '/stream_consensus.sh'
 
 TEMPFILES = []
 
@@ -330,6 +331,11 @@ def compare(*operands):
 def jaccard(file1, file2):
     stdout, _stderr = run([['bash', JACCARD_SH, file1, file2]])
     return float(stdout)
+
+
+def median_consensus(files_paths):
+    stdout, _stderr = run([['bash', STREAM_CONSENSUS_SH, "-p", "50", *files_paths]])
+    return stdout
 
 
 def metapeaks(filesmap):
