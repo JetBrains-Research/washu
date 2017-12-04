@@ -19,7 +19,8 @@ plt.style.use('seaborn-darkgrid')
 def signal_pca(x0,
                title,
                groups=None,
-               scaled=False):
+               scaled=False,
+               fit_lr=True):
     if groups is None:
         groups = [OLD if is_od(r) else YOUNG for r in x0.index]
     # Use scaled PCA if required
@@ -41,6 +42,10 @@ def signal_pca(x0,
     plt.title(title)
     plt.xlabel('PC1 {}%'.format(int(pca.explained_variance_ratio_[0] * 100)))
     plt.ylabel('PC2 {}%'.format(int(pca.explained_variance_ratio_[1] * 100)))
+
+    # Do not fit Linear Regression
+    if not fit_lr:
+        return
 
     # Try to fit logistic regression and test
     y = [0 if g == YOUNG else 1 for g in groups]
