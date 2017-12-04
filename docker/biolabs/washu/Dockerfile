@@ -23,27 +23,27 @@ RUN chmod a+x /opt/SICER_V1.1/SICER/SICER.sh
 ENV PATH $PATH:/opt/SICER_V1.1/SICER
 
 # Install packages to be loaded using module in dedicated envs
-RUN conda create -q -n samtools --channel bioconda samtools
-RUN conda create -q -n bedtools --channel bioconda bedtools
-RUN conda create -q -n r --channel r r
-RUN conda create -q -n bowtie --channel bioconda bowtie
-RUN conda create -q -n bowtie2 --channel bioconda bowtie2
-RUN conda create -q -n java --channel bioconda fastqc
-RUN conda create -q -n sratoolkit --channel bioconda sra-tools
+RUN conda create -y -q -n samtools --channel bioconda samtools
+RUN conda create -y -q -n bedtools --channel bioconda bedtools
+RUN conda create -y -q -n r --channel r r
+RUN conda create -y -q -n bowtie --channel bioconda bowtie
+RUN conda create -y -q -n bowtie2 --channel bioconda bowtie2
+RUN conda create -y -q -n java --channel bioconda fastqc
+RUN conda create -y -q -n sratoolkit --channel bioconda sra-tools
 
 # Deeptools installs samtools and lots of dependencies, isolate it
-RUN conda create -q -n deeptools --channel bioconda deeptools
+RUN conda create -y -q -n deeptools --channel bioconda deeptools
 RUN ln -s /opt/conda/envs/deeptools/bin/deeptools /usr/local/bin/deeptools
 RUN ln -s /opt/conda/envs/deeptools/bin/bamCoverage /usr/local/bin/bamCoverage
 
 # Install env py3.5
-RUN conda create -n py3.5 python=3.5
+RUN conda create -y -n py3.5 python=3.5
 # seaborn should be >= 0.8
 RUN source activate py3.5 && \
-    conda install --channel bioconda star rseg \
+    conda install -y --channel bioconda star rseg \
     ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed && \
-    conda install --channel conda-forge matplotlib-venn && \
-    conda install pandas numpy scikit-learn pytest pytest-pep8 seaborn lxml && \
+    conda install -y --channel conda-forge matplotlib-venn && \
+    conda install -y pandas numpy scikit-learn pytest pytest-pep8 seaborn lxml && \
     pip install multiqc teamcity-messages
 
 # Workaround for TeamCity CI, temp folders are created with root permissions, unacessible for USER
