@@ -4,7 +4,10 @@ USER root
 # Fix default shell for CONDA source activate command.
 RUN ln -snf /bin/bash /bin/sh
 RUN apt-get update
-RUN apt-get install --yes build-essential libgl1-mesa-dev bc unzip quota
+
+# Essential development tools and headers
+RUN apt-get install --yes build-essential libgl1-mesa-dev bc unzip quota libssl-dev libboost-dev gawk
+
 # GNU AWK requered for proper scripts work.
 RUN apt-get install --yes gawk
 
@@ -58,6 +61,15 @@ RUN cd ~ && wget -q https://github.com/broadinstitute/picard/releases/download/2
 RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/download/v0.4.0/zinbra-0.4.0.jar -O zinbra.jar
 # Alternative CI link
 # https://teamcity.jetbrains.com/repository/download/Epigenome_Zinbra/lastPinned/zinbra-0.4.0.jar?guest=1
+
+# Install phantom peak call tools
+RUN wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/phantompeakqualtools/ccQualityControl.v.1.1.tar.gz
+RUN tar xvf ccQualityControl.v.1.1.tar.gz
+
+# Install spp R package
+RUN /opt/conda/envs/r/bin/R -e "install.packages('devtools', repos='http://cran.us.r-project.org');require(devtools);\
+source('https://bioconductor.org/biocLite.R');biocLite(c('Rsamtools', 'caTools'));\
+devtools::install_github('hms-dbmi/spp', build_vignettes = FALSE)"
 
 # To prevent problems with Java interfierence just move execuble to emulate module
 RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
