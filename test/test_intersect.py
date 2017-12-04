@@ -24,3 +24,12 @@ def test_intersect(capfd, test_data, files, line):
     res = out.replace(test_data("bed/"), "").replace(PROJECT_ROOT_PATH, ".")
     assert "bash ./bed/intersect.sh {}\n{}\n".format(" ".join(files),
                                                      line) == res
+
+
+def test_intersect_empty():
+    try:
+        run_bash("bed/intersect.sh")
+        # Should fail with error code 1
+        assert False
+    except:  # nopep8
+        pass

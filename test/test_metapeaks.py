@@ -25,3 +25,12 @@ PEAKS:\t4\t2\t5
 1 1 1	1
 1, 1, 1, 1
 """
+
+
+def test_metapeaks_empty():
+    try:
+        run_bash("bed/metapeaks.sh")
+        # Should fail with error code 1
+        assert False
+    except:  # nopep8
+        pass

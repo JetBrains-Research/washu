@@ -19,6 +19,11 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 >&2 echo "metapeaks: $@"
 
+if [[ $# -eq 0 ]]; then
+  echo "ERROR: Empty arguments list"
+  exit 1
+fi
+
 # Optional load technical stuff:
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")

@@ -29,5 +29,5 @@ def test_union_empty():
         run_bash("bed/union.sh")
         # Should fail with error code 1
         assert False
-    except:
+    except:  # nopep8
         pass
