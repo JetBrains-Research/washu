@@ -69,7 +69,7 @@ RUN cd ~ && tar xvf ccQualityControl.v.1.1.tar.gz
 
 # Install spp R package for phantom peak qual tools
 RUN /opt/conda/envs/r/bin/R -e "source('https://bioconductor.org/biocLite.R');biocLite(c('caTools', 'Rsamtools'));\
-install.packages('devtools', repos='http://cran.us.r-project.org');\require(devtools);\
+install.packages('devtools', repos='http://cran.us.r-project.org');require(devtools);\
 devtools::install_github('hms-dbmi/spp', build_vignettes = FALSE)"
 
 # To prevent problems with Java interfierence just move execuble to emulate module
