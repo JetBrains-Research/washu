@@ -22,8 +22,7 @@ for HIST_DIR in $(find ${BENCHMARK_ROOT} -maxdepth 1 -type d -name "H*"); do
     # exclude from find results: same dir ('.'), and some tools
     for DIR in $(find . -maxdepth 1 -type d ! -path . ! -path "./macs_narrow" ! -path "./sicer"); do
         echo "Processing: $(expand_path ${DIR})"
-        bash /home/user/work/tsurinov/washu/bed/consensus.sh -p 50 ${DIR} ${HIST_NAME}
-        # bash "$(project_root_dir)/bed/consensus.sh" -p 50  ${DIR} ${HIST_NAME}
+        bash "$(project_root_dir)/bed/consensus.sh" -p 50  ${DIR} ${HIST_NAME}
         find ${DIR} -maxdepth 1 -name "*_consensus.bed" | xargs -I fname cp fname ${LOCI_ROOT}
     done
 done
