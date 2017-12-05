@@ -14,33 +14,8 @@ from test.fixtures import test_data, tmp_dir
 def setup_module(module):
     """ setup any state specific to the execution of the given module."""
     os.chdir(os.path.expanduser("~"))
-    if not os.path.exists("./washu_test_data"):
-        call(["tar", "xfz", "washu_test_data.tar.gz"])
-        if os.path.exists("./fastq"):
-            shutil.rmtree("./fastq")
-        shutil.copytree("./washu_test_data/fastq/", "./fastq")
-        if os.path.exists("./index"):
-            shutil.rmtree("./index")
-        shutil.copytree("./washu_test_data/index", "./index")
-        if os.path.exists("./data"):
-            shutil.rmtree("./data")
-        shutil.copytree("./washu_test_data/data", "./data")
-
-    run_pipeline()
-
-
-def run_pipeline():
-    # Unpack test data and prepare layout
-    os.chdir(os.path.expanduser("~"))
     if os.path.exists("./pipeline_finished.txt"):
         return
-
-    # Prepare regions for RSEG
-    if not os.path.exists("./fastq_bams"):
-        os.mkdir("./fastq_bams")
-        if not os.path.exists("./fastq_bams/deadzones-k36-hg19.bed"):
-            shutil.copy("./index/hg19/deadzones-k36-hg19.bed",
-                        "./fastq_bams/deadzones-k36-hg19.bed")
 
     # Launch pipeline
     call(["python", "/washu/pipeline_chipseq.py", "/root/fastq", "/root/index", "hg19"])
@@ -71,6 +46,10 @@ def test_bw():
 def test_unique():
     check_files("./fastq_bams_unique/*.bam", 6)
 
+
+def test_bam_qc():
+    check_files("./fastq_bams_unique/*.pbc_nfr.txt", 6)
+    check_files("./fastq_bams_unique/*.phantom.txt", 4)
 
 def test_unique_tags_bws():
     check_files("./fastq_bams_unique_tags_bws/*.bw", 6)

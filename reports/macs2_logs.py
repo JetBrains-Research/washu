@@ -11,7 +11,6 @@ from reports.peaks_logs import collect_rip_records, RipRecord
 
 __author__ = 'oleg.shpynov@jetbrains.com roman.chernyatchik@jetbrains.com'
 
-
 help_message = 'Script to process macs2 logs summary.'
 
 
@@ -28,8 +27,7 @@ MACS2_ALTERNATIVE_FRAGMENTS = '.*alternative fragment length\(s\) may be'
 
 MacsLogRecord = collections.namedtuple(
     'MacsLogRecord',
-    ['sample', 'tags', 'redundant_rate', 'paired_peaks', 'fragment',
-     'alternatives']
+    ['sample', 'tags', 'redundant_rate', 'paired_peaks', 'fragment', 'alternatives']
 )
 
 
@@ -37,34 +35,31 @@ def report(folder):
     print('Process macs2 logs processed by batch task', folder)
 
     macs_records = []
-    for dirpath, dirs, files in os.walk(folder):
-        for f in files:
-            if 'macs' not in f or not re.search('.log$', f):
-                continue
-            tags = 0
-            rr = 0.0
-            paired_peaks = 0
-            fragment = 0
-            alt_fragments = ''
-            with open(dirpath + '/' + f, 'r') as log:
-                for line in log:
-                    if re.search(MACS2_TAGS, line):
-                        tags = int(re.sub(MACS2_TAGS, '', line).strip())
-                    if re.search(MACS2_REDUNDANT_RATE, line):
-                        rr = float(re.sub(MACS2_REDUNDANT_RATE, '',
-                                          line).strip())
-                    if re.search(MACS2_PAIRED_PEAKS, line):
-                        paired_peaks = int(re.sub(MACS2_PAIRED_PEAKS, '',
-                                                  line).strip())
-                    if re.search(MACS2_PREDICTED_FRAGMENT, line):
-                        fragment = int(re.sub(MACS2_PREDICTED_FRAGMENT, '',
-                                              line).replace('bps', '').strip())
-                    if re.search(MACS2_ALTERNATIVE_FRAGMENTS, line):
-                        alt_fragments = re.sub(MACS2_ALTERNATIVE_FRAGMENTS, '',
-                                               line).replace('bps', '').strip()
+    for f in [f for f in os.listdir(folder) if re.match('.*macs2.*\\.log$', f, flags=re.IGNORECASE)]:
+        tags = 0
+        rr = 0.0
+        paired_peaks = 0
+        fragment = 0
+        alt_fragments = ''
+        with open(os.path.join(folder, f), 'r') as log:
+            for line in log:
+                if re.search(MACS2_TAGS, line):
+                    tags = int(re.sub(MACS2_TAGS, '', line).strip())
+                if re.search(MACS2_REDUNDANT_RATE, line):
+                    rr = float(re.sub(MACS2_REDUNDANT_RATE, '',
+                                      line).strip())
+                if re.search(MACS2_PAIRED_PEAKS, line):
+                    paired_peaks = int(re.sub(MACS2_PAIRED_PEAKS, '',
+                                              line).strip())
+                if re.search(MACS2_PREDICTED_FRAGMENT, line):
+                    fragment = int(re.sub(MACS2_PREDICTED_FRAGMENT, '',
+                                          line).replace('bps', '').strip())
+                if re.search(MACS2_ALTERNATIVE_FRAGMENTS, line):
+                    alt_fragments = re.sub(MACS2_ALTERNATIVE_FRAGMENTS, '',
+                                           line).replace('bps', '').strip()
 
-            macs_records.append(MacsLogRecord(f, tags, rr, paired_peaks,
-                                              fragment, alt_fragments))
+        macs_records.append(MacsLogRecord(f, tags, rr, paired_peaks,
+                                          fragment, alt_fragments))
 
     df = pd.DataFrame(macs_records, columns=MacsLogRecord._fields)
 

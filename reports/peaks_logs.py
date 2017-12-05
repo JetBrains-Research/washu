@@ -23,24 +23,22 @@ RipRecord = collections.namedtuple(
 def collect_rip_records(folder):
     """Collect all the Reads In Peaks records for given folder"""
     rips = []
-    for _dirpath, _dirs, files in os.walk(folder):
-        for f in files:
-            if re.search('rip\\.csv$', f):
-                with open(folder + '/' + f) as rip_file:
-                    # skip header
-                    rip_file.readline()
+    for f in [f for f in os.listdir(folder) if re.match('.*_rip\\.csv$', f, flags=re.IGNORECASE)]:
+        with open(os.path.join(folder, f)) as rip_file:
+            # skip header
+            rip_file.readline()
 
-                    line = rip_file.readline().strip()
-                    records = line.split(',')
-                    assert len(records) == 5,\
-                        "Expected 5 comma separated values, but was {}: " \
-                        "line = '{}', file = {}".format(len(records), line, f)
-                    r = RipRecord(*records)
+            line = rip_file.readline().strip()
+            records = line.split(',')
+            assert len(records) == 5, \
+                "Expected 5 comma separated values, but was {}: " \
+                "line = '{}', file = {}".format(len(records), line, f)
+            r = RipRecord(*records)
 
-                    # fix values if not set
-                    rips.append(r._replace(peaks=(int(r.peaks or 0)),
-                                           rip=(int(r.rip or 0)),
-                                           reads=int(r.reads)))
+            # fix values if not set
+            rips.append(r._replace(peaks=(int(r.peaks or 0)),
+                                   rip=(int(r.rip or 0)),
+                                   reads=int(r.reads)))
     return rips
 
 

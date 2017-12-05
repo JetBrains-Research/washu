@@ -42,6 +42,22 @@ if [ ! -f ~/zinbra.jar ]; then
     echo "FAILED: Zinbra not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"
 fi
 
+echo "Prepare data"
+
+if [[ ! -d ~/washu_test_data ]]; then
+    tar -xf ~/washu_test_data.tar.gz --directory ~
+fi
+
+ln -sf ~/washu_test_data/fastq ~/fastq
+ln -sf ~/washu_test_data/index ~/index
+ln -sf ~/washu_test_data/data ~/data
+
+# Prepare regions for RSEG
+if [[ ! -d ~/fastq_bams ]]; then
+    mkdir -p ~/fastq_bams
+    ln -sf ~/index/hg19/deadzones-k36-hg19.bed ~/fastq_bams/deadzones-k36-hg19.bed
+fi
+
 # Limit parallelism level for tests
 export WASHU_PARALLELISM=2
 

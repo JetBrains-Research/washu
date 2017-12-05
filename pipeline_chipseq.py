@@ -39,16 +39,21 @@ args = parser.parse_args()
 WORK_DIR = args.path_to_directory
 GENOME = args.genome
 INDEXES = os.path.join(args.path_to_indexes, GENOME)
+CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
 
 print("WORK_DIR:", WORK_DIR)
 print("GENOME:", GENOME)
 print("INDEXES:", INDEXES)
+print("CHROM_SIZES:", CHROM_SIZES)
+
+PICARD_TOOLS = os.path.expanduser("~/picard.jar")
+print("PICARD_TOOLS:", PICARD_TOOLS)
+PHANTOMPEAKQUALTOOLS = os.path.expanduser("~/phantompeakqualtools")
+print("PHANTOMPEAKQUALTOOLS:", PHANTOMPEAKQUALTOOLS)
 
 ##################
 # Pipeline start #
 ##################
-CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
-PICARD_TOOLS = os.path.join("~", "picard.jar")
 run_bash("parallel/index_genome.sh", GENOME, INDEXES)
 
 # Batch QC
@@ -74,6 +79,9 @@ move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"])
 run_bash("parallel/remove_duplicates.sh", PICARD_TOOLS, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_unique",
              ["*_unique*", "*_metrics.txt", "*duplicates.log"])
+
+# PBC/NRF metrics for BAMs
+run_bash("parallel/bam_qc.sh", PHANTOMPEAKQUALTOOLS, WORK_DIR + "_unique")
 
 # Tags BW visualization
 run_bash("parallel/tags_bigwig.sh", CHROM_SIZES, 150, WORK_DIR + "_unique")
