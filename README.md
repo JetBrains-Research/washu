@@ -68,6 +68,11 @@ Docker
 There is a Docker hub image `biolabs/washu` with all the necessary data and tools for pipeline and tests.
 Docker configurations are available under `/docker` folder.
 
+Update necessary docker image.
+```bash
+docker pull biolabs/washu
+```
+
 
 Tests
 -----
