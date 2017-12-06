@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
-if [ $# -lt 1 ]; then
-    echo "Need 1 parameter! <folder_path>"
+if [ $# -lt 2 ]; then
+    echo "Need 2 parameters! <folder_path> <min_consensus_threshold>"
     echo ""
-    echo "For given folder with peaks for each region 'r' from multi intersection calculates: abs(#{OD_i intersecting 'r'} - #{YD_i intersecting 'r'})."
+    echo "For given folder with peaks for each region 'r' (which has consensus above given threshold)
+from multi intersection calculates:
+        abs(#{OD_i intersecting 'r'} - #{YD_i intersecting 'r'})."
     exit 1
 fi
 
