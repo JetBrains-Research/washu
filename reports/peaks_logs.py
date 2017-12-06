@@ -23,7 +23,8 @@ RipRecord = collections.namedtuple(
 def collect_rip_records(folder):
     """Collect all the Reads In Peaks records for given folder"""
     rips = []
-    for f in [f for f in os.listdir(folder) if re.match('.*_rip\\.csv$', f, flags=re.IGNORECASE)]:
+    for f in [f for f in os.listdir(folder)
+              if re.match('.*_rip\\.csv$', f, flags=re.IGNORECASE)]:
         with open(os.path.join(folder, f)) as rip_file:
             # skip header
             rip_file.readline()

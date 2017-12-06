@@ -24,7 +24,8 @@ def report(folder):
     """Process bowtie2 logs processed by batch task"""
     print('Processing bowtie2 logs', folder)
     df = pd.DataFrame(columns=['sample', 'reads', 'aligned', 'not_aligned', 'supressed'])
-    for f in [f for f in os.listdir(folder) if re.match('.*bowtie2.*\\.log$', f, flags=re.IGNORECASE)]:
+    for f in [f for f in os.listdir(folder) if
+              re.match('.*bowtie2.*\\.log$', f, flags=re.IGNORECASE)]:
         reads = ''
         aligned = ''
         failed_to_align = ''

@@ -51,6 +51,7 @@ def test_bam_qc():
     check_files("./fastq_bams_unique/*.pbc_nfr.txt", 6)
     check_files("./fastq_bams_unique/*.phantom.txt", 4)
 
+
 def test_unique_tags_bws():
     check_files("./fastq_bams_unique_tags_bws/*.bw", 6)
 

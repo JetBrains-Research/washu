@@ -208,7 +208,6 @@ class ChangeCollector:
         self.add_bed_file("{}_{}".format(folder_name, self.mark),
                           os.path.join(folder, name))
 
-
     def process_diffreps(self, folder_name):
         folder = os.path.join(self.input_path, folder_name)
 

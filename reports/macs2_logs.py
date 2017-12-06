@@ -35,7 +35,8 @@ def report(folder):
     print('Process macs2 logs processed by batch task', folder)
 
     macs_records = []
-    for f in [f for f in os.listdir(folder) if re.match('.*macs2.*\\.log$', f, flags=re.IGNORECASE)]:
+    for f in [f for f in os.listdir(folder)
+              if re.match('.*macs2.*\\.log$', f, flags=re.IGNORECASE)]:
         tags = 0
         rr = 0.0
         paired_peaks = 0
