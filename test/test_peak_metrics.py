@@ -7,7 +7,7 @@ from bed.bedtrace import Bed
 from scripts.util import age  # nopep8
 from test.test_bed_metrics import assert_image
 from pandas.util.testing import assert_frame_equal
-from reports.peak_metrics import calc_consensus, bar_consensus, groups_sizes, \
+from reports.peak_metrics import calc_consensus_file, bar_consensus, groups_sizes, \
     cumulative_consensus, calc_frip, frip_peaks, frip_boxplot, length_bar_plots, \
     _calculate_lengths  # nopep8
 from test.fixtures import test_data, tmp_dir
@@ -22,11 +22,11 @@ def test_calc_consensus(test_data, od_consensus, yd_consensus, yd_od_int):
     expected_od_consensus = test_data("metrics/" + od_consensus)
     expected_yd_consensus = test_data("metrics/" + yd_consensus)
     expected_yd_od_int = test_data("metrics/" + yd_od_int)
-    od_paths_map = {"A.bed": Bed(test_data("bed/A.bed")), "B.bed": Bed(test_data("bed/B.bed"))}
-    yd_paths_map = {"C.bed": Bed(test_data("bed/C.bed")), "D.bed": Bed(test_data("bed/D.bed"))}
+    od_paths_map = {"A.bed": test_data("bed/A.bed"), "B.bed": test_data("bed/B.bed")}
+    yd_paths_map = {"C.bed": test_data("bed/C.bed"), "D.bed": test_data("bed/D.bed")}
 
     od_consensus_bed, yd_consensus_bed, yd_od_int_bed = \
-        calc_consensus(od_paths_map, yd_paths_map, 2.0)
+        calc_consensus_file(list(od_paths_map.values()), list(yd_paths_map.values()), percent=50)
     assert Bed(expected_od_consensus).cat() == re.sub("/[^|\n]*/", "", od_consensus_bed.cat())
     assert Bed(expected_yd_consensus).cat() == re.sub("/[^|\n]*/", "", yd_consensus_bed.cat())
     assert Bed(expected_yd_od_int).cat() == re.sub("/[^|\n]*/", "", yd_od_int_bed.cat())
@@ -39,11 +39,11 @@ def test_bar_consensus(tmp_dir, test_data, fname):
     expected = test_data("metrics/" + fname)
     result = tmp_dir + "/bar_consensus.png"
 
-    od_paths_map = {"A.bed": Bed(test_data("bed/A.bed")), "B.bed": Bed(test_data("bed/B.bed"))}
-    yd_paths_map = {"C.bed": Bed(test_data("bed/C.bed")), "D.bed": Bed(test_data("bed/D.bed"))}
+    od_paths_map = {"A.bed": test_data("bed/A.bed"), "B.bed": test_data("bed/B.bed")}
+    yd_paths_map = {"C.bed": test_data("bed/C.bed"), "D.bed": test_data("bed/D.bed")}
 
     od_consensus_bed, yd_consensus_bed, yd_od_int_bed = \
-        calc_consensus(od_paths_map, yd_paths_map, 2.0)
+        calc_consensus_file(list(od_paths_map.values()), list(yd_paths_map.values()), percent=50)
     bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed, yd_od_int_bed, 30,
                   result)
 
@@ -59,7 +59,7 @@ def test_groups_sizes(test_data, od_consensus, yd_consensus, yd_od_int):
     yd_od_int = Bed(test_data("metrics/" + yd_od_int))
 
     name, common, own_group, opposite_group, personal = \
-        groups_sizes(["A.bed", Bed(test_data("bed/A.bed"))], yd_od_int, od_consensus, yd_consensus)
+        groups_sizes(["A.bed", test_data("bed/A.bed")], yd_od_int, od_consensus, yd_consensus)
     assert name == "A.bed"
     assert 2 == common
     assert 1 == own_group

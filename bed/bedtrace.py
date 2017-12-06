@@ -333,8 +333,11 @@ def jaccard(file1, file2):
     return float(stdout)
 
 
-def median_consensus(files_paths):
-    stdout, _stderr = run([['bash', STREAM_CONSENSUS_SH, "-p", "50", *files_paths]])
+def consensus(files_paths, count=0, percent=0):
+    if count != 0:
+        stdout, _stderr = run([['bash', STREAM_CONSENSUS_SH, "-c", str(count), *files_paths]])
+    else:
+        stdout, _stderr = run([['bash', STREAM_CONSENSUS_SH, "-p", str(percent), *files_paths]])
     return stdout
 
 

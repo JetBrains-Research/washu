@@ -54,9 +54,9 @@ def _cli():
         filtered_paths = paths
 
     tracks_paths = sorted({path for path in filtered_paths if is_od_or_yd(path)})
-    od_paths_map = {age(track_path): Bed(track_path) for track_path in tracks_paths
+    od_paths_map = {age(track_path): track_path for track_path in tracks_paths
                     if regions_extension(track_path) and is_od(track_path)}
-    yd_paths_map = {age(track_path): Bed(track_path) for track_path in tracks_paths
+    yd_paths_map = {age(track_path): track_path for track_path in tracks_paths
                     if regions_extension(track_path) and is_yd(track_path)}
     rip_files = sorted([str(f) for f in folder_path.glob("*_rip.csv")])
 
@@ -89,8 +89,9 @@ def _cli():
     with PdfPages(pdf_path) as pdf:
         print("Calculating median consensus")
         od_consensus_bed, yd_consensus_bed, yd_od_int_bed = \
-            pm.calc_consensus(od_paths_map, yd_paths_map, 2.0)
-        pm.venn_consensus(od_consensus_bed, yd_consensus_bed, 2.0, pdf)
+            pm.calc_consensus_file(list(od_paths_map.values()), list(yd_paths_map.values()),
+                                   percent=50)
+        pm.venn_consensus(od_consensus_bed, yd_consensus_bed, 50, pdf)
         pm.bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed,
                          yd_od_int_bed, threads_num, pdf)
         print("Calculating cumulative consensus")
