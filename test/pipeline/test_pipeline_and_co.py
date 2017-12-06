@@ -49,7 +49,7 @@ def test_unique():
 
 def test_bam_qc():
     check_files("./fastq_bams_unique/*.pbc_nfr.txt", 6)
-    check_files("./fastq_bams_unique/*.phantom.txt", 4)
+    check_files("./fastq_bams_unique/*.phantom.txt", 6)
 
 
 def test_unique_tags_bws():
