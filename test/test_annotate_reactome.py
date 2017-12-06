@@ -5,6 +5,7 @@ from test.fixtures import test_data, tmp_path
 from reports.annotate_reactome import extract_reactome_id, fetch_title
 from pipeline_utils import run, PROJECT_ROOT_PATH
 
+
 @pytest.mark.parametrize("label,rid", [
     ("foo", None),
     ("2644605", None),
@@ -97,8 +98,3 @@ def test_foo(test_data, tmp_path, capfd, file, args, result_stdout, result_stder
             with open(str(tmp_path / "result.txt"), 'r') as af:
                 actual = af.read()
                 assert expected == actual
-            # Dfs:
-    # By Name, by IDX
-    # with / w/o header
-    # 0   H3K27ac  http://www.reactome.org/content/detail/R-HSA-2...  transcript
-    # 1   H3K27ac  http://www.reactome.org/content/detail/R-HSA-2...  transcript
