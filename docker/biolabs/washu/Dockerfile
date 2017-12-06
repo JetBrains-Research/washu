@@ -13,7 +13,7 @@ libboost-dev curl libssh2-1-dev libcurl4-openssl-dev
 RUN apt-get install --yes gawk
 
 # Hack to enable MACS2 in another conda environment
-RUN conda create -n macs2 --channel bioconda macs2
+RUN conda create -y -n macs2 --channel bioconda macs2
 RUN ln -sf /opt/conda/envs/macs2/bin/macs2 /usr/local/bin/macs2
 
 # SICER
