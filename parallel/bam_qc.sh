@@ -45,7 +45,28 @@ module load bedtools2
 module load R
 module load samtools
 
+#col.	abbreviation	description
+#1	Filename	tagAlign/BAM filename
+#2	numReads	effective sequencing depth i.e. total number of mapped reads in input file
+#3	estFragLen	comma separated strand cross-correlation peak(s) in decreasing order of correlation.
+#4	corr_estFragLen	comma separated strand cross-correlation value(s) in decreasing order (COL2 follows the same order)
+#5	phantomPeak	Read length/phantom peak strand shift
+#6	corr_phantomPeak	Correlation value at phantom peak
+#7	argmin_corr	strand shift at which cross-correlation is lowest
+#8	min_corr	minimum value of cross-correlation
+#9	NSC	Normalized strand cross-correlation coefficient (NSC) = COL4 / COL8
+#10	RSC	Relative strand cross-correlation coefficient (RSC) = (COL4 - COL8) / (COL6 - COL8)
+#11	QualityTag	Quality tag based on thresholded RSC (codes= -2:veryLow, -1:Low, 0:Medium, 1:High, 2:veryHigh)
 Rscript ${PHANTOMPEAKQUALTOOLS}/run_spp.R -c=${FILE} -savp -out=${WORK_DIR}/${NAME}.phantom.txt
+
+#col.	abbreviation
+#1   TotalReadPairs
+#2   DistinctReadPairs
+#3   OneReadPair
+#4   TwoReadPairs
+#5   NRF=Distinct/Total
+#6   PBC1=OnePair/Distinct
+#7   PBC2=OnePair/TwoPair
 bash ${SCRIPT_DIR}/reports/pbc_nrf.sh ${FILE} > ${WORK_DIR}/${NAME}.pbc_nfr.txt
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
