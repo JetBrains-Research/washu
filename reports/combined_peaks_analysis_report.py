@@ -8,7 +8,7 @@ from pathlib import Path
 
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
-Usage: 
+Usage:
     combined_peaks_analysis_report.py [first peaks folder] [second peaks folder] [output pdf path]
 
 Script creates pdf report with ChIP-seq peaks statistics:
