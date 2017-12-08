@@ -12,12 +12,15 @@ libboost-dev curl libssh2-1-dev libcurl4-openssl-dev
 # GNU AWK requered for proper scripts work.
 RUN apt-get install --yes gawk
 
+# Conda envs:
+COPY conda_envs /root/conda_envs
+
 # Hack to enable MACS2 in another conda environment
-RUN conda create -y -n macs2 --channel bioconda macs2
+RUN conda env create -q --name macs2 --file /root/conda_envs/macs2.environment.yml
 RUN ln -sf /opt/conda/envs/macs2/bin/macs2 /usr/local/bin/macs2
 
 # SICER
-RUN pip install scipy
+RUN conda env update -q --file /root/conda_envs/root.environment.yml
 RUN cd /tmp && wget http://home.gwu.edu/~wpeng/SICER_V1.1.tgz && tar xvf SICER_V1.1.tgz && mv SICER_V1.1 /opt
 # Please refer to README for installation instructions, modify scripts, i.e.
 RUN sed -i 's#/home/data/SICER1.1#/opt/SICER_V1.1#g' /opt/SICER_V1.1/SICER/SICER.sh
@@ -27,28 +30,21 @@ RUN chmod a+x /opt/SICER_V1.1/SICER/SICER.sh
 ENV PATH $PATH:/opt/SICER_V1.1/SICER
 
 # Install packages to be loaded using module in dedicated envs
-RUN conda create -y -q -n samtools --channel bioconda samtools
-RUN conda create -y -q -n bedtools --channel bioconda bedtools
-RUN conda create -y -q -n r --channel r r
-RUN conda create -y -q -n bowtie --channel bioconda bowtie
-RUN conda create -y -q -n bowtie2 --channel bioconda bowtie2
-RUN conda create -y -q -n java --channel bioconda fastqc
-RUN conda create -y -q -n sratoolkit --channel bioconda sra-tools
+RUN conda env create -q --name  samtools --file /root/conda_envs/samtools.environment.yml
+RUN conda env create -q --name  bedtools --file /root/conda_envs/bedtools.environment.yml
+RUN conda env create -q --name  r --file /root/conda_envs/r.environment.yml
+RUN conda env create -q --name  bowtie --file /root/conda_envs/bowtie.environment.yml
+RUN conda env create -q --name  bowtie2 --file /root/conda_envs/bowtie2.environment.yml
+RUN conda env create -q --name  java --file /root/conda_envs/java.environment.yml
+RUN conda env create -q --name  sratoolkit --file /root/conda_envs/sratoolkit.environment.yml
 
 # Deeptools installs samtools and lots of dependencies, isolate it
-RUN conda create -y -q -n deeptools --channel bioconda deeptools
+RUN conda env create -q --name  deeptools --file /root/conda_envs/deeptools.environment.yml
 RUN ln -s /opt/conda/envs/deeptools/bin/deeptools /usr/local/bin/deeptools
 RUN ln -s /opt/conda/envs/deeptools/bin/bamCoverage /usr/local/bin/bamCoverage
 
 # Install env py3.5
-RUN conda create -y -n py3.5 python=3.5
-# seaborn should be >= 0.8
-RUN source activate py3.5 && \
-    conda install -y --channel bioconda star rseg \
-    ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed && \
-    conda install -y --channel conda-forge matplotlib-venn && \
-    conda install -y pandas numpy scikit-learn pytest pytest-pep8 seaborn lxml && \
-    pip install multiqc teamcity-messages
+RUN conda env create -q --name py3.5 --file /root/conda_envs/py3.5.environment.yml
 
 # Workaround for TeamCity CI, temp folders are created with root permissions, unacessible for USER
 # RUN groupadd -r washu && useradd -ms /bin/bash -g washu user

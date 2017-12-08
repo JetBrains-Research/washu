@@ -26,3 +26,9 @@ Then you just push current image
 ```bash
 docker push biolabs/washu
 ```
+
+Export conda environment
+----
+```bash
+conda env export --name ENV_NAME
+```
