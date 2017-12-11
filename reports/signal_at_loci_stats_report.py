@@ -339,6 +339,5 @@ if __name__ == "__main__":
     import reports.loci_intersection_report as loir
 
     from matplotlib.backends.backend_pdf import PdfPages
-    from scripts.
 
     _cli()
