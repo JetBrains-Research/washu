@@ -121,8 +121,10 @@ def stats_test(results_dir, signal_root):
     #         filtered_path = pvalues_path.with_suffix(".{}_{}.csv".format(pvalue_thr, col))
     #         df.loc[df[col] < pvalue_thr, ["name", col]].to_csv(str(filtered_path))
     #
-    #     # cat signal_pvalues.csv |  awk -F, '{col=$9; if ($1 == "" || (col != "" && col < 0.01)) print $2,col }' > signal_pvalues.0.01_scores_tmm.csv
-    #     # python ~/work/washu/reports/annotate_reactome.py signal_pvalues.0.01_rpkm.csv name -o signal_pvalues.0.01_rpkm.ann.csv
+    #     # cat signal_pvalues.csv |  awk -F, '{col=$9; if ($1 == "" || (col != "" && col < 0.01))
+    #  print $2,col }' > signal_pvalues.0.01_scores_tmm.csv
+    #     # python ~/work/washu/reports/annotate_reactome.py signal_pvalues.0.01_rpkm.csv name -o
+    #  signal_pvalues.0.01_rpkm.ann.csv
 
 
 def plot_signal_at_signif_loci(title, df, col, pdf, signal_root):
