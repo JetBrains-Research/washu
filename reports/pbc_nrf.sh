@@ -48,8 +48,8 @@ T=$'\t'
 NRF=Distinct/Total${T}PBC1=OnePair/Distinct${T}PBC2=OnePair/TwoPair"
 
 cat ${PILEUP_BED} | grep -E 'chr[0-9XY]+' | \
-    awk  -v OFS='\t' '{print $1,$2,$3,$6}' | \
-    sort | uniq -c | \
+    sort -k1,1 -k3,3n -k2,2n -k6,6 -T ${TMPDIR} | \
+    awk -v OFS='\t' '{print $1,$2,$3,$6}' | uniq -c | \
     awk 'BEGIN{mt=0;m0=0;m1=0;m2=0}
     ($1==1){m1=m1+1} ($1==2){m2=m2+1} {m0=m0+1} {mt=mt+$1}
     END{

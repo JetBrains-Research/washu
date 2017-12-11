@@ -57,7 +57,7 @@ module load samtools
 #9	NSC	Normalized strand cross-correlation coefficient (NSC) = COL4 / COL8
 #10	RSC	Relative strand cross-correlation coefficient (RSC) = (COL4 - COL8) / (COL6 - COL8)
 #11	QualityTag	Quality tag based on thresholded RSC (codes= -2:veryLow, -1:Low, 0:Medium, 1:High, 2:veryHigh)
-Rscript ${PHANTOMPEAKQUALTOOLS}/run_spp.R -c=${FILE} -savp -out=${WORK_DIR}/${NAME}.phantom.txt
+Rscript ${PHANTOMPEAKQUALTOOLS}/run_spp.R -c=${FILE} -savp -out=${WORK_DIR}/${NAME}.phantom.tsv
 
 #col.	abbreviation
 #1   TotalReadPairs
@@ -67,7 +67,7 @@ Rscript ${PHANTOMPEAKQUALTOOLS}/run_spp.R -c=${FILE} -savp -out=${WORK_DIR}/${NA
 #5   NRF=Distinct/Total
 #6   PBC1=OnePair/Distinct
 #7   PBC2=OnePair/TwoPair
-bash ${SCRIPT_DIR}/reports/pbc_nrf.sh ${FILE} > ${WORK_DIR}/${NAME}.pbc_nfr.txt
+bash ${SCRIPT_DIR}/reports/pbc_nrf.sh ${FILE} > ${WORK_DIR}/${NAME}.pbc_nrf.tsv
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS+=("$QSUB_ID")

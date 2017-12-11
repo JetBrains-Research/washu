@@ -75,13 +75,14 @@ process_bowtie_logs(WORK_DIR)
 run_bash("parallel/bigwig.sh", CHROM_SIZES, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_bws", ["*.bw", "*.bdg", "*bw.log"])
 
+# QC PBC/NRF + PhantomPeakQualTools metrics for BAMs
+run_bash("parallel/bam_qc.sh", PHANTOMPEAKQUALTOOLS, WORK_DIR)
+move_forward(WORK_DIR, WORK_DIR + "/qc", ["*.pdf", "*phantom.tsv", "*pbc_nrf.tsv", "*bam_qc*"])
+
 # Remove duplicates
 run_bash("parallel/remove_duplicates.sh", PICARD_TOOLS, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_unique",
              ["*_unique*", "*_metrics.txt", "*duplicates.log"])
-
-# PBC/NRF metrics for BAMs
-run_bash("parallel/bam_qc.sh", PHANTOMPEAKQUALTOOLS, WORK_DIR + "_unique")
 
 # Tags BW visualization
 run_bash("parallel/tags_bigwig.sh", CHROM_SIZES, 150, WORK_DIR + "_unique")
