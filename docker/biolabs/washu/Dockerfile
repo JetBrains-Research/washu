@@ -46,10 +46,28 @@ RUN ln -s /opt/conda/envs/deeptools/bin/bamCoverage /usr/local/bin/bamCoverage
 # Install env py3.5
 RUN conda env create -q --name py3.5 --file /root/conda_envs/py3.5.environment.yml
 
-# Workaround for TeamCity CI, temp folders are created with root permissions, unacessible for USER
-# RUN groupadd -r washu && useradd -ms /bin/bash -g washu user
-# WORKDIR /home/user
-# USER user
+# Install spp R package for phantom peak qual tools
+RUN /opt/conda/envs/r/bin/R -e "source('https://bioconductor.org/biocLite.R');biocLite(c('caTools', 'Rsamtools'));\
+install.packages('devtools', repos='http://cran.us.r-project.org');require(devtools);\
+devtools::install_github('hms-dbmi/spp', build_vignettes = FALSE)"
+
+# To prevent problems with Java interfierence just move execuble to emulate module
+RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
+
+COPY ./module.sh /opt/
+
+# Make new user and add it to the washu group
+RUN groupadd -r washu && useradd -ms /bin/bash -g washu user
+WORKDIR /home/user
+
+# Move testdata data
+RUN mv /root/washu_test_data.tar.gz /home/user && chmod a+r /home/user/washu_test_data.tar.gz
+
+# We need this for "which module" command
+RUN ln -s /bin/echo /usr/bin/module
+
+# Ordinary user
+USER user
 
 # Download Picard tools
 RUN cd ~ && wget -q https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar
@@ -62,14 +80,3 @@ RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/downlo
 # Install phantom peak qual tools
 RUN cd ~ && wget -q https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/phantompeakqualtools/ccQualityControl.v.1.1.tar.gz
 RUN cd ~ && tar xvf ccQualityControl.v.1.1.tar.gz
-
-# Install spp R package for phantom peak qual tools
-RUN /opt/conda/envs/r/bin/R -e "source('https://bioconductor.org/biocLite.R');biocLite(c('caTools', 'Rsamtools'));\
-install.packages('devtools', repos='http://cran.us.r-project.org');require(devtools);\
-devtools::install_github('hms-dbmi/spp', build_vignettes = FALSE)"
-
-# To prevent problems with Java interfierence just move execuble to emulate module
-RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
-
-
-COPY ./module.sh /opt/

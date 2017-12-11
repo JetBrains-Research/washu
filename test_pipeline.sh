@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 # Create module command alias
-# We need this for "which module" command
-ln -s /bin/echo /usr/bin/module
 module() { source /opt/module.sh $@; }
 export -f module
 
@@ -48,9 +46,9 @@ if [[ ! -d ~/washu_test_data ]]; then
     tar -xf ~/washu_test_data.tar.gz --directory ~
 fi
 
-ln -sf ~/washu_test_data/fastq ~/fastq
-ln -sf ~/washu_test_data/index ~/index
-ln -sf ~/washu_test_data/data ~/data
+cp -r ~/washu_test_data/fastq ~/
+cp -r ~/washu_test_data/index ~/
+cp -r ~/washu_test_data/data ~/
 
 # Prepare regions for RSEG
 if [[ ! -d ~/fastq_bams ]]; then
@@ -65,4 +63,6 @@ python -m pytest test/pipeline/*.py
 
 # For the ease of troubleshooting
 mkdir -p /washu/out
-cp -r /root/fastq* /washu/out
+cp -r ~/fastq* /washu/out
+cp -r ~/index* /washu/out
+cp -r ~/data* /washu/out
