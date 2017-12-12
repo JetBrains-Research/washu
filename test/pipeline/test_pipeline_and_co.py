@@ -49,9 +49,9 @@ def test_unique():
 
 
 def test_bam_qc():
-    check_files("fastq_bams_unique/qc/*.pbc_nrf.tsv", 6)
-    check_files("fastq_bams_unique/qc/*.phantom.tsv", 6)
-    check_files("fastq_bams_unique/qc/*.pdf", 6)
+    check_files("fastq_bams/qc/*.pbc_nrf.tsv", 6)
+    check_files("fastq_bams/qc/*.phantom.tsv", 6)
+    check_files("fastq_bams/qc/*.pdf", 6)
 
 
 def test_unique_tags_bws():
@@ -86,8 +86,8 @@ def test_sicer():
     check_files("fastq_bams_sicer/*island.bed_rip.csv", 4)
     check_files("fastq_bams_sicer/*removed-1.bed", 0)
     # BATCH is true, these shouldn't be cleaned up
-    check_files("fastq_bams_sicer/*input*.bed", 2)
-    check_files("fastq_bams_sicer/*pileup.bed", 4)
+    check_files("fastq_bams_sicer/*input*.bed", 4)
+    check_files("fastq_bams_sicer/*pileup.bed", 6)
     check_files("fastq_bams_sicer/peaks_report.csv", 1)
 
 
