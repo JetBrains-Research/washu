@@ -112,8 +112,8 @@ def test_reads2bam():
 
 
 def test_tags2bdg():
-    bdg = run([["bash", "/washu/scripts/tags2bdg.sh", os.path.expanduser("~/data/bam2tags.tag")]])[0]. \
-        decode('utf-8')
+    bdg = run([["bash", "/washu/scripts/tags2bdg.sh",
+                os.path.expanduser("~/data/bam2tags.tag")]])[0].decode('utf-8')
     assert Path("data/bam2tags.bdg").read_text() == bdg
 
 
