@@ -127,8 +127,9 @@ def mean_boxplots(df, title, ax):
     """Plot mean values for individual donors"""
     signal = df.mean(axis=1).to_frame("value")
     signal.index = [age(n) for n in signal.index]
+    # Setup age
     signal["age"] = "ODS"
-    signal.loc[signal.index.str.startswith("y"), "age"] = "YDS"
+    signal.loc[[bool(is_yd(str(x))) for x in signal.index], "age"] = "YDS"
 
     age_labels = list(reversed(sorted(set(signal['age']))))
     sns.boxplot(x="age", y="value", data=signal, palette="Set3",
