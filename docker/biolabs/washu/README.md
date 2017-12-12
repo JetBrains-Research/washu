@@ -32,3 +32,10 @@ Export conda environment
 ```bash
 conda env export --name ENV_NAME
 ```
+
+Run tests localy
+---
+```bash
+docker run -v ~/work/washu:/washu -it biolabs/washu
+source activate py3.5 && cd /washu && bash test_pipeline.sh
+```

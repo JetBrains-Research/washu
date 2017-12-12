@@ -54,20 +54,20 @@ devtools::install_github('hms-dbmi/spp', build_vignettes = FALSE)"
 # To prevent problems with Java interfierence just move execuble to emulate module
 RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
 
-COPY ./module.sh /opt/
-
-# Make new user and add it to the washu group
-RUN groupadd -r washu && useradd -ms /bin/bash -g washu user
-WORKDIR /home/user
-
-# Move testdata data
-RUN mv /root/washu_test_data.tar.gz /home/user && chmod a+r /home/user/washu_test_data.tar.gz
-
 # We need this for "which module" command
+COPY ./module.sh /opt/
 RUN ln -s /bin/echo /usr/bin/module
 
-# Ordinary user
-USER user
+# Make new user and add it to the washu group
+# TODO: uncomment when 'root' issue has been fixed in TC
+#RUN groupadd -r washu && useradd -ms /bin/bash -g washu user
+#WORKDIR /home/user
+#
+## Move testdata data
+#RUN mv /root/washu_test_data.tar.gz /home/user && chmod a+r /home/user/washu_test_data.tar.gz
+#
+## Ordinary user
+#USER user
 
 # Download Picard tools
 RUN cd ~ && wget -q https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar
