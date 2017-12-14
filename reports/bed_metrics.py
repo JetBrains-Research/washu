@@ -200,6 +200,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
                         col_cluster=False, row_cluster=False,
                         adjustments=None,
                         cbar=True,
+                        show_or_save_plot=True,
                         **kw):
 
     """
@@ -217,6 +218,8 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
     :param col_cluster: see seaborn.clustermap(..) details
     :param row_cluster: see seaborn.clustermap(..) details
     :param adjustments: Right / left / top /  bottom insets dict
+    :param show_or_save_plot: If true show/save plot, else do not finish plotting allow further
+    modification
     :param kw: extra arguments for easier API usages
     """
     ncol, nrow = df.shape
@@ -282,7 +285,9 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
                         right=adjustments.get('right', 0.8),
                         top=adjustments.get('top', 0.8),
                         bottom=adjustments.get('bottom', 0.2))
-    save_plot(save_to)
+    if show_or_save_plot:
+        save_plot(save_to)
+    return g
 
 
 def save_plot(save_to):
