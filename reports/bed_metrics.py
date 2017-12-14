@@ -357,7 +357,7 @@ def _cli():
                         save_to=plot_path,
                         row_cluster=args.rowc, col_cluster=args.colc,
                         row_color_annotator=annotator,
-                        cow_color_annotator=annotator,
+                        col_color_annotator=annotator,
                         figsize=args.size)
 
 
