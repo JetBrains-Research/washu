@@ -337,7 +337,8 @@ def _cli():
     df_path = Path(prefix + ".df")
 
     # Df
-    df = load_or_build_metrics_table(a_paths, b_paths, df_path, jaccard=args.jaccard)
+    df = load_or_build_metrics_table(a_paths, b_paths, df_path, jaccard=args.jaccard,
+                                     threads=args.threads)
 
     anns = []
     # age
@@ -357,8 +358,7 @@ def _cli():
                         row_cluster=args.rowc, col_cluster=args.colc,
                         row_color_annotator=annotator,
                         cow_color_annotator=annotator,
-                        figsize=args.size,
-                        threads=args.threads)
+                        figsize=args.size)
 
 
 def load_or_build_metrics_table(a_paths, b_paths, df_path, **kw):
