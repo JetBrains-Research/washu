@@ -8,6 +8,7 @@ import tempfile
 import os
 import subprocess
 import pandas as pd
+import numpy as np
 
 from scripts import signals_visualize
 from scripts.util import *
@@ -24,7 +25,7 @@ def process(data_path, sizes_path, peaks_sizes_path):
     else:
         print("Processing Methylation|Transcription|miRNA, input not found")
 
-    print('Processing raw signal')
+    print('Processing RAW signal')
     pivot = pd.pivot_table(data, index=['chr', 'start', 'end'],
                            columns='name',
                            values='coverage' if processing_chipseq else 'mean',
@@ -37,7 +38,7 @@ def process(data_path, sizes_path, peaks_sizes_path):
     if not processing_chipseq:
         return
 
-    print('Processing normalization by all library mapped reads')
+    print('Processing RPM normalization')
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     sizes_pm = sizes / 1000000
     sizes_pm.columns = ['size_pm']
@@ -45,6 +46,9 @@ def process(data_path, sizes_path, peaks_sizes_path):
 
     data['rpm'] = data['coverage'] / data['size_pm']
     save_signal(re.sub('.tsv', '_rpm.tsv', data_path), data, 'rpm', 'Saved RPM')
+
+    print("Processing QUANTILE normalization")
+    process_quantile(re.sub('.tsv', '_q.tsv', data_path), data)
 
     print('Processing RPKM normalization')
     data['rpk'] = (data['end'] - data['start']) / 1000.0
@@ -80,6 +84,23 @@ def save_signal(path, data, signal_type, msg):
     print('{} to {}'.format(msg, path))
 
 
+def quantile_normalize_using_target(x, target):
+    """Both `x` and `target` are numpy arrays of equal lengths."""
+    target_sorted = np.sort(target)
+    return target_sorted[x.argsort().argsort()]
+
+
+def process_quantile(path, data):
+    pivot_df = pd.pivot_table(data, index=['chr', 'start', 'end'],
+                              columns='name', values='raw', fill_value=0)
+    # Normalize everything to the first track
+    for c in pivot_df.columns[1:]:
+        pivot_df[c] = quantile_normalize_using_target(pivot_df[c],
+                                                      pivot_df[pivot_df.columns[0]])
+    pivot_df.to_csv(path, sep='\t')
+    print('{} to {}'.format('Saved QUANTILE', path))
+
+
 TMM_R_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../R/tmm.R'
 
 
@@ -92,10 +113,16 @@ def process_diffbind_scores(data_path, data, sizes):
     records = [(d, od_input, OLD) for d in ods] + [(d, yd_input, YOUNG) for d in yds]
     scores, lib_sizes = process_scores(data, sizes, records)
     save_scores(re.sub('.tsv', '_scores.tsv', data_path), data, scores, 'diffbind scores')
+    tmm_results = process_tmm(scores, lib_sizes)
+    scores_tmm = tmm_results * 10000000
+    save_scores(re.sub('.tsv', '_scores_tmm.tsv', data_path),
+                data, scores_tmm, 'diffbind TMM scores')
 
-    print('TMM normalization')
+
+def process_tmm(data, lib_sizes):
+    print('Scores TMM normalization')
     scores_tmpfile = tempfile.NamedTemporaryFile(prefix='scores', suffix='.tsv').name
-    scores.to_csv(scores_tmpfile, index=False, sep='\t')
+    data.to_csv(scores_tmpfile, index=False, sep='\t')
     print('Saved scores to', scores_tmpfile)
     tmm_file = scores_tmpfile.replace('.tsv', '_tmm.tsv')
     sizes_tmpfile = tempfile.NamedTemporaryFile(prefix='sizes', suffix='.tsv').name
@@ -106,9 +133,8 @@ def process_diffbind_scores(data_path, data, sizes):
     subprocess.run(cmd, shell=True)
     # Difference between DBA_SCORE_TMM_MINUS_FULL and DBA_SCORE_TMM_MINUS_FULL_CPM is in bCMP
     print('TMM Scores DBA_SCORE_TMM_MINUS_FULL_CPM')
-    scores_tmm = pd.read_csv(tmm_file, sep='\t') * 10000000
-    save_scores(re.sub('.tsv', '_scores_tmm.tsv', data_path),
-                data, scores_tmm, 'diffbind TMM scores')
+    tmm_results = pd.read_csv(tmm_file, sep='\t')
+    return tmm_results
 
 
 def save_scores(path, data, scores, name):

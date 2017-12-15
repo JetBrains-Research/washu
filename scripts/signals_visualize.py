@@ -150,7 +150,7 @@ def mean_boxplots(df, title, ax):
 
 def visualize(f, name):
     try:
-        print(f)
+        print('Processing', name, f)
         df = pd.read_csv(f, sep='\t')
         od_inputs = [c for c in df.columns.values if is_od_input(c)]
         yd_inputs = [c for c in df.columns.values if is_yd_input(c)]
@@ -187,8 +187,10 @@ def visualize(f, name):
 
 def process(work_dir, id):
     print('Visualize', work_dir, id)
-    for signal_type in ['raw', 'rpm', 'rpkm', 'rpm_peaks', 'rpkm_peaks', 'scores', 'scores_tmm']:
-        visualize(os.path.join(work_dir, id, '{0}_{1}.tsv'.format(id, signal_type)), signal_type)
+    id_dir = os.path.join(work_dir, id)
+    for f in [f for f in os.listdir(id_dir) if
+              re.match('.*{}_.*\\.tsv$'.format(id), f, flags=re.IGNORECASE)]:
+        visualize(os.path.join(id_dir, f), re.sub('(.*{}_)|(\\.tsv$)'.format(id), '', f))
 
 
 def main():
