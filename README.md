@@ -81,10 +81,10 @@ docker pull biolabs/washu
 Tests
 -----
 ```bash
-# FAST tests
+# Tests
 docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
 
-# SLOW tests 
+# Pipeline tests 
 docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
 ```
 
