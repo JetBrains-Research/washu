@@ -311,11 +311,11 @@ def _clustermap(data, pivot_kws=None, method='average', metric='euclidean',
 
     if row_colors_ratio:
         plotter.gs.set_width_ratios(
-            plotter.dim_ratios(g.row_colors, figsize=figsize, axis=1,
+            plotter.dim_ratios(plotter.row_colors, figsize=figsize, axis=1,
                                side_colors_ratio=row_colors_ratio))
     if col_colors_ratio:
         plotter.gs.set_height_ratios(
-            plotter.dim_ratios(g.col_colors, figsize=figsize, axis=0,
+            plotter.dim_ratios(plotter.col_colors, figsize=figsize, axis=0,
                                side_colors_ratio=col_colors_ratio))
 
     return plotter.plot(metric=metric, method=method,
