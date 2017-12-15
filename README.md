@@ -1,3 +1,7 @@
+License [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)  
+Tests [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_Washu)/statusIcon)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tests&guest=1)  
+Pipeline tests [![long tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_WashuPipelineTests)/statusIcon)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_LongTests&guest=1)  
+
 Technical pipelines
 ===================
 Technical pipelines for ChIP-Seq, RNA-Seq, RRBS processing on Portable Batch System (qsub).
