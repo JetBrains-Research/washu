@@ -46,7 +46,7 @@ def stat_test(f, test_name, test, fdr):
     results = re.sub('\.tsv', '_{}.tsv'.format(test_name), f)
     df[['chr', 'start', 'end', 'yd_mean', 'od_mean', 'logfc', 'pval', 'pval_adj']] \
         .to_csv(results, sep='\t', index=None, header=True)
-    print('Saved {} test results to {}'.format(sum(h0_rejects), results))
+    print('Saved test results to', results)
 
     # Save significant results
     if sum(h0_rejects) > 0:

@@ -1,5 +1,6 @@
 import matplotlib
 from enum import Enum
+import math
 import numpy as np
 import pandas as pd
 from scripts.util import *
@@ -40,8 +41,12 @@ def signal_pca(x0,
                      textcoords='offset points',
                      ha='right', va='bottom')
     plt.title(title)
-    plt.xlabel('PC1 {}%'.format(int(pca.explained_variance_ratio_[0] * 100)))
-    plt.ylabel('PC2 {}%'.format(int(pca.explained_variance_ratio_[1] * 100)))
+    (var1, var2) = pca.explained_variance_ratio_
+    var2 = pca.explained_variance_ratio_[0]
+    pc1_var = 0.0 if math.isnan(var1) else int(var1 * 100)
+    pc2_var = 0.0 if math.isnan(var2) else int(var2 * 100)
+    plt.xlabel('PC1 {}%'.format(pc1_var))
+    plt.ylabel('PC2 {}%'.format(pc2_var))
 
     # Do not fit Linear Regression
     if not fit_lr:
@@ -150,7 +155,7 @@ def mean_boxplots(df, title, ax):
 
 def visualize(f, name):
     try:
-        print('Processing', name, f)
+        print('Visualizing', name, f)
         df = pd.read_csv(f, sep='\t')
         od_inputs = [c for c in df.columns.values if is_od_input(c)]
         yd_inputs = [c for c in df.columns.values if is_yd_input(c)]
