@@ -10,7 +10,7 @@ import subprocess
 import pandas as pd
 import numpy as np
 
-from scripts import signals_visualize
+from scripts import signals_visualize, signals_tests
 from scripts.util import *
 
 
@@ -188,10 +188,12 @@ def main():
     print('PEAKS SIZES PATH', peaks_sizes_path)
 
     process(data_path, sizes_path, peaks_sizes_path)
+
     # Convention: data_path = work_dir/id/id.tsv
     work_dir = os.path.dirname(os.path.dirname(data_path))
     id = os.path.basename(os.path.dirname(data_path))
     signals_visualize.process(work_dir, id)
+    signals_tests.process(work_dir, id)
 
 
 if __name__ == "__main__":
