@@ -196,6 +196,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
                         save_to=None,
                         vmin=0, vmax=1,
                         col_color_annotator=None, row_color_annotator=None,
+                        row_colors_ratio=None, col_colors_ratio=None,
                         col_label_converter=None, row_label_converter=None,
                         col_cluster=False, row_cluster=False,
                         adjustments=None,
@@ -213,11 +214,14 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
     :param vmax: Heatmap max value (use None to infer from data)
     :param col_color_annotator: Function which highlights cols
     :param row_color_annotator: Function which highlights rows
+    :param row_colors_ratio: Rows annotations bar width ratio to plot width
+    :param col_colors_ratio: Colums annotations bar width ratio to plot height
     :param col_label_converter: Function which modifies cols names
     :param row_label_converter: Function which modifies rows names
     :param col_cluster: see seaborn.clustermap(..) details
     :param row_cluster: see seaborn.clustermap(..) details
     :param adjustments: Right / left / top /  bottom insets dict
+    :param cbar: Show heatmap legend bar
     :param show_or_save_plot: If true show/save plot, else do not finish plotting allow further
     modification
     :param kw: extra arguments for easier API usages
@@ -260,12 +264,14 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
             else as_colors_df(row_color_annotator, df.index)
 
         # TODO: for jaccard use dist function? matrix could be not square here
-        g = sns.clustermap(
+        g = _clustermap(
             df, figsize=figsize, cmap="rainbow",
             # cbar_kws={"orientation": "horizontal", "label": "Metric"},
             col_cluster=col_cluster, row_cluster=row_cluster,
             metric="chebyshev",
-            col_colors=c_colors, row_colors=r_colors,
+            row_colors=r_colors, col_colors=c_colors,
+            row_colors_ratio=row_colors_ratio,
+            col_colors_ratio=col_colors_ratio,
             vmin=vmin, vmax=vmax,
             # linewidths=0.75,  # separator line width
             robust=True,  # robust=True: ignore color outliers
@@ -277,7 +283,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
         plt.setp(g.ax_heatmap.get_xticklabels(), rotation=-90)
         if g.row_colors is not None:
             plt.setp(g.ax_row_colors.get_xticklabels(), rotation=-90)
-        plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
+            plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
 
     plt.title(title)
     adjustments = adjustments or {}
@@ -288,6 +294,35 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
     if show_or_save_plot:
         save_plot(save_to)
     return g
+
+
+# Re-implementation of `seaborn.clustermap` which allows change annotations bar size ratio
+def _clustermap(data, pivot_kws=None, method='average', metric='euclidean',
+                z_score=None, standard_scale=None, figsize=None, cbar_kws=None,
+                row_cluster=True, col_cluster=True,
+                row_linkage=None, col_linkage=None,
+                row_colors=None, col_colors=None,
+                row_colors_ratio=None, col_colors_ratio=None,
+                mask=None, **kwargs):
+    plotter = sns.matrix.ClusterGrid(data, pivot_kws=pivot_kws, figsize=figsize,
+                                     row_colors=row_colors, col_colors=col_colors,
+                                     z_score=z_score, standard_scale=standard_scale,
+                                     mask=mask)
+
+    if row_colors_ratio:
+        plotter.gs.set_width_ratios(
+            plotter.dim_ratios(g.row_colors, figsize=figsize, axis=1,
+                               side_colors_ratio=row_colors_ratio))
+    if col_colors_ratio:
+        plotter.gs.set_height_ratios(
+            plotter.dim_ratios(g.col_colors, figsize=figsize, axis=0,
+                               side_colors_ratio=col_colors_ratio))
+
+    return plotter.plot(metric=metric, method=method,
+                        colorbar_kws=cbar_kws,
+                        row_cluster=row_cluster, col_cluster=col_cluster,
+                        row_linkage=row_linkage, col_linkage=col_linkage,
+                        **kwargs)
 
 
 def save_plot(save_to):
