@@ -5,10 +5,9 @@
 
 import math
 import tempfile
-import os
-import subprocess
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 from scripts import signals_visualize, signals_tests
 from scripts.util import *
@@ -26,13 +25,16 @@ def process(data_path, sizes_path, peaks_sizes_path):
         print("Processing Methylation|Transcription|miRNA, input not found")
 
     print('Processing RAW signal')
-    pivot = pd.pivot_table(data, index=['chr', 'start', 'end'],
-                           columns='name',
-                           values='coverage' if processing_chipseq else 'mean',
-                           fill_value=0)
+    df_raw = pd.pivot_table(data, index=['chr', 'start', 'end'],
+                            columns='name',
+                            values='coverage' if processing_chipseq else 'mean',
+                            fill_value=0)
     raw_signal = re.sub('.tsv', '_raw.tsv', data_path)
-    pivot.to_csv(raw_signal, sep='\t')
+    df_raw.to_csv(raw_signal, sep='\t')
     print('Saved raw signal to {}'.format(raw_signal))
+
+    print("Processing QUANTILE normalization")
+    process_quantile(re.sub('.tsv', '_q.tsv', data_path), df_raw)
 
     # Normalization is available only for ChIP-Seq
     if not processing_chipseq:
@@ -46,9 +48,6 @@ def process(data_path, sizes_path, peaks_sizes_path):
 
     data['rpm'] = data['coverage'] / data['size_pm']
     save_signal(re.sub('.tsv', '_rpm.tsv', data_path), data, 'rpm', 'Saved RPM')
-
-    print("Processing QUANTILE normalization")
-    process_quantile(re.sub('.tsv', '_q.tsv', data_path), data)
 
     print('Processing RPKM normalization')
     data['rpk'] = (data['end'] - data['start']) / 1000.0
@@ -90,14 +89,12 @@ def quantile_normalize_using_target(x, target):
     return target_sorted[x.argsort().argsort()]
 
 
-def process_quantile(path, data):
-    pivot_df = pd.pivot_table(data, index=['chr', 'start', 'end'],
-                              columns='name', values='raw', fill_value=0)
+def process_quantile(path, df_raw):
     # Normalize everything to the first track
-    for c in pivot_df.columns[1:]:
-        pivot_df[c] = quantile_normalize_using_target(pivot_df[c],
-                                                      pivot_df[pivot_df.columns[0]])
-    pivot_df.to_csv(path, sep='\t')
+    for c in df_raw.columns[1:]:
+        df_raw[c] = quantile_normalize_using_target(df_raw[c],
+                                                    df_raw[df_raw.columns[0]])
+    df_raw.to_csv(path, sep='\t')
     print('{} to {}'.format('Saved QUANTILE', path))
 
 
