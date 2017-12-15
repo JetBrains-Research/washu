@@ -47,7 +47,7 @@ T=$'\t'
 >&2 echo "TotalReadPairs${T}DistinctReadPairs${T}OneReadPair${T}TwoReadPairs${T}\
 NRF=Distinct/Total${T}PBC1=OnePair/Distinct${T}PBC2=OnePair/TwoPair"
 
-cat ${PILEUP_BED} | grep -E 'chr[0-9XY]+' | \
+cat ${PILEUP_BED} | \
     sort -k1,1 -k3,3n -k2,2n -k6,6 -T ${TMPDIR} | \
     awk -v OFS='\t' '{print $1,$2,$3,$6}' | uniq -c | \
     awk 'BEGIN{mt=0;m0=0;m1=0;m2=0}
