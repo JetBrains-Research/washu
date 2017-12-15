@@ -29,7 +29,9 @@ def stat_test(f, test_name, test, fdr):
     ods = [c for c in df.columns.values if is_od(c)]
     yds = [c for c in df.columns.values if is_yd(c)]
     pvals = np.array([test(row[ods], row[yds]) for _, row in df.iterrows()])
-    (h0_rejects, pvals_adj) = multipletests(pvals, fdr, "fdr_bh")
+    res = multipletests(pvals, fdr, "fdr_bh")
+    h0_rejects = res[0]
+    pvals_adj = res[1]
     df['pval'] = pvals
     df['pval_adj'] = pvals_adj
     df['od_mean'] = df[ods].mean(axis=1).to_frame('od_mean')['od_mean']
@@ -48,7 +50,7 @@ def stat_test(f, test_name, test, fdr):
 
     # Save significant results
     if sum(h0_rejects) > 0:
-        results_fdr = re.sub('\.tsv', '_{}_fdr_{}.tsv'.format(test_name, fdr), f)
+        results_fdr = re.sub('\.tsv', '_{}_diff_fdr_{}.bed'.format(test_name, fdr), f)
         df.loc[h0_rejects][['chr', 'start', 'end']] \
             .to_csv(results_fdr, sep='\t', index=None, header=True)
         print('Saved {} significant results at FDR={} to {}'.format(sum(h0_rejects), fdr, results_fdr))
