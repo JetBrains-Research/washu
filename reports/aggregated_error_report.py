@@ -38,7 +38,7 @@ def _cli():
                                                "H3K4me1"]):
             plots = []
             current_tools = []
-            colors = ['black', 'red', 'green']
+            colors = ['black', 'red', 'green', 'orange']
             ax = plt.subplot(5, 1, hist_index + 1)
             ax2 = ax.twinx()
             ax.set_ylabel(hist_mod + ' Total error')
