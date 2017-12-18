@@ -56,28 +56,22 @@ def stat_test(f, test_name, test, fdr):
         print('Saved {} significant results at FDR={} to {}'.format(sum(h0_rejects), fdr, results_fdr))
 
 
-def process(work_dir, id):
-    print('Stat testing', work_dir, id)
-    id_dir = os.path.join(work_dir, id)
-    for f in [f for f in os.listdir(id_dir) if
-              re.match('.*{}_.*\\.tsv$'.format(id), f, flags=re.IGNORECASE)]:
-        stat_test(os.path.join(id_dir, f), 'u', mann_whitney, 0.05)
-        stat_test(os.path.join(id_dir, f), 't', ttest, 0.05)
+def process(path):
+    stat_test(path, 'u', mann_whitney, 0.05)
+    stat_test(path, 't', ttest, 0.05)
 
 
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
-    if len(args) != 2:
-        print("ARGUMENTS:  <work_dir> <id>\n"
-              "CONVENTION: signal data is saved <folder>/<id>\n\n"
+    if len(args) != 1:
+        print("ARGUMENTS:  <data.tsv>\n"
+              "<data.tsv> - processed signal file to launch stat tests on"
               "ARGS: " + ",".join(args))
         sys.exit(1)
 
-    work_dir = args[0]
-    id = args[1]
-
-    process(work_dir, id)
+    path = args[0]
+    process(path)
 
 
 if __name__ == "__main__":

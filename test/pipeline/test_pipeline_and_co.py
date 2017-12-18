@@ -124,13 +124,22 @@ def test_signals():
         shutil.rmtree("fastq_bams_bws/regions")
     call(["bash", "/washu/parallel/signals_bw.sh",
           os.path.expanduser("~/fastq_bams_unique_tags_bws"),
-          os.path.expanduser("~/data/regions.bed"), "regions",
+          os.path.expanduser("~/data/regions.bed"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes")])
 
-    os.chdir(os.path.expanduser("~"))
     check_files("fastq_bams_unique_tags_bws/hg19.chrom.sizes.tsv", 1)
     check_files("fastq_bams_unique_tags_bws/regions/*_signal.log", 1)
-    # check_files("fastq_bams_unique_tags_bws/regions/regions.tsv", 1)
-    # check_files("fastq_bams_unique_tags_bws/regions/regions_raw.tsv", 1)
-    # assert Path("fastq_bams_unique_tags_bws/regions/regions_raw.tsv").read_text() == \
-    #        Path("data/regions_raw.tsv").read_text()  # nopep8
+    check_files("fastq_bams_unique_tags_bws/regions/regions.tsv", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_raw.tsv", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_raw_data.csv", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_raw.png", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_raw_pca.png", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_raw_pca_fit_error.csv", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_raw_t.tsv", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_raw_u.tsv", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_q.tsv", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_rpm.tsv", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_rpkm.tsv", 1)
+    check_files("fastq_bams_unique_tags_bws/regions/regions_scores.tsv", 1)
+    # TODO[shpynov] fix
+    # check_files("fastq_bams_unique_tags_bws/regions/regions_tmm_scores.tsv", 1)

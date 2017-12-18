@@ -153,9 +153,9 @@ def mean_boxplots(df, title, ax):
     return signal
 
 
-def visualize(f, name):
+def visualize(f, signal_type):
     try:
-        print('Visualizing', name, f)
+        print('Visualizing', signal_type, f)
         df = pd.read_csv(f, sep='\t')
         od_inputs = [c for c in df.columns.values if is_od_input(c)]
         yd_inputs = [c for c in df.columns.values if is_yd_input(c)]
@@ -164,13 +164,13 @@ def visualize(f, name):
         else:
             signal = df.drop(['chr', 'start', 'end'], axis=1)
         plt.figure(figsize=(20, 5))
-        mean_regions(df, title=name, ax=plt.subplot(1, 4, 1),
+        mean_regions(df, title=signal_type, ax=plt.subplot(1, 4, 1),
                      plot_type=Plot.SCATTER)
-        mean_regions(df, title='MA {}'.format(name), ax=plt.subplot(1, 4, 2),
+        mean_regions(df, title='MA {}'.format(signal_type), ax=plt.subplot(1, 4, 2),
                      plot_type=Plot.MA)
-        mean_regions(df, title='LOG {}'.format(name), ax=plt.subplot(1, 4, 3),
+        mean_regions(df, title='LOG {}'.format(signal_type), ax=plt.subplot(1, 4, 3),
                      plot_type=Plot.HISTOGRAM)
-        means = mean_boxplots(signal.T, title=name, ax=plt.subplot(1, 4, 4))
+        means = mean_boxplots(signal.T, title=signal_type, ax=plt.subplot(1, 4, 4))
         plt.savefig(re.sub('.tsv', '.png', f))
         plt.close()
 
@@ -178,7 +178,7 @@ def visualize(f, name):
         pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_data.csv', f),
                                             index=True, header=None)
 
-        e, e_scaled, e_log, e_scaled_log = signal_pca_all(signal.T, name)
+        e, e_scaled, e_log, e_scaled_log = signal_pca_all(signal.T, signal_type)
         plt.savefig(re.sub('.tsv', '_pca.png', f))
         plt.close()
 
@@ -190,27 +190,21 @@ def visualize(f, name):
         print(e)
 
 
-def process(work_dir, id):
-    print('Visualize', work_dir, id)
-    id_dir = os.path.join(work_dir, id)
-    for f in [f for f in os.listdir(id_dir) if
-              re.match('.*{}_.*\\.tsv$'.format(id), f, flags=re.IGNORECASE)]:
-        visualize(os.path.join(id_dir, f), re.sub('(.*{}_)|(\\.tsv$)'.format(id), '', f))
+def process(path):
+    visualize(path, re.sub('(.*_)|(\\.tsv$)'.format(id), '', path))
 
 
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
-    if len(args) != 2:
-        print("ARGUMENTS:  <work_dir> <id>\n"
-              "CONVENTION: signal data is saved <folder>/<id>\n\n"
+    if len(args) != 1:
+        print("ARGUMENTS:  <data.tsv>\n"
+              "<data.tsv> - processed signal file to visualize and build PCA"
               "ARGS: " + ",".join(args))
         sys.exit(1)
 
-    work_dir = args[0]
-    id = args[1]
-
-    process(work_dir, id)
+    path = args[0]
+    process(path)
 
 
 if __name__ == "__main__":

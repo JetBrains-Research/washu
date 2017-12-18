@@ -13,26 +13,33 @@ source $(dirname $0)/../parallel/util.sh
 SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch bw_signal $@"
-if [ $# -lt 4 ]; then
-    echo "Need at least 4 parameters! <WORK_DIR_WITH_BWS> <REGIONS> <ID> <CHROM.SIZES> [<PEAKS_FILE>]"
+if [ $# -lt 3 ]; then
+    echo "Need at least 3 parameters! <WORK_DIR_WITH_BWS> <REGIONS.BED> <CHROM.SIZES> [<PEAKS_FILE.BED>]"
     exit 1
 fi
 
 WORK_DIR=$1
-REGIONS=$2
-ID=$3
-CHROM_SIZES=$4
-PEAKS_FILE=$5
+REGIONS_BED=$2
+CHROM_SIZES=$3
+PEAKS_FILE_BED=$4
 
 echo "WORK_DIR: $WORK_DIR"
-echo "REGIONS: $REGIONS"
-echo "ID: $ID"
+echo "REGIONS: $REGIONS_BED"
 echo "CHROM_SIZES: $CHROM_SIZES"
-echo "PEAKS_FILE: $PEAKS_FILE"
+echo "PEAKS_FILE: $PEAKS_FILE_BED"
 
+ID=${REGIONS_BED%%.bed};
+ID=${ID##*/};
 RESULTS_FOLDER=${WORK_DIR}/${ID}
-mkdir -p $RESULTS_FOLDER
 echo "RESULTS FOLDER: $RESULTS_FOLDER"
+
+# Skip if folder already processed
+if [[ -d "${RESULTS_FOLDER}" ]]; then
+    echo "FOLDER exists, skip";
+    exit 0
+else
+    mkdir -p ${RESULTS_FOLDER}
+fi
 
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p $TMPDIR
@@ -101,11 +108,11 @@ if [[ ! -f ${LIBRARIES_SIZES} ]]; then
     done
 fi
 
-if [[ -f $PEAKS_FILE ]]; then
-    LIBRARIES_PEAKS_SIZES=${WORK_DIR}/${PEAKS_FILE##*/}.tsv
+if [[ -f ${PEAKS_FILE_BED} ]]; then
+    LIBRARIES_PEAKS_SIZES=${WORK_DIR}/${PEAKS_FILE_BED##*/}.tsv
     echo "Compute libraries peaks size ${LIBRARIES_PEAKS_SIZES}"
     if [[ ! -f ${LIBRARIES_PEAKS_SIZES} ]]; then
-        cat $REGIONS | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
+        cat ${REGIONS_BED} | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
             sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/peaks.sizes.bed4
 
         process_coverage ${TMPDIR}/peaks.sizes.bed4 "peaks.sizes" ${TMPDIR}/peaks.sizes.tsv ${WORK_DIR}
@@ -121,8 +128,8 @@ else
     echo "NO peaks file given"
 fi
 
-echo "Compute regions coverage ${REGIONS}"
-cat $REGIONS | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
+echo "Compute regions coverage ${REGIONS_BED}"
+cat $REGIONS_BED | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
     sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/regions.bed4
 
 process_coverage ${TMPDIR}/regions.bed4 ${ID} ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}

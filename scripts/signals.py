@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# See signals.sh for data preprocessing
-#
 # Author: oleg.shpynov@jetbrains.com
 
 import math
@@ -13,7 +11,7 @@ from scripts import signals_visualize, signals_tests
 from scripts.util import *
 
 
-def process(data_path, sizes_path, peaks_sizes_path):
+def process(data_path, sizes_path, peaks_sizes_path, post_process):
     data = pd.read_csv(data_path, sep='\t',
                        names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
 
@@ -29,12 +27,15 @@ def process(data_path, sizes_path, peaks_sizes_path):
                             columns='name',
                             values='coverage' if processing_chipseq else 'mean',
                             fill_value=0)
-    raw_signal = re.sub('.tsv', '_raw.tsv', data_path)
-    df_raw.to_csv(raw_signal, sep='\t')
-    print('Saved raw signal to {}'.format(raw_signal))
+    raw_path = re.sub('.tsv', '_raw.tsv', data_path)
+    df_raw.to_csv(raw_path, sep='\t')
+    print('Saved RAW signal to {}'.format(raw_path))
+    post_process(raw_path)
 
     print("Processing QUANTILE normalization")
-    process_quantile(re.sub('.tsv', '_q.tsv', data_path), df_raw)
+    quantile_path = re.sub('.tsv', '_q.tsv', data_path)
+    process_quantile(quantile_path, df_raw)
+    post_process(quantile_path)
 
     # Normalization is available only for ChIP-Seq
     if not processing_chipseq:
@@ -47,7 +48,9 @@ def process(data_path, sizes_path, peaks_sizes_path):
     data = pd.merge(data, sizes_pm, left_on="name", how='left', right_index=True)
 
     data['rpm'] = data['coverage'] / data['size_pm']
-    save_signal(re.sub('.tsv', '_rpm.tsv', data_path), data, 'rpm', 'Saved RPM')
+    rpm_path = re.sub('.tsv', '_rpm.tsv', data_path)
+    save_signal(rpm_path, data, 'rpm', 'Saved RPM')
+    post_process(rpm_path)
 
     print('Processing RPKM normalization')
     data['rpk'] = (data['end'] - data['start']) / 1000.0
@@ -56,10 +59,11 @@ def process(data_path, sizes_path, peaks_sizes_path):
 
     raw_data = pd.pivot_table(data, index=['chr', 'start', 'end'],
                               columns='name', values='coverage', fill_value=0)
-    process_diffbind_scores(data_path, raw_data, sizes)
+    process_diffbind_scores(data_path, raw_data, sizes, post_process)
 
     if not (peaks_sizes_path and os.path.exists(peaks_sizes_path)):
         return
+
     print('Processing RPM_PEAKS normalization')
     peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'sizes_peaks_pm'),
                               index_col='name')
@@ -67,13 +71,17 @@ def process(data_path, sizes_path, peaks_sizes_path):
 
     data = pd.merge(data, sizes_peaks_pm, left_on="name", how='left', right_index=True)
     data['rpm_peaks'] = data['coverage'] / data['sizes_peaks_pm']
-    save_signal(re.sub('.tsv', '_rpm_peaks.tsv', data_path), data, 'rpm_peaks',
+    rpm_peaks_path = re.sub('.tsv', '_rpm_peaks.tsv', data_path)
+    save_signal(rpm_peaks_path, data, 'rpm_peaks',
                 'Saved normalized reads by RPM reads in peaks signal')
+    post_process(rpm_peaks_path)
 
     print('Processing RPKM_PEAKS normalization')
     data['rpkm_peaks'] = data['rpm_peaks'] / data['rpk']
-    save_signal(re.sub('.tsv', '_rpkm_peaks.tsv', data_path), data, 'rpkm_peaks',
+    rpkm_peaks_path = re.sub('.tsv', '_rpkm_peaks.tsv', data_path)
+    save_signal(rpkm_peaks_path, data, 'rpkm_peaks',
                 'Saved normalized reads by RPKM reads in peaks signal')
+    post_process(rpkm_peaks_path)
 
 
 def save_signal(path, data, signal_type, msg):
@@ -101,7 +109,7 @@ def process_quantile(path, df_raw):
 TMM_R_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../R/tmm.R'
 
 
-def process_diffbind_scores(data_path, data, sizes):
+def process_diffbind_scores(data_path, data, sizes, post_process):
     print('Processing DiffBind scores')
     od_input = [c for c in data.columns.values if is_od_input(c)][0]
     yd_input = [c for c in data.columns.values if is_yd_input(c)][0]
@@ -109,11 +117,15 @@ def process_diffbind_scores(data_path, data, sizes):
     yds = [c for c in data.columns if is_yd(c)]
     records = [(d, od_input, OLD) for d in ods] + [(d, yd_input, YOUNG) for d in yds]
     scores, lib_sizes = process_scores(data, sizes, records)
-    save_scores(re.sub('.tsv', '_scores.tsv', data_path), data, scores, 'diffbind scores')
+    scores_path = re.sub('.tsv', '_scores.tsv', data_path)
+    save_scores(scores_path, data, scores, 'diffbind scores')
+    post_process(scores_path)
+
     tmm_results = process_tmm(scores, lib_sizes)
     scores_tmm = tmm_results * 10000000
-    save_scores(re.sub('.tsv', '_scores_tmm.tsv', data_path),
-                data, scores_tmm, 'diffbind TMM scores')
+    tmm_scores_path = re.sub('.tsv', '_scores_tmm.tsv', data_path)
+    save_scores(tmm_scores_path, data, scores_tmm, 'diffbind TMM scores')
+    post_process(tmm_scores_path)
 
 
 def process_tmm(data, lib_sizes):
@@ -170,10 +182,10 @@ def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
     if len(args) < 2:
-        print("ARGUMENTS:  <data_path.tsv> <sizes.tsv> [<peaks.sizes.tsv>]\n"
-              "     <data_path.tsv>: tsv file from signal_bw.sh\n"
+        print("ARGUMENTS:  <data.tsv> <sizes.tsv> [<peaks.sizes.tsv>]\n"
+              "     <data.tsv>: tsv file from signal_bw.sh\n"
               "     <sizes.tsv>: libraries sizes, used for RPM normalization\n"
-              "     <peaks.sizes.tsv>: libraries sizes in peaks, for RPM_peaks normalization\n\n"
+              "     <peaks.sizes.tsv>: libraries sizes in peaks, for peaks coverage normalization\n\n"
               "ARGS: " + ",".join(args))
         sys.exit(1)
 
@@ -181,16 +193,15 @@ def main():
     sizes_path = args[1]
     peaks_sizes_path = args[2] if len(args) == 3 else None
     print('DATA PATH', data_path)
-    print('SIZES PATH', sizes_path)
+    print('LIBRARIES SIZES PATH', sizes_path)
     print('PEAKS SIZES PATH', peaks_sizes_path)
 
-    process(data_path, sizes_path, peaks_sizes_path)
+    def post_process(path):
+        print('RESULT', path)
+        signals_visualize.process(path)
+        signals_tests.process(path)
 
-    # Convention: data_path = work_dir/id/id.tsv
-    work_dir = os.path.dirname(os.path.dirname(data_path))
-    id = os.path.basename(os.path.dirname(data_path))
-    signals_visualize.process(work_dir, id)
-    signals_tests.process(work_dir, id)
+    process(data_path, sizes_path, peaks_sizes_path, post_process)
 
 
 if __name__ == "__main__":
