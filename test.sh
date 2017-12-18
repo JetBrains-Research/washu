@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
 # Create module command alias
-# We need this for "which module" command
-ln -s /bin/echo /usr/bin/module
 module() { source /opt/module.sh $@; }
 export -f module
 
