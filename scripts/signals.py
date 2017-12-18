@@ -185,7 +185,8 @@ def main():
         print("ARGUMENTS:  <data.tsv> <sizes.tsv> [<peaks.sizes.tsv>]\n"
               "     <data.tsv>: tsv file from signal_bw.sh\n"
               "     <sizes.tsv>: libraries sizes, used for RPM normalization\n"
-              "     <peaks.sizes.tsv>: libraries sizes in peaks, for peaks coverage normalization\n\n"
+              "     <peaks.sizes.tsv>: libraries sizes in peaks"
+              "                        for peaks coverage normalization\n\n"
               "ARGS: " + ",".join(args))
         sys.exit(1)
 

@@ -53,7 +53,8 @@ def stat_test(f, test_name, test, fdr):
         results_fdr = re.sub('\.tsv', '_{}_diff_fdr_{}.bed'.format(test_name, fdr), f)
         df.loc[h0_rejects][['chr', 'start', 'end']] \
             .to_csv(results_fdr, sep='\t', index=None, header=True)
-        print('Saved {} significant results at FDR={} to {}'.format(sum(h0_rejects), fdr, results_fdr))
+        print('Saved {} significant results at FDR={} to {}'.format(
+            sum(h0_rejects), fdr, results_fdr))
 
 
 def process(path):
