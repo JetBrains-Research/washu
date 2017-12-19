@@ -37,6 +37,7 @@ def _cli():
                 plt.figure()
                 tool_new_path = folder_new / hist_mod / tool / "clean"
                 tool_old_path = folder_old / hist_mod
+                plots = []
                 for index, tool_path in enumerate([tool_new_path, tool_old_path]):
                     tracks_paths = sorted(chain(tool_path.glob("*Peak"),
                                                 tool_path.glob("*-island.bed"),
@@ -55,13 +56,14 @@ def _cli():
                         counts_cumulative = list(np.cumsum(counts))
                         counts_cumulative.reverse()
 
-                        plt.plot(range(1, len(tracks_paths) + 1), counts_cumulative, label="",
-                                 color=colors[index])
+                        plots.append(plt.plot(range(1, len(tracks_paths) + 1), counts_cumulative,
+                                              label="", color=colors[index])[0])
 
+                plt.legend(plots, [tool + " tuned", tool + " default"])
                 plt.xlabel('Number of donors')
                 plt.ylabel('Number of peaks')
                 plt.title(hist_mod + " " + tool +
-                          " reverse cumulative consensus peaks sum via number of donors")
+                          "\nreverse cumulative consensus peaks sum via number of donors")
                 plt.tight_layout()
                 pdf.savefig()
                 plt.close()
