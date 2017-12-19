@@ -82,5 +82,5 @@ RUN cd ~ && curl --location https://github.com/JetBrains-Research/zinbra/release
 
 # Install phantom peak qual tools
 RUN cd ~ && curl --location https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/\
-phantompeakqualtools/ccQualityControl.v.1.1.tar.gz && --output phantompeakqualtools.tar.gz \
+phantompeakqualtools/ccQualityControl.v.1.1.tar.gz --output phantompeakqualtools.tar.gz \
     && tar xvf phantompeakqualtools.tar.gz
