@@ -36,7 +36,7 @@ def _cli():
             for tool_index, tool in enumerate(tools):
                 plt.figure()
                 tool_new_path = folder_new / hist_mod / tool / "clean"
-                tool_old_path = folder_old / hist_mod
+                tool_old_path = folder_old / hist_mod / tool / "clean"
                 plots = []
                 for index, tool_path in enumerate([tool_new_path, tool_old_path]):
                     tracks_paths = sorted(chain(tool_path.glob("*Peak"),
