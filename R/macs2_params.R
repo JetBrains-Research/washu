@@ -2,7 +2,7 @@
 #
 # Use the following BASH script to create report.csv file required as input.
 #
-# head -1 peaks_k4me1_macs_broad_0.1/macs2_report.csv > report.csv
+# head -n 1 peaks_k4me1_macs_broad_0.1/macs2_report.csv > report.csv
 # find . -name '*report.csv' -depth 2 | xargs cat | grep -v 'sample,' | grep -v 'unique' | awk -v FS=',' '{ printf("%s,%s_NE,PS_%s_PE\n",$0,$1,$1) }' |\
 # sed -e 's#_hg19[^,]*_NE##g' -e 's#PS_[^,]*hg19_##g' -e 's#_macs2[^,]*_PE##g' >> report.csv
 

@@ -24,14 +24,14 @@ if [[ ! $GENES == *.bed ]]; then
     GENES_TSV=${GENES/gtf/sorted.tsv}
     if [ ! -f ${GENES_TSV} ]; then
         >&2 echo "Converting gtf to ${GENES_TSV}"
-        GENE_NAME_FIELD=$(cat ${GENES} | grep "chr1" | head -1 | awk '{for (i=1; i<NF; i++) {if ($i=="gene_name") print (i+1)}}')
+        GENE_NAME_FIELD=$(cat ${GENES} | grep "chr1" | head -n 1 | awk '{for (i=1; i<NF; i++) {if ($i=="gene_name") print (i+1)}}')
         cat ${GENES} |  awk -v GN=${GENE_NAME_FIELD} 'OFS="\t" {if ($3=="gene") {print $1,$4-1,$5,$GN}}' | tr -d '";' |\
          sort -k1,1 -k2,2n -T ${TMPDIR} > ${GENES_TSV}
     fi
     GENES=${GENES_TSV}
 fi
 
-COLS=$(cat $FILE | grep "chr" | head -1 | awk '{ print NF }')
+COLS=$(cat $FILE | grep "chr" | head -n 1 | awk '{ print NF }')
 bedtools closest -a ${FILE} -b ${GENES} -d |\
     awk -v COLS=$COLS '{out=$1; for (i=2;i<=COLS;i++) {out=out"\t"$i}; out=out"\t"$(COLS+4)"\t"$(COLS+5); print out; }'|\
     sort -k1,1 -k3,3n -k2,2n -T ${TMPDIR}
