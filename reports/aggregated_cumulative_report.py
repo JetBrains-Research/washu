@@ -42,7 +42,7 @@ def _cli():
                                                 tool_path.glob("*-island.bed"),
                                                 tool_path.glob("*peaks.bed")))
                     if len(tracks_paths) > 0:
-                        tracks_union = union(*[Bed(track_path) for track_path in tracks_paths])
+                        tracks_union = union(*[Bed(str(track_path)) for track_path in tracks_paths])
                         tracks_union.compute()
 
                         counts = [0] * len(tracks_paths)
