@@ -6,6 +6,31 @@ Technical pipelines
 ===================
 Technical pipelines for ChIP-Seq, RNA-Seq, RRBS processing on Portable Batch System (qsub).
 
+How do I launch the pipeline?
+--------------------------
+Follow these instructions to launch ChIP-Seq pipeline:
+* Configure environment, see **Requirements** section
+* Place all the `.fastq` files to a single `<FASTQ_FOLDER>`
+* Create `<INDEXES>` folder to store all the indexes required
+* Launch the pipeline with desired `<genome>`, e.g. `mm9` or `hg19` 
+```bash
+python pipeline_chipseq.py <FASTQ_FOLDER> <INDEXES> <genome>
+```
+
+Requirements
+------------
+* Ensure you have Python 3 installed as default interpreter 
+* Add the following to `~/.bashrc` (Linux) or `~/.bash_profile` (MacOS):
+```bash
+# Allow pipeline execution from anywhere
+export PYTHONPATH="<PATH_TO_REPOSITORY>:$PYTHONPATH"
+```
+* Configure parallelism level (when executed not on PBS):
+```bash
+# Allow up to 8 tasks to be executed simultaneously
+export WASHU_PARALLELISM=8
+```
+
 Project
 -------
 
@@ -57,15 +82,6 @@ Pipelines
 * `scripts/chipseq_diff.sh`     - Pipeline for replicated ChIP-Seq comparison using MACS2, [DiffBind](http://www.nature.com/nature/journal/v481/n7381/full/nature10730.html), 
 [ChIPDiff](https://academic.oup.com/bioinformatics/article/24/20/2344/258202/An-HMM-approach-to-genome-wide-identification-of), 
 [MANorm](https://www.ncbi.nlm.nih.gov/pubmed/22424423)
-
-
-Requirements
-------------
-Add the following to `~/.bashrc` (Linux) or `~/.bash_profile` (MacOS):
-```bash
-# Allow pipeline execution from anywhere
-export PYTHONPATH="<PATH_TO_REPOSITORY>:$PYTHONPATH"
-```
 
 Docker
 ------
