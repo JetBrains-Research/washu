@@ -31,49 +31,85 @@ def _cli():
     tools = args.tools
 
     with PdfPages(pdf_path) as pdf:
-        plt.figure(figsize=(10, 15))
+        fig1 = plt.figure(figsize=(10, 15))
+        fig2 = plt.figure(figsize=(10, 15))
         threshold_map = {"H3K27ac": 0.3, "H3K27me3": 0.2, "H3K36me3": 0.45, "H3K4me3": 0.4,
                          "H3K4me1": 0.4}
+
         for hist_index, hist_mod in enumerate(["H3K27ac", "H3K27me3", "H3K36me3", "H3K4me3",
                                                "H3K4me1"]):
-            plots = []
-            current_tools = []
+            current_tools1 = {}
+            current_tools2 = {}
             colors = ['black', 'red', 'green', 'orange']
-            ax = plt.subplot(5, 1, hist_index + 1)
-            ax2 = ax.twinx()
-            ax.set_ylabel(hist_mod + ' Total error')
-            ax2.set_ylabel("Peaks count")
-            ax2.grid(None)
-            ax2.axes.get_xaxis().set_visible(False)
+
+            ax1_1 = fig1.add_subplot(5, 1, hist_index + 1)
+            ax1_1.set_ylabel(hist_mod + ' Total error')
+
+            ax1_2 = ax1_1.twinx()
+            ax1_2.set_ylabel("Peaks count")
+            ax1_2.grid(None)
+            ax1_2.axes.get_xaxis().set_visible(False)
+
+            ax2_1 = fig2.add_subplot(5, 1, hist_index + 1)
+            ax2_1.set_ylabel(hist_mod + ' FRiP')
+
+            ax2_2 = ax2_1.twinx()
+            ax2_2.set_ylabel("Peaks count")
+            ax2_2.grid(None)
+            ax2_2.axes.get_xaxis().set_visible(False)
 
             for tool_index, tool in enumerate(tools):
-                donor_peaks_map = peaks_count_map(folder / hist_mod / tool)
-                parameters_path = folder / hist_mod / tool / "parameters.csv"
+                tool_path = folder / hist_mod / tool
+                if (tool_path / "parameters.csv").exists():
+                    donor_peaks_map = peaks_count_map(tool_path)
 
-                if parameters_path.exists():
-                    current_tools.append(tool)
-                    parameters = pd.DataFrame.from_csv(path=str(parameters_path), index_col=None,
-                                                       header=1, sep="\t")
+                    parameters = pd.DataFrame.from_csv(path=str(tool_path / "parameters.csv"),
+                                                       index_col=None, header=1, sep="\t")
                     parameters = parameters.drop_duplicates(['name', 'error'], keep='first')
                     n = len(parameters.index)
                     ind = np.arange(n)
 
-                    plt.xticks(ind, parameters["name"].values)
-                    plots.append(ax.plot(ind, parameters["error"], 'o-',
-                                         color=colors[tool_index])[0])
-                    ax2.bar(ind, [donor_peaks_map[donor] for donor in
-                                  parameters["name"].values], 0.35, alpha=0.3,
-                            color=colors[tool_index])
+                    ax1_1.set_xticks(ind)
+                    ax1_1.set_xticklabels(parameters["name"].values)
+                    current_tools1[tool] = ax1_1.plot(ind, parameters["error"], 'o-',
+                                                      color=colors[tool_index])[0]
+                    ax1_2.bar(ind, [donor_peaks_map[donor] for donor in
+                                    parameters["name"].values], 0.35, alpha=0.3,
+                              color=colors[tool_index])
 
-            plots.append(ax.plot(ind, [threshold_map[hist_mod]] * len(ind), ':', color='blue')[0])
+                    rip_files = sorted([str(f) for f in tool_path.glob("*_rip.csv")])
+                    if len(rip_files) > 0:
+                        age, frip_df = pm.calc_frip(rip_files)
 
-            for label in ax.get_xmajorticklabels():
+                        n = len(frip_df.index)
+                        ind = np.arange(n)
+
+                        names = sorted(frip_df.index, key=lambda name: (name[:2], int(name[2:])))
+                        ax2_1.set_xticks(ind)
+                        ax2_1.set_xticklabels(names)
+                        frip_df_zeros = frip_df["frip"][names]
+                        frip_df_zeros[np.isnan(frip_df_zeros)] = 0
+                        current_tools2[tool] = ax2_1.plot(ind, frip_df_zeros, 'o-',
+                                                          color=colors[tool_index])[0]
+                        ax2_2.bar(ind, [donor_peaks_map[donor] for donor in names], 0.35,
+                                  alpha=0.3, color=colors[tool_index])
+
+                current_tools1["Threshold"] = ax1_1.plot(ind, [threshold_map[hist_mod]] * len(ind),
+                                                         ':', color='blue')[0]
+
+            for label in ax1_1.get_xmajorticklabels():
+                label.set_rotation(90)
+            for label in ax2_1.get_xmajorticklabels():
                 label.set_rotation(90)
 
-            plt.legend(plots, current_tools + ["Threshold"])
+            ax1_1.legend(current_tools1.values(), current_tools1.keys())
+            ax2_1.legend(current_tools2.values(), current_tools2.keys())
 
-        plt.tight_layout()
-        save_plot(pdf)
+        fig1.tight_layout()
+        fig2.tight_layout()
+        pdf.savefig(fig1)
+        pdf.savefig(fig2)
+        plt.close()
 
 
 def peaks_count_map(path):
@@ -101,6 +137,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt  # nopep8
     from matplotlib.backends.backend_pdf import PdfPages
     from reports.bed_metrics import save_plot  # nopep8
+    import reports.peak_metrics as pm  # nopep8
     from bed.bedtrace import Bed
 
     _cli()
