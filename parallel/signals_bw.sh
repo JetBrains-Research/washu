@@ -112,7 +112,7 @@ if [[ -f ${PEAKS_FILE_BED} ]]; then
     LIBRARIES_PEAKS_SIZES=${WORK_DIR}/${PEAKS_FILE_BED##*/}.tsv
     echo "Compute libraries peaks size ${LIBRARIES_PEAKS_SIZES}"
     if [[ ! -f ${LIBRARIES_PEAKS_SIZES} ]]; then
-        cat ${REGIONS_BED} | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
+        cat ${PEAKS_FILE_BED} | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
             sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/peaks.sizes.bed4
 
         process_coverage ${TMPDIR}/peaks.sizes.bed4 "peaks.sizes" ${TMPDIR}/peaks.sizes.tsv ${WORK_DIR}
