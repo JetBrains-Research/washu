@@ -21,7 +21,8 @@ RUN ln -sf /opt/conda/envs/macs2/bin/macs2 /usr/local/bin/macs2
 
 # SICER
 RUN conda env update -q --file /root/conda_envs/root.environment.yml
-RUN cd /tmp && wget http://home.gwu.edu/~wpeng/SICER_V1.1.tgz && tar xvf SICER_V1.1.tgz && mv SICER_V1.1 /opt
+RUN cd /tmp && curl --location http://home.gwu.edu/~wpeng/SICER_V1.1.tgz --output SICER_V1.1.tgz && \
+    tar xvf SICER_V1.1.tgz && mv SICER_V1.1 /opt
 # Please refer to README for installation instructions, modify scripts, i.e.
 RUN sed -i 's#/home/data/SICER1.1#/opt/SICER_V1.1#g' /opt/SICER_V1.1/SICER/SICER.sh
 # SICER is python2 library, force it!
@@ -70,13 +71,16 @@ RUN ln -s /bin/echo /usr/bin/module
 #USER user
 
 # Download Picard tools
-RUN cd ~ && wget -q https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar
+RUN cd ~ && curl --location https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar \
+    --output picard.jar
 
 # Download ZINBRA
-RUN cd ~ && wget -q https://github.com/JetBrains-Research/zinbra/releases/download/v0.4.0/zinbra-0.4.0.jar -O zinbra.jar
+RUN cd ~ && curl --location https://github.com/JetBrains-Research/zinbra/releases/download/v0.4.0/zinbra-0.4.0.jar \
+    --output zinbra.jar
 # Alternative CI link
 # https://teamcity.jetbrains.com/repository/download/Epigenome_Zinbra/lastPinned/zinbra-0.4.0.jar?guest=1
 
 # Install phantom peak qual tools
-RUN cd ~ && wget -q https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/phantompeakqualtools/ccQualityControl.v.1.1.tar.gz
-RUN cd ~ && tar xvf ccQualityControl.v.1.1.tar.gz
+RUN cd ~ && curl --location https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/\
+phantompeakqualtools/ccQualityControl.v.1.1.tar.gz && --output phantompeakqualtools.tar.gz \
+    && tar xvf phantompeakqualtools.tar.gz
