@@ -230,6 +230,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
 
     if not ncol or not nrow:
         plt.figure(figsize=figsize)
+        g = None
     else:
         if col_label_converter or row_label_converter:
             df = df.copy()
