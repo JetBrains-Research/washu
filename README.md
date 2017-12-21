@@ -37,15 +37,15 @@ conda install --channel bioconda samtools bedtools bowtie bowtie2 fastqc sra-too
     deeptools star rseg   ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed
 ```
 * Download [Picard tools](https://github.com/broadinstitute/picard):
-```bash
-cd ~ 
-curl --location https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar --output ~/picard.jar
+```bash 
+curl --location https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar \
+    --output ~/picard.jar
 ```
 * Download and extract [Phantompeakqualtools](https://github.com/kundajelab/phantompeakqualtools):
 ```bash
-cd ~
-curl --location https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/phantompeakqualtools/ccQualityControl.v.1.1.tar.gz --output phantompeakqualtools.tar.gz 
-tar xvf phantompeakqualtools.tar.gz
+curl --location https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/phantompeakqualtools/ccQualityControl.v.1.1.tar.gz \
+    --output ~/phantompeakqualtools.tar.gz 
+tar xvf ~/phantompeakqualtools.tar.gz
 ```
 Project
 -------
