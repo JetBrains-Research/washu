@@ -85,7 +85,7 @@ def test_consensus(capfd, tmp_dir, test_data, folder, consensus_folder, percent,
     ) == res
 
     for file_suff in files_suff:
-        print("Comparing %s" % file_suff)
+        print("Comparing", file_suff)
         with open(tmp_dir + "/bed/H3K4me3" + file_suff) as act_cons_file:
             act_cons = act_cons_file.readlines()
             with open(test_data("bed/" + consensus_folder + "/" + consensus_folder + file_suff)) as\
