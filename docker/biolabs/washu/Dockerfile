@@ -77,8 +77,6 @@ RUN cd ~ && curl --location https://github.com/broadinstitute/picard/releases/do
 # Download ZINBRA
 RUN cd ~ && curl --location https://github.com/JetBrains-Research/zinbra/releases/download/v0.4.0/zinbra-0.4.0.jar \
     --output zinbra.jar
-# Alternative CI link
-# https://teamcity.jetbrains.com/repository/download/Epigenome_Zinbra/lastPinned/zinbra-0.4.0.jar?guest=1
 
 # Install phantom peak qual tools
 RUN cd ~ && curl --location https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/\
