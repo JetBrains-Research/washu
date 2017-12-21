@@ -4,16 +4,15 @@ import subprocess
 import pytest
 from test.fixtures import test_data, tmp_dir
 
-from scripts.util import find_input, lcs, macs_species
-from scripts.util import run as srun
+import scripts.util as su
 from pipeline_utils import PROJECT_ROOT_PATH, run
 
 
 def test_lcs():
-    lcs1 = lcs('UW_CD14_RO01746_k4me3_1_1_ENCFF001FYS.fastq',
-               'Broad_CD14_2_input_ENCFF000CCW.fastq')
-    lcs2 = lcs('UW_CD14_RO01746_k4me3_1_1_ENCFF001FYS.fastq',
-               'UW_CD14_input_ENCFF001HUV.fastq')
+    lcs1 = su.lcs('UW_CD14_RO01746_k4me3_1_1_ENCFF001FYS.fastq',
+                  'Broad_CD14_2_input_ENCFF000CCW.fastq')
+    lcs2 = su.lcs('UW_CD14_RO01746_k4me3_1_1_ENCFF001FYS.fastq',
+                  'UW_CD14_input_ENCFF001HUV.fastq')
     assert lcs1 < lcs2
 
 
@@ -27,7 +26,7 @@ def test_lcs():
      "jcl320_wt1_gm_bhlhe40_chipd_dna.1919_8.R1_mm10.bam"),
 ])
 def test_find_input(test_data, input, donor):
-    assert find_input(test_data("input/" + donor)) == input
+    assert su.find_input(test_data("input/" + donor)) == input
 
 
 @pytest.mark.parametrize("build,species", [
@@ -38,7 +37,7 @@ def test_find_input(test_data, input, donor):
     ("mm10", "mm"),
 ])
 def test_macs_input(build, species):
-    assert macs_species(build) == species
+    assert su.macs_species(build) == species
 
 
 @pytest.mark.parametrize("path,expected", [
@@ -114,7 +113,7 @@ wait_complete $TASKS
 
 
 def test_run_stderr(capfd):
-    stdout, stderr = srun([["bash", "-c", "echo 'error!' 1>&2"]])
+    stdout, stderr = su.run([["bash", "-c", "echo 'error!' 1>&2"]])
 
     assert stdout == b""
     assert stderr == b"error!\n"  # should be: b"error!\n"
@@ -125,9 +124,9 @@ def test_run_stderr(capfd):
 
 
 def test_run_stderr_piped(capfd):
-    stdout, stderr = srun([["echo", "ok1"],
-                           ["bash", "-c", "echo \"error!\" 1>&2"],
-                           ["echo", "ok2"]])
+    stdout, stderr = su.run([["echo", "ok1"],
+                             ["bash", "-c", "echo \"error!\" 1>&2"],
+                             ["echo", "ok2"]])
 
     out, err = capfd.readouterr()
 
@@ -139,9 +138,9 @@ def test_run_stderr_piped(capfd):
 
 
 def test_run_error_piped(capfd):
-    stdout, stderr = srun([["echo", "ok1"],
-                           ["bash", "-c", "exit 1"],
-                           ["echo", "ok2"]])
+    stdout, stderr = su.run([["echo", "ok1"],
+                             ["bash", "-c", "exit 1"],
+                             ["echo", "ok2"]])
 
     out, err = capfd.readouterr()
 
@@ -166,3 +165,31 @@ Exception ValueError: 'cannot resize this array: it does not own its data' in ..
     out, _err = capfd.readouterr()
     assert _err.replace(tmp_dir, ".") == "Local tasks WASHU_PARALLELISM=8\n"
     assert out.replace(tmp_dir, ".") == "bash ./foo.sh\n"
+
+
+def test_is_od():
+    assert su.is_od("FOO:OD1") is True
+
+
+def test_is_yd():
+    assert su.is_yd("FOO:YD1") is True
+
+
+@pytest.mark.parametrize("value,expected", [
+    ("foo_input_boo", False),
+    ("foo_od.input_boo", True),
+    ("foo_input.yd_boo", True),
+])
+def test_is_input(value, expected):
+    assert su.is_input(value) == expected
+
+
+@pytest.mark.parametrize("value,expected", [
+    ("foo.od17.boo", "od17"),
+    ("foo.OD17.boo", "OD17"),
+    ("foo.YD17.boo", "YD17"),
+    ("foo.OD_OD5.boo", "OD5"),
+    ("foo.ODS.boo", None),
+])
+def test_is_input(value, expected):
+    assert su.age(value) == expected
