@@ -6,12 +6,12 @@ from pathlib import Path
 import pandas as pd
 import pytest
 from test.fixtures import test_data, tmp_dir
-
+import matplotlib.pyplot as plt
 
 from reports.bed_metrics import bed_metric_table, color_annotator_age, \
     plot_metric_heatmap, _run_metric_jaccard, _run_metric_intersection, \
     label_converter_donor_and_tool, color_annotator_chain, \
-    color_annotator_outlier  # nopep8
+    color_annotator_outlier, save_plot  # nopep8
 
 
 @pytest.mark.parametrize("jaccard,fname,swap_ab", [
@@ -264,6 +264,47 @@ def test_plot_ann_custom_width(tmp_dir, test_data):
                         row_color_annotator=col_fun("2"),
                         row_colors_ratio=0.2
                         )
+
+    assert_image(expected, result)
+
+
+def test_plot_ann_custom_ticks(tmp_dir, test_data):
+    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
+
+    expected = test_data("metrics/img_anns_custom_tics.png")
+    result = "{}/{}".format(tmp_dir, "img_anns_custom_tics.png")
+
+    def col_fun(s):
+        def inner(label):
+            has_a_color = "green" if ("a" in label) else "red"
+            has_str = "white" if (s in label) else "gray"
+            return (("has_a", has_a_color), ("has_" + s, has_str))
+        return inner
+
+    g = plot_metric_heatmap("My title 2", df,
+                            show_or_save_plot=False,
+                            col_color_annotator=col_fun("1"),
+                            row_color_annotator=col_fun("2"),
+                            )
+
+    ticks = [0.5, 2.5]
+    g.ax_heatmap.set_xticks(ticks)
+    g.ax_heatmap.set_xticklabels(["h1", "h2"], rotation="horizontal",
+                                 horizontalalignment='center')
+    g.ax_heatmap.set_yticks(ticks)
+    g.ax_heatmap.set_yticklabels(["h1", "h2"],
+                                 rotation="vertical", verticalalignment='center')
+
+    plt.setp(g.ax_heatmap.get_yticklabels(), rotation=90)
+
+    # Turn off annotations
+    g.ax_col_colors.set_yticks([])
+    g.ax_row_colors.set_xticks([])
+
+    # Turn off Y lables:
+    g.ax_heatmap.set_yticks([])
+
+    save_plot(result)
 
     assert_image(expected, result)
 
