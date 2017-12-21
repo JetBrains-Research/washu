@@ -284,7 +284,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
         plt.setp(g.ax_heatmap.get_xticklabels(), rotation=-90)
         if g.row_colors is not None:
             plt.setp(g.ax_row_colors.get_xticklabels(), rotation=-90)
-            plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
+        plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
 
     plt.title(title)
     adjustments = adjustments or {}
