@@ -67,7 +67,8 @@ def _cli():
         anns.append(bm.color_annotator_outlier(outliers_df, hist_mod))
     annotator = bm.color_annotator_chain(*anns)
 
-    peaks_paths = sorted(chain(folder_path.glob("*golden*consensus*"),
+    peaks_paths = sorted(chain(folder_path.glob("*sicer*consensus*"),
+                               folder_path.glob("*macs2*consensus*"),
                                folder_path.glob("*zinbra*consensus*"), folder_path.glob("*Peak"),
                                folder_path.glob("*-island.bed"), folder_path.glob("*peaks.bed")),
                          key=loi.donor_order_id)
