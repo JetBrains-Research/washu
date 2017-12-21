@@ -81,6 +81,7 @@ def _cli():
                 #               yd_od_int_bed, threads_num, pdf, (10, 10), 10)
 
                 print("Calculating metric #1 indexes")
+                sns.set(font_scale=0.75)
                 g = plot_metric_heatmap("Intersection metric", df, figsize=(14, 14), save_to=pdf,
                                         row_label_converter=label_converter_donor_and_tool,
                                         col_label_converter=label_converter_donor_and_tool,
@@ -122,6 +123,7 @@ if __name__ == "__main__":
     project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
     sys.path.insert(0, project_root)
 
+    import seaborn as sns  # nopep8
     import reports.loci_of_interest as loi
     import matplotlib.pyplot as plt  # nopep8
     from matplotlib.backends.backend_pdf import PdfPages  # nopep8
