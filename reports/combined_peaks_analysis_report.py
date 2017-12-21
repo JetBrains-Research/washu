@@ -9,9 +9,9 @@ from pathlib import Path
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
 Usage:
-    combined_peaks_analysis_report.py [first peaks folder] [second peaks folder] [output pdf path]
+    combined_peaks_analysis_report.py [input folder] [output folder] [first tool] [second tool]
 
-Script creates pdf report with ChIP-seq peaks statistics:
+Script creates pdf reports with ChIP-seq peaks statistics:
  1) median peak consensus bar plot
  2) Metric #1 heatmap
 """
@@ -52,33 +52,33 @@ def _cli():
         if len(tracks_paths1) > 0 and len(tracks_paths2) > 0:
             tracks_paths = tracks_paths1 + tracks_paths2
 
-            # tracks_names = list({str(tracks_path) for tracks_path in tracks_paths})
-            # od_paths_map = {re.findall('OD\\d+', track_name)[0] + _detect_tool(track_name):
-            #                 track_name for track_name in tracks_names if re.match('.*OD\\d+.*',
-            #                                                                       track_name)}
-            # yd_paths_map = {re.findall('YD\\d+', track_name)[0] + _detect_tool(track_name):
-            #                 track_name for track_name in tracks_names if re.match('.*YD\\d+.*',
-            #                                                                       track_name)}
-            # hist_mod = re.match(".*(h3k\d{1,2}(?:me\d|ac)).*", str(peaks_folder1),
-            #                     flags=re.IGNORECASE).group(1)
+            tracks_names = list({str(tracks_path) for tracks_path in tracks_paths})
+            od_paths_map = {re.findall('OD\\d+', track_name)[0] + _detect_tool(track_name):
+                            track_name for track_name in tracks_names if re.match('.*OD\\d+.*',
+                                                                                  track_name)}
+            yd_paths_map = {re.findall('YD\\d+', track_name)[0] + _detect_tool(track_name):
+                            track_name for track_name in tracks_names if re.match('.*YD\\d+.*',
+                                                                                  track_name)}
+            hist_mod = re.match(".*(h3k\d{1,2}(?:me\d|ac)).*", str(peaks_folder1),
+                                flags=re.IGNORECASE).group(1)
 
             df = bed_metric_table(tracks_paths, tracks_paths, threads=threads_num)
             for donor in outliers_df.loc[:, hist_mod].index:
                 if outliers_df.loc[:, hist_mod][donor] == 1:
-                    # _remove_donor_from_map(donor, od_paths_map)
-                    # _remove_donor_from_map(donor, yd_paths_map)
+                    _remove_donor_from_map(donor, od_paths_map)
+                    _remove_donor_from_map(donor, yd_paths_map)
                     for df_index in df.index:
                         if (donor + "_") in df_index or (donor + ".") in df_index:
                             del df[df_index]
                             df = df.drop(df_index)
 
             with PdfPages(pdf_path) as pdf:
-                # print("Calculating median consensus")
-                # od_consensus_bed, yd_consensus_bed, yd_od_int_bed = \
-                #     calc_consensus_file(list(od_paths_map.values()), list(yd_paths_map.values()),
-                #                         percent=50)
-                # bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed,
-                #               yd_od_int_bed, threads_num, pdf, (10, 10), 10)
+                print("Calculating median consensus")
+                od_consensus_bed, yd_consensus_bed, yd_od_int_bed = \
+                    calc_consensus_file(list(od_paths_map.values()), list(yd_paths_map.values()),
+                                        percent=50)
+                bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed,
+                              yd_od_int_bed, threads_num, pdf, (10, 10), 10)
 
                 print("Calculating metric #1 indexes")
                 sns.set(font_scale=0.75)
@@ -129,6 +129,6 @@ if __name__ == "__main__":
     from matplotlib.backends.backend_pdf import PdfPages  # nopep8
     from reports.bed_metrics import bed_metric_table, plot_metric_heatmap, \
         label_converter_donor_and_tool, save_plot  # nopep8
-    # from reports.peak_metrics import calc_consensus_file, bar_consensus  # nopep8
+    from reports.peak_metrics import calc_consensus_file, bar_consensus  # nopep8
 
     _cli()
