@@ -245,6 +245,29 @@ def test_plot_multiple_col_fun(tmp_dir, test_data, fdf, fname, col, row):
     assert_image(expected, result)
 
 
+def test_plot_ann_custom_width(tmp_dir, test_data):
+    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
+
+    expected = test_data("metrics/img_anns_custom_width.png")
+    result = "{}/{}".format(tmp_dir, "img_anns_custom_width.png")
+
+    def col_fun(s):
+        def inner(label):
+            has_a_color = "green" if ("a" in label) else "red"
+            has_str = "white" if (s in label) else "gray"
+            return (("has_a", has_a_color), ("has_" + s, has_str))
+        return inner
+
+    plot_metric_heatmap("My title 2", df, save_to=result,
+                        col_color_annotator=col_fun("1"),
+                        col_colors_ratio=0.025,
+                        row_color_annotator=col_fun("2"),
+                        row_colors_ratio=0.2
+                        )
+
+    assert_image(expected, result)
+
+
 @pytest.mark.parametrize("label,value", [
     ("OD1", "OD1"),
     ("OD1_foo.broadPeak", "OD1_macs2"),
