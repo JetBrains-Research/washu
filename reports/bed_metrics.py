@@ -230,6 +230,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
 
     if not ncol or not nrow:
         plt.figure(figsize=figsize)
+        plt.title(title)
         g = None
     else:
         if col_label_converter or row_label_converter:
@@ -286,7 +287,11 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
             plt.setp(g.ax_row_colors.get_xticklabels(), rotation=-90)
         plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
 
-    plt.title(title)
+        if col_color_annotator:
+            g.ax_col_colors.set_title(title)
+        else:
+            g.ax_heatmap.set_title(title)
+
     adjustments = adjustments or {}
     plt.subplots_adjust(left=adjustments.get('left', 0.2),
                         right=adjustments.get('right', 0.8),
