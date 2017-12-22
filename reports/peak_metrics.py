@@ -315,3 +315,13 @@ def _calculate_lengths(track_path, bins):
     for bin_index in np.digitize(lengths, extended_bins):
         counts[bin_index - 1] += 1
     return track_path, lengths, max(counts[:len(bins)])
+
+
+def detect_tool(path):
+    if "Peak" in path:
+        return "_macs2"
+    if "-island.bed" in path:
+        return "_sicer"
+    if "_peaks.bed" in path:
+        return "_zinbra"
+    return "_unknown"

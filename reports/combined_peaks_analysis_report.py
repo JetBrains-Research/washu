@@ -1,6 +1,6 @@
 import os
-import sys
 import re
+import sys
 import datetime
 import argparse
 import pandas as pd
@@ -26,7 +26,6 @@ def _cli():
     parser.add_argument("output_folder", help="Output folder for pdf")
     parser.add_argument("tool1", help="First tool")
     parser.add_argument("tool2", help="Second tool")
-
     parser.add_argument('-p', '--threads', help="Threads number for parallel processing",
                         type=int, default=30)
 
@@ -53,15 +52,12 @@ def _cli():
             tracks_paths = tracks_paths1 + tracks_paths2
 
             tracks_names = list({str(tracks_path) for tracks_path in tracks_paths})
-            od_paths_map = {re.findall('OD\\d+', track_name)[0] + _detect_tool(track_name):
+            od_paths_map = {re.findall('OD\\d+', track_name)[0] + detect_tool(track_name):
                             track_name for track_name in tracks_names if re.match('.*OD\\d+.*',
                                                                                   track_name)}
-            yd_paths_map = {re.findall('YD\\d+', track_name)[0] + _detect_tool(track_name):
+            yd_paths_map = {re.findall('YD\\d+', track_name)[0] + detect_tool(track_name):
                             track_name for track_name in tracks_names if re.match('.*YD\\d+.*',
                                                                                   track_name)}
-            hist_mod = re.match(".*(h3k\d{1,2}(?:me\d|ac)).*", str(peaks_folder1),
-                                flags=re.IGNORECASE).group(1)
-
             df = bed_metric_table(tracks_paths, tracks_paths, threads=threads_num)
             for donor in outliers_df.loc[:, hist_mod].index:
                 if outliers_df.loc[:, hist_mod][donor] == 1:
@@ -97,16 +93,6 @@ def _cli():
                 desc['ModDate'] = datetime.datetime.today()
 
 
-def _detect_tool(path):
-    if "Peak" in path:
-        return "_macs2"
-    if "-island.bed" in path:
-        return "_sicer"
-    if "_peaks.bed" in path:
-        return "_zinbra"
-    return "_unknown"
-
-
 def _remove_donor_from_map(donor, paths_map):
     for path_key in list(paths_map.keys()):
         if (donor + "_") in path_key:
@@ -129,6 +115,6 @@ if __name__ == "__main__":
     from matplotlib.backends.backend_pdf import PdfPages  # nopep8
     from reports.bed_metrics import bed_metric_table, plot_metric_heatmap, \
         label_converter_donor_and_tool, save_plot  # nopep8
-    from reports.peak_metrics import calc_consensus_file, bar_consensus  # nopep8
+    from reports.peak_metrics import calc_consensus_file, bar_consensus, detect_tool  # nopep8
 
     _cli()
