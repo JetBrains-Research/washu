@@ -14,27 +14,27 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # nopep8
 import seaborn as sns  # nopep8
 from scripts.util import age, is_od_or_yd  # nopep8
-from bed.bedtrace import intersect, Bed, metapeaks, union  # nopep8
+from bed.bedtrace import intersect, Bed, metapeaks, union, consensus  # nopep8
 from reports.bed_metrics import save_plot  # nopep8
 
 
-def venn_consensus(od_consensus_bed, yd_consensus_bed, scale, save_to=None):
+def venn_consensus(od_consensus_bed, yd_consensus_bed, percent, save_to=None):
     """
     Plots venn diagram for consensus of selected scale:
 
     :param od_consensus_bed: OD bed with od group consensus
     :param yd_consensus_bed: YD bed with yd group consensus
-    :param scale: 1/scale is ratio of tack number needed for consensus
+    :param percent: percent of tracks count needed for consensus
     :param save_to: Object for plots saving
     """
     plt.figure()
-    plt.title("Required consensus: %.2f%%" % (100.0 / scale))
+    plt.title("Required consensus: %.2f%%" % percent)
     metapeaks({'Young donors': yd_consensus_bed, 'Old donors': od_consensus_bed})
     save_plot(save_to)
 
 
 def bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed, yd_od_int_bed,
-                  threads_num, save_to=None):
+                  threads_num, save_to=None, figsize=(10, 10), fontsize=6):
     """
     Plots venn diagram and bar plot for consensus of selected scale:
 
@@ -43,44 +43,49 @@ def bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed
     :param od_consensus_bed: OD bed with od group consensus
     :param yd_consensus_bed: YD bed with yd group consensus
     :param yd_od_int_bed: BED with intersection of od and yd groups consensuses
+    :param figsize: Plot figure size
     :param save_to: Object for plots saving
+    :param fontsize: Size of xlabels on plot
     :param threads_num: Threads number for parallel execution
     """
     pool = multiprocessing.Pool(processes=threads_num)
     n = len(yd_paths_map) + len(od_paths_map)
     ind = np.arange(n)
 
-    yd_names, yd_common, yd_own, yd_opposite, yd_personal = zip(*pool.map(
-        functools.partial(groups_sizes, common_bed=yd_od_int_bed,
-                          own_group_bed=yd_consensus_bed,
+    yd_result = pool.map(
+        functools.partial(groups_sizes, common_bed=yd_od_int_bed, own_group_bed=yd_consensus_bed,
                           opposite_group_bed=od_consensus_bed), sorted(yd_paths_map.items(),
-                                                                       key=operator.itemgetter(0))))
-    od_names, od_common, od_own, od_opposite, od_personal = zip(*pool.map(
-        functools.partial(groups_sizes, common_bed=yd_od_int_bed,
-                          own_group_bed=od_consensus_bed,
+                                                                       key=operator.itemgetter(0)))
+    od_result = pool.map(
+        functools.partial(groups_sizes, common_bed=yd_od_int_bed, own_group_bed=od_consensus_bed,
                           opposite_group_bed=yd_consensus_bed), sorted(od_paths_map.items(),
-                                                                       key=operator.itemgetter(0))))
+                                                                       key=operator.itemgetter(0)))
+    result = sorted(yd_result + od_result, key=donor_order_id)
+    result_columns = list(zip(*result))
 
-    common_peaks = yd_common + od_common
-    group_own = yd_own + od_own
-    group_opposite = yd_opposite + od_opposite
-
-    plt.figure()
+    plt.figure(figsize=figsize)
     width = 0.35
-    p1 = plt.bar(ind, common_peaks, width, color='green')
-    p2 = plt.bar(ind, group_own, width, bottom=[yd_od_int_bed.count()] * n,
-                 color='blue')
-    p3 = plt.bar(ind, group_opposite, width, bottom=[yd_od_int_bed.count() +
-                                                     max(group_own)] * n, color='orange')
-    p4 = plt.bar(ind, yd_personal + od_personal, width,
-                 bottom=[yd_od_int_bed.count() + max(group_own) +
-                         max(group_opposite)] * n, color='black')
+    p1 = plt.bar(ind, result_columns[1], width, color='green')
+    p2 = plt.bar(ind, result_columns[2], width, bottom=[yd_od_int_bed.count()] * n, color='blue')
+    p3 = plt.bar(ind, result_columns[3], width, bottom=[yd_od_int_bed.count() +
+                                                        max(result_columns[2])] * n, color='orange')
+    p4 = plt.bar(ind, result_columns[4], width, bottom=[yd_od_int_bed.count() +
+                                                        max(result_columns[2]) +
+                                                        max(result_columns[3])] * n, color='black')
     plt.ylabel('Peaks count')
-    plt.xticks(ind, yd_names + od_names, rotation=90)
+    plt.xticks(ind, result_columns[0], rotation=90, fontsize=fontsize)
     plt.legend((p1[0], p2[0], p3[0], p4[0]),
                ('Common', 'Own Group', 'Opposite Group', 'Individual'))
     plt.tight_layout()
     save_plot(save_to)
+
+
+def donor_order_id(donor_data):
+    chunks = donor_data[0].split('_')
+    donor_id = chunks[0]
+    if len(chunks) > 1:
+        return chunks[1], donor_id[:2], int(donor_id[2:])
+    return donor_id
 
 
 def calc_consensus(od_paths_map, yd_paths_map, scale):
@@ -121,6 +126,27 @@ def calc_consensus(od_paths_map, yd_paths_map, scale):
     return od_consensus_bed, yd_consensus_bed, yd_od_int_bed
 
 
+def calc_consensus_file(od_files_paths, yd_files_paths, count=0, percent=0):
+    od_cons = consensus(od_files_paths, count, percent)
+    yd_cons = consensus(yd_files_paths, count, percent)
+
+    od_consensus_path = tempfile.NamedTemporaryFile(mode='wb', suffix='.bed', prefix='od_consensus',
+                                                    delete=False)
+    yd_consensus_path = tempfile.NamedTemporaryFile(mode='wb', suffix='.bed', prefix='yd_consensus',
+                                                    delete=False)
+    od_consensus_path.write(od_cons)
+    yd_consensus_path.write(yd_cons)
+    od_consensus_path.close()
+    yd_consensus_path.close()
+
+    od_consensus_bed = Bed(od_consensus_path.name)
+    yd_consensus_bed = Bed(yd_consensus_path.name)
+    yd_od_int_bed = intersect(od_consensus_bed, yd_consensus_bed)
+    yd_od_int_bed.compute()
+
+    return od_consensus_bed, yd_consensus_bed, yd_od_int_bed
+
+
 def groups_sizes(entry, common_bed, own_group_bed, opposite_group_bed):
     """
     Count sizes of common, own group, opposite group and personal peaks:
@@ -131,10 +157,11 @@ def groups_sizes(entry, common_bed, own_group_bed, opposite_group_bed):
     :param opposite_group_bed: Bed file opposite group peaks
     :return Donor name and number of peaks in common, own group, opposite group and personal
     """
-    common = intersect(entry[1], common_bed).count()
-    own_group = intersect(entry[1], own_group_bed).count() - common
-    opposite_group = intersect(entry[1], opposite_group_bed).count() - common
-    personal = entry[1].count() - common - own_group - opposite_group
+    current = Bed(entry[1])
+    common = intersect(current, common_bed).count()
+    own_group = intersect(current, own_group_bed).count() - common
+    opposite_group = intersect(current, opposite_group_bed).count() - common
+    personal = current.count() - common - own_group - opposite_group
     return entry[0], common, own_group, opposite_group, personal
 
 
@@ -288,3 +315,13 @@ def _calculate_lengths(track_path, bins):
     for bin_index in np.digitize(lengths, extended_bins):
         counts[bin_index - 1] += 1
     return track_path, lengths, max(counts[:len(bins)])
+
+
+def detect_tool(path):
+    if "Peak" in path:
+        return "_macs2"
+    if "-island.bed" in path:
+        return "_sicer"
+    if "_peaks.bed" in path:
+        return "_zinbra"
+    return "_unknown"
