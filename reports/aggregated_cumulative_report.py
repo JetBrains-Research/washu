@@ -1,18 +1,17 @@
 import os
 import sys
-import re
-from pathlib import Path
-
 import argparse
 import numpy as np
-from itertools import chain
-
+import pandas as pd
+from pathlib import Path
 
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
 Script creates pdf report with cumulative consensus plot for selected tools
 (all histone modifications).
 """
+outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv"
+outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="donor")
 
 
 def _cli():
@@ -34,19 +33,20 @@ def _cli():
         for hist_index, hist_mod in enumerate(["H3K27ac", "H3K27me3", "H3K36me3", "H3K4me3",
                                                "H3K4me1"]):
             for tool_index, tool in enumerate(tools):
-                plt.figure()
-                tool_new_path = folder_new / hist_mod / tool / "clean"
-                tool_old_path = folder_old / hist_mod / tool / "clean"
                 plots = []
+                tool_new_path = folder_new / hist_mod / tool
+                tool_old_path = folder_old / hist_mod / tool
+                filter_donors = set(outliers_df[outliers_df[hist_mod] == 0].index.tolist())
+
+                plt.figure()
                 for index, tool_path in enumerate([tool_new_path, tool_old_path]):
-                    tracks_paths = sorted(chain(tool_path.glob("*Peak"),
-                                                tool_path.glob("*-island.bed"),
-                                                tool_path.glob("*peaks.bed")))
-                    if len(tracks_paths) > 0:
-                        tracks_union = union(*[Bed(str(track_path)) for track_path in tracks_paths])
+                    tracks_paths = collect_peaks_in_folder(tool_path)
+                    filter_paths = [p for p in tracks_paths if age(p.name) in filter_donors]
+                    if len(filter_paths) > 0:
+                        tracks_union = union(*[Bed(str(p)) for p in filter_paths])
                         tracks_union.compute()
 
-                        counts = [0] * len(tracks_paths)
+                        counts = [0] * len(filter_paths)
                         for line in tracks_union.cat().split('\n'):
                             if line != '':
                                 parts = line.split("\t")
@@ -56,7 +56,7 @@ def _cli():
                         counts_cumulative = list(np.cumsum(counts))
                         counts_cumulative.reverse()
 
-                        plots.append(plt.plot(range(1, len(tracks_paths) + 1), counts_cumulative,
+                        plots.append(plt.plot(range(1, len(filter_paths) + 1), counts_cumulative,
                                               label="", color=colors[index])[0])
 
                 plt.legend(plots, [tool + " tuned", tool + " default"])
@@ -67,18 +67,6 @@ def _cli():
                 plt.tight_layout()
                 pdf.savefig()
                 plt.close()
-
-
-def peaks_count_map(path):
-    peaks_paths = sorted(chain(path.glob("*Peak"), path.glob("*-island.bed"),
-                               path.glob("*peaks.bed")))
-    peaks_count = {}
-
-    for peak_path in peaks_paths:
-        match = re.match(".*([yo]d\d+).*", str(peak_path), flags=re.IGNORECASE)
-        if match:
-            peaks_count[match.group(1)] = Bed(str(peak_path)).count()
-    return peaks_count
 
 
 if __name__ == "__main__":
@@ -93,7 +81,8 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt  # nopep8
     from matplotlib.backends.backend_pdf import PdfPages
-    from bed.bedtrace import Bed
-    from bed.bedtrace import union  # nopep8
+    from scripts.util import age
+    from bed.bedtrace import Bed, union  # nopep8
+    from reports.loci_of_interest import collect_peaks_in_folder
 
     _cli()

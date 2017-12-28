@@ -90,7 +90,7 @@ def label_converter_shorten_loci(name):
     return name
 
 
-def _collect_peaks_in_folder(peaks_root):
+def collect_peaks_in_folder(peaks_root):
     return sorted(chain(peaks_root.glob("*_peaks.bed"),
                         peaks_root.glob("*-island.bed"),
                         peaks_root.glob("*.*Peak")),
@@ -101,7 +101,7 @@ def _collect_zinbra_peaks(zinbra_peaks_root):
     zinbra_peaks = {}
     for folder in zinbra_peaks_root.iterdir():
         if folder.is_dir() and folder.name.startswith("H"):
-            zinbra_peaks[folder.name] = _collect_peaks_in_folder(folder)
+            zinbra_peaks[folder.name] = collect_peaks_in_folder(folder)
 
     return zinbra_peaks
 
@@ -114,8 +114,8 @@ def _collect_golden_peaks(golden_peaks_root, exclude_outliers):
             # TODO: temporary solution while directories layout not fixed
             if (folder / sub_folder).exists():
                 # legacy
-                golden_peaks[folder.name] = _collect_peaks_in_folder(folder / sub_folder)
+                golden_peaks[folder.name] = collect_peaks_in_folder(folder / sub_folder)
             else:
                 # new version
-                golden_peaks[folder.name] = _collect_peaks_in_folder(folder)
+                golden_peaks[folder.name] = collect_peaks_in_folder(folder)
     return golden_peaks

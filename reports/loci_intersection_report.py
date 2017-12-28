@@ -74,7 +74,7 @@ def _cli():
                         # We decided to ignore Macs2 narrow
                         continue
 
-                    peaks = loi._collect_peaks_in_folder(tool_dir)
+                    peaks = loi.collect_peaks_in_folder(tool_dir)
                     if peaks:
                         peaks_map[tool][hist] = peaks
             tools_for_stat_test = sorted(peaks_map.keys())
@@ -99,7 +99,7 @@ def _cli():
     else:
         tool = "tool"
         peaks_map = {tool: {
-            "histmod": loi._collect_peaks_in_folder(Path(args.peaks))
+            "histmod": loi.collect_peaks_in_folder(Path(args.peaks))
         }}
         tools_for_stat_test = [tool]
 

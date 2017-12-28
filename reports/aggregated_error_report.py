@@ -1,6 +1,6 @@
 import os
-import sys
 import re
+import sys
 import pandas as pd
 from pathlib import Path
 
@@ -136,7 +136,6 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt  # nopep8
     from matplotlib.backends.backend_pdf import PdfPages
-    from reports.bed_metrics import save_plot  # nopep8
     import reports.peak_metrics as pm  # nopep8
     from bed.bedtrace import Bed
 
