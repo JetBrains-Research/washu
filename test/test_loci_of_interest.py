@@ -165,7 +165,7 @@ def test_collect_peaks_in_folder(tmp_path, relative_path, selected):
     file = peaks_root / relative_path
     file.touch()
 
-    res = loi._collect_peaks_in_folder(peaks_root)
+    res = loi.collect_peaks_in_folder(peaks_root)
     assert selected == (file in res)
 
 
@@ -185,7 +185,7 @@ def test_collect_peaks_in_folder_sorted(tmp_path):
     for f in files:
         f.touch()
 
-    res = loi._collect_peaks_in_folder(peaks_root)
+    res = loi.collect_peaks_in_folder(peaks_root)
     print([f.name for f in res])
     assert ['OD1_k27ac_hg19_broad_peaks.broadPeak', 'OD4_k4me3_hg19_fdr_peaks.narrowPeak',
             'OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed', 'OD10_k27ac_hg19_broad_peaks.broadPeak',
