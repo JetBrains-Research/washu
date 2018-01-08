@@ -41,6 +41,10 @@ def process(data_path, sizes_path, peaks_sizes_path, post_process):
     if not processing_chipseq:
         return
 
+    norm_path = re.sub('.tsv', '_norm.tsv', data_path)
+    process_norm(norm_path, data, sizes_path, peaks_sizes_path)
+    post_process(norm_path)
+
     print('Processing RPM normalization')
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     sizes_pm = sizes / 1000000
@@ -104,6 +108,42 @@ def process_quantile(path, df_raw):
                                                     df_raw[df_raw.columns[0]])
     df_raw.to_csv(path, sep='\t')
     print('{} to {}'.format('Saved QUANTILE', path))
+
+
+def process_norm(path, data, sizes_path, peaks_sizes_path):
+    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'tags'), index_col='name')
+    peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
+                              index_col='name')
+
+    counts = pd.merge(sizes, peaks_sizes, left_index=True, right_index=True)
+
+    counts['input_tags'] = counts.loc['OD_input_unique_tags', 'tags']
+    counts['input_tags_in_peaks'] = counts.loc['OD_input_unique_tags', 'tags_in_peaks']
+
+    counts = counts[~ counts.index.str.contains("input")]
+
+    no_peaks_coverages = counts['tags'] - counts['tags_in_peaks']
+    no_peaks_input_coverages = counts['input_tags'] - counts['input_tags_in_peaks']
+
+    input_coef = no_peaks_coverages / no_peaks_input_coverages
+    counts['input_coef'] = input_coef
+
+    counts['data'] = counts['tags_in_peaks'] - input_coef * counts['input_tags_in_peaks']
+
+    mean_count = np.mean(counts['data'])
+
+    df_raw = pd.pivot_table(data, index=['chr', 'start', 'end'],
+                            columns='name',
+                            values='coverage',
+                            fill_value=0)
+
+    for column in list(df_raw):
+        if "input" not in column:
+            v = df_raw[column] - input_coef[column] * df_raw["OD_input_unique_tags"]
+            df_raw[column] = np.maximum(0, v * mean_count / counts['data'][column])
+
+    df_raw.to_csv(path, sep='\t')
+    print('{} to {}'.format('Saved norm', path))
 
 
 TMM_R_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../R/tmm.R'
