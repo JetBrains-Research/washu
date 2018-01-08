@@ -41,10 +41,6 @@ def process(data_path, sizes_path, peaks_sizes_path, post_process):
     if not processing_chipseq:
         return
 
-    norm_path = re.sub('.tsv', '_norm.tsv', data_path)
-    process_norm(norm_path, data, sizes_path, peaks_sizes_path)
-    post_process(norm_path)
-
     print('Processing RPM normalization')
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     sizes_pm = sizes / 1000000
@@ -67,6 +63,11 @@ def process(data_path, sizes_path, peaks_sizes_path, post_process):
 
     if not (peaks_sizes_path and os.path.exists(peaks_sizes_path)):
         return
+
+    print('Processing peaks based normalization')
+    norm_path = re.sub('.tsv', '_norm.tsv', data_path)
+    process_norm(norm_path, data, sizes_path, peaks_sizes_path)
+    post_process(norm_path)
 
     print('Processing RPM_PEAKS normalization')
     peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'sizes_peaks_pm'),
