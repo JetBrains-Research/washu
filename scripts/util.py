@@ -51,11 +51,13 @@ YOUNG = Age('Y', 'red', '')
 
 
 def is_od_input(c):
+    c = re.sub(".*/", "", c)
     return re.match('.*input.*od.*', str(c), flags=re.IGNORECASE) is not None or \
            re.match('.*od.*input.*', str(c), flags=re.IGNORECASE) is not None
 
 
 def is_yd_input(c):
+    c = re.sub(".*/", "", c)
     return re.match('.*input.*yd.*', str(c), flags=re.IGNORECASE) is not None or \
            re.match('.*yd.*input.*', str(c), flags=re.IGNORECASE) is not None
 
