@@ -69,7 +69,7 @@ def _cli():
 
 
 def save_cons_to_file(cons, path):
-    file = open(path, 'wb')
+    file = open(str(path), 'wb')
     file.write(cons)
     file.close()
 
