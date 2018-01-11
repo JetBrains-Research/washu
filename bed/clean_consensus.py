@@ -18,16 +18,18 @@ def _cli():
     parser = argparse.ArgumentParser(description=help_data,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("peaks", help="Peaks folder")
+    parser.add_argument("output", help="Output folder")
     parser.add_argument("tools", nargs='*', help="Tools folders")
 
     args = parser.parse_args()
-    folder = Path(args.peaks)
+    peaks_path = Path(args.peaks)
+    output_path = Path(args.output)
     tools = args.tools
 
     for hist_mod in ["H3K27ac", "H3K27me3", "H3K36me3", "H3K4me3", "H3K4me1"]:
         for tool in tools:
             print("Processing {} {}".format(hist_mod, tool))
-            tool_path = folder / hist_mod / tool
+            tool_path = peaks_path / hist_mod / tool
             tracks_paths = sorted({tool_path / file for file in os.listdir(str(tool_path)) if
                                    re.match('.*(?:_peaks.bed|-island.bed|Peak)$', file)},
                                   key=loi.donor_order_id)
@@ -48,24 +50,24 @@ def _cli():
 
             median_cons = consensus(list(od_paths_map.values()) + list(yd_paths_map.values()), 0,
                                     50)
-            save_cons_to_file(median_cons, tool_path / (hist_mod + "_" + tool +
-                                                        "_median_consensus.bed"))
+            save_cons_to_file(median_cons, output_path / (hist_mod + "_" + tool +
+                                                          "_median_consensus.bed"))
             od_median_cons = consensus(od_paths_map.values(), 0, 50)
-            save_cons_to_file(od_median_cons, tool_path / (hist_mod + "_" + tool +
-                                                           "_ODS_median_consensus.bed"))
+            save_cons_to_file(od_median_cons, output_path / (hist_mod + "_" + tool +
+                                                             "_ODS_median_consensus.bed"))
             yd_median_cons = consensus(yd_paths_map.values(), 0, 50)
-            save_cons_to_file(yd_median_cons, tool_path / (hist_mod + "_" + tool +
-                                                           "_YDS_median_consensus.bed"))
+            save_cons_to_file(yd_median_cons, output_path / (hist_mod + "_" + tool +
+                                                             "_YDS_median_consensus.bed"))
 
             weak_cons = consensus(list(od_paths_map.values()) + list(yd_paths_map.values()), 2, 0)
-            save_cons_to_file(weak_cons, tool_path / (hist_mod + "_" + tool +
-                                                      "_weak_consensus.bed"))
+            save_cons_to_file(weak_cons, output_path / (hist_mod + "_" + tool +
+                                                        "_weak_consensus.bed"))
             od_weak_cons = consensus(od_paths_map.values(), 2, 0)
-            save_cons_to_file(od_weak_cons, tool_path / (hist_mod + "_" + tool +
-                                                         "_ODS_weak_consensus.bed"))
+            save_cons_to_file(od_weak_cons, output_path / (hist_mod + "_" + tool +
+                                                           "_ODS_weak_consensus.bed"))
             yd_weak_cons = consensus(yd_paths_map.values(), 2, 0)
-            save_cons_to_file(yd_weak_cons, tool_path / (hist_mod + "_" + tool +
-                                                         "_YDS_weak_consensus.bed"))
+            save_cons_to_file(yd_weak_cons, output_path / (hist_mod + "_" + tool +
+                                                           "_YDS_weak_consensus.bed"))
 
 
 def save_cons_to_file(cons, path):
