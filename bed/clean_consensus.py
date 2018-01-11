@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import argparse
 import pandas as pd
 from pathlib import Path
@@ -74,6 +75,10 @@ def save_cons_to_file(cons, path):
 
 
 if __name__ == "__main__":
+    parent_dir = os.path.dirname(os.path.realpath(__file__))
+    project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
+    sys.path.insert(0, project_root)
+
     from bed.bedtrace import consensus  # nopep8
 
     _cli()
