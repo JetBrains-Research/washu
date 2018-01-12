@@ -33,8 +33,8 @@ def _cli():
     with PdfPages(pdf_path) as pdf:
         fig1 = plt.figure(figsize=(10, 15))
         fig2 = plt.figure(figsize=(10, 15))
-        threshold_map = {"H3K27ac": 0.3, "H3K27me3": 0.2, "H3K36me3": 0.45, "H3K4me3": 0.4,
-                         "H3K4me1": 0.4}
+        threshold_map = {"H3K27ac": 0.28, "H3K27me3": 0.1, "H3K36me3": 0.24, "H3K4me3": 0.13,
+                         "H3K4me1": 0.28}
 
         for hist_index, hist_mod in enumerate(["H3K27ac", "H3K27me3", "H3K36me3", "H3K4me3",
                                                "H3K4me1"]):
