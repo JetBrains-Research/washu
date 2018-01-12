@@ -179,6 +179,10 @@ def test_is_yd():
     ("foo_input_boo", False),
     ("foo_od.input_boo", True),
     ("foo_input.yd_boo", True),
+    ("geo/tmp_noinput/foo_yd_boo", False),
+    ("geo/tmp_noinput/foo_od_boo", False),
+    ("geo/tmp/foo_yd_input_boo", True),
+    ("geo/tmp/foo_input_od_boo", True),
 ])
 def test_is_input(value, expected):
     assert su.is_input(value) == expected
@@ -191,5 +195,5 @@ def test_is_input(value, expected):
     ("foo.OD_OD5.boo", "OD5"),
     ("foo.ODS.boo", None),
 ])
-def test_is_input(value, expected):
+def test_age(value, expected):
     assert su.age(value) == expected
