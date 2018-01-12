@@ -9,15 +9,23 @@ import reports.loci_of_interest as loi
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
 Usage:
+    consensus.py [input folder] [output folder] [tools list]
+
+Script creates peaks consensuses files:
+ 1) Median consensus
+ 2) Old donor median consensus
+ 3) Young donor median consensus
+ 4) Weak consensus
+ 5) Old donor weak consensus
+ 6) Young donor weak consensus
 """
-outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv"
-outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="donor")
 
 
 def _cli():
     parser = argparse.ArgumentParser(description=help_data,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("peaks", help="Peaks folder")
+    parser.add_argument("outliers_path", help="Outlier file path")
     parser.add_argument("output", help="Output folder")
     parser.add_argument("tools", nargs='*', help="Tools folders")
 
@@ -25,6 +33,8 @@ def _cli():
     peaks_path = Path(args.peaks)
     output_path = Path(args.output)
     tools = args.tools
+    outliers_path = args.outliers_path
+    outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="donor")
 
     for hist_mod in ["H3K27ac", "H3K27me3", "H3K36me3", "H3K4me3", "H3K4me1"]:
         for tool in tools:
@@ -41,33 +51,25 @@ def _cli():
                                 track_name for track_name in tracks_names if re.match('.*YD\\d+.*',
                                                                                       track_name)}
 
-            for donor in outliers_df.loc[:, hist_mod].index:
-                if outliers_df.loc[:, hist_mod][donor] == 1:
-                    if donor in od_paths_map.keys():
-                        del od_paths_map[donor]
-                    if donor in yd_paths_map.keys():
-                        del yd_paths_map[donor]
+            for donor in outliers_df.loc[:, hist_mod][outliers_df.loc[:, hist_mod] == 1].keys():
+                if donor in od_paths_map.keys():
+                    del od_paths_map[donor]
+                if donor in yd_paths_map.keys():
+                    del yd_paths_map[donor]
 
-            median_cons = consensus(list(od_paths_map.values()) + list(yd_paths_map.values()), 0,
-                                    50)
-            save_cons_to_file(median_cons, output_path / (hist_mod + "_" + tool +
-                                                          "_median_consensus.bed"))
-            od_median_cons = consensus(od_paths_map.values(), 0, 50)
-            save_cons_to_file(od_median_cons, output_path / (hist_mod + "_" + tool +
-                                                             "_ODS_median_consensus.bed"))
-            yd_median_cons = consensus(yd_paths_map.values(), 0, 50)
-            save_cons_to_file(yd_median_cons, output_path / (hist_mod + "_" + tool +
-                                                             "_YDS_median_consensus.bed"))
+            construct_consensuses(list(od_paths_map.values()), list(yd_paths_map.values()),
+                                  output_path, hist_mod + "_" + tool, "median", 0, 50)
+            construct_consensuses(list(od_paths_map.values()), list(yd_paths_map.values()),
+                                  output_path, hist_mod + "_" + tool, "weak", 2, 0)
 
-            weak_cons = consensus(list(od_paths_map.values()) + list(yd_paths_map.values()), 2, 0)
-            save_cons_to_file(weak_cons, output_path / (hist_mod + "_" + tool +
-                                                        "_weak_consensus.bed"))
-            od_weak_cons = consensus(od_paths_map.values(), 2, 0)
-            save_cons_to_file(od_weak_cons, output_path / (hist_mod + "_" + tool +
-                                                           "_ODS_weak_consensus.bed"))
-            yd_weak_cons = consensus(yd_paths_map.values(), 2, 0)
-            save_cons_to_file(yd_weak_cons, output_path / (hist_mod + "_" + tool +
-                                                           "_YDS_weak_consensus.bed"))
+
+def construct_consensuses(od_values, yd_values, output_path, prefix, suffix, c, p):
+    weak_cons = consensus(od_values + yd_values, c, p)
+    save_cons_to_file(weak_cons, output_path / "{}_{}_consensus.bed".format(prefix, suffix))
+    od_weak_cons = consensus(od_values, c, p)
+    save_cons_to_file(od_weak_cons, output_path / "{}_ODS_{}_consensus.bed".format(prefix, suffix))
+    yd_weak_cons = consensus(yd_values, c, p)
+    save_cons_to_file(yd_weak_cons, output_path / "{}_YDS_{}_consensus.bed".format(prefix, suffix))
 
 
 def save_cons_to_file(cons, path):
