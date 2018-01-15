@@ -36,7 +36,9 @@ def _cli():
                 plots = []
                 tool_new_path = folder_new / hist_mod / tool
                 tool_old_path = folder_old / hist_mod / tool
-                filter_donors = set(failed_tracks_df[failed_tracks_df[hist_mod] == 0].index.tolist())
+                filter_donors = set(
+                    failed_tracks_df[failed_tracks_df[hist_mod] == 0].index.tolist()
+                )
 
                 plt.figure()
                 for index, tool_path in enumerate([tool_new_path, tool_old_path]):

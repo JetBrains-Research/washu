@@ -59,7 +59,7 @@ def process_hist_mod(peaks_root, failed_tracks_df, threads, golden, pdf_printer)
 
 failed_tracks_path = "/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv"
 failed_tracks_df = pd.read_csv(failed_tracks_path, delimiter="\t", skiprows=1,
-                          index_col="donor")
+                               index_col="donor")
 
 golden_root = Path("/mnt/stripe/bio/experiments/aging/peak_calling")
 result_plot_path = golden_root / "intersection.pdf"

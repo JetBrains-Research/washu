@@ -106,7 +106,7 @@ def _cli():
     failed_tracks_df = None
     if failed_tracks_df_path:
         failed_tracks_df = pd.read_csv(failed_tracks_df_path, delimiter="\t", skiprows=1,
-                                  index_col="donor")
+                                       index_col="donor")
     ########################################################################
     # NOTCH pathways as loci:
     notch_pathways = [p for p in (loci_root / "aging_pathways").glob('R-HSA-266082*.bed')]
