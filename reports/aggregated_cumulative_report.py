@@ -10,8 +10,8 @@ help_data = """
 Script creates pdf report with cumulative consensus plot for selected tools
 (all histone modifications).
 """
-outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv"
-outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="donor")
+failed_tracks_path = "/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv"
+failed_tracks_df = pd.read_csv(failed_tracks_path, delimiter="\t", skiprows=1, index_col="donor")
 
 
 def _cli():
@@ -36,7 +36,7 @@ def _cli():
                 plots = []
                 tool_new_path = folder_new / hist_mod / tool
                 tool_old_path = folder_old / hist_mod / tool
-                filter_donors = set(outliers_df[outliers_df[hist_mod] == 0].index.tolist())
+                filter_donors = set(failed_tracks_df[failed_tracks_df[hist_mod] == 0].index.tolist())
 
                 plt.figure()
                 for index, tool_path in enumerate([tool_new_path, tool_old_path]):

@@ -20,8 +20,8 @@ Script creates pdf report with ChIP-seq peaks statistics:
  7) Frip/age boxplot
  8) Peaks count/peaks length bar plots for each donor
 """
-outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv"
-outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="donor")
+failed_tracks_path = "/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv"
+failed_tracks_df = pd.read_csv(failed_tracks_path, delimiter="\t", skiprows=1, index_col="donor")
 loci_root = Path("/mnt/stripe/bio/raw-data/aging/loci_of_interest")
 
 
@@ -63,8 +63,8 @@ def _cli():
     anns = [bm.color_annotator_age]
     hist_mod = re.match(".*(h3k\d{1,2}(?:me\d|ac)).*", str(folder_path),
                         flags=re.IGNORECASE).group(1)
-    if hist_mod in outliers_df.columns:
-        anns.append(bm.color_annotator_outlier(outliers_df, hist_mod))
+    if hist_mod in failed_tracks_df.columns:
+        anns.append(bm.color_annotator_outlier(failed_tracks_df, hist_mod))
     annotator = bm.color_annotator_chain(*anns)
 
     peaks_paths = sorted(chain(folder_path.glob("*sicer*consensus*"),

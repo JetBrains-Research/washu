@@ -31,7 +31,7 @@ def _cli():
     parser.add_argument('-p', '--threads', type=int, default=4,
                         help="Threads number for parallel processing")
     parser.add_argument('--all', action="store_true",
-                        help="Include outliers")
+                        help="Include failed tracks")
     parser.add_argument('--skip-plots', action="store_true",
                         help="Do not calc plots @ loci")
     parser.add_argument('--skip-stats', action="store_true",
@@ -40,16 +40,16 @@ def _cli():
                         help="Stat tests on all pathways")
     parser.add_argument('--tuned', action="store_true",
                         help="Use tuned peaks")
-    parser.add_argument('--outliers', metavar="PATH",
+    parser.add_argument('--failed_tracks', metavar="PATH",
                         default="/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv",
-                        help="Outliers *.csv path")
+                        help="Failed tracks *.csv path")
     parser.add_argument('--peaks', metavar="PATH",
                         help="Custom peaks folder to use instead of predefined peaks list")
     args = parser.parse_args()
 
     threads = args.threads
-    outliers_df_path = args.outliers
-    exclude_outliers = not args.all
+    failed_tracks_df_path = args.failed_tracks
+    exclude_failed_tracks = not args.all
     results_dir = Path(args.out)
     results_dir.mkdir(parents=True, exist_ok=True)
     loci_root = Path(args.loci)
@@ -83,7 +83,7 @@ def _cli():
             # default peaks
             golden_peaks_root = data_root / "experiments/aging/peak_calling"
             zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
-                "" if exclude_outliers else "_full"
+                "" if exclude_failed_tracks else "_full"
             )
             # tuned peaks
             zinbra_peaks_root_tuned = data_root / "experiments/configs/Y20O20_full/benchmark_peaks"
@@ -91,7 +91,7 @@ def _cli():
 
             peaks_map = {
                 "zinbra": loi._collect_zinbra_peaks(zinbra_peaks_root),
-                "golden": loi._collect_golden_peaks(golden_peaks_root, exclude_outliers),
+                "golden": loi._collect_golden_peaks(golden_peaks_root, exclude_failed_tracks),
                 "zinbra_tuned": loi._collect_zinbra_peaks(zinbra_peaks_root_tuned),
                 "golden_tuned": loi._collect_golden_peaks(golden_peaks_root_tuned, None)
             }
@@ -103,9 +103,9 @@ def _cli():
         }}
         tools_for_stat_test = [tool]
 
-    outliers_df = None
-    if outliers_df_path:
-        outliers_df = pd.read_csv(outliers_df_path, delimiter="\t", skiprows=1,
+    failed_tracks_df = None
+    if failed_tracks_df_path:
+        failed_tracks_df = pd.read_csv(failed_tracks_df_path, delimiter="\t", skiprows=1,
                                   index_col="donor")
     ########################################################################
     # NOTCH pathways as loci:
@@ -160,7 +160,7 @@ def _cli():
                 if lt in loci_dict:
                     print("----- [Report]: Donors {}@{} ----".format(tool, lt))
                     report_donors(tool, peaks_map, loci_dict, lt, plot_sizes.get(lt, 20),
-                                  results_dir, threads, outliers_df)
+                                  results_dir, threads, failed_tracks_df)
 
         # ########## For loci #############################################################
         # If custom peaks folder, skip plots, calc only stat test
@@ -202,7 +202,7 @@ def _cli():
                 continue
 
             test_donors(tools_for_stat_test, peaks_map, loci_set, loci_dict, results_dir,
-                        outliers_df, exclude_outliers, threads)
+                        failed_tracks_df, exclude_failed_tracks, threads)
 
 
 def _adjustment():
@@ -214,7 +214,7 @@ def _adjustment_wrc():
 
 
 def report_donors(tool, peaks_map, loci_dict, loci_key, key_side_size,
-                  outdir, threads, outliers_df):
+                  outdir, threads, failed_tracks_df):
     peaks_dict = peaks_map[tool]
 
     result_plot_path = outdir / "plot_{}@{}_by_donor.pdf".format(tool, loci_key)
@@ -222,9 +222,9 @@ def report_donors(tool, peaks_map, loci_dict, loci_key, key_side_size,
         init_pdf_info(pdf)
         for hist in sorted(peaks_dict.keys()):
             anns = [bm.color_annotator_age]
-            if hist and outliers_df is not None:
-                if hist in outliers_df.columns:
-                    anns.append(bm.color_annotator_outlier(outliers_df, hist))
+            if hist and failed_tracks_df is not None:
+                if hist in failed_tracks_df.columns:
+                    anns.append(bm.color_annotator_outlier(failed_tracks_df, hist))
             annotator = None if not anns else bm.color_annotator_chain(*anns)
 
             process_intersection_metric(
@@ -282,8 +282,8 @@ def init_pdf_info(pdf):
     d = pdf.infodict()
     d['Title'] = 'Report: Intersection metric at different loci'
     d['Author'] = 'JetBrains Research BioLabs'
-    d['Subject'] = 'outliers'
-    # d['Keywords'] = 'outliers jetbrains aging'
+    d['Subject'] = 'failed_tracks'
+    # d['Keywords'] = 'failed_tracks jetbrains aging'
     d['CreationDate'] = datetime.datetime.today()
     d['ModDate'] = datetime.datetime.today()
 
@@ -306,7 +306,7 @@ def _pvalues_above_thr(thr005, thr001):
 
 
 def test_donors(tools, peaks_map, loci_set, loci_dict, outdir,
-                outliers_df, exclude_outliers, threads):
+                failed_tracks_df, exclude_failed_tracks, threads):
     pvalue_dfs = []
 
     for lt in loci_set:
@@ -333,9 +333,9 @@ def test_donors(tools, peaks_map, loci_set, loci_dict, outdir,
                                 outdir / "{}@{}.csv".format(peaks_key, lt),
                                 threads=threads
                             ),
-                            hist, outliers_df, peaks_paths, pdf,
+                            hist, failed_tracks_df, peaks_paths, pdf,
                             outdir / "stat-{}@{}.csv".format(peaks_key, lt),
-                            exclude_outliers,
+                            exclude_failed_tracks,
                         )
                         df.index = ["{}@{}".format(peaks_key, s) for s in df.index]
                         pvalue_dfs.append(df)
@@ -348,9 +348,9 @@ def test_donors(tools, peaks_map, loci_set, loci_dict, outdir,
                             outdir / "{}@{}.csv".format(lt, peaks_key),
                             threads=threads
                         ).T,
-                        hist, outliers_df, peaks_paths, pdf,
+                        hist, failed_tracks_df, peaks_paths, pdf,
                         outdir / "stat-{}@{}.csv".format(lt, peaks_key),
-                        exclude_outliers,
+                        exclude_failed_tracks,
                     )
                     df.index = ["{}@{}".format(s, peaks_key) for s in df.index]
                     pvalue_dfs.append(df)
@@ -409,8 +409,8 @@ def test_donors(tools, peaks_map, loci_set, loci_dict, outdir,
     # #     series_list.append(series)
 
 
-def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path,
-                          exclude_outliers):
+def test_donors_by_metric(df, hist, failed_tracks_df, peaks_paths, pdf, stats_df_path,
+                          exclude_failed_tracks):
     ha = "two-sided"  # 'less', 'two-sided', or 'greater'
 
     ##########################################################################################
@@ -420,8 +420,8 @@ def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path
         loci_pvalues_df = pd.read_csv(stats_df_path, index_col=0)
     else:
         print("    Calculating:", str(stats_df_path))
-        mask_od_group, mask_yd_group = split_by_age(hist, outliers_df, peaks_paths,
-                                                    exclude_outliers)
+        mask_od_group, mask_yd_group = split_by_age(hist, failed_tracks_df, peaks_paths,
+                                                    exclude_failed_tracks)
         df_ods = df[mask_od_group]
         df_yds = df[mask_yd_group]
         print("    Dfs: OD = {}, YD = {}".format(df_ods.shape, df_yds.shape))
@@ -441,23 +441,23 @@ def test_donors_by_metric(df, hist, outliers_df, peaks_paths, pdf, stats_df_path
                    save_to=pdf)
 
     _plot_donors_at_significant_loci(df, loci_pvalues_df, "pvalue", "not-adjusted pvalues",
-                                     outliers_df, hist, stats_df_path.name, pdf)
+                                     failed_tracks_df, hist, stats_df_path.name, pdf)
 
     return loci_pvalues_df
 
 
 def _plot_donors_at_significant_loci(df,
                                      loci_pvalues_df, col,
-                                     title, outliers_df, hist, table_name,
+                                     title, failed_tracks_df, hist, table_name,
                                      pdf):
     # Heatmap with selected cols:
     def loci_passed_thr(df, col, thr):
         return set(df.index[df[col] < thr].tolist())
 
     anns = [bm.color_annotator_age]
-    if hist and outliers_df is not None:
-        if hist in outliers_df.columns:
-            anns.append(bm.color_annotator_outlier(outliers_df, hist))
+    if hist and failed_tracks_df is not None:
+        if hist in failed_tracks_df.columns:
+            anns.append(bm.color_annotator_outlier(failed_tracks_df, hist))
     row_annotator = None if not anns else bm.color_annotator_chain(*anns)
 
     thr001 = loci_passed_thr(loci_pvalues_df, col, 0.01)
@@ -507,7 +507,7 @@ def calc_loci_pvalues(df_ods, df_yds, ha):
     return loci_pvalues_df
 
 
-def split_by_age(hist, outliers_df, peaks_paths, exclude_outliers):
+def split_by_age(hist, failed_tracks_df, peaks_paths, exclude_failed_tracks):
     # Split: Old / Young donors
     donors_age_id = [loi.donor_order_id(p) for p in peaks_paths]
     groups = np.asarray([age for age, _id in donors_age_id])
@@ -516,29 +516,30 @@ def split_by_age(hist, outliers_df, peaks_paths, exclude_outliers):
     print("    Peaks: [{}], OD: [{}], YD: [{}]".format(
         len(peaks_paths), np.sum(mask_od_group), np.sum(mask_yd_group)
     ))
-    # Load Outliers info
+    # Load failed_tracks info
     mask_not_outlier = None
-    if exclude_outliers:
-        if hist and outliers_df is not None:
-            if hist in outliers_df.columns:
-                col = outliers_df.loc[:, hist]
-                outliers_codes = [col["{}{}".format(age, id)] for age, id in donors_age_id]
-                mask_not_outlier = np.asarray(outliers_codes) == 0
+    if exclude_failed_tracks:
+        if hist and failed_tracks_df is not None:
+            if hist in failed_tracks_df.columns:
+                col = failed_tracks_df.loc[:, hist]
+                failed_tracks_codes = [col["{}{}".format(age, id)] for age, id in donors_age_id]
+                mask_not_outlier = np.asarray(failed_tracks_codes) == 0
 
         if mask_not_outlier is None:
             print(
-                "    {}: No outliers info, but exclude outliers option passed".format(hist)
+                "    {}: No failed tracks info, but exclude failed tracks option passed".format(
+                    hist)
             )
             sys.exit(1)
     else:
         print("    {}: use all donors".format(hist))
         mask_not_outlier = np.ones((len(peaks_paths), 1), dtype=bool)
 
-    print("    Not outliers: [{}]".format(np.sum(mask_not_outlier)))
-    # Young/old group without outliers
+    print("    Not failed_tracks: [{}]".format(np.sum(mask_not_outlier)))
+    # Young/old group without failed_tracks
     mask_od_group = mask_od_group * mask_not_outlier
     mask_yd_group = mask_yd_group * mask_not_outlier
-    print("    Peaks: OD w/o outliers: [{}], YD w/o outliers: [{}]".format(
+    print("    Peaks: OD w/o failed_tracks: [{}], YD w/o failed_tracks: [{}]".format(
         np.sum(mask_od_group),
         np.sum(mask_yd_group))
     )

@@ -152,8 +152,8 @@ def color_annotator_chain(*annotators):
     return inner
 
 
-def color_annotator_outlier(outliers_df, data_type):
-    outlier_mapping = outliers_df.loc[:, data_type]
+def color_annotator_outlier(failed_tracks_df, data_type):
+    outlier_mapping = failed_tracks_df.loc[:, data_type]
 
     def inner(label):
         chunks = [ch.upper() for ch in label.split("_") if len(ch) > 2]
@@ -276,7 +276,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
             col_colors_ratio=col_colors_ratio,
             vmin=vmin, vmax=vmax,
             # linewidths=0.75,  # separator line width
-            robust=True,  # robust=True: ignore color outliers
+            robust=True,  # robust=True: ignore color failed_tracks
         )
         # Turn off color bar
         if not cbar:
@@ -362,10 +362,10 @@ def _cli():
     parser.add_argument('--colc', help="Cols clustering", action="store_true")
     parser.add_argument('-p', '--threads', help="Threads number for parallel processing",
                         type=int, default=4)
-    parser.add_argument('--outliers', metavar="PATH",
+    parser.add_argument('--failed_tracks', metavar="PATH",
                         default="/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv",
-                        help="Outliers *.csv path")
-    parser.add_argument('--hist', help="Histone modification name (is used for outliers "
+                        help="Failed tracks *.csv path")
+    parser.add_argument('--hist', help="Histone modification name (is used for failed tracks "
                                        "highlighting), e.g. H3K4me3")
     parser.add_argument('--age', help="Highlight donors age", action="store_true")
     parser.add_argument('--jaccard', help="Use Jaccard metric instead intersection",
@@ -390,12 +390,13 @@ def _cli():
     # age
     if args.age:
         anns.append(color_annotator_age)
-    # outliers
+    # failed_tracks
     hist_mod = args.hist
-    outliers_df = pd.read_csv(args.outliers, delimiter="\t", skiprows=1, index_col="donor")
-    if hist_mod and outliers_df is not None:
-        if hist_mod in outliers_df.columns:
-            anns.append(color_annotator_outlier(outliers_df, hist_mod))
+    failed_tracks_df = pd.read_csv(args.failed_tracks, delimiter="\t", skiprows=1,
+                                   index_col="donor")
+    if hist_mod and failed_tracks_df is not None:
+        if hist_mod in failed_tracks_df.columns:
+            anns.append(color_annotator_outlier(failed_tracks_df, hist_mod))
     annotator = None if not anns else color_annotator_chain(*anns)
 
     # Do plot:

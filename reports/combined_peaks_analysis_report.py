@@ -15,8 +15,8 @@ Script creates pdf reports with ChIP-seq peaks statistics:
  1) median peak consensus bar plot
  2) Metric #1 heatmap
 """
-outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv"
-outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="donor")
+failed_tracks_path = "/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv"
+failed_tracks_df = pd.read_csv(failed_tracks_path, delimiter="\t", skiprows=1, index_col="donor")
 
 
 def _cli():
@@ -59,8 +59,8 @@ def _cli():
                             track_name for track_name in tracks_names if re.match('.*YD\\d+.*',
                                                                                   track_name)}
             df = bed_metric_table(tracks_paths, tracks_paths, threads=threads_num)
-            for donor in outliers_df.loc[:, hist_mod].index:
-                if outliers_df.loc[:, hist_mod][donor] == 1:
+            for donor in failed_tracks_df.loc[:, hist_mod].index:
+                if failed_tracks_df.loc[:, hist_mod][donor] == 1:
                     _remove_donor_from_map(donor, od_paths_map)
                     _remove_donor_from_map(donor, yd_paths_map)
                     for df_index in df.index:
