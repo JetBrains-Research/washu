@@ -46,7 +46,7 @@ MINUS_SH = os.path.dirname(os.path.abspath(__file__)) + '/minus.sh'
 COMPARE_SH = os.path.dirname(os.path.abspath(__file__)) + '/compare.sh'
 METAPEAKS_SH = os.path.dirname(os.path.abspath(__file__)) + '/metapeaks.sh'
 JACCARD_SH = os.path.dirname(os.path.abspath(__file__)) + '/jaccard.sh'
-STREAM_CONSENSUS_SH = os.path.dirname(os.path.abspath(__file__)) + '/stream_consensus.sh'
+CONSENSUS_SH = os.path.dirname(os.path.abspath(__file__)) + '/consensus.sh'
 
 TEMPFILES = []
 
@@ -335,9 +335,9 @@ def jaccard(file1, file2):
 
 def consensus(files_paths, count=0, percent=0):
     if count != 0:
-        stdout, _stderr = run([['bash', STREAM_CONSENSUS_SH, "-c", str(count), *files_paths]])
+        stdout, _stderr = run([['bash', CONSENSUS_SH, "-c", str(count), *files_paths]])
     else:
-        stdout, _stderr = run([['bash', STREAM_CONSENSUS_SH, "-p", str(percent), *files_paths]])
+        stdout, _stderr = run([['bash', CONSENSUS_SH, "-p", str(percent), *files_paths]])
     return stdout
 
 

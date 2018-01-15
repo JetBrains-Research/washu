@@ -12,7 +12,7 @@ which bedtools &>/dev/null || {
 PERCENT=0
 COUNT=0
 HELP=NO
-TOOL="undefined"
+TOOL=""
 ###########################################
 POSITIONAL=()
 
@@ -65,59 +65,33 @@ if [ "${HELP}" == "YES" ] || [ ${PERCENT} -lt 0 ] || [ ${COUNT} -lt 0 ]
 fi
 
 if [ $# -lt 1 ]; then
-    echo "Need 1 parameter! <folder_path>"
+    echo "Need 1 parameter! <files>"
     exit 1
 fi
 
 # Optional load technical stuff:
 source $(dirname $0)/../parallel/util.sh 2> /dev/null
 
-FOLDER=$1
-MOD=$2
-cd ${FOLDER}
+FILES=$@
 
 if [ ${COUNT} -gt 0 ]; then
-    ALL_COUNT=`expr ${COUNT} - 1`
-    OD_COUNT=`expr ${COUNT} - 1`
-    YD_COUNT=`expr ${COUNT} - 1`
+    CONS_COUNT=`expr ${COUNT} - 1`
 fi
 
-if [ $(find . -maxdepth 1 -wholename "./*island.bed" | grep -v outlier | wc -l) -gt 0 ]; then
-    TOOL="sicer"
+if [[ ${FILES} == *"island.bed"* ]]; then
+  TOOL=${TOOL}"_sicer"
 fi
-if [ $(find . -maxdepth 1 -wholename "./*Peak" | grep -v outlier | wc -l) -gt 0 ]; then
-    TOOL="macs2"
+if [[ ${FILES} == *"Peak"* ]]; then
+  TOOL=${TOOL}"_macs2"
 fi
-if [ $(find . -maxdepth 1 -wholename "./*_peaks.bed" | grep -v outlier | wc -l) -gt 0 ]; then
-    TOOL="zinbra"
+if [[ ${FILES} == *"_peaks.bed"* ]]; then
+  TOOL=${TOOL}"_zinbra"
 fi
 
 if [ ${PERCENT} -gt 0 ]; then
-    ALL_COUNT=$(echo $(find . -maxdepth 1 \( -wholename "*island.bed" -or -wholename "*Peak" -or \
-        -wholename "*_peaks.bed" \) | grep -v outlier | wc -l) " * ${PERCENT} / 100.0 - 1" | bc)
-    OD_COUNT=$(echo $(find . -maxdepth 1 \( -wholename "*OD*island.bed" -or -wholename "*OD*Peak" \
-        -or -wholename "*OD*_peaks.bed" \) |
-        grep -v outlier | wc -l) " * ${PERCENT} / 100.0 - 1" | bc)
-    YD_COUNT=$(echo $(find . -maxdepth 1 \( -wholename "*YD*island.bed" -or -wholename "*YD*Peak" \
-        -or -wholename "*YD*_peaks.bed" \) |
-        grep -v outlier | wc -l) " * ${PERCENT} / 100.0 - 1" | bc)
+    CONS_COUNT=$(echo "(" $(echo "${FILES}" | awk -F" " '{print NF-1}') \
+        " + 1) * ${PERCENT} / 100.0 - 1" | bc)
 fi
 
-bedtools multiinter -i $(find . -maxdepth 1 \( -wholename "*_peaks.bed" -or -wholename "*Peak" -or \
-    -wholename "*island.bed" \) | grep -v outlier | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g') |\
-    grep '\(,.*\)\{'${ALL_COUNT}'\}' | sort -k1,1 -k2,2n | \
-    bedtools merge > ${MOD}_${TOOL}_consensus.bed
-bedtools multiinter -i $(find . -maxdepth 1 \( -wholename "*OD*island.bed" -or \
-    -wholename "*OD*Peak" -or -wholename "*OD*_peaks.bed" \) | grep -v outlier | \
-    sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g') | grep '\(,.*\)\{'${OD_COUNT}'\}' | \
-    sort -k1,1 -k2,2n | bedtools merge > ${MOD}_${TOOL}_ODS_consensus.bed
-bedtools multiinter -i $(find . -maxdepth 1 \( -wholename "*YD*island.bed" -or \
-    -wholename "*YD*Peak" -or -wholename "*YD*_peaks.bed" \) | grep -v outlier | \
-    sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g') | grep '\(,.*\)\{'${YD_COUNT}'\}' | \
-    sort -k1,1 -k2,2n | bedtools merge > ${MOD}_${TOOL}_YDS_consensus.bed
-bedtools intersect -v -a ${MOD}_${TOOL}_ODS_consensus.bed \
-    -b ${MOD}_${TOOL}_YDS_consensus.bed \
-    > ${MOD}_${TOOL}_ODS_without_YDS_consensus.bed
-bedtools intersect -v -a ${MOD}_${TOOL}_YDS_consensus.bed \
-    -b ${MOD}_${TOOL}_ODS_consensus.bed \
-    > ${MOD}_${TOOL}_YDS_without_ODS_consensus.bed
+bedtools multiinter -i ${FILES} | grep '\(,.*\)\{'${CONS_COUNT}'\}' | \
+    sort -k1,1 -k2,2n | bedtools merge
