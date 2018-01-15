@@ -52,14 +52,16 @@ YOUNG = Age('Y', 'red', '')
 
 def is_od_input(c):
     c = re.sub(".*/", "", c)
-    return re.match('.*input.*od.*', str(c), flags=re.IGNORECASE) is not None or \
-           re.match('.*od.*input.*', str(c), flags=re.IGNORECASE) is not None
+    input_od = re.match('.*input.*od.*', str(c), flags=re.IGNORECASE) is not None
+    od_input = re.match('.*od.*input.*', str(c), flags=re.IGNORECASE) is not None
+    return input_od or od_input
 
 
 def is_yd_input(c):
     c = re.sub(".*/", "", c)
-    return re.match('.*input.*yd.*', str(c), flags=re.IGNORECASE) is not None or \
-           re.match('.*yd.*input.*', str(c), flags=re.IGNORECASE) is not None
+    input_yd = re.match('.*input.*yd.*', str(c), flags=re.IGNORECASE) is not None
+    yd_input = re.match('.*yd.*input.*', str(c), flags=re.IGNORECASE) is not None
+    return input_yd or yd_input
 
 
 def is_input(c):
@@ -85,6 +87,8 @@ def age(n):
 
 def regions_extension(c):
     return re.match('.*(?:Peak|_peaks\.bed|island\.bed)$', str(c))
+
+
 #################################################################
 
 
@@ -292,5 +296,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()
