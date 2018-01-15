@@ -41,7 +41,7 @@ def _cli():
     parser.add_argument('--tuned', action="store_true",
                         help="Use tuned peaks")
     parser.add_argument('--outliers', metavar="PATH",
-                        default="/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv",
+                        default="/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv",
                         help="Outliers *.csv path")
     parser.add_argument('--peaks', metavar="PATH",
                         help="Custom peaks folder to use instead of predefined peaks list")

@@ -363,7 +363,7 @@ def _cli():
     parser.add_argument('-p', '--threads', help="Threads number for parallel processing",
                         type=int, default=4)
     parser.add_argument('--outliers', metavar="PATH",
-                        default="/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv",
+                        default="/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv",
                         help="Outliers *.csv path")
     parser.add_argument('--hist', help="Histone modification name (is used for outliers "
                                        "highlighting), e.g. H3K4me3")

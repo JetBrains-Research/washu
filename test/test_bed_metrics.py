@@ -368,7 +368,7 @@ def test_color_annotator_chain_single(label, value):
     ("OD20", "methylation", "g"),
 ])
 def test_color_annotator_outlier(test_data, label, data_type, value):
-    df = pd.read_csv(test_data("metrics/Y20O20.outliers.csv"),
+    df = pd.read_csv(test_data("metrics/Y20O20.failed_tracks.csv"),
                      delimiter="\t", skiprows=1, index_col="donor")
     res = color_annotator_outlier(df, data_type)(label)
     assert len(res) == 1

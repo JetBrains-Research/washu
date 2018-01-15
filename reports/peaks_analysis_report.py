@@ -20,7 +20,7 @@ Script creates pdf report with ChIP-seq peaks statistics:
  7) Frip/age boxplot
  8) Peaks count/peaks length bar plots for each donor
 """
-outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20.outliers.csv"
+outliers_path = "/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv"
 outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="donor")
 loci_root = Path("/mnt/stripe/bio/raw-data/aging/loci_of_interest")
 
