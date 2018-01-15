@@ -9,7 +9,7 @@ import reports.loci_of_interest as loi
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
 Usage:
-    consensus.py [input folder] [output folder] [tools list]
+    consensus.py [input folder] [outliers path] [output folder] [tools list]
 
 Script creates peaks consensuses files:
  1) Median consensus
