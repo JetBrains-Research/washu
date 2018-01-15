@@ -45,11 +45,11 @@ def _cli():
                                   key=loi.donor_order_id)
             tracks_names = list({str(tracks_path) for tracks_path in tracks_paths})
             od_paths_map = {re.findall('OD\\d+', track_name)[0]:
-                                track_name for track_name in tracks_names if re.match('.*OD\\d+.*',
-                                                                                      track_name)}
+                            track_name for track_name in tracks_names if re.match('.*OD\\d+.*',
+                                                                                  track_name)}
             yd_paths_map = {re.findall('YD\\d+', track_name)[0]:
-                                track_name for track_name in tracks_names if re.match('.*YD\\d+.*',
-                                                                                      track_name)}
+                            track_name for track_name in tracks_names if re.match('.*YD\\d+.*',
+                                                                                  track_name)}
 
             for donor in outliers_df.loc[:, hist_mod][outliers_df.loc[:, hist_mod] == 1].keys():
                 if donor in od_paths_map.keys():
