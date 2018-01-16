@@ -10,7 +10,7 @@ which bigWigAverageOverBed &>/dev/null || {
 }
 # Load technical stuff
 source $(dirname $0)/../../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
+SIGNALS_PY=$(expand_path "$(dirname $0)/../signals.py")
 
 >&2 echo "Batch bw_signal $@"
 if [ $# -lt 3 ]; then
@@ -147,7 +147,7 @@ then
     source activate py35 || source activate py3.5
 fi
 cd $RESULTS_FOLDER
-python ${SCRIPT_DIR}/downstream/signals/signals.py ${RESULTS_FOLDER}/${ID}.tsv ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
+python ${SIGNALS_PY} ${RESULTS_FOLDER}/${ID}.tsv ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
 SCRIPT
 wait_complete $QSUB_ID
 
