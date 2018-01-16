@@ -1,9 +1,8 @@
 import pytest
-import os
-import subprocess
+
 from test.fixtures import test_data, tmp_path
-from reports.annotate_reactome import extract_reactome_id, fetch_title
 from pipeline_utils import run, PROJECT_ROOT_PATH
+from scripts.annotate_reactome import extract_reactome_id, fetch_title
 
 
 @pytest.mark.parametrize("label,rid", [
@@ -48,10 +47,10 @@ def test_fetch_titles(test_data, offline):
 
 
 def test_cli_help(capfd):
-    run("python", "{}/reports/annotate_reactome.py".format(PROJECT_ROOT_PATH),
+    run("python", "{}/scripts/annotate_reactome.py".format(PROJECT_ROOT_PATH),
         "-h")
     output = capfd.readouterr()
-    assert """python {}/reports/annotate_reactome.py -h
+    assert """python {}/scripts/annotate_reactome.py -h
 usage: annotate_reactome.py [-h] [--db PATH] [-F FS] [-o PATH] PATH INT_OR_STR
 
 Annotates table containing http://www.reactome.org pathways ids (R-HSA-nnnnn)
@@ -107,7 +106,7 @@ def test_cli(test_data, tmp_path, capfd, file, args, result_stdout, result_stder
         args.append("--db " + pathways_db_path)
 
     run(
-        "python", "{}/reports/annotate_reactome.py".format(PROJECT_ROOT_PATH),
+        "python", "{}/scripts/annotate_reactome.py".format(PROJECT_ROOT_PATH),
         input_path,
         *args
     )

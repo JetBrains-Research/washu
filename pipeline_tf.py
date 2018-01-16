@@ -8,8 +8,8 @@ from typing import Tuple, List
 
 import pandas as pd
 
+from parallel.util.bowtie_logs import process_bowtie_logs
 from pipeline_utils import *
-from reports.bowtie_logs import process_bowtie_logs
 from scripts.util import run_macs2
 
 

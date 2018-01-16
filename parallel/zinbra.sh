@@ -75,7 +75,7 @@ fi
 
 module load bedtools2
 # Compute Reads in Peaks
-bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}_peaks.bed
+bash ${SCRIPT_DIR}/scripts/rip.sh ${FILE} ${ID}_peaks.bed
 SCRIPT
 
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

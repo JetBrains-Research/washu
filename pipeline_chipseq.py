@@ -19,9 +19,9 @@ NOTE: python3 required
 
 author oleg.shpynov@jetbrains.com
 """
+from parallel.util.bowtie_logs import process_bowtie_logs
+from parallel.util.peaks_logs import process_peaks_logs
 from pipeline_utils import *
-from reports.bowtie_logs import process_bowtie_logs
-from reports.peaks_logs import process_peaks_logs
 from scripts.util import run_macs2
 
 parser = argparse.ArgumentParser(description='ULI ChIP-Seq data pipeline')

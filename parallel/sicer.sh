@@ -130,9 +130,8 @@ echo "SICER.sh \${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} \${SICER_OUT_FOLDER} ${
 
 SICER.sh \${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} \${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
 
-# SICER generates lots of output, ignore it: resulting BED and logs only.
+# SICER generates lots of output, ignore it: resulting BED only.
 # See https://github.com/JetBrains-Research/washu/issues/27
-mv \${SICER_OUT_FOLDER}/*sicer.log ${WORK_DIR}
 mv \${SICER_OUT_FOLDER}/*island.bed ${WORK_DIR}
 # Prepare for rip.sh
 if [ ! -f ${WORK_DIR}/${PILEUP_BED} ]; then
@@ -144,7 +143,7 @@ rm -r \${SICER_FOLDER}
 cd ${WORK_DIR}
 
 # Compute Reads in Peaks
-bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ISLAND_BED}
+bash ${SCRIPT_DIR}/scripts/rip.sh ${FILE} ${ISLAND_BED}
 
 # Cleanup
 if [ -z ${BATCH_MODE} ]; then

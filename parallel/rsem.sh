@@ -42,6 +42,6 @@ SCRIPT
 done
 wait_complete ${TASKS[@]}
 module load R
-Rscript ${SCRIPT_DIR}/R/gather.R
+Rscript ${SCRIPT_DIR}/parallel/util/gather.R
 
 >&2 echo "Done. Batch rsem $@"

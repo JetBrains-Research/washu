@@ -92,7 +92,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${NAME}_domains.bed
+bash ${SCRIPT_DIR}/scripts/rip.sh ${FILE} ${NAME}_domains.bed
 SCRIPT
 
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

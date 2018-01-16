@@ -132,7 +132,7 @@ rm -r ${INPUT_FOLDER}
 cd ${WORK_DIR}
 
 # Compute Reads in Peaks
-bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${NAME}*island.bed
+bash ${SCRIPT_DIR}/scripts/rip.sh ${FILE} ${NAME}*island.bed
 SCRIPT
 
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

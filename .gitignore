@@ -3,4 +3,4 @@
 .Rproj.user
 **/*.iml
 __pycache__
-notebooks/.ipynb_checkpoints/
+downstream/notebooks/.ipynb_checkpoints/

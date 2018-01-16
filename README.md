@@ -50,25 +50,19 @@ tar xvf ~/phantompeakqualtools.tar.gz
 Project
 -------
 
-* `/bed`            - BED files manipulations - intersection, ChromHMM enrichment, etc.
-* `/docker`         - Docker configuration files with tools and test data. Used for `pipeline_chipseq.py` testing.
-* `/notebooks`      - Jupiter notebooks
+* `/bed`            - BED files manipulations - intersection, ChromHMM enrichment, closes gene, etc.
+* `/docker`         - Docker configuration files with tools and test data. See Tests section.
+* `/downstream`     - Aging project downstream analysis
 * `/parallel`       - Scripts for parallel execution of PBS greed using `qsub` queue management
-* `/R`              - R scripts
-* `/reports`        - Scripts to generate report by logs (bowtie, macs2, etc) 
-* `/scripts`        - Visualization, downstream analysis, e.g. replicated ChIP-Seq comparison, etc.
+* `/scripts`        - QC, Visualization, BAM conversions, Reads In Peaks, etc.
 * `/test`           - Tests
-* `/tex`            - Latex presentation for the `pipeline_chipseq.py`
-* `/uscs`           - Prepared custom tracks for UCSC genome [browser](https://genome.ucsc.edu/)
-* `/web`            - Create web server with tracks and peaks powered by [Biodalliance](http://www.biodalliance.org/) genome browser.
-
 
 Scripts
 -------
 Scripts for batch processing.
 * `fastqc.sh`   - Quality control for raw-reads using [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) 
 and [MultiQC](http://multiqc.info/) for aggregated report  
-* `bowtie.sh`   - Bowtie alignment of all the read files in a folder. Creates summary report:
+* `bowtie.sh`   - [Bowtie](http://bowtie-bio.sourceforge.net/index.shtml) alignment of all the read files in a folder. Creates summary report:
 
 | sample |  reads | aligned | not_aligned | supressed |
 | ------------- |-------------:| -----:| -----:| -----:|
@@ -95,9 +89,7 @@ Pipelines
 ---------
 * `pipeline_chipseq.py`         - Pipeline for batch ULI-ChIP-Seq processing, including QC, alignment, peak calling
 * `pipeline_utils.py`           - Pipeline for batch RNA-Seq data processing
-* `scripts/chipseq_diff.sh`     - Pipeline for replicated ChIP-Seq comparison using MACS2, [DiffBind](http://www.nature.com/nature/journal/v481/n7381/full/nature10730.html), 
-[ChIPDiff](https://academic.oup.com/bioinformatics/article/24/20/2344/258202/An-HMM-approach-to-genome-wide-identification-of), 
-[MANorm](https://www.ncbi.nlm.nih.gov/pubmed/22424423)
+* `downstream`                  - Downstream analysis including differential ChIP-Seq analysis
 
 Docker
 ------
@@ -109,7 +101,6 @@ Update necessary docker image.
 docker pull biolabs/washu
 ```
 
-
 Tests
 -----
 ```bash
@@ -119,6 +110,29 @@ docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source act
 # Pipeline tests 
 docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
 ```
+
+Tools used
+---------- 
+* [Bedtools](https://bedtools.readthedocs.io/en/latest/)
+* [Bowtie](http://bowtie-bio.sourceforge.net/index.shtml)
+* [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml)
+* [ChIPDiff](https://academic.oup.com/bioinformatics/article/24/20/2344/258202/An-HMM-approach-to-genome-wide-identification-of) 
+* [Deeptools](http://deeptools.readthedocs.io/en/latest/content/installation.html)
+* [DiffBind](http://www.nature.com/nature/journal/v481/n7381/full/nature10730.html) 
+* [DiffReps](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0065598)
+* [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) 
+* [MACS1.4](https://github.com/taoliu/MACS)
+* [MACS2](https://github.com/taoliu/MACS)
+* [MANorm](https://www.ncbi.nlm.nih.gov/pubmed/22424423)
+* [MultiQC](http://multiqc.info/)
+* [Phantompeakqualtools](https://github.com/kundajelab/phantompeakqualtools)
+* [Picardtools](https://github.com/broadinstitute/picard)
+* [RSeg](https://academic.oup.com/bioinformatics/article/27/6/870/236489/Identifying-dispersed-epigenomic-domains-from-ChIP)
+* [RSem](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-12-323)
+* [Samtools](http://samtools.sourceforge.net/)
+* [SICER](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/)
+* [Star](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
+* [ZINBRA](https://github.com/JetBrains-Research/zinbra)
 
 Data standards and pipelines
 --------------

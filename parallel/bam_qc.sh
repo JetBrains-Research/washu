@@ -67,7 +67,7 @@ Rscript ${PHANTOMPEAKQUALTOOLS}/run_spp.R -c=${FILE} -savp -out=${WORK_DIR}/${NA
 #5   NRF=Distinct/Total
 #6   PBC1=OnePair/Distinct
 #7   PBC2=OnePair/TwoPair
-bash ${SCRIPT_DIR}/reports/pbc_nrf.sh ${FILE} > ${WORK_DIR}/${NAME}.pbc_nrf.tsv
+bash ${SCRIPT_DIR}/scripts/pbc_nrf.sh ${FILE} > ${WORK_DIR}/${NAME}.pbc_nrf.tsv
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS+=("$QSUB_ID")

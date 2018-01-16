@@ -12,4 +12,5 @@ export PYTHONPATH="/washu:$PYTHONPATH"
 # Fast tests#
 #############
 python -m pytest test/*.py
+python -m pytest test/downstream/*.py
 python -m pytest --pep8 -m pep8

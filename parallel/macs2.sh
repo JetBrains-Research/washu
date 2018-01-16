@@ -72,7 +72,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}*.*Peak
+bash ${SCRIPT_DIR}/scripts/rip.sh ${FILE} ${ID}*.*Peak
 SCRIPT
 
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"

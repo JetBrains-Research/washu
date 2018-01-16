@@ -59,7 +59,7 @@ for i in ${!PEAKS_FOLDERS[*]}; do
 #PBS -o ${PEAKS_FOLDER}/${F}_frip.log
 
 cd ${PEAKS_FOLDER}
-bash ${SCRIPT_DIR}/reports/rip.sh ${BAM} ${F}
+bash ${SCRIPT_DIR}/scripts/rip.sh ${BAM} ${F}
 
 SCRIPT
         echo "FILE: ${F}; TASK: ${QSUB_ID}"
@@ -71,5 +71,5 @@ wait_complete ${TASKS[@]}
 check_logs
 
 for PEAKS_FOLDER in ${PEAKS_FOLDERS[*]}; do
-    python ${SCRIPT_DIR}/reports/peaks_logs.py ${PEAKS_FOLDER}
+    python ${SCRIPT_DIR}/parallel/util/peaks_logs.py ${PEAKS_FOLDER}
 done

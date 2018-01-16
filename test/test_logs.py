@@ -9,7 +9,7 @@ from test.fixtures import test_data, tmp_dir
 @pytest.mark.parametrize(
     "util_name", ["macs2", "peaks", "bowtie", "bowtie2"])
 def test_process_logs(tmp_dir, test_data, util_name):
-    logger_fun = getattr(importlib.import_module("reports.{}_logs"
+    logger_fun = getattr(importlib.import_module("parallel.util.{}_logs"
                                                  .format(util_name)),
                          "process_{}_logs".format(util_name))
     logger_fun(test_data(util_name), tmp_dir)
@@ -32,7 +32,7 @@ def test_process_logs(tmp_dir, test_data, util_name):
 ])
 def test_problem_report(tmp_dir, test_data, util_name, log_folder,
                         err_type, msg):
-    logger_fun = getattr(importlib.import_module("reports.{}_logs"
+    logger_fun = getattr(importlib.import_module("parallel.util.{}_logs"
                                                  .format(util_name)),
                          "process_{}_logs".format(util_name))
     try:

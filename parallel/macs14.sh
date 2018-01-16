@@ -51,7 +51,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash ${SCRIPT_DIR}/reports/rip.sh ${FILE} ${ID}*.narrowPeak
+bash ${SCRIPT_DIR}/scripts/rip.sh ${FILE} ${ID}*.narrowPeak
 SCRIPT
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS+=("$QSUB_ID")
