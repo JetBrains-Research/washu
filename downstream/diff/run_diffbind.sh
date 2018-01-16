@@ -40,7 +40,7 @@ run_parallel << SCRIPT
 # This is necessary because qsub default working dir is user home
 cd ${DIFFBIND}
 module load R
-Rscript ${SCRIPT_DIR}/R/diffbind.R ${NAME}.csv
+Rscript ${SCRIPT_DIR}/diffbind.R ${NAME}.csv
 SCRIPT
 
 wait_complete "$QSUB_ID"
