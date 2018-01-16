@@ -12,7 +12,7 @@ WORK_DIR=$1
 REPORT_TSV=$2
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
+source $(dirname $0)/../../parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p $TMPDIR
 REPORT_TSV_TMP=$(mktemp $TMPDIR/reportXXXXXXX.tsv)
