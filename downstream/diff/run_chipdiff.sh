@@ -5,7 +5,7 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util.sh
+source $(dirname $0)/../parallel/util/util.sh
 SCRIPT_DIR="$(project_root_dir)"
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
@@ -105,7 +105,7 @@ run_parallel << SCRIPT
 # This is necessary because qsub default working dir is user home
 cd ${CHIPDIFF}
 
-source "${SCRIPT_DIR}/parallel/util.sh"
+source "${SCRIPT_DIR}/parallel/util/util.sh"
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 # Inplace sort

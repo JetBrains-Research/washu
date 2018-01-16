@@ -26,7 +26,7 @@ if [ ! -f "${CHROM_SIZES}" ]; then
 fi
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util.sh
+source $(dirname $0)/../parallel/util/util.sh
 SCRIPT_DIR="$(project_root_dir)"
 
 case "$INPUT" in

@@ -4,7 +4,7 @@
 which rseg &>/dev/null || { echo "rseg not found! Download rseg: <http://smithlabresearch.org/software/rseg/>"; exit 1; }
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util.sh
+source $(dirname $0)/../parallel/util/util.sh
 SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch rseg $@"
@@ -69,7 +69,7 @@ cd ${WORK_DIR}
 # See sort instructions at http://smithlabresearch.org/wp-content/uploads/rseg_manual_v0.4.4.pdf
 export LC_ALL=C
 
-source "${SCRIPT_DIR}/parallel/util.sh"
+source "${SCRIPT_DIR}/parallel/util/util.sh"
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${TMP_FOLDER}/${FILE_BED}

@@ -2,7 +2,7 @@
 # author oleg.shpynov@jetbrains.com
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util.sh
+source $(dirname $0)/../parallel/util/util.sh
 
 >&2 echo "Batch bowtie $@"
 if [ $# -lt 4 ]; then

@@ -4,7 +4,7 @@
 # TODO: fix hardcoded!
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util.sh
+source $(dirname $0)/../parallel/util/util.sh
 
 >&2 echo "Batch rnaseq-quality $@"
 if [ $# -lt 1 ]; then

@@ -36,7 +36,7 @@ def check_files(pattern, expected_files_number=None):
 
 
 def test_errors():
-    for file in glob.glob('**/*.log', recursive=True):
+    for file in glob.glob('fastq**/*.log', recursive=True):
         with open(file, 'r') as log:
             for line in log:
                 # IGNORE macs2 ValueError

@@ -20,7 +20,7 @@ BED_2=$2
 OUT_PREFIX=$3
 
 # Optional load technical stuff:
-source $(dirname $0)/../parallel/util.sh 2> /dev/null
+source $(dirname $0)/../parallel/util/util.sh 2> /dev/null
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 

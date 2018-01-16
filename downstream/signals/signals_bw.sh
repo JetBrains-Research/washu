@@ -9,7 +9,7 @@ which bigWigAverageOverBed &>/dev/null || {
     exit 1
 }
 # Load technical stuff
-source $(dirname $0)/../parallel/util.sh
+source $(dirname $0)/../parallel/util/util.sh
 SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch bw_signal $@"

@@ -21,7 +21,7 @@ fi
 SHIFT=$(($INSERT_SIZE / 2))
 
 # Optional load technical stuff:
-source $(dirname $0)/../parallel/util.sh 2> /dev/null
+source $(dirname $0)/../parallel/util/util.sh 2> /dev/null
 SCRIPT_DIR="$(project_root_dir)"
 
 

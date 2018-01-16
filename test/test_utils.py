@@ -57,7 +57,7 @@ def test_expand_path(tmp_dir, capfd, path, expected):
     open(os.path.join(tmp_dir, "geo/tmp/doo/file.txt"), 'a').close()
 
     path = os.path.join(tmp_dir, path)
-    util_sh = os.path.join(PROJECT_ROOT_PATH, "parallel/util.sh")
+    util_sh = os.path.join(PROJECT_ROOT_PATH, "parallel/util/util.sh")
     subprocess.run(
         "bash -c 'source {}; echo $(expand_path \"{}\")'".format(util_sh,
                                                                  path),
@@ -72,7 +72,7 @@ def test_module_mock(tmp_dir, capfd):
 
     with open(os.path.join(tmp_dir, "foo.sh"), 'a') as f:
         f.write("source {}/modules.sh\n"
-                "source {}/parallel/util.sh\n"
+                "source {}/parallel/util/util.sh\n"
                 "module load R\n".format(tmp_dir, PROJECT_ROOT_PATH))
     run("bash", "{}/foo.sh".format(tmp_dir))
     out, _err = capfd.readouterr()
@@ -84,7 +84,7 @@ def test_module_mock(tmp_dir, capfd):
 def test_run_parallel(tmp_dir, capfd):
     with open(os.path.join(tmp_dir, "foo.sh"), 'a') as f:
         f.write("""
-source {}/parallel/util.sh
+source {}/parallel/util/util.sh
 TASKS=""
 for i in $(seq 1 100); do
     echo $i
@@ -159,7 +159,7 @@ Exception ValueError: 'cannot resize this array: it does not own its data' in ..
 """)
     with open(os.path.join(tmp_dir, "foo.sh"), 'a') as f:
         f.write("cd {}\n"
-                "source {}/parallel/util.sh\n"
+                "source {}/parallel/util/util.sh\n"
                 "check_logs\n".format(tmp_dir, PROJECT_ROOT_PATH))
     run("bash", "{}/foo.sh".format(tmp_dir))
     out, _err = capfd.readouterr()

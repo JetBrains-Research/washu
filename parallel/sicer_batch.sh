@@ -11,7 +11,7 @@ which SICER.sh &>/dev/null || {
 }
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util.sh
+source $(dirname $0)/../parallel/util/util.sh
 SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch sicer $@"
@@ -75,7 +75,7 @@ do :
 
 module load bedtools2
 
-source "${SCRIPT_DIR}/parallel/util.sh"
+source "${SCRIPT_DIR}/parallel/util/util.sh"
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 # This is necessary because qsub default working dir is user home

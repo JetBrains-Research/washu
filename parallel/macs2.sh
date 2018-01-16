@@ -4,7 +4,7 @@
 which macs2 &>/dev/null || { echo "MACS2 not found! Download MACS2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util.sh
+source $(dirname $0)/../parallel/util/util.sh
 SCRIPT_DIR="$(project_root_dir)"
 
 >&2 echo "Batch macs2 $@"
@@ -48,7 +48,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}_macs2.log
 
-source "${SCRIPT_DIR}/parallel/util.sh"
+source "${SCRIPT_DIR}/parallel/util/util.sh"
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 # This is necessary because qsub default working dir is user home
