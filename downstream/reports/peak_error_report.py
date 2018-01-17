@@ -1,7 +1,5 @@
 import argparse
-import os
 import re
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -73,14 +71,9 @@ def detect_tool(path):
 if __name__ == "__main__":
     # Force matplotlib to not use any Xwindows backend.
     import matplotlib
-
     matplotlib.use('Agg')
 
-    parent_dir = os.path.dirname(os.path.realpath(__file__))
-    project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
-    sys.path.insert(0, project_root)
-
-    import matplotlib.pyplot as plt  # nopep8
+    import matplotlib.pyplot as plt
     from matplotlib.backends.backend_pdf import PdfPages
 
     _cli()

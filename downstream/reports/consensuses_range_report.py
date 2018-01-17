@@ -1,22 +1,7 @@
 import datetime
-import os
 import sys
 import tempfile
 from pathlib import Path
-
-# Force matplotlib to not use any Xwindows backend.
-import matplotlib
-
-matplotlib.use('Agg')
-
-parent_dir = os.path.dirname(os.path.realpath(__file__))
-project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
-sys.path.insert(0, project_root)
-
-from matplotlib.backends.backend_pdf import PdfPages  # nopep8
-from scripts.util import regions_extension, age, is_od, is_yd, is_od_or_yd  # nopep8
-from bed.bedtrace import run  # nopep8
-from downstream.peak_metrics import calc_consensus_file, venn_consensus, bar_consensus  # nopep8
 
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
@@ -28,7 +13,7 @@ Script creates pdf report with ChIP-seq consensus statistics:
 """
 
 
-def main():
+def _cli():
     args = sys.argv
 
     if len(args) < 2:
@@ -74,5 +59,14 @@ def main():
 
 
 if __name__ == "__main__":
+    # Force matplotlib to not use any Xwindows backend.
+    import matplotlib
+    matplotlib.use('Agg')
+
+    from matplotlib.backends.backend_pdf import PdfPages
+    from downstream.aging import regions_extension, age, is_od, is_yd, is_od_or_yd
+    from bed.bedtrace import run
+    from downstream.peak_metrics import calc_consensus_file, venn_consensus, bar_consensus
+
     num_of_threads = 30
-    main()
+    _cli()

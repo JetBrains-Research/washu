@@ -1,6 +1,4 @@
 import argparse
-import os
-import sys
 from pathlib import Path
 
 import numpy as np
@@ -75,17 +73,13 @@ def _cli():
 if __name__ == "__main__":
     # Force matplotlib to not use any Xwindows backend.
     import matplotlib
-
     matplotlib.use('Agg')
 
-    parent_dir = os.path.dirname(os.path.realpath(__file__))
-    project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
-    sys.path.insert(0, project_root)
-
-    import matplotlib.pyplot as plt  # nopep8
+    import matplotlib.pyplot as plt
     from matplotlib.backends.backend_pdf import PdfPages
-    from scripts.util import age
-    from bed.bedtrace import Bed, union  # nopep8
+
+    from downstream.aging import age
+    from bed.bedtrace import Bed, union
     from downstream.loci_of_interest import collect_peaks_in_folder
 
     _cli()

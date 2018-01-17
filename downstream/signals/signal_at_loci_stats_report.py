@@ -1,6 +1,4 @@
 import argparse
-import os
-import sys
 from collections import defaultdict
 from itertools import chain
 from pathlib import Path
@@ -327,10 +325,6 @@ def collect_loci_normalizations(datatype_paths):
 
 
 if __name__ == "__main__":
-    parent_dir = os.path.dirname(os.path.realpath(__file__))
-    project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
-    sys.path.insert(0, project_root)
-
     # Force matplotlib to not use any Xwindows backend.
     import matplotlib
     matplotlib.use('Agg')

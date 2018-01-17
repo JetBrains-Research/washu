@@ -1,6 +1,5 @@
 import argparse
 import datetime
-import os
 import sys
 from collections import defaultdict
 from itertools import chain
@@ -584,10 +583,6 @@ def manhattan_plot(pvalues_df, col_name, title, correction,
 
 
 if __name__ == "__main__":
-    parent_dir = os.path.dirname(os.path.realpath(__file__))
-    project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
-    sys.path.insert(0, project_root)
-
     # Force matplotlib to not use any Xwindows backend.
     import matplotlib
     matplotlib.use('Agg')

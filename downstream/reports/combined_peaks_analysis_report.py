@@ -2,7 +2,6 @@ import argparse
 import datetime
 import os
 import re
-import sys
 from pathlib import Path
 
 import pandas as pd
@@ -103,19 +102,14 @@ def _remove_donor_from_map(donor, paths_map):
 if __name__ == "__main__":
     # Force matplotlib to not use any Xwindows backend.
     import matplotlib
-
     matplotlib.use('Agg')
 
-    parent_dir = os.path.dirname(os.path.realpath(__file__))
-    project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
-    sys.path.insert(0, project_root)
-
-    import seaborn as sns  # nopep8
+    import seaborn as sns
     import downstream.loci_of_interest as loi
-    import matplotlib.pyplot as plt  # nopep8
-    from matplotlib.backends.backend_pdf import PdfPages  # nopep8
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_pdf import PdfPages
     from downstream.bed_metrics import bed_metric_table, plot_metric_heatmap, \
-        label_converter_donor_and_tool, save_plot  # nopep8
-    from downstream.peak_metrics import calc_consensus_file, bar_consensus, detect_tool  # nopep8
+        label_converter_donor_and_tool, save_plot
+    from downstream.peak_metrics import calc_consensus_file, bar_consensus, detect_tool
 
     _cli()

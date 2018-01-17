@@ -1,20 +1,14 @@
 import datetime
-import os
-import sys
 from itertools import chain
+
 from pathlib import Path
+import pandas as pd
 
 # Force matplotlib to not use any Xwindows backend.
 import matplotlib
-import pandas as pd
-
 matplotlib.use('Agg')
 
 from matplotlib.backends.backend_pdf import PdfPages  # nopep8
-
-parent_dir = os.path.dirname(os.path.realpath(__file__))
-project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
-sys.path.insert(0, project_root)
 
 from downstream.bed_metrics import plot_metric_heatmap, bed_metric_table, \
     label_converter_donor_and_tool, color_annotator_chain, \

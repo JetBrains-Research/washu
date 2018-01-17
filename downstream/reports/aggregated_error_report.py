@@ -1,7 +1,5 @@
 import argparse
-import os
 import re
-import sys
 from itertools import chain
 from pathlib import Path
 
@@ -126,16 +124,12 @@ def peaks_count_map(path):
 if __name__ == "__main__":
     # Force matplotlib to not use any Xwindows backend.
     import matplotlib
-
     matplotlib.use('Agg')
 
-    parent_dir = os.path.dirname(os.path.realpath(__file__))
-    project_root = os.path.abspath(os.path.join(parent_dir) + "/..")
-    sys.path.insert(0, project_root)
-
-    import matplotlib.pyplot as plt  # nopep8
+    import matplotlib.pyplot as plt
     from matplotlib.backends.backend_pdf import PdfPages
-    import downstream.peak_metrics as pm  # nopep8
+
+    import downstream.peak_metrics as pm
     from bed.bedtrace import Bed
 
     _cli()
