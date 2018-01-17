@@ -21,7 +21,7 @@ fi
 SHIFT=$(($INSERT_SIZE / 2))
 
 # Optional load technical stuff:
-source ${WASHU_ROOT}/parallel/util/util.sh/null
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 
 # Convert reads to BAM is required

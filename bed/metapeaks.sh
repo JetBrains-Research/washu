@@ -25,7 +25,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 # Optional load technical stuff:
-source ${WASHU_ROOT}/parallel/util/util.sh/null
+source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
