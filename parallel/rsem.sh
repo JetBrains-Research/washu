@@ -3,8 +3,7 @@
 # TODO: fix hardcoded!
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch rsem $@"
 if [ $# -lt 1 ]; then
@@ -42,6 +41,6 @@ SCRIPT
 done
 wait_complete ${TASKS[@]}
 module load R
-Rscript ${PROJECT_ROOT}/parallel/util/gather.R
+Rscript ${WASHU_ROOT}/parallel/util/gather.R
 
 >&2 echo "Done. Batch rsem $@"

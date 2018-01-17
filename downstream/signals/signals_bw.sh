@@ -9,8 +9,7 @@ which bigWigAverageOverBed &>/dev/null || {
     exit 1
 }
 # Load technical stuff
-source $(dirname $0)/../../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch bw_signal $@"
 if [ $# -lt 3 ]; then
@@ -147,7 +146,7 @@ then
     source activate py35 || source activate py3.5
 fi
 cd $RESULTS_FOLDER
-python ${PROJECT_ROOT}/downstream/signals/signals.py ${RESULTS_FOLDER}/${ID}.tsv ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
+python ${WASHU_ROOT}/downstream/signals/signals.py ${RESULTS_FOLDER}/${ID}.tsv ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
 SCRIPT
 wait_complete $QSUB_ID
 

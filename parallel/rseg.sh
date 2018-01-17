@@ -4,8 +4,7 @@
 which rseg &>/dev/null || { echo "rseg not found! Download rseg: <http://smithlabresearch.org/software/rseg/>"; exit 1; }
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch rseg $@"
 if [ $# -lt 3 ]; then
@@ -45,7 +44,7 @@ do :
     NAME=${FILE%%.bam} # file name without extension
     FILE_BED=${NAME}.bed
 
-    INPUT=$(python ${PROJECT_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python ${WASHU_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
     INPUT_BED=${INPUT%%.bam}.bed
 
@@ -69,7 +68,7 @@ cd ${WORK_DIR}
 # See sort instructions at http://smithlabresearch.org/wp-content/uploads/rseg_manual_v0.4.4.pdf
 export LC_ALL=C
 
-source "${PROJECT_ROOT}/parallel/util/util.sh"
+source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${TMP_FOLDER}/${FILE_BED}
@@ -92,7 +91,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash ${PROJECT_ROOT}/scripts/rip.sh ${FILE} ${NAME}_domains.bed
+bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${NAME}_domains.bed
 SCRIPT
 
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

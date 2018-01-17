@@ -6,7 +6,8 @@ export -f module
 
 module load bedtools2
 export IS_TEST=TRUE
-export PYTHONPATH="/washu:$PYTHONPATH"
+export WASHU_ROOT="/washu"
+export PYTHONPATH="$WASHU_ROOT:$PYTHONPATH"
 
 #############
 # Fast tests#

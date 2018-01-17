@@ -10,7 +10,7 @@ import pandas as pd
 from downstream.signals import signals_visualize
 from downstream.signals import signals_tests
 from scripts.util import *
-
+from downstream.aging import *
 
 def process(data_path, sizes_path, peaks_sizes_path, post_process):
     data = pd.read_csv(data_path, sep='\t',

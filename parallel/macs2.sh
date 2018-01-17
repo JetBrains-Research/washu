@@ -4,8 +4,7 @@
 which macs2 &>/dev/null || { echo "MACS2 not found! Download MACS2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch macs2 $@"
 if [ $# -lt 5 ]; then
@@ -24,7 +23,7 @@ if [ ! -f ${CHROM_SIZES} ]; then
     echo "chrom.sizes file not specified, no signal"
 fi
 
-SPECIES=$(python ${PROJECT_ROOT}/scripts/util.py macs_species ${GENOME})
+SPECIES=$(python ${WASHU_ROOT}/scripts/util.py macs_species ${GENOME})
 
 TASKS=()
 for WORK_DIR in ${WORK_DIRS}; do :
@@ -34,7 +33,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
 
     for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
     do :
-        INPUT=$(python ${PROJECT_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
+        INPUT=$(python ${WASHU_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
         echo "${FILE}: control file: ${INPUT}"
 
         NAME=${FILE%%.bam} # file name without extension
@@ -48,7 +47,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}_macs2.log
 
-source "${PROJECT_ROOT}/parallel/util/util.sh"
+source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 # This is necessary because qsub default working dir is user home
@@ -64,7 +63,7 @@ if [ -f "${INPUT}" ]; then
     if [ -f "${CHROM_SIZES}" ]; then
         echo "Create fold enrichment signal track for ${FILE} and ${INPUT}"
         macs2 bdgcmp -t ${ID}_treat_pileup.bdg -c ${ID}_control_lambda.bdg -o ${NAME}_signal.bdg -m FE
-        bash ${PROJECT_ROOT}/scripts/bdg2bw.sh ${NAME}_signal.bdg ${CHROM_SIZES}
+        bash ${WASHU_ROOT}/scripts/bdg2bw.sh ${NAME}_signal.bdg ${CHROM_SIZES}
     fi
 else
     echo "${FILE}: no control file"
@@ -72,7 +71,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash ${PROJECT_ROOT}/scripts/rip.sh ${FILE} ${ID}*.*Peak
+bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${ID}*.*Peak
 SCRIPT
 
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"

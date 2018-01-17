@@ -6,8 +6,7 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "peaks_frip.sh: $@"
 
@@ -59,7 +58,7 @@ for i in ${!PEAKS_FOLDERS[*]}; do
 #PBS -o ${PEAKS_FOLDER}/${F}_frip.log
 
 cd ${PEAKS_FOLDER}
-bash ${PROJECT_ROOT}/scripts/rip.sh ${BAM} ${F}
+bash ${WASHU_ROOT}/scripts/rip.sh ${BAM} ${F}
 
 SCRIPT
         echo "FILE: ${F}; TASK: ${QSUB_ID}"
@@ -71,5 +70,5 @@ wait_complete ${TASKS[@]}
 check_logs
 
 for PEAKS_FOLDER in ${PEAKS_FOLDERS[*]}; do
-    python ${PROJECT_ROOT}/parallel/util/peaks_logs.py ${PEAKS_FOLDER}
+    python ${WASHU_ROOT}/parallel/util/peaks_logs.py ${PEAKS_FOLDER}
 done

@@ -2,8 +2,7 @@
 # author zayats1812@mail.ru
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch fragments $@"
 if [ $# -lt 1 ]; then
@@ -38,7 +37,7 @@ samtools view -f66 $FILE | cut -f 9 | sed 's/^-//' > ${NAME}_metrics.txt
 
 module unload samtools # unload samtools, because it conflicts with R at the moment
 module load R
-Rscript ${PROJECT_ROOT}/parallel/util/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
+Rscript ${WASHU_ROOT}/parallel/util/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}:${FILE}; TASK: ${QSUB_ID}"
         TASKS+=("$QSUB_ID")

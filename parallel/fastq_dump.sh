@@ -14,7 +14,7 @@
 # author roman.chernyatchik@jetbrains.com
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch fastq-dump $@"
 if [ $# -lt 1 ]; then

@@ -29,7 +29,7 @@ if [[ -f ${RIP_FILE} ]]; then
     exit 0
 fi
 
-source $(dirname $0)/../parallel/util/util.sh 2> /dev/null
+source ${WASHU_ROOT}/parallel/util/util.sh/null
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 

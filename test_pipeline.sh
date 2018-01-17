@@ -5,7 +5,8 @@ module() { source /opt/module.sh $@; }
 export -f module
 
 export IS_TEST=TRUE
-export PYTHONPATH="/washu:$PYTHONPATH"
+export WASHU_ROOT="/washu"
+export PYTHONPATH="$WASHU_ROOT:$PYTHONPATH"
 
 ##################
 # Pipeline tests #

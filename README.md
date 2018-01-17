@@ -19,15 +19,16 @@ python pipeline_chipseq.py <FASTQ_FOLDER> <INDEXES> <genome>
 
 Requirements
 ------------
-* Ensure you have Python 3 installed as default interpreter 
+* Ensure you have Python 3 installed as default interpreter
 * Add the following to `~/.bashrc` (Linux) or `~/.bash_profile` (MacOS):
 ```bash
-# Allow pipeline execution from anywhere
-export PYTHONPATH="<PATH_TO_REPOSITORY>:$PYTHONPATH"
-```
-* Configure parallelism level (when executed not on PBS):
-```bash
-# Allow up to 8 tasks to be executed simultaneously
+# Configure project path
+export WASHU_ROOT="<PATH_TO_REPOSITORY>"
+
+# Configure correct python code execution
+export PYTHONPATH="$WASHU_ROOT:$PYTHONPATH"
+
+# Configure local machine parallelism
 export WASHU_PARALLELISM=8
 ```
 

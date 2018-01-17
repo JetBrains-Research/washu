@@ -21,12 +21,11 @@ fi
 SHIFT=$(($INSERT_SIZE / 2))
 
 # Optional load technical stuff:
-source $(dirname $0)/../parallel/util/util.sh 2> /dev/null
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh/null
 
 
 # Convert reads to BAM is required
-BAM=$(bash "${PROJECT_ROOT}/scripts/reads2bam.sh" ${INPUT} ${CHROM_SIZES})
+BAM=$(bash "${WASHU_ROOT}/scripts/reads2bam.sh" ${INPUT} ${CHROM_SIZES})
 # Covert bam to bdg
 if [[ ! -z  ${RESULT} ]]; then
     BDG=${RESULT/.bw/.bdg}
@@ -39,9 +38,9 @@ mkdir -p "${TMPDIR}"
 
 NAME=${BAM%%.bam}; NAME=${NAME##*/} # file name without extension
 
-bash ${PROJECT_ROOT}/scripts/bam2tags.sh ${BAM} ${INSERT_SIZE} > ${TMPDIR}/${NAME}.tags
-bash ${PROJECT_ROOT}/scripts/tags2bdg.sh  ${TMPDIR}/${NAME}.tags > ${BDG}
-bash ${PROJECT_ROOT}/scripts/bdg2bw.sh ${BDG} ${CHROM_SIZES}
+bash ${WASHU_ROOT}/scripts/bam2tags.sh ${BAM} ${INSERT_SIZE} > ${TMPDIR}/${NAME}.tags
+bash ${WASHU_ROOT}/scripts/tags2bdg.sh  ${TMPDIR}/${NAME}.tags > ${BDG}
+bash ${WASHU_ROOT}/scripts/bdg2bw.sh ${BDG} ${CHROM_SIZES}
 # Cleanup
 rm ${BDG}
 

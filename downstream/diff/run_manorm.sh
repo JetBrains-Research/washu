@@ -5,8 +5,7 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
 # Load technical stuff
-source $(dirname $0)/../../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
@@ -89,7 +88,7 @@ SCRIPT
     wait_complete "$QSUB_ID1 $QSUB_ID2"
 
     check_logs
-    bash ${PROJECT_ROOT}/bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
+    bash ${WASHU_ROOT}/bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
 fi
 
 
@@ -171,7 +170,7 @@ SCRIPT
 # This is necessary because qsub default working dir is user home
 cd ${MANORM}
 
-source "${PROJECT_ROOT}/parallel/util/util.sh"
+source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo \"/tmp\")
 
 # Sort inplace

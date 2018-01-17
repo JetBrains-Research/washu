@@ -5,7 +5,7 @@
 which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 
 # Load technical stuff
-source $(dirname $0)/../../parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"

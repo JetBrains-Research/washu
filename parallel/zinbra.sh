@@ -2,8 +2,7 @@
 # author oleg.shpynov@jetbrains.com
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch zinbra $@"
 if [ $# -lt 5 ]; then
@@ -35,7 +34,7 @@ cd ${WORK_DIR}
 TASKS=()
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
-    INPUT=$(python ${PROJECT_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python ${WASHU_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE}: control file: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
@@ -75,7 +74,7 @@ fi
 
 module load bedtools2
 # Compute Reads in Peaks
-bash ${PROJECT_ROOT}/scripts/rip.sh ${FILE} ${ID}_peaks.bed
+bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${ID}_peaks.bed
 SCRIPT
 
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

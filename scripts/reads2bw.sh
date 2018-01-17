@@ -12,8 +12,7 @@ which bedtools &>/dev/null || {
    }
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "bam2bw $@"
 if [ $# -lt 2 ]; then
@@ -32,7 +31,7 @@ if [ ! -f "${CHROM_SIZES}" ]; then
 fi
 
 # Convert reads to BAM is required
-BAM=$(bash "${PROJECT_ROOT}/scripts/reads2bam.sh" ${INPUT} ${CHROM_SIZES})
+BAM=$(bash "${WASHU_ROOT}/scripts/reads2bam.sh" ${INPUT} ${CHROM_SIZES})
 
 # Covert bam to bdg
 if [[ ! -z  ${RESULT} ]]; then
@@ -42,6 +41,6 @@ else
 fi
 
 bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${BDG_FILE}
-bash "${PROJECT_ROOT}/scripts/bdg2bw.sh" ${BDG_FILE} ${CHROM_SIZES}
+bash "${WASHU_ROOT}/scripts/bdg2bw.sh" ${BDG_FILE} ${CHROM_SIZES}
 # Cleanup
 rm ${BDG_FILE}

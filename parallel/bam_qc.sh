@@ -5,8 +5,7 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 >&2 echo "bam_qc: $@"
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch bam_qc $@"
 if [ $# -lt 2 ]; then
@@ -35,7 +34,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_bam_qc.log
 
-source "${PROJECT_ROOT}/parallel/util/util.sh"
+source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 # This is necessary because qsub default working dir is user home
@@ -67,7 +66,7 @@ Rscript ${PHANTOMPEAKQUALTOOLS}/run_spp.R -c=${FILE} -savp -out=${WORK_DIR}/${NA
 #5   NRF=Distinct/Total
 #6   PBC1=OnePair/Distinct
 #7   PBC2=OnePair/TwoPair
-bash ${PROJECT_ROOT}/scripts/pbc_nrf.sh ${FILE} > ${WORK_DIR}/${NAME}.pbc_nrf.tsv
+bash ${WASHU_ROOT}/scripts/pbc_nrf.sh ${FILE} > ${WORK_DIR}/${NAME}.pbc_nrf.tsv
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
         TASKS+=("$QSUB_ID")

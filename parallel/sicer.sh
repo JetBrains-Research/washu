@@ -11,8 +11,7 @@ which SICER.sh &>/dev/null || {
 }
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch sicer $@"
 if [ $# -lt 4 ]; then
@@ -37,7 +36,7 @@ GENOME=$2
 CHROM_SIZES=$3
 FDR=$4
 
-EFFECTIVE_GENOME_FRACTION=$(python ${PROJECT_ROOT}/scripts/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
+EFFECTIVE_GENOME_FRACTION=$(python ${WASHU_ROOT}/scripts/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
 echo "EFFECTIVE_GENOME_FRACTION: ${EFFECTIVE_GENOME_FRACTION}"
 
 if [ -z "${EFFECTIVE_GENOME_FRACTION}" ]; then
@@ -63,7 +62,7 @@ do :
         FILE_BED=${NAME}.bed # It is used for results naming
         PILEUP_BED=${NAME}_pileup.bed
 
-        INPUT=$(python ${PROJECT_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
+        INPUT=$(python ${WASHU_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
         echo "${FILE} input: ${INPUT}"
         if [ ! -f "${INPUT}" ]; then
             echo "SICER requires control"
@@ -79,7 +78,7 @@ do :
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}_sicer.log
 
-source "${PROJECT_ROOT}/parallel/util/util.sh"
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 SICER_FOLDER=\${TMPDIR}/${ID}
@@ -143,7 +142,7 @@ rm -r \${SICER_FOLDER}
 cd ${WORK_DIR}
 
 # Compute Reads in Peaks
-bash ${PROJECT_ROOT}/scripts/rip.sh ${FILE} ${ISLAND_BED}
+bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${ISLAND_BED}
 
 # Cleanup
 if [ -z ${BATCH_MODE} ]; then

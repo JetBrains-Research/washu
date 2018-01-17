@@ -84,50 +84,6 @@ else
     }
 fi
 
-# Convert path to absolute path and expand all symlinks
-function expand_path() {
-    # expand ".." and "." including trailing case
-    # based on https://stackoverflow.com/questions/3915040/bash-fish-command-to-print-absolute-path-to-a-file
-    TARGET_FILE="$(pwd)/$1"
-
-    if [ -d "$1" ]; then
-        # dir
-        TARGET_FILE="$(cd "$1"; pwd)"
-    elif [ -f "$1" ]; then
-        # file
-        if [[ $1 == */* ]]; then
-            TARGET_FILE="$(cd "${1%/*}"; pwd)/${1##*/}"
-        fi
-    fi
-
-    # resolve symlinks:
-    # replacement for `readlink -f path` which isn't available in MacOS
-    # http://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
-    cd "$(dirname ${TARGET_FILE})"
-    TARGET_FILE=`basename ${TARGET_FILE}`
-
-    # Iterate down a (possible) chain of symlinks
-    while [ -L "$TARGET_FILE" ]
-    do
-        TARGET_FILE="$(readlink ${TARGET_FILE})"
-        cd "$(dirname ${TARGET_FILE})"
-        TARGET_FILE="$(basename ${TARGET_FILE})"
-    done
-
-    # Compute the canonicalized name by finding the physical path
-    # for the directory we're in and appending the target file.
-    PHYS_DIR="$(pwd -P)"
-    echo "${PHYS_DIR}/${TARGET_FILE}"
-}
-
-# IMPORTANT!
-# Project root dir is computed once for this particular script.
-# Be careful when moving.
-_PROJECT_ROOT_DIR="$(expand_path "$(dirname $0)/../..")"
-project_root_dir() {
-    echo ${_PROJECT_ROOT_DIR}
-}
-
 # Checks for errors in logs, stops the world
 check_logs()
 {

@@ -4,7 +4,7 @@
 # TODO: fix hardcoded!
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch rnaseq-quality $@"
 if [ $# -lt 1 ]; then
@@ -25,7 +25,7 @@ do :
     TAG=${FILE%%.bam} # file name without extension
 
     # Submit task
-    QSUB_ID=$(qsub -v WORK_DIR="$WORK_DIR",TAG="$TAG" $(dirname $0)/rnaseq_quality_task.sh)
+    QSUB_ID=$(qsub -v WORK_DIR="$WORK_DIR",TAG="$TAG" ${WASHU_ROOT}/parallel/rnaseq_quality_task.sh)
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS+=("$QSUB_ID")
 done

@@ -69,7 +69,7 @@ if [ -f ${TMP} ]; then
 fi
 
 # Optional load technical stuff:
-source $(dirname $0)/../parallel/util/util.sh 2> /dev/null
+source ${WASHU_ROOT}/parallel/util/util.sh/null
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
@@ -108,7 +108,7 @@ else
 fi
 
 INTERSECT=$(bedtools intersect$SORTED_OPT -a $BED1 -b $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
-UNION=$(bash $(dirname $0)/union.sh $BED1 $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
+UNION=$(bash ${WASHU_ROOT}/bed/union.sh $BED1 $BED2 | awk 'BEGIN{L=0}; {L+=$3-$2}; END{print(L)}')
 
 # Empty union results in 0
 if [[ $UNION -eq "0" ]]; then

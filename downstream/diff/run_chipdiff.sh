@@ -5,8 +5,7 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://github.com/taoliu/MACS/wiki/Install-macs2>"; exit 1; }
 
 # Load technical stuff
-source $(dirname $0)/../../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
@@ -70,7 +69,7 @@ cd ${CHIPDIFF}
 module load bedtools2
 for F in ${READS_Y}; do
     >&2 echo \$F
-    bash ${PROJECT_ROOT}/scripts/bam2tags.sh \$F $SHIFT_Y >> Y_tags.tag
+    bash ${WASHU_ROOT}/scripts/bam2tags.sh \$F $SHIFT_Y >> Y_tags.tag
 done
 SCRIPT
 
@@ -90,7 +89,7 @@ cd ${CHIPDIFF}
 module load bedtools2
 for F in ${READS_O}; do
     >&2 echo \$F
-    bash ${PROJECT_ROOT}/scripts/bam2tags.sh \$F $SHIFT_O >> O_tags.tag
+    bash ${WASHU_ROOT}/scripts/bam2tags.sh \$F $SHIFT_O >> O_tags.tag
 done
 SCRIPT
     QSUB_ID2=$QSUB_ID
@@ -106,7 +105,7 @@ run_parallel << SCRIPT
 # This is necessary because qsub default working dir is user home
 cd ${CHIPDIFF}
 
-source "${PROJECT_ROOT}/parallel/util/util.sh"
+source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 # Inplace sort

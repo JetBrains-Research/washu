@@ -2,8 +2,7 @@
 # author oleg.shpynov@jetbrains.com
 
 # Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-PROJECT_ROOT=$(project_root_dir)
+source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch bigwig $@"
 if [ $# -lt 2 ]; then
@@ -34,7 +33,7 @@ for WORK_DIR in ${WORK_DIRS}; do
 cd ${WORK_DIR}
 
 module load bedtools2
-bash ${PROJECT_ROOT}/scripts/reads2bw.sh ${FILE} ${CHROM_SIZES}
+bash ${WASHU_ROOT}/scripts/reads2bw.sh ${FILE} ${CHROM_SIZES}
 SCRIPT
             echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
             TASKS+=("$QSUB_ID")

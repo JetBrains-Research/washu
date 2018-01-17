@@ -69,23 +69,10 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-# Optional load technical stuff:
-source $(dirname $0)/../parallel/util/util.sh 2> /dev/null
-
 FILES=$@
 
 if [ ${COUNT} -gt 0 ]; then
     CONS_COUNT=`expr ${COUNT} - 1`
-fi
-
-if [[ ${FILES} == *"island.bed"* ]]; then
-  TOOL=${TOOL}"_sicer"
-fi
-if [[ ${FILES} == *"Peak"* ]]; then
-  TOOL=${TOOL}"_macs2"
-fi
-if [[ ${FILES} == *"_peaks.bed"* ]]; then
-  TOOL=${TOOL}"_zinbra"
 fi
 
 if [ ${PERCENT} -gt 0 ]; then
