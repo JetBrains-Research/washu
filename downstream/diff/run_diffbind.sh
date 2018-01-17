@@ -5,7 +5,7 @@ which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <ht
 
 # Load technical stuff
 source $(dirname $0)/../../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
+PROJECT_ROOT=$(project_root_dir)
 
 ################################################################################
 # Configuration start ##########################################################
@@ -40,7 +40,7 @@ run_parallel << SCRIPT
 # This is necessary because qsub default working dir is user home
 cd ${DIFFBIND}
 module load R
-Rscript ${SCRIPT_DIR}/diffbind.R ${NAME}.csv
+Rscript ${PROJECT_ROOT}/downstream/diff/diffbind.R ${NAME}.csv
 SCRIPT
 
 wait_complete "$QSUB_ID"

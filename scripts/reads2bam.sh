@@ -25,10 +25,6 @@ if [ ! -f "${CHROM_SIZES}" ]; then
   exit 1
 fi
 
-# Load technical stuff
-source $(dirname $0)/../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
-
 case "$INPUT" in
   *.bed.gz )
     >&2 echo "bed.gz: $INPUT"

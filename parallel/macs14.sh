@@ -5,7 +5,7 @@ which macs14 &>/dev/null || { echo "MACS14 not found! Download MACS14: <http://l
 
 # Load technical stuff
 source $(dirname $0)/../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
+PROJECT_ROOT=$(project_root_dir)
 
 >&2 echo "Batch macs14 $@"
 if [ $# -lt 3 ]; then
@@ -17,14 +17,14 @@ WORK_DIR=$1
 GENOME=$2
 P=$3
 
-SPECIES=$(python ${SCRIPT_DIR}/scripts/util.py macs_species ${GENOME})
+SPECIES=$(python ${PROJECT_ROOT}/scripts/util.py macs_species ${GENOME})
 
 cd ${WORK_DIR}
 
 TASKS=()
 for FILE in $(find . -name '*.bam' | sed 's#\./##g' | grep -v 'input')
 do :
-    INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python ${PROJECT_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE}: control file: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
@@ -51,7 +51,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash ${SCRIPT_DIR}/scripts/rip.sh ${FILE} ${ID}*.narrowPeak
+bash ${PROJECT_ROOT}/scripts/rip.sh ${FILE} ${ID}*.narrowPeak
 SCRIPT
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS+=("$QSUB_ID")

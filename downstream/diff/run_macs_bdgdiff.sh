@@ -6,7 +6,6 @@ which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://gith
 
 # Load technical stuff
 source $(dirname $0)/../../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
 
 ################################################################################
 # Configuration start ##########################################################

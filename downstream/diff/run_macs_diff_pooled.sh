@@ -6,7 +6,7 @@ which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://gith
 
 # Load technical stuff
 source $(dirname $0)/../../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
+PROJECT_ROOT=$(project_root_dir)
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
@@ -64,5 +64,5 @@ QSUB_ID2=$QSUB_ID
 wait_complete "$QSUB_ID1 $QSUB_ID2"
 
 check_logs
-bash ${SCRIPT_DIR}/bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
+bash ${PROJECT_ROOT}/bed/compare.sh Y_${BROAD_CUTOFF}_peaks.broadPeak O_${BROAD_CUTOFF}_peaks.broadPeak ${NAME}_${BROAD_CUTOFF}
 

@@ -3,7 +3,7 @@
 
 # Load technical stuff
 source $(dirname $0)/../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
+PROJECT_ROOT=$(project_root_dir)
 
 >&2 echo "Batch tags_bigwig $@"
 if [ $# -lt 2 ]; then
@@ -38,7 +38,7 @@ for WORK_DIR in ${WORK_DIRS}; do
 cd ${WORK_DIR}
 
 module load bedtools2
-bash ${SCRIPT_DIR}/scripts/reads2tagsbw.sh ${FILE} ${INSERT_SIZE} ${CHROM_SIZES}
+bash ${PROJECT_ROOT}/scripts/reads2tagsbw.sh ${FILE} ${INSERT_SIZE} ${CHROM_SIZES}
 SCRIPT
             echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
             TASKS+=("$QSUB_ID")

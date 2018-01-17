@@ -3,7 +3,7 @@
 
 # Load technical stuff
 source $(dirname $0)/../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
+PROJECT_ROOT=$(project_root_dir)
 
 >&2 echo "Batch fragments $@"
 if [ $# -lt 1 ]; then
@@ -38,7 +38,7 @@ samtools view -f66 $FILE | cut -f 9 | sed 's/^-//' > ${NAME}_metrics.txt
 
 module unload samtools # unload samtools, because it conflicts with R at the moment
 module load R
-Rscript ${SCRIPT_DIR}/parallel/util/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
+Rscript ${PROJECT_ROOT}/parallel/util/fragments.R ${NAME}_metrics.txt ${NAME}_fragments.png
 SCRIPT
         echo "FILE: ${WORK_DIR_NAME}:${FILE}; TASK: ${QSUB_ID}"
         TASKS+=("$QSUB_ID")

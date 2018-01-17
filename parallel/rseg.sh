@@ -5,7 +5,7 @@ which rseg &>/dev/null || { echo "rseg not found! Download rseg: <http://smithla
 
 # Load technical stuff
 source $(dirname $0)/../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
+PROJECT_ROOT=$(project_root_dir)
 
 >&2 echo "Batch rseg $@"
 if [ $# -lt 3 ]; then
@@ -45,7 +45,7 @@ do :
     NAME=${FILE%%.bam} # file name without extension
     FILE_BED=${NAME}.bed
 
-    INPUT=$(python ${SCRIPT_DIR}/scripts/util.py find_input ${WORK_DIR}/${FILE})
+    INPUT=$(python ${PROJECT_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
     echo "${FILE} input: ${INPUT}"
     INPUT_BED=${INPUT%%.bam}.bed
 
@@ -69,7 +69,7 @@ cd ${WORK_DIR}
 # See sort instructions at http://smithlabresearch.org/wp-content/uploads/rseg_manual_v0.4.4.pdf
 export LC_ALL=C
 
-source "${SCRIPT_DIR}/parallel/util/util.sh"
+source "${PROJECT_ROOT}/parallel/util/util.sh"
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${TMP_FOLDER}/${FILE_BED}
@@ -92,7 +92,7 @@ else
 fi
 
 # Compute Reads in Peaks
-bash ${SCRIPT_DIR}/scripts/rip.sh ${FILE} ${NAME}_domains.bed
+bash ${PROJECT_ROOT}/scripts/rip.sh ${FILE} ${NAME}_domains.bed
 SCRIPT
 
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

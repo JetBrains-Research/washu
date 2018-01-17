@@ -6,7 +6,8 @@ which macs2 &>/dev/null || { echo "macs2 not found! Install macs2: <https://gith
 
 # Load technical stuff
 source $(dirname $0)/../../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
+PROJECT_ROOT=$(project_root_dir)
+
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
@@ -69,7 +70,7 @@ cd ${CHIPDIFF}
 module load bedtools2
 for F in ${READS_Y}; do
     >&2 echo \$F
-    bash ${SCRIPT_DIR}/scripts/bam2tags.sh \$F $SHIFT_Y >> Y_tags.tag
+    bash ${PROJECT_ROOT}/scripts/bam2tags.sh \$F $SHIFT_Y >> Y_tags.tag
 done
 SCRIPT
 
@@ -89,7 +90,7 @@ cd ${CHIPDIFF}
 module load bedtools2
 for F in ${READS_O}; do
     >&2 echo \$F
-    bash ${SCRIPT_DIR}/scripts/bam2tags.sh \$F $SHIFT_O >> O_tags.tag
+    bash ${PROJECT_ROOT}/scripts/bam2tags.sh \$F $SHIFT_O >> O_tags.tag
 done
 SCRIPT
     QSUB_ID2=$QSUB_ID
@@ -105,7 +106,7 @@ run_parallel << SCRIPT
 # This is necessary because qsub default working dir is user home
 cd ${CHIPDIFF}
 
-source "${SCRIPT_DIR}/parallel/util/util.sh"
+source "${PROJECT_ROOT}/parallel/util/util.sh"
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 # Inplace sort

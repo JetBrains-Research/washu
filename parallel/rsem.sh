@@ -4,7 +4,7 @@
 
 # Load technical stuff
 source $(dirname $0)/../parallel/util/util.sh
-SCRIPT_DIR="$(project_root_dir)"
+PROJECT_ROOT=$(project_root_dir)
 
 >&2 echo "Batch rsem $@"
 if [ $# -lt 1 ]; then
@@ -42,6 +42,6 @@ SCRIPT
 done
 wait_complete ${TASKS[@]}
 module load R
-Rscript ${SCRIPT_DIR}/parallel/util/gather.R
+Rscript ${PROJECT_ROOT}/parallel/util/gather.R
 
 >&2 echo "Done. Batch rsem $@"
