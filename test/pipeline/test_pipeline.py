@@ -42,8 +42,8 @@ def test_errors():
                 # IGNORE macs2 ValueError
                 # See for details: https://github.com/JetBrains-Research/washu/issues/14
                 if re.match('.*(error|exception|No such file or directory).*',
-                            line, flags=re.IGNORECASE) is not None and \
-                                re.match('.*ValueError.*', line) is None:
+                            line, flags=re.IGNORECASE) and \
+                        not re.match('.*ValueError.*', line):
                     print('Error in log file', file, ':', line)
                     assert False
 
