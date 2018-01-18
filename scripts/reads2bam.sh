@@ -28,8 +28,8 @@ fi
 case "$INPUT" in
   *.bed.gz )
     >&2 echo "bed.gz: $INPUT"
-    gunzip --keep ${INPUT}
     UNZIPPED=${INPUT%%.gz}
+    gunzip -c ${INPUT} > ${UNZIPPED}
     BAM=${INPUT/.bed.gz/.bam}
     bedtools bedtobam -i ${UNZIPPED} -g ${CHROM_SIZES} > ${BAM}
     rm -f ${UNZIPPED}
