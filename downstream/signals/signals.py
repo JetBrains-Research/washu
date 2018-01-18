@@ -7,35 +7,35 @@ import tempfile
 import numpy as np
 import pandas as pd
 
-from downstream.signals import signals_visualize
-from downstream.signals import signals_tests
-from scripts.util import *
 from downstream.aging import *
+from downstream.signals import signals_tests
+from downstream.signals import signals_visualize
+from scripts.util import *
 
 
 def process(data_path, sizes_path, peaks_sizes_path, post_process_callback):
-    data = pd.read_csv(data_path, sep='\t',
-                       names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
+    loaded = pd.read_csv(data_path, sep='\t',
+                         names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
 
-    processing_chipseq = not [n for n in data['name'] if re.match('.*(meth|trans|mirna).*', n)]
+    processing_chipseq = not [n for n in loaded['name'] if re.match('.*(meth|trans|mirna).*', n)]
     if processing_chipseq:
         print("Processing ChIP-Seq")
     else:
         print("Processing Methylation|Transcription|miRNA, input not found")
 
     print('Processing RAW signal')
-    df_raw = pd.pivot_table(data, index=['chr', 'start', 'end'],
-                            columns='name',
-                            values='coverage' if processing_chipseq else 'mean',
-                            fill_value=0)
+    raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
+                              columns='name',
+                              values='coverage' if processing_chipseq else 'mean',
+                              fill_value=0)
     raw_path = re.sub('.tsv', '_raw.tsv', data_path)
-    df_raw.to_csv(raw_path, sep='\t')
+    raw_data.to_csv(raw_path, sep='\t')
     print('Saved RAW signal to {}'.format(raw_path))
     post_process_callback(raw_path)
 
     print("Processing QUANTILE normalization")
     quantile_path = re.sub('.tsv', '_q.tsv', data_path)
-    process_quantile(quantile_path, df_raw)
+    process_quantile(quantile_path, raw_data)
     post_process_callback(quantile_path)
 
     # Normalization is available only for ChIP-Seq
@@ -46,7 +46,7 @@ def process(data_path, sizes_path, peaks_sizes_path, post_process_callback):
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     sizes_pm = sizes / 1000000.0
     sizes_pm.columns = ['size_pm']
-    data = pd.merge(data, sizes_pm, left_on="name", how='left', right_index=True)
+    data = pd.merge(loaded, sizes_pm, left_on="name", how='left', right_index=True)
 
     data['rpm'] = data['coverage'] / data['size_pm']
     rpm_path = re.sub('.tsv', '_rpm.tsv', data_path)
@@ -61,13 +61,15 @@ def process(data_path, sizes_path, peaks_sizes_path, post_process_callback):
     post_process_callback(rpkm_path)
 
     if peaks_sizes_path and os.path.exists(peaks_sizes_path):
-        print('Processing FRIP normalization')
-        norm_path = re.sub('.tsv', '_frip.tsv', data_path)
-        process_frip(norm_path, data, sizes_path, peaks_sizes_path)
+        print('Processing NORM')
+        raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
+                                  columns='name', values='coverage', fill_value=0)
+        norm_path = re.sub('.tsv', '_norm.tsv', data_path)
+        process_norm(norm_path, raw_data, sizes_path, peaks_sizes_path)
         post_process_callback(norm_path)
 
     print('Processing DiffBind scores')
-    raw_data = pd.pivot_table(data, index=['chr', 'start', 'end'],
+    raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                               columns='name', values='coverage', fill_value=0)
     process_diffbind_scores(data_path, raw_data, sizes, post_process_callback)
 
@@ -85,17 +87,17 @@ def quantile_normalize_using_target(x, target):
     return target_sorted[x.argsort().argsort()]
 
 
-def process_quantile(path, df_raw):
+def process_quantile(output, data):
     # Normalize everything to the first track
-    signal_columns = [c for c in df_raw.columns if not is_input(c)]
+    signal_columns = [c for c in data.columns if not is_input(c)]
     for c in signal_columns[1:]:
-        df_raw[c] = quantile_normalize_using_target(df_raw[c],
-                                                    df_raw[signal_columns[0]])
-    df_raw.to_csv(path, sep='\t')
-    print('{} to {}'.format('Saved QUANTILE', path))
+        data[c] = quantile_normalize_using_target(data[c],
+                                                  data[signal_columns[0]])
+    data.to_csv(output, sep='\t')
+    print('{} to {}'.format('Saved QUANTILE', output))
 
 
-def process_frip(path, data, sizes_path, peaks_sizes_path):
+def process_norm(output, data, sizes_path, peaks_sizes_path):
     """Normalization on library depths, Frips, and intersection fraction with peaks"""
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'tags'), index_col='name')
     peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
@@ -120,26 +122,21 @@ def process_frip(path, data, sizes_path, peaks_sizes_path):
 
     mean_count = np.mean(counts['data'])
 
-    df_raw = pd.pivot_table(data, index=['chr', 'start', 'end'],
-                            columns='name',
-                            values='coverage',
-                            fill_value=0)
+    not_input_columns = [c for c in data.columns if not is_input(c)]
+    for column in not_input_columns:
+        v = data[column] - input_coef[column] * data[input_column]
+        data[column] = np.maximum(0, v * mean_count / counts['data'][column])
 
-    for column in list(df_raw):
-        if "input" not in column:
-            v = df_raw[column] - input_coef[column] * df_raw["OD_input_unique_tags"]
-            df_raw[column] = np.maximum(0, v * mean_count / counts['data'][column])
-
-    df_raw.to_csv(path, sep='\t')
-    print('{} to {}'.format('Saved norm', path))
+    data[not_input_columns].to_csv(output, sep='\t')
+    print('{} to {}'.format('Saved norm', output))
 
 
 TMM_R_PATH = os.path.dirname(os.path.realpath(__file__)) + '/tmm.R'
 
 
 def process_diffbind_scores(data_path, data, sizes, post_process_callback):
-    od_input = [c for c in data.columns.values if is_od_input(c)][0]
-    yd_input = [c for c in data.columns.values if is_yd_input(c)][0]
+    od_input = [c for c in data.columns if is_od_input(c)][0]
+    yd_input = [c for c in data.columns if is_yd_input(c)][0]
     ods = [c for c in data.columns if is_od(c)]
     yds = [c for c in data.columns if is_yd(c)]
     records = [(d, od_input, OLD) for d in ods] + [(d, yd_input, YOUNG) for d in yds]
