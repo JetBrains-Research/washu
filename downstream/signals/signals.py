@@ -272,9 +272,12 @@ def main():
     print('PEAKS SIZES PATH', peaks_sizes_path)
 
     def post_process_callback(path):
-        print('RESULT', path)
-        signals_visualize.process(path)
-        signals_tests.process(path)
+        try:
+            print('RESULT', path)
+            signals_tests.process(path)
+            signals_visualize.process(path)
+        except Exception as e:
+            print(e)
 
     process(data_path, sizes_path, peaks_sizes_path, post_process_callback)
 
