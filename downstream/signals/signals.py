@@ -148,7 +148,7 @@ def process_norm(path, data, sizes_path, peaks_sizes_path):
     print('{} to {}'.format('Saved norm', path))
 
 
-TMM_R_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../R/tmm.R'
+TMM_R_PATH = os.path.dirname(os.path.realpath(__file__)) + '/tmm.R'
 
 
 def process_diffbind_scores(data_path, data, sizes, post_process):
