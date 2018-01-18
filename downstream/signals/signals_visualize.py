@@ -7,7 +7,6 @@ import pandas as pd
 import sys
 
 from downstream.aging import *
-from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 
@@ -20,68 +19,42 @@ import seaborn as sns  # nopep8
 plt.style.use('seaborn-darkgrid')
 
 
-def signal_pca(x0,
-               title,
-               groups=None,
-               scaled=False,
-               fit_lr=True):
-    if groups is None:
-        groups = [OLD if is_od(r) else YOUNG for r in x0.index]
-    # Use scaled PCA if required
-    x = preprocessing.scale(x0) if scaled else x0
+def signal_pca(x, title, ax):
+    groups = [OLD if is_od(r) else YOUNG for r in x.index]
     pca = PCA(n_components=2)
     x_r = pca.fit_transform(x)
     for g in set(groups):
         group_filter = np.asarray([g == n for n in groups])
-        plt.scatter(x_r[group_filter, 0], x_r[group_filter, 1],
-                    color=g.color, alpha=.8, label=g.name)
+        ax.scatter(x_r[group_filter, 0], x_r[group_filter, 1],
+                   color=g.color, alpha=.8, label=g.name)
 
-    for g, label, x, y in zip(groups, [age(n) for n in x0.index], x_r[:, 0], x_r[:, 1]):
-        plt.annotate(g.prefix + label,
-                     xy=(x, y),
-                     xytext=(5, 0),
-                     color=g.color,
-                     textcoords='offset points',
-                     ha='right', va='bottom')
-    plt.title(title)
+    for g, label, x, y in zip(groups, [age(n) for n in x.index], x_r[:, 0], x_r[:, 1]):
+        ax.annotate(g.prefix + label,
+                    xy=(x, y),
+                    xytext=(5, 0),
+                    color=g.color,
+                    textcoords='offset points',
+                    ha='right', va='bottom')
     (var1, var2) = pca.explained_variance_ratio_
     var2 = pca.explained_variance_ratio_[0]
     pc1_var = 0.0 if math.isnan(var1) else int(var1 * 100)
     pc2_var = 0.0 if math.isnan(var2) else int(var2 * 100)
-    plt.xlabel('PC1 {}%'.format(pc1_var))
-    plt.ylabel('PC2 {}%'.format(pc2_var))
+    ax.set_xlabel('PC1 {}%'.format(pc1_var))
+    ax.set_ylabel('PC2 {}%'.format(pc2_var))
 
-    # Do not fit Linear Regression
-    if not fit_lr:
-        return
-
-    # Try to fit logistic regression and test
+    # Fit logistic regression and compute fit error
     y = [0 if g == YOUNG else 1 for g in groups]
     lr = LogisticRegression()
     lr.fit(x_r, y)
     p_y = [1 if x[0] < 0.5 else 0 for x in lr.predict_proba(x_r)]
     error = np.sum(np.abs(np.subtract(y, p_y)))
+    ax.set_title('{} error: {}'.format(title, error))
     return error
-
-
-def signal_pca_all(x, title, groups=None):
-    """Plot all the scaled variants of PCA, returns Logistic regression fit error"""
-    plt.figure(figsize=(20, 5))
-    plt.subplot(1, 4, 1)
-    e = signal_pca(x, title, groups=groups)
-    plt.subplot(1, 4, 2)
-    e_scaled = signal_pca(x, 'SCALED {}'.format(title), groups=groups, scaled=True)
-    plt.subplot(1, 4, 3)
-    e_log = signal_pca(np.log1p(x), 'LOG {}'.format(title), groups=groups)
-    plt.subplot(1, 4, 4)
-    e_scaled_log = signal_pca(np.log1p(x), 'SCALED LOG {}'.format(title),
-                              groups=groups, scaled=True)
-    return e, e_scaled, e_log, e_scaled_log
 
 
 class Plot(Enum):
     SCATTER = 1
-    HISTOGRAM = 2
+    LOG_HIST = 2
     MA = 3
 
 
@@ -106,7 +79,7 @@ def mean_regions(df, title, ax, plot_type):
         ax.plot([xmin, xmax], [0, 0], c="red", alpha=0.75, lw=1, ls='dotted')
         ax.set_xlim([xmin, xmax])
 
-    elif plot_type == Plot.HISTOGRAM:
+    elif plot_type == Plot.LOG_HIST:
         signal["ODS"] = np.log1p(signal["ODS"]) / np.log(10)
         signal["YDS"] = np.log1p(signal["YDS"]) / np.log(10)
 
@@ -153,7 +126,6 @@ def mean_boxplots(df, title, ax):
                         textcoords='offset points')
 
     ax.set_title(title)
-    return signal
 
 
 def visualize(f, signal_type):
@@ -166,28 +138,22 @@ def visualize(f, signal_type):
             signal = df.drop(['chr', 'start', 'end', od_inputs[0], yd_inputs[0]], axis=1)
         else:
             signal = df.drop(['chr', 'start', 'end'], axis=1)
-        plt.figure(figsize=(20, 5))
-        mean_regions(df, title=signal_type, ax=plt.subplot(1, 4, 1),
+
+        plt.figure(figsize=(30, 6))
+        fit_error = signal_pca(signal.T, title=signal_type, ax=plt.subplot(1, 5, 1))
+        mean_regions(df, title=signal_type, ax=plt.subplot(1, 5, 2),
                      plot_type=Plot.SCATTER)
-        mean_regions(df, title='MA {}'.format(signal_type), ax=plt.subplot(1, 4, 2),
+        mean_regions(df, title='MA {}'.format(signal_type), ax=plt.subplot(1, 5, 3),
                      plot_type=Plot.MA)
-        mean_regions(df, title='LOG {}'.format(signal_type), ax=plt.subplot(1, 4, 3),
-                     plot_type=Plot.HISTOGRAM)
-        means = mean_boxplots(signal.T, title=signal_type, ax=plt.subplot(1, 4, 4))
+        mean_regions(df, title='Log {}'.format(signal_type), ax=plt.subplot(1, 5, 4),
+                     plot_type=Plot.LOG_HIST)
+        mean_boxplots(signal.T, title=signal_type, ax=plt.subplot(1, 5, 5))
         plt.savefig(re.sub('.tsv', '.png', f))
         plt.close()
 
-        # Save means signal to df
-        pd.DataFrame(means['value']).to_csv(re.sub('.tsv', '_data.csv', f),
-                                            index=True, header=None)
-
-        e, e_scaled, e_log, e_scaled_log = signal_pca_all(signal.T, signal_type)
-        plt.savefig(re.sub('.tsv', '_pca.png', f))
-        plt.close()
-
         # Save pca fit errors to file
-        pd.DataFrame(data=[[e, e_scaled, e_log, e_scaled_log]]). \
-            to_csv(re.sub('.tsv', '_pca_fit_error.csv', f), index=None, header=False)
+        pd.DataFrame(data=[[fit_error]]).to_csv(re.sub('.tsv', '_pca_fit_error.csv', f),
+                                                index=None, header=False)
 
     except FileNotFoundError as e:
         print(e)

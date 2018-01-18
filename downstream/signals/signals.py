@@ -6,6 +6,7 @@ import tempfile
 
 import numpy as np
 import pandas as pd
+from sklearn import preprocessing
 
 from downstream.aging import *
 from downstream.signals import signals_tests
@@ -34,9 +35,14 @@ def process(data_path, sizes_path, peaks_sizes_path, post_process_callback):
     post_process_callback(raw_path)
 
     print("Processing QUANTILE normalization")
-    quantile_path = re.sub('.tsv', '_q.tsv', data_path)
+    quantile_path = re.sub('.tsv', '_rawq.tsv', data_path)
     process_quantile(quantile_path, raw_data)
     post_process_callback(quantile_path)
+
+    print("Processing Z normalization")
+    z_path = re.sub('.tsv', '_rawz.tsv', data_path)
+    process_z(z_path, raw_data)
+    post_process_callback(z_path)
 
     # Normalization is available only for ChIP-Seq
     if not processing_chipseq:
@@ -77,6 +83,16 @@ def save_signal(path, data, signal_type, msg):
                               columns='name', values=signal_type, fill_value=0)
     pivot_df.to_csv(path, sep='\t')
     print('{} to {}'.format(msg, path))
+
+
+def process_z(output, data):
+    """Center to the mean and component wise scale to unit variance."""
+    z_df = pd.DataFrame()
+    for c in [c for c in data.columns if not is_input(c)]:
+        z_df[c] = preprocessing.scale(data[c])
+    z_df.index = data.index
+    z_df.to_csv(output, sep='\t')
+    print('{} to {}'.format('Saved Z', output))
 
 
 def quantile_normalize_using_target(x, target):
@@ -149,6 +165,11 @@ def frip_normalization(data_path, data, sizes_path, peaks_sizes_path, post_proce
     process_quantile(frip_quantile_path, data)
     post_process_callback(frip_quantile_path)
 
+    # Z normalization
+    frip_z_path = re.sub('.tsv', '_fripz.tsv', data_path)
+    process_z(frip_z_path, data)
+    post_process_callback(frip_z_path)
+
 
 def diffbind_normalization(data_path, data, sizes_path, post_process_callback):
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
@@ -169,6 +190,11 @@ def diffbind_normalization(data_path, data, sizes_path, post_process_callback):
     scores_quantile_path = re.sub('.tsv', '_scoresq.tsv', data_path)
     process_quantile(scores_quantile_path, scores)
     post_process_callback(scores_quantile_path)
+
+    # Z normalization
+    scores_z_path = re.sub('.tsv', '_scoresz.tsv', data_path)
+    process_z(scores_z_path, scores)
+    post_process_callback(scores_z_path)
 
     # TMM normalization as in original DiffBind
     tmm_results = process_tmm(scores, lib_sizes)
