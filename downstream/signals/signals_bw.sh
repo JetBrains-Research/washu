@@ -58,18 +58,21 @@ process_coverage()
 
     TASKS=()
     TSVS=()
+    LOGS=()
     for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
     do :
         NAME=${FILE%%.bw}
         TSV=$TMPDIR/$NAME.tsv
         TSVS+=("$TSV")
+        LOG=${_LOGS_DIR}/bw_signals_${ID}_${NAME}.log
+        LOGS+=("$LOG")
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N bw_signals_${ID}_${NAME}
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=8gb
 #PBS -j oe
-#PBS -o ${_LOGS_DIR}/bw_signals_${ID}_${NAME}.log
+#PBS -o ${LOG}
 
 # Process regions coverage
 #   sum - sum of values over all bases covered
@@ -85,9 +88,16 @@ SCRIPT
     done
     wait_complete ${TASKS[@]}
 
-    for FILE in ${TSVS[@]}; do
-        cat ${FILE} >> $_RESULT
-        rm ${FILE}
+    for TSV in ${TSVS[@]}; do
+        cat ${TSV} >> $_RESULT
+        rm ${TSV}
+    done
+    # Merge all logs to master and cleanup
+    MASTER_LOG=${_LOGS_DIR}/bw_signals_${ID}.log
+    for LOG in ${LOGS[@]}; do
+        echo "$LOG" >> ${MASTER_LOG}
+        cat ${LOG} >> ${MASTER_LOG}
+        rm ${LOG}
     done
 }
 
@@ -133,7 +143,7 @@ cat $REGIONS_BED | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
 
 process_coverage ${TMPDIR}/regions.bed4 ${ID} ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}
 
-echo "Processing data, rpm, rpkm, and rpm_peaks for ${ID}.tsv"
+echo "Processing signals for ${ID}.tsv"
 run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N peaks_signal_${ID}
