@@ -96,7 +96,7 @@ def process_quantile(path, df_raw):
 
 
 def process_frip(path, data, sizes_path, peaks_sizes_path):
-    """Normalization based on library depths, Frips, and intersection fraction of given location with peaks"""
+    """Normalization on library depths, Frips, and intersection fraction with peaks"""
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'tags'), index_col='name')
     peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
                               index_col='name')
@@ -189,7 +189,8 @@ https://docs.google.com/document/d/1zH5cw5Zal546xkoFFCVqhhYmf3742efhddz5cqpD9PQ/
         scale = 1
     if scale != 0:
         cont = math.ceil(cont * scale)
-    # According to DiffBind pv.get_reads() function (utils.R:239), if reads number is < 1 than it should be 1
+    # According to DiffBind pv.get_reads() function (utils.R:239)
+    # if reads number is < 1 than it should be 1
     return max(1, cond - cont)
 
 
