@@ -2,6 +2,7 @@
 # Author: oleg.shpynov@jetbrains.com
 
 import math
+import multiprocessing
 import tempfile
 
 import numpy as np
@@ -14,7 +15,8 @@ from downstream.signals import signals_visualize
 from scripts.util import *
 
 
-def process(data_path, sizes_path, peaks_sizes_path, post_process_callback):
+def process(data_path, sizes_path, peaks_sizes_path, *, processed=4):
+    pool = multiprocessing.Pool(processes=processed)
     loaded = pd.read_csv(data_path, sep='\t',
                          names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
 
@@ -23,7 +25,31 @@ def process(data_path, sizes_path, peaks_sizes_path, post_process_callback):
         print("Processing ChIP-Seq")
     else:
         print("Processing Methylation|Transcription|miRNA, input not found")
+    pool.apply_async(raw_normalization,
+                     args=(data_path, loaded, processing_chipseq, post_process_callback),
+                     error_callback=error_callback)
 
+    if processing_chipseq:
+        pool.apply_async(rpm_normalization,
+                         args=(data_path, loaded, sizes_path, post_process_callback),
+                         error_callback=error_callback)
+
+        if peaks_sizes_path and os.path.exists(peaks_sizes_path):
+            pool.apply_async(frip_normalization,
+                             args=(data_path, loaded, sizes_path,
+                                   peaks_sizes_path, post_process_callback),
+                             error_callback=error_callback)
+
+        pool.apply_async(diffbind_normalization,
+                         args=(data_path, loaded, sizes_path, post_process_callback),
+                         error_callback=error_callback)
+
+    pool.close()
+    pool.join()
+
+
+def raw_normalization(data_path, loaded, processing_chipseq, post_process_callback):
+    """Raw signal with Quantile normalization and standard scaling"""
     print('Processing RAW signal')
     raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                               columns='name',
@@ -44,16 +70,14 @@ def process(data_path, sizes_path, peaks_sizes_path, post_process_callback):
     process_z(z_path, raw_data)
     post_process_callback(z_path)
 
-    # Normalization is available only for ChIP-Seq
-    if not processing_chipseq:
-        return
 
+def rpm_normalization(data_path, loaded, sizes_path, post_process_callback):
+    """RPM/RPKM normalization"""
     print('Processing RPM normalization')
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     sizes_pm = sizes / 1000000.0
     sizes_pm.columns = ['size_pm']
     data = pd.merge(loaded, sizes_pm, left_on="name", how='left', right_index=True)
-
     data['rpm'] = data['coverage'] / data['size_pm']
     rpm_path = re.sub('.tsv', '_rpm.tsv', data_path)
     save_signal(rpm_path, data, 'rpm', 'Saved RPM')
@@ -65,17 +89,6 @@ def process(data_path, sizes_path, peaks_sizes_path, post_process_callback):
     rpkm_path = re.sub('.tsv', '_rpkm.tsv', data_path)
     save_signal(rpkm_path, data, 'rpkm', 'Saved RPKM')
     post_process_callback(rpkm_path)
-
-    if peaks_sizes_path and os.path.exists(peaks_sizes_path):
-        print('Processing FRIP normalization')
-        raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
-                                  columns='name', values='coverage', fill_value=0)
-        frip_normalization(data_path, raw_data, sizes_path, peaks_sizes_path, post_process_callback)
-
-    print('Processing DiffBind scores')
-    raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
-                              columns='name', values='coverage', fill_value=0)
-    diffbind_normalization(data_path, raw_data, sizes_path, post_process_callback)
 
 
 def save_signal(path, data, signal_type, msg):
@@ -115,7 +128,10 @@ def process_quantile(output, data):
     print('{} to {}'.format('Saved QUANTILE', output))
 
 
-def frip_normalization(data_path, data, sizes_path, peaks_sizes_path, post_process_callback):
+def frip_normalization(data_path, loaded, sizes_path, peaks_sizes_path, post_process_callback):
+    print('Processing FRIP normalization')
+    data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
+                          columns='name', values='coverage', fill_value=0)
     """Normalization on library depths, FRIPs"""
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'tags'), index_col='name')
     peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
@@ -171,7 +187,10 @@ def frip_normalization(data_path, data, sizes_path, peaks_sizes_path, post_proce
     post_process_callback(frip_z_path)
 
 
-def diffbind_normalization(data_path, data, sizes_path, post_process_callback):
+def diffbind_normalization(data_path, loaded, sizes_path, post_process_callback):
+    print('Processing DiffBind scores')
+    data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
+                          columns='name', values='coverage', fill_value=0)
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
 
     od_input = [c for c in data.columns if is_od_input(c)][0]
@@ -252,6 +271,19 @@ def diffbind_scores(data, sizes, records):
     return scores, sizes_processed
 
 
+def post_process_callback(path):
+    try:
+        print('RESULT', path)
+        signals_tests.process(path)
+        signals_visualize.process(path)
+    except Exception as e:
+        print(e, file=sys.stderr)
+
+
+def error_callback(e):
+    print(e, file=sys.stderr)
+
+
 def main():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
@@ -271,15 +303,7 @@ def main():
     print('LIBRARIES SIZES PATH', sizes_path)
     print('PEAKS SIZES PATH', peaks_sizes_path)
 
-    def post_process_callback(path):
-        try:
-            print('RESULT', path)
-            signals_tests.process(path)
-            signals_visualize.process(path)
-        except Exception as e:
-            print(e)
-
-    process(data_path, sizes_path, peaks_sizes_path, post_process_callback)
+    process(data_path, sizes_path, peaks_sizes_path)
 
 
 if __name__ == "__main__":
