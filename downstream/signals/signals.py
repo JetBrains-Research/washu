@@ -10,7 +10,6 @@ import pandas as pd
 from sklearn import preprocessing
 
 from downstream.aging import *
-from downstream.signals import signals_tests
 from downstream.signals import signals_visualize
 from scripts.util import *
 
@@ -57,17 +56,17 @@ def raw_normalization(data_path, loaded, processing_chipseq):
     raw_path = re.sub('.tsv', '_raw.tsv', data_path)
     raw_data.to_csv(raw_path, sep='\t')
     print('Saved RAW signal to {}'.format(raw_path))
-    post_process_callback(raw_path)
+    signals_visualize.process(raw_path)
 
     print("Processing QUANTILE normalization")
     quantile_path = re.sub('.tsv', '_rawq.tsv', data_path)
     process_quantile(quantile_path, raw_data)
-    post_process_callback(quantile_path)
+    signals_visualize.process(quantile_path)
 
     print("Processing Z normalization")
     z_path = re.sub('.tsv', '_rawz.tsv', data_path)
     process_z(z_path, raw_data)
-    post_process_callback(z_path)
+    signals_visualize.process(z_path)
 
 
 def rpm_normalization(data_path, loaded, sizes_path):
@@ -80,14 +79,14 @@ def rpm_normalization(data_path, loaded, sizes_path):
     data['rpm'] = data['coverage'] / data['size_pm']
     rpm_path = re.sub('.tsv', '_rpm.tsv', data_path)
     save_signal(rpm_path, data, 'rpm', 'Saved RPM')
-    post_process_callback(rpm_path)
+    signals_visualize.process(rpm_path)
 
     print('Processing RPKM normalization')
     data['rpk'] = (data['end'] - data['start']) / 1000.0
     data['rpkm'] = data['rpm'] / data['rpk']
     rpkm_path = re.sub('.tsv', '_rpkm.tsv', data_path)
     save_signal(rpkm_path, data, 'rpkm', 'Saved RPKM')
-    post_process_callback(rpkm_path)
+    signals_visualize.process(rpkm_path)
 
 
 def save_signal(path, data, signal_type, msg):
@@ -164,7 +163,7 @@ def frip_normalization(data_path, loaded, sizes_path, peaks_sizes_path):
     frip_path = re.sub('.tsv', '_frip.tsv', data_path)
     frip_df[not_input_columns].to_csv(frip_path, sep='\t')
     print('{} to {}'.format('Saved FRIP normalized', frip_path))
-    post_process_callback(frip_path)
+    signals_visualize.process(frip_path)
 
     # Per million reads normalization
     frip_pm = pd.DataFrame()
@@ -173,17 +172,17 @@ def frip_normalization(data_path, loaded, sizes_path, peaks_sizes_path):
     frip_linear_path = re.sub('.tsv', '_fripm.tsv', data_path)
     frip_pm[not_input_columns].to_csv(frip_linear_path, sep='\t')
     print('{} to {}'.format('Saved FRIP per million reads normalized', frip_linear_path))
-    post_process_callback(frip_linear_path)
+    signals_visualize.process(frip_linear_path)
 
     # Quantile normalization
     frip_quantile_path = re.sub('.tsv', '_fripq.tsv', data_path)
     process_quantile(frip_quantile_path, data)
-    post_process_callback(frip_quantile_path)
+    signals_visualize.process(frip_quantile_path)
 
     # Z normalization
     frip_z_path = re.sub('.tsv', '_fripz.tsv', data_path)
     process_z(frip_z_path, data)
-    post_process_callback(frip_z_path)
+    signals_visualize.process(frip_z_path)
 
 
 def diffbind_normalization(data_path, loaded, sizes_path):
@@ -202,17 +201,17 @@ def diffbind_normalization(data_path, loaded, sizes_path):
     scores.index = data.index
     scores.to_csv(scores_path, sep='\t')
     print('Saved Diffbind scores to {}'.format(scores_path))
-    post_process_callback(scores_path)
+    signals_visualize.process(scores_path)
 
     # Quantile scores normalization
     scores_quantile_path = re.sub('.tsv', '_scoresq.tsv', data_path)
     process_quantile(scores_quantile_path, scores)
-    post_process_callback(scores_quantile_path)
+    signals_visualize.process(scores_quantile_path)
 
     # Z normalization
     scores_z_path = re.sub('.tsv', '_scoresz.tsv', data_path)
     process_z(scores_z_path, scores)
-    post_process_callback(scores_z_path)
+    signals_visualize.process(scores_z_path)
 
     # TMM normalization as in original DiffBind
     tmm_results = process_tmm(scores, lib_sizes)
@@ -221,7 +220,7 @@ def diffbind_normalization(data_path, loaded, sizes_path):
     scores_tmm.index = data.index
     scores_tmm.to_csv(scores_path, sep='\t')
     print('Saved Diffbind TMM scores to {}'.format(scores_tmm_path))
-    post_process_callback(scores_tmm_path)
+    signals_visualize.process(scores_tmm_path)
 
 
 def process_tmm(data, lib_sizes):
@@ -268,15 +267,6 @@ def diffbind_scores(data, sizes, records):
             [score(z[0], z[1], s) for z in zip(data[cond], data[cont])]
         sizes_processed.loc[len(sizes_processed)] = (prefix + cond, sizes.loc[cond]['size'])
     return scores, sizes_processed
-
-
-def post_process_callback(path):
-    try:
-        print('RESULT', path)
-        signals_tests.process(path)
-        signals_visualize.process(path)
-    except Exception as e:
-        print(e, file=sys.stderr)
 
 
 def error_callback(e):
