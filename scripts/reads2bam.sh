@@ -28,16 +28,20 @@ fi
 case "$INPUT" in
   *.bed.gz )
     >&2 echo "bed.gz: $INPUT"
-    UNZIPPED=${INPUT%%.gz}
-    gunzip -c ${INPUT} > ${UNZIPPED}
     BAM=${INPUT/.bed.gz/.bam}
-    bedtools bedtobam -i ${UNZIPPED} -g ${CHROM_SIZES} > ${BAM}
-    rm -f ${UNZIPPED}
+    if [[ ! -f ${BAM} ]]; then
+        UNZIPPED=${INPUT%%.gz}
+        gunzip -c ${INPUT} > ${UNZIPPED}
+        bedtools bedtobam -i ${UNZIPPED} -g ${CHROM_SIZES} > ${BAM}
+        rm -f ${UNZIPPED}
+    fi
     ;;
   *.bed )
     >&2 echo "bed: $INPUT"
     BAM=${INPUT/.bed/.bam}
-    bedtools bedtobam -i ${INPUT} -g ${CHROM_SIZES} > ${BAM}
+    if [[ ! -f ${BAM} ]]; then
+        bedtools bedtobam -i ${INPUT} -g ${CHROM_SIZES} > ${BAM}
+    fi
     ;;
   *.bam )
     >&2 echo "bam: $INPUT"
