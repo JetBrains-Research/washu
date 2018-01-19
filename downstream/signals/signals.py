@@ -26,29 +26,28 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processed=4):
     else:
         print("Processing Methylation|Transcription|miRNA, input not found")
     pool.apply_async(raw_normalization,
-                     args=(data_path, loaded, processing_chipseq, post_process_callback),
+                     args=(data_path, loaded, processing_chipseq),
                      error_callback=error_callback)
 
     if processing_chipseq:
         pool.apply_async(rpm_normalization,
-                         args=(data_path, loaded, sizes_path, post_process_callback),
+                         args=(data_path, loaded, sizes_path),
                          error_callback=error_callback)
 
         if peaks_sizes_path and os.path.exists(peaks_sizes_path):
             pool.apply_async(frip_normalization,
-                             args=(data_path, loaded, sizes_path,
-                                   peaks_sizes_path, post_process_callback),
+                             args=(data_path, loaded, sizes_path, peaks_sizes_path),
                              error_callback=error_callback)
 
         pool.apply_async(diffbind_normalization,
-                         args=(data_path, loaded, sizes_path, post_process_callback),
+                         args=(data_path, loaded, sizes_path),
                          error_callback=error_callback)
 
     pool.close()
     pool.join()
 
 
-def raw_normalization(data_path, loaded, processing_chipseq, post_process_callback):
+def raw_normalization(data_path, loaded, processing_chipseq):
     """Raw signal with Quantile normalization and standard scaling"""
     print('Processing RAW signal')
     raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
@@ -71,7 +70,7 @@ def raw_normalization(data_path, loaded, processing_chipseq, post_process_callba
     post_process_callback(z_path)
 
 
-def rpm_normalization(data_path, loaded, sizes_path, post_process_callback):
+def rpm_normalization(data_path, loaded, sizes_path):
     """RPM/RPKM normalization"""
     print('Processing RPM normalization')
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
@@ -128,7 +127,7 @@ def process_quantile(output, data):
     print('{} to {}'.format('Saved QUANTILE', output))
 
 
-def frip_normalization(data_path, loaded, sizes_path, peaks_sizes_path, post_process_callback):
+def frip_normalization(data_path, loaded, sizes_path, peaks_sizes_path):
     print('Processing FRIP normalization')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
@@ -187,7 +186,7 @@ def frip_normalization(data_path, loaded, sizes_path, peaks_sizes_path, post_pro
     post_process_callback(frip_z_path)
 
 
-def diffbind_normalization(data_path, loaded, sizes_path, post_process_callback):
+def diffbind_normalization(data_path, loaded, sizes_path):
     print('Processing DiffBind scores')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
