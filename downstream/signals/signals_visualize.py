@@ -70,7 +70,7 @@ def mean_regions(df, title, ax, plot_type):
     if plot_type == Plot.MA:
         signal["M"] = signal["ODS"] / signal["YDS"]
         # Fix division by zero to 0.0
-        signal.loc[~np.isfinite(signal["M"]), "M"] = 0.0
+        signal.loc[~np.isfinite(signal["M"]), "M"] = 1.0
         signal["A"] = 0.5 * (signal["ODS"] + signal["YDS"])
         ax.scatter(signal["A"], signal["M"], alpha=.3, s=1)
         ax.set_xlabel("A")
@@ -78,7 +78,7 @@ def mean_regions(df, title, ax, plot_type):
 
         xmin = np.min(ax.get_xlim())
         xmax = np.max(ax.get_xlim())
-        ax.plot([xmin, xmax], [0, 0], c="red", alpha=0.75, lw=1, ls='dotted')
+        ax.plot([xmin, xmax], [1, 1], c="red", alpha=0.75, lw=1, ls='dotted')
         ax.set_xlim([xmin, xmax])
 
     elif plot_type == Plot.HIST:
