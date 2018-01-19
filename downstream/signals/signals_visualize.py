@@ -54,7 +54,7 @@ def signal_pca(x, title, ax):
 
 class Plot(Enum):
     SCATTER = 1
-    LOG_HIST = 2
+    HIST = 2
     MA = 3
 
 
@@ -68,8 +68,10 @@ def mean_regions(df, title, ax, plot_type):
     signal["YDS"] = df[yds].mean(axis=1)
 
     if plot_type == Plot.MA:
-        signal["M"] = np.log1p(signal["ODS"]) - np.log1p(signal["YDS"])
-        signal["A"] = 0.5 * (np.log1p(signal["ODS"]) + np.log1p(signal["YDS"]))
+        signal["M"] = signal["ODS"] / signal["YDS"]
+        # Fix division by zero to 0.0
+        signal.loc[~np.isfinite(signal["M"]), "M"] = 0.0
+        signal["A"] = 0.5 * (signal["ODS"] + signal["YDS"])
         ax.scatter(signal["A"], signal["M"], alpha=.3, s=1)
         ax.set_xlabel("A")
         ax.set_ylabel("M")
@@ -79,9 +81,9 @@ def mean_regions(df, title, ax, plot_type):
         ax.plot([xmin, xmax], [0, 0], c="red", alpha=0.75, lw=1, ls='dotted')
         ax.set_xlim([xmin, xmax])
 
-    elif plot_type == Plot.LOG_HIST:
-        signal["ODS"] = np.log1p(signal["ODS"]) / np.log(10)
-        signal["YDS"] = np.log1p(signal["YDS"]) / np.log(10)
+    elif plot_type == Plot.HIST:
+        signal["ODS"] = signal["ODS"]
+        signal["YDS"] = signal["YDS"]
 
         ax.hist(signal["ODS"], color=OLD.color, bins=100, alpha=0.3, label="ODS")
         ax.hist(signal["YDS"], color=YOUNG.color, bins=100, alpha=0.3, label="YDS")
@@ -95,7 +97,7 @@ def mean_regions(df, title, ax, plot_type):
             np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
             np.max([ax.get_xlim(), ax.get_ylim()]),  # max of both axes
         ]
-        # now plot both limits against eachother
+        # Line x = y
         ax.plot(lims, lims, 'r-', alpha=0.75, lw=1, ls='dotted')
         ax.set_aspect('equal')
         ax.set_xlim(lims)
@@ -146,7 +148,7 @@ def visualize(f, signal_type):
         mean_regions(df, title='MA {}'.format(signal_type), ax=plt.subplot(1, 5, 3),
                      plot_type=Plot.MA)
         mean_regions(df, title='Log {}'.format(signal_type), ax=plt.subplot(1, 5, 4),
-                     plot_type=Plot.LOG_HIST)
+                     plot_type=Plot.HIST)
         mean_boxplots(signal.T, title=signal_type, ax=plt.subplot(1, 5, 5))
         plt.savefig(re.sub('.tsv', '.png', f))
         plt.close()
