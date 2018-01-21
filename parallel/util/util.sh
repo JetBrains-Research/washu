@@ -89,7 +89,7 @@ check_logs()
 {
     # IGNORE macs2 ValueError
     # See for details: https://github.com/JetBrains-Research/washu/issues/14
-    ERRORS=$(find . -name "*.log" | xargs grep -i -E "error|exception|No such file or directory" | grep -v "ValueError|WARNING")
+    ERRORS=$(find . -name "*.log" | xargs grep -i -E "error|exception|No such file or directory" | grep -v -E "ValueError|WARNING")
     if [ ! -z "$ERRORS" ]; then
         echo "ERRORS found"
         echo "$ERRORS"
