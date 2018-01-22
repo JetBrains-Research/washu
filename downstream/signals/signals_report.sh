@@ -13,12 +13,12 @@ WORK_DIR=$1
 cd $WORK_DIR
 T=$'\t';
 echo "modification${T}file${T}normalization${T}e"
-for F in $(find . -name "*_fit_error.csv"); do
+for F in $(find . -name "*_pca_fit_error.csv"); do
     IFS='/' read -ra CHUNKS <<< "$F"
     MODIFICATION=${CHUNKS[1]}
     FOLDER=${CHUNKS[2]}
     FILE=${CHUNKS[3]}
-    NORMALIZATION=$(echo "$FILE" | sed 's#_fit_error.csv##g' | sed "s#${FOLDER}_##g")
+    NORMALIZATION=$(echo "$FILE" | sed 's#_pca_fit_error.csv##g' | sed "s#${FOLDER}_##g")
     ERROR=$(cat $F)
     echo "$MODIFICATION$T$FOLDER$T$NORMALIZATION$T$ERROR"
 done
