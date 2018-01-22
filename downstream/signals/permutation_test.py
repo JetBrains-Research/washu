@@ -1,6 +1,3 @@
-import re
-import sys
-
 import argparse
 from pathlib import Path
 import pandas as pd
@@ -8,7 +5,6 @@ import numpy as np
 import numpy.random as rnd
 from sklearn.decomposition import PCA
 from multiprocessing import Pool
-from statsmodels.stats.multitest import multipletests
 
 from downstream.aging import is_od, is_yd
 from downstream.signals.signals_visualize import pca_separation_fit_error
@@ -119,7 +115,8 @@ def _cli():
 
     if root.is_dir():
         paths = [str(p) for p in root.glob("**/*.filtered_*.tsv")]
-        paths = [p for p in paths if not "/meth/" in p]
+        # TODO: hack, cleanup it
+        paths = [p for p in paths if "/meth/" not in p]
     else:
         paths = [root]
 
@@ -137,15 +134,6 @@ def _cli():
             print("{}. {}: {}".format(i, pvalue, path))
 
         df = pd.DataFrame.from_records(path2pvalue, columns=["path", "pvalue"])
-
-        # FDR control:
-        # _reject, pvalues_corrected, *_ = multipletests(
-        #     pvals=df["pvalue"],
-        #     # fdr_bh, holm-sidak, bonferroni
-        #     alpha=0.05, method="fdr_bh"
-        # )
-        # df["pvalue_corr"] = pvalues_corrected
-        # df.sort_values(by="pvalue_corr")
         out = str(root / "permutation.rnd_pvalue.csv")
         df.to_csv(out, index=None)
 
