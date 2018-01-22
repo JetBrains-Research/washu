@@ -29,10 +29,16 @@ def pca_separation_fit_error(x_r, y):
     return error
 
 
-def signal_pca_plot(x, title, ax):
-    groups = [OLD if is_od(r) else YOUNG for r in x.index]
+def pca_signal(signal):
     pca = PCA(n_components=2)
-    x_r = pca.fit_transform(x)
+    x_r = pca.fit_transform(signal.T)
+    return pca, x_r
+
+
+def signal_pca_plot(signal, title, ax):
+    donors = signal.columns
+    groups = [OLD if is_od(d) else YOUNG for d in donors]
+    pca, x_r = pca_signal(signal)
 
     y = [0 if g == YOUNG else 1 for g in groups]
     error = pca_separation_fit_error(x_r, y)
@@ -42,7 +48,7 @@ def signal_pca_plot(x, title, ax):
         ax.scatter(x_r[group_filter, 0], x_r[group_filter, 1],
                    color=g.color, alpha=.8, label=g.name)
 
-    for g, label, x, y in zip(groups, [age(n) for n in x.index], x_r[:, 0], x_r[:, 1]):
+    for g, label, x, y in zip(groups, [age(d) for d in donors], x_r[:, 0], x_r[:, 1]):
         ax.annotate(g.prefix + label,
                     xy=(x, y),
                     xytext=(5, 0),
@@ -150,7 +156,7 @@ def visualize(f, signal_type):
             signal = df.drop(['chr', 'start', 'end'], axis=1)
 
         plt.figure(figsize=(30, 6))
-        fit_error = signal_pca_plot(signal.T, title=signal_type, ax=plt.subplot(1, 5, 1))
+        fit_error = signal_pca_plot(signal, title=signal_type, ax=plt.subplot(1, 5, 1))
         mean_regions(df, title=signal_type, ax=plt.subplot(1, 5, 2),
                      plot_type=Plot.SCATTER)
         mean_regions(df, title='MA {}'.format(signal_type), ax=plt.subplot(1, 5, 3),

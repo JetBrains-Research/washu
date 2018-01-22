@@ -3,11 +3,10 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import numpy.random as rnd
-from sklearn.decomposition import PCA
 from multiprocessing import Pool
 
 from downstream.aging import is_od, is_yd
-from downstream.signals.signals_visualize import pca_separation_fit_error
+from downstream.signals.signals_visualize import pca_separation_fit_error, pca_signal
 
 import matplotlib
 
@@ -51,8 +50,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
     donors = sorted(ods + yds)
     signal = df.loc[:, donors]
 
-    pca = PCA(n_components=2)  # TODO?: as signals_visuzlize.py ?
-    x_r = pca.fit_transform(signal.T.values)
+    pca, x_r = pca_signal(signal)
     actual_error = pca_separation_fit_error(x_r,
                                             [0 if is_yd(d) else 1 for d in donors])
 
