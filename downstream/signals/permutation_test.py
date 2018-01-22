@@ -14,15 +14,25 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # nopep8
 
 
-def _random_split_error(donors, ods, yds, x_r):
-    gr1 = set()
-    for age_gr in [list(ods), list(yds)]:
-        group_size = len(age_gr) // 2
-        rnd.shuffle(age_gr)
-        gr1.update(age_gr[0:group_size])
-
-    y = [0 if d in gr1 else 1 for d in donors]
+# Assume two groups: "group1" and "donors - group1"
+def _split_error(donors, group1, x_r):
+    y = [0 if d in group1 else 1 for d in donors]
     return pca_separation_fit_error(x_r, y)
+
+
+def _random_split_error(donors, x_r):
+    gr1 = set(rnd.choice(donors, len(donors) // 2, replace=False))
+    return _split_error(donors, gr1, x_r)
+
+
+# def _homogeneous_split_error(donors, ods, yds, x_r):
+#     gr1 = set()
+#     for age_gr in [list(ods), list(yds)]:
+#         group_size = len(age_gr) // 2
+#         rnd.shuffle(age_gr)
+#         gr1.update(age_gr[0:group_size])
+#
+#     return _split_error(donors, gr1, x_r)
 
 
 def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
@@ -38,12 +48,12 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
     ##################################################
     # Make ODS, YDS groups even length for simplicity:
     ods = [c for c in df.columns if is_od(c)]
-    rnd.shuffle(ods)
-    ods = ods[0:2 * (len(ods) // 2)]
+    # rnd.shuffle(ods)
+    # ods = ods[0:2 * (len(ods) // 2)]
 
     yds = [c for c in df.columns if is_yd(c)]
-    rnd.shuffle(yds)
-    yds = yds[0:2 * (len(yds) // 2)]
+    # rnd.shuffle(yds)
+    # yds = yds[0:2 * (len(yds) // 2)]
 
     ##################################################
     # Signal DF:
@@ -57,10 +67,10 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
     if threads == 1:
         rnd_results = []
         for i in range(simulations):
-            rnd_results.append(_random_split_error(donors, ods, yds, x_r))
+            rnd_results.append(_random_split_error(donors, x_r))
     else:
         with Pool(processes=threads) as pool:
-            tasks = [pool.apply_async(_random_split_error, (donors, ods, yds, x_r)) for _i in
+            tasks = [pool.apply_async(_random_split_error, (donors, x_r)) for _i in
                      range(simulations)]
             rnd_results = [task.get(timeout=timeout_secs) for task in tasks]
 
@@ -90,9 +100,9 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
 
 def _cli():
     parser = argparse.ArgumentParser(
-        description="For each given normalised signal file calculates pvalue for whether this "
-                    "metric value could be achieved by chance in any age independent donors "
-                    "split in groups. Each group contain same quantities of old/young donors.",
+        description="For each given normalised signal file calculates pvalue for H0: pca "
+                    "separation fit error for given ODS & YDS separation doesn't differ from  "
+                    "random donors split into 2 groups.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("path",
