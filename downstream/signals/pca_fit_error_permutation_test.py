@@ -123,18 +123,24 @@ def _cli():
     print("Threads: {}, seed: {}, simulations: {}".format(threads, seed, simulations))
 
     if root.is_dir():
-        paths = [str(p) for p in root.glob("**/*.filtered_*.tsv")]
-        # TODO: hack, cleanup it
-        paths = [p for p in paths if "/meth/" not in p]
+        # filter normalized signal files:
+        paths = [str(p) for p in root.glob("**/*.tsv") if p.name.startswith(p.parent.name + "_")]
+        #paths = [p for p in paths if "/meth/" not in p]
     else:
         paths = [root]
 
+    n_paths = len(paths)
+
+    print("Found: ", n_paths)
+    exit(1)
+
     path2pvalue = []
-    for path in paths:
-        print("--------------")
+    for i, path in enumerate(paths, 1):
+        print("--- [{} / {}] -----------".format(i, n_paths))
         print("Process:", path)
         pvalue = _process(Path(path), simulations=simulations, seed=seed, threads=threads)
         path2pvalue.append((path, pvalue))
+
     path2pvalue.sort(key=lambda v: v[1])
 
     if len(paths) > 1:
