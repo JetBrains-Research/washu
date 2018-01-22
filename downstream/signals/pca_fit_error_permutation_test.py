@@ -147,7 +147,7 @@ def _cli():
             norm = re.sub('(.*_)|(\\.tsv$)', '', path)
             matches = re.match(".*/(H\\w*)/.*", path, re.IGNORECASE)
             if matches:
-                mod = matches[1]
+                mod = matches.group(1)
             else:
                 mod = "N/A"
             records.append((mod, str(Path(path).parent), norm, pvalue))
