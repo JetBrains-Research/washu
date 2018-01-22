@@ -1,4 +1,5 @@
 import argparse
+import re
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -141,8 +142,22 @@ def _cli():
         for i, (path, pvalue) in enumerate(path2pvalue, 1):
             print("{}. {}: {}".format(i, pvalue, path))
 
-        df = pd.DataFrame.from_records(path2pvalue, columns=["path", "pvalue"])
-        out = str(root / "permutation.rnd_pvalue.csv")
+        records = []
+        for path, pvalue in path2pvalue:
+            norm = re.sub('(.*_)|(\\.tsv$)', '', path)
+            matches = re.match(".*/(H\\w*)/.*", path, re.IGNORECASE)
+            if matches:
+                mod = matches[1]
+            else:
+                mod = "N/A"
+            records.append((mod, str(Path(path).parent), norm, pvalue))
+
+        df = pd.DataFrame.from_records(
+            records,
+            columns=["modification", "file", "normalization", "pvalue"]
+        )
+        # table: mod, folder, norm, error
+        out = str(root / "report.permutation_pvalue.csv")
         df.to_csv(out, index=None)
 
         print("P-values table saved to:", out)
