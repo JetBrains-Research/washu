@@ -3,8 +3,8 @@
 # author oleg.shpynov@jetbrains.com
 
 >&2 echo "signals_report.sh $@"
-if [ $# -lt 2 ]; then
-    echo "Need 2 parameters! <WORK_DIR>"
+if [ $# -lt 1 ]; then
+    echo "Need 1 parameter! <WORK_DIR>"
     exit 1
 fi
 
