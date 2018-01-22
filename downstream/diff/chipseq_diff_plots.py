@@ -74,8 +74,10 @@ class ChangeCollector:
         shutil.copyfile(file, os.path.join(self.output, result_file_name))
         self.change_files_produced.append(result_file_name)
 
-    def process_zinbra(self):
-        zinbra_base_path = "/mnt/stripe/bio/experiments/configs/Y20O20/enrichment"
+    def process_zinbra(self, input):
+        base_path = "/mnt/stripe/bio/experiments/configs/Y20O20"
+        zinbra_name = "zinbra_input" if input else "zinbra"
+        zinbra_base_path = "{}/chip-seq-diff/{}/{}".format(base_path, zinbra_name, self.mark)
         pattern = os.path.join(zinbra_base_path, "diff_OD_YD_{}_zinbra*".format(self.mark))
         for file in glob.glob(pattern):
             base_name = os.path.basename(file)
@@ -252,7 +254,8 @@ class ChangeCollector:
 
         self.process_chip_diff()
 
-        self.process_zinbra()
+        self.process_zinbra(False)
+        self.process_zinbra(True)
 
         self.process_macs_bg_diff()
 
@@ -274,7 +277,7 @@ class ChangeCollector:
         print(temp_dir)
 
         union_sh = os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                 '../bed/union.sh'))
+                                                 '../../bed/union.sh'))
 
         result = {}
 
@@ -304,6 +307,11 @@ class ChangeCollector:
         shutil.rmtree(temp_dir)
         return result
 
+    def collect_difference_for_pipeline(self):
+        self.process_macs_pooled()
+
+        self.process_diffreps("diffReps_broad")
+        self.process_diffreps("diffReps_broad_input")
 
 class DiffProcessor:
     def __init__(self, input, output, mark):
@@ -345,6 +353,11 @@ class DiffProcessor:
         self.old.collect_difference()
         self.both.collect_difference()
 
+    def collect_difference_for_pipeline(self):
+        self.young.collect_difference_for_pipeline()
+        self.old.collect_difference_for_pipeline()
+        self.both.collect_difference_for_pipeline()
+
     def count_intersections(self):
         return self.both.count_intersections()
 
@@ -355,7 +368,7 @@ class DiffProcessor:
         temp_dir = tempfile.mkdtemp(suffix=".tmp")
 
         union_sh = os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                 '../bed/union.sh'))
+                                                 '../../bed/union.sh'))
 
         result = [0.0] * 3
 
@@ -386,7 +399,7 @@ class DiffProcessor:
         temp_dir = tempfile.mkdtemp(suffix=".tmp")
 
         union_sh = os.path.realpath(os.path.join(os.path.dirname(__file__),
-                                                 '../bed/union.sh'))
+                                                 '../../bed/union.sh'))
 
         result = [0.0] * 7
 
