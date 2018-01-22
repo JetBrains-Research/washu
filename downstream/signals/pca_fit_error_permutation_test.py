@@ -131,9 +131,6 @@ def _cli():
 
     n_paths = len(paths)
 
-    print("Found: ", n_paths)
-    exit(1)
-
     path2pvalue = []
     for i, path in enumerate(paths, 1):
         print("--- [{} / {}] -----------".format(i, n_paths))
