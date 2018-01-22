@@ -19,10 +19,24 @@ import seaborn as sns  # nopep8
 plt.style.use('seaborn-darkgrid')
 
 
-def signal_pca(x, title, ax):
+def pca_separation_fit_error(x_r, y):
+    # Fit logistic regression and compute fit error
+    lr = LogisticRegression()
+    lr.fit(x_r, y)
+    p_y = [1 if x[0] < 0.5 else 0 for x in lr.predict_proba(x_r)]
+    error = np.sum(np.abs(np.subtract(y, p_y)))
+
+    return error
+
+
+def signal_pca_plot(x, title, ax):
     groups = [OLD if is_od(r) else YOUNG for r in x.index]
     pca = PCA(n_components=2)
     x_r = pca.fit_transform(x)
+
+    y = [0 if g == YOUNG else 1 for g in groups]
+    error = pca_separation_fit_error(x_r, y)
+
     for g in set(groups):
         group_filter = np.asarray([g == n for n in groups])
         ax.scatter(x_r[group_filter, 0], x_r[group_filter, 1],
@@ -42,12 +56,6 @@ def signal_pca(x, title, ax):
     ax.set_xlabel('PC1 {}%'.format(pc1_var))
     ax.set_ylabel('PC2 {}%'.format(pc2_var))
 
-    # Fit logistic regression and compute fit error
-    y = [0 if g == YOUNG else 1 for g in groups]
-    lr = LogisticRegression()
-    lr.fit(x_r, y)
-    p_y = [1 if x[0] < 0.5 else 0 for x in lr.predict_proba(x_r)]
-    error = np.sum(np.abs(np.subtract(y, p_y)))
     ax.set_title('{} error: {}'.format(title, error))
     return error
 
@@ -142,7 +150,7 @@ def visualize(f, signal_type):
             signal = df.drop(['chr', 'start', 'end'], axis=1)
 
         plt.figure(figsize=(30, 6))
-        fit_error = signal_pca(signal.T, title=signal_type, ax=plt.subplot(1, 5, 1))
+        fit_error = signal_pca_plot(signal.T, title=signal_type, ax=plt.subplot(1, 5, 1))
         mean_regions(df, title=signal_type, ax=plt.subplot(1, 5, 2),
                      plot_type=Plot.SCATTER)
         mean_regions(df, title='MA {}'.format(signal_type), ax=plt.subplot(1, 5, 3),
