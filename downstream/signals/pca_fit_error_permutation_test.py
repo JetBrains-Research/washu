@@ -125,7 +125,7 @@ def _cli():
     if root.is_dir():
         # filter normalized signal files:
         paths = [str(p) for p in root.glob("**/*.tsv") if p.name.startswith(p.parent.name + "_")]
-        #paths = [p for p in paths if "/meth/" not in p]
+        paths = [p for p in paths if not p.endswith(".bed.tsv")]
     else:
         paths = [root]
 
