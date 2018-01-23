@@ -60,6 +60,9 @@ echo "READS: $READS"
 PEAKS=$(wc -l ${PEAKS_FILE} | awk '{print $1}')
 echo "PEAKS: $PEAKS"
 
+LENGTH=$(awk '{l+=($3-$2)} END {print l}' ${PEAKS_FILE})
+echo "LENGTH: $LENGTH"
+
 # Compute number of reads, intersecting with peaks
 INTERSECT_TMP=$(mktemp $TMPDIR/intersect.XXXXXX.bed)
 echo "Calculate intersection in tmp file: ${INTERSECT_TMP}"
@@ -70,8 +73,8 @@ COLS=$(cat ${PILEUP_BED} | head -n 1 | awk '{ print NF }')
 RIP=$(awk -v COLS=$COLS '{sum += $(COLS+1)} END {print sum}' ${INTERSECT_TMP})
 echo "RIP: $RIP"
 
-echo "file,peaks_file,reads,peaks,rip" > ${RIP_FILE}
-echo "${READS_BAM},${PEAKS_FILE},${READS},${PEAKS},${RIP}" >> ${RIP_FILE}
+echo "file,peaks_file,reads,peaks,length,rip" > ${RIP_FILE}
+echo "${READS_BAM},${PEAKS_FILE},${READS},${PEAKS},${LENGTH},${RIP}" >> ${RIP_FILE}
 
 # Cleanup
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir

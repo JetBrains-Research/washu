@@ -27,18 +27,20 @@ def _cli():
 
     for hist_mod in ["H3K27ac", "H3K27me3", "H3K36me3", "H3K4me1", "H3K4me3"]:
         for tool in ["zinbra", "macs_broad", "sicer"]:
+            print(hist_mod, tool)
             folder_path = Path(args.peaks + "/" + hist_mod + "/" + tool)
             rip_files = sorted([str(f) for f in folder_path.glob("*_rip.csv")])
 
-            df = pd.DataFrame(columns=["file", "reads", "peaks", "rip"])
+            df = pd.DataFrame(columns=["file", "reads", "peaks", "length", "rip"])
             if len(rip_files) > 0:
                 for rip_path in rip_files:
-                    data = pd.read_csv(rip_path)
+                    data = pd.read_csv(rip_path).fillna(0)
                     rip_file = rip_path.split('/')[-1]
                     reads = float(data["reads"].loc[0])
                     peaks = int(data["peaks"].loc[0])
+                    length = int(data["length"].loc[0])
                     rip = float(data["rip"].loc[0])
-                    df.loc[df.size] = (rip_file, reads, peaks, rip)
+                    df.loc[df.size] = (rip_file, reads, peaks, length, rip)
                 df["frip"] = 100.0 * df["rip"] / df["reads"]
                 df.index = [age(df.loc[n]["file"]) for n in df.index]
 
@@ -51,14 +53,17 @@ def _cli():
 
                 sum_frip = 0
                 sum_peaks = 0
+                sum_length = 0
                 mean_frip = df["frip"].mean()
                 mean_peaks = df["peaks"].mean()
+                mean_length = df["length"].mean()
                 for donor in df.index:
                     sum_frip += pow(df["frip"][donor] - mean_frip, 2)
                     sum_peaks += pow(df["peaks"][donor] - mean_peaks, 2)
-                print(hist_mod + " " + tool)
+                    sum_length += pow(df["length"][donor] - mean_length, 2)
                 print("FRIP = %0.2f ± %0.2f" % (mean_frip, pow(sum_frip / len(df), 0.5)))
                 print("peaks = %0.0f ± %0.0f" % (mean_peaks, pow(sum_peaks / len(df), 0.5)))
+                print("length = %0.0f ± %0.0f" % (mean_length, pow(sum_length / len(df), 0.5)))
                 print("")
 
 

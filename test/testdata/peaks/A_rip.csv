@@ -1,2 +1,2 @@
-file,peaks_file,reads,peaks,rip
-A.bam,A_peaks.broadPeak,52657550,76789,25499553
+file,peaks_file,reads,peaks,length,rip
+A.bam,A_peaks.broadPeak,52657550,76789,100000,25499553

@@ -16,7 +16,7 @@ def usage():
 
 
 RipRecord = collections.namedtuple(
-    'RipRecord', ['file', 'peaks_file', 'reads', 'peaks', 'rip']
+    'RipRecord', ['file', 'peaks_file', 'reads', 'peaks', 'length', 'rip']
 )
 
 
@@ -31,13 +31,14 @@ def collect_rip_records(folder):
 
             line = rip_file.readline().strip()
             records = line.split(',')
-            assert len(records) == 5, \
-                "Expected 5 comma separated values, but was {}: " \
+            assert len(records) == 6, \
+                "Expected 6 comma separated values, but was {}: " \
                 "line = '{}', file = {}".format(len(records), line, f)
             r = RipRecord(*records)
 
             # fix values if not set
             rips.append(r._replace(peaks=(int(r.peaks or 0)),
+                                   length=(int(r.length or 0)),
                                    rip=(int(r.rip or 0)),
                                    reads=int(r.reads)))
     return rips
@@ -53,6 +54,7 @@ def report(folder):
         [('sample', [rec.peaks_file.rpartition('/')[-1] for rec in records]),
          ('tags', [rec.reads for rec in records]),
          ('peaks', [rec.peaks for rec in records]),
+         ('length', [rec.length for rec in records]),
          ('rip', [rec.rip for rec in records])]
     )
     df['frip'] = 100 * df['rip'] // df['tags']

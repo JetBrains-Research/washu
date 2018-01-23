@@ -70,6 +70,7 @@ def report(folder):
     sample_to_rips = [match_peaks_file(p, rips) for p in prefixes]
 
     df['peaks'] = [r.peaks for r in sample_to_rips]
+    df['length'] = [r.length for r in sample_to_rips]
     df['rip'] = [r.rip for r in sample_to_rips]
     df['frip'] = 100 * df['rip'] // df['tags']
     return df.sort_values(by=['sample'])
@@ -79,7 +80,7 @@ def match_peaks_file(x, records):
     """Find number of peaks in RipRecords"""
     filtered = [r for r in records if x in r.peaks_file]
     assert len(filtered) <= 1, "Ambiguous results for {}".format(x)
-    return RipRecord("", "", 0, 0, 0) if (not filtered) else filtered[0]
+    return RipRecord("", "", 0, 0, 0, 0) if (not filtered) else filtered[0]
 
 
 def process_macs2_logs(folder, report_dir=None):

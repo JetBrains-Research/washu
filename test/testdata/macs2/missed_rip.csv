@@ -1,2 +1,2 @@
-file,peaks_file,reads,peaks,rip
-GSM1057011_hg19.bam,GSM1057011_hg19_broad_0.1*.*Peak,0,0,
+file,peaks_file,reads,peaks,length,rip
+GSM1057011_hg19.bam,GSM1057011_hg19_broad_0.1*.*Peak,0,0,0,

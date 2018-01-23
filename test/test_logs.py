@@ -27,7 +27,7 @@ def test_process_logs(tmp_dir, test_data, util_name):
 
 @pytest.mark.parametrize("util_name,log_folder,err_type,msg", [
     ("macs2", "macs2_empty_rip", "AssertionError",
-     "Expected 5 comma separated values, but was 1: line = '',"
+     "Expected 6 comma separated values, but was 1: line = '',"
      " file = empty_rip.csv"),
 ])
 def test_problem_report(tmp_dir, test_data, util_name, log_folder,
