@@ -80,7 +80,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
         plt.title("R2 for {} hom-groups. Mean = {:.5f}, Median = {:.5f}".format(
             len(rr), r2_mean, r2_median)
         )
-        plt.axvline(x=r2_mean, color="red", label="R2 mean", linestyle=":")
+        plt.axvline(x=r2_mean, color="red", label="R2 mean", linestyle="--")
         plt.axvline(x=r2_median, color="darkgray", label="R2 median", linestyle="--")
         plt.xlabel("Each locus R2 for mean signal @ group1 vs group2")
         plt.legend()
