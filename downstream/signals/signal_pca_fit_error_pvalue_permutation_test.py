@@ -79,7 +79,8 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
     if plot:
         plt.hist(rr)
         plt.title("Pvalue for {} random groups = {}".format(len(rr), pvalue))
-        plt.axvline(x=actual_error, color="red", label="ODS vs YDS error", linestyle="--")
+        plt.axvline(x=actual_error, color="red", label="ODS vs YDS error", linestyle="--",
+                    linewidth=0.9)
         plt.xlabel("PCA classification error")
         plt.legend()
 
