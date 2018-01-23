@@ -165,7 +165,7 @@ def process(paths, output_path, seed, simulations, threads):
         # table: mod, folder, norm, error
         df.to_csv(output_path, index=None)
 
-        print("R2 distribution features saved to:", out)
+        print("R2 distribution features saved to:", output_path)
 
 
 if __name__ == "__main__":
