@@ -1,10 +1,12 @@
 import argparse
 import pandas as pd
 from pathlib import Path
-from scripts.util import age
+from downstream.aging import age
 
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """Script for calculating mean FRIP and peaks count"""
+failed_tracks_path = "/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv"
+failed_tracks_df = pd.read_csv(failed_tracks_path, delimiter="\t", skiprows=1, index_col="donor")
 
 
 def _cli():
@@ -13,19 +15,19 @@ def _cli():
     parser.add_argument("peaks", help="Peaks folder")
     args = parser.parse_args()
 
-    tool_outliers = {"H3K27ac": {"zinbra": ["OD16"],  "macs_broad": [], "sicer": []},
-                     "H3K27me3": {"zinbra": [],  "macs_broad": ["OD10"], "sicer": []},
-                     "H3K36me3": {"zinbra": ["OD20", "OD18"],
-                                  "macs_broad": ["OD20", "OD18"],
+    tool_outliers = {"H3K27ac": {"zinbra": [],  "macs_broad": [], "sicer": []},
+                     "H3K27me3": {"zinbra": ["OD10"],  "macs_broad": ["OD10"], "sicer": []},
+                     "H3K36me3": {"zinbra": ["OD18"],
+                                  "macs_broad": ["OD18"],
                                   "sicer": []},
-                     "H3K4me3": {"zinbra": ["YD10", "YD15", "YD4", "OD14", "OD6", "OD17"],
-                                 "macs_broad": ["YD10", "YD18", "YD5", "OD14", "OD6", "OD17"],
+                     "H3K4me3": {"zinbra": ["YD18", "YD5", "OD17"],
+                                 "macs_broad": ["YD18", "YD5", "OD17"],
                                  "sicer": []},
                      "H3K4me1": {"zinbra": [],  "macs_broad": ["YD14", "OD7"], "sicer": []}}
 
     for hist_mod in ["H3K27ac", "H3K27me3", "H3K36me3", "H3K4me1", "H3K4me3"]:
         for tool in ["zinbra", "macs_broad", "sicer"]:
-            folder_path = Path(args.peaks + "/" + hist_mod + "/" + tool + "/clean")
+            folder_path = Path(args.peaks + "/" + hist_mod + "/" + tool)
             rip_files = sorted([str(f) for f in folder_path.glob("*_rip.csv")])
 
             df = pd.DataFrame(columns=["file", "reads", "peaks", "rip"])
@@ -39,6 +41,10 @@ def _cli():
                     df.loc[df.size] = (rip_file, reads, peaks, rip)
                 df["frip"] = 100.0 * df["rip"] / df["reads"]
                 df.index = [age(df.loc[n]["file"]) for n in df.index]
+
+                for donor in failed_tracks_df.loc[:, hist_mod].index:
+                    if failed_tracks_df.loc[:, hist_mod][donor] == 1:
+                        df = df[df.index != donor]
 
                 for donor in tool_outliers[hist_mod][tool]:
                     df = df[df.index != donor]
