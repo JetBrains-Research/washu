@@ -7,9 +7,9 @@ import numpy.random as rnd
 from multiprocessing import Pool
 from sklearn.metrics import r2_score
 from typing import List
+from itertools import chain
 
 from downstream.aging import is_od, is_yd
-from downstream.signals.signals_visualize import pca_separation_fit_error, pca_signal
 from downstream.signals.pca_fit_error_permutation_test import collect_paths
 
 import matplotlib
@@ -54,15 +54,16 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
     signal = df.loc[:, donors]
 
     if threads == 1:
-        r2_list = []
-
-        for i in range(simulations):
-            r2_list.append(_homogeneous_split_r2(donors, ods, yds, signal))
+        r2_list = _multiple_homogeneous_split_r2(donors, ods, yds, signal, simulations)
     else:
+        chunk_size = simulations // threads
+        chunks = [(i, min(simulations, i + chunk_size)) for i in range(0, simulations, chunk_size)]
+
         with Pool(processes=threads) as pool:
-            tasks = [pool.apply_async(_homogeneous_split_r2, (donors, ods, yds, signal)) for _i in
-                     range(simulations)]
-            r2_list = [task.get(timeout=timeout_secs) for task in tasks]
+            tasks = [pool.apply_async(_multiple_homogeneous_split_r2,
+                                      (donors, ods, yds, signal, e-s))
+                     for s, e in chunks]
+            r2_list = list(chain(*(task.get(timeout=timeout_secs) for task in tasks)))
 
     rr = np.asarray(r2_list)
     r2_mean = np.mean(rr)
@@ -94,6 +95,11 @@ def _homogeneous_split_r2(donors: List, ods: List, yds: List, signal: pd.DataFra
     gr2_means = signal.loc[:, list(set(donors) - gr1)].mean(axis=1)
     r2 = r2_score(gr1_means, gr2_means)
     return r2
+
+
+def _multiple_homogeneous_split_r2(donors: List, ods: List, yds: List, signal: pd.DataFrame,
+                                   simulations: int):
+    return [_homogeneous_split_r2(donors, ods, yds, signal) for _i in range(simulations)]
 
 
 def _cli():
