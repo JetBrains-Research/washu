@@ -6,6 +6,7 @@ import numpy as np
 import numpy.random as rnd
 from multiprocessing import Pool
 from typing import List
+from itertools import chain
 
 from downstream.aging import is_od, is_yd
 from downstream.signals.signals_visualize import pca_separation_fit_error, pca_signal
@@ -21,6 +22,10 @@ def _random_split_error(donors, x_r):
     gr1 = set(rnd.choice(donors, len(donors) // 2, replace=False))
     y = [0 if d in gr1 else 1 for d in donors]
     return pca_separation_fit_error(x_r, y)
+
+
+def _multiple_random_split_error(donors, x_r, simulations):
+    return [_random_split_error(donors, x_r) for _i in range(simulations)]
 
 
 def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
@@ -53,14 +58,15 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
                                             [0 if is_yd(d) else 1 for d in donors])
 
     if threads == 1:
-        rnd_results = []
-        for i in range(simulations):
-            rnd_results.append(_random_split_error(donors, x_r))
+        rnd_results = _multiple_random_split_error(donors, x_r, simulations)
     else:
+        chunk_size = simulations // threads
+        chunks = [(i, min(simulations, i + chunk_size)) for i in range(0, simulations, chunk_size)]
+
         with Pool(processes=threads) as pool:
-            tasks = [pool.apply_async(_random_split_error, (donors, x_r)) for _i in
-                     range(simulations)]
-            rnd_results = [task.get(timeout=timeout_secs) for task in tasks]
+            tasks = [pool.apply_async(_multiple_random_split_error, (donors, x_r, e - s))
+                     for s, e in chunks]
+            rnd_results = list(chain(*(task.get(timeout=timeout_secs) for task in tasks)))
 
     # hack not to get zero pvalue
     rnd_results.append(actual_error)

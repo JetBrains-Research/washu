@@ -61,7 +61,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
 
         with Pool(processes=threads) as pool:
             tasks = [pool.apply_async(_multiple_homogeneous_split_r2,
-                                      (donors, ods, yds, signal, e-s))
+                                      (donors, ods, yds, signal, e - s))
                      for s, e in chunks]
             r2_list = list(chain(*(task.get(timeout=timeout_secs) for task in tasks)))
 
