@@ -32,7 +32,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
     # In case of 14 ODS, 14 YDS we expect about C[20,10]*C[20,10]/2 different
     # separation in random groups contained 10 ODS and 10 YDS donors
     # in each ~ 5.8 * 10^6 separations
-    timeout_secs = 10
+    timeout_hours = 3
     rnd.seed(seed)  # is actual for tests in single thread mode
 
     ##################################################
@@ -63,7 +63,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
             tasks = [pool.apply_async(_multiple_homogeneous_split_r2,
                                       (donors, ods, yds, signal, e - s))
                      for s, e in chunks]
-            r2_list = list(chain(*(task.get(timeout=timeout_secs) for task in tasks)))
+            r2_list = list(chain(*(task.get(timeout=3600*timeout_hours) for task in tasks)))
 
     rr = np.asarray(r2_list)
     r2_mean = np.mean(rr)
