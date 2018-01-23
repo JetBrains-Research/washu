@@ -128,8 +128,11 @@ def _cli():
     print("Threads: {}, seed: {}, simulations: {}".format(threads, seed, simulations))
 
     paths = collect_paths(root)
-    n_paths = len(paths)
+    process(paths, str(root / "report.permutation_r2.csv"), seed, simulations, threads)
 
+
+def process(paths, output_path, seed, simulations, threads):
+    n_paths = len(paths)
     records = []
     for i, path in enumerate(paths, 1):
         print("--- [{} / {}] -----------".format(i, n_paths))
@@ -137,18 +140,16 @@ def _cli():
         r2_mean, r2_median = _process(path, simulations=simulations, seed=seed, threads=threads)
 
         norm = re.sub('(.*_)|(\\.tsv$)', '', path.name)
-        matches = re.match(".*/(H\\w*)/.*", str(path), re.IGNORECASE)
+        matches = re.match(".*/(H[a-z0-9]+)/.*", str(path), re.IGNORECASE)
         if matches:
             mod = matches.group(1)
         else:
             mod = "N/A"
         records.append((mod, str(path.parent), norm, r2_mean, r2_median))
-
     # sort by (median, mean)
     # records.sort(key=lambda v: v[-2:])
     # sort by (mod, hist, norm)
     records.sort(key=lambda v: (v[:3]))
-
     if len(paths) > 1:
         print("====================")
         for i, (_mod, path, norm, r2_mean, r2_median) in enumerate(records, 1):
@@ -159,8 +160,7 @@ def _cli():
             columns=["modification", "file", "normalization", "mean", "median"]
         )
         # table: mod, folder, norm, error
-        out = str(root / "report.permutation_r2.csv")
-        df.to_csv(out, index=None)
+        df.to_csv(output_path, index=None)
 
         print("R2 distribution features saved to:", out)
 

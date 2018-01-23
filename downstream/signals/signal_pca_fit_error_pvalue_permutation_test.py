@@ -123,7 +123,7 @@ def _cli():
         pvalue = _process(path, simulations=simulations, seed=seed, threads=threads)
 
         norm = re.sub('(.*_)|(\\.tsv$)', '', path.name)
-        matches = re.match(".*/(H\\w*)/.*", str(path), re.IGNORECASE)
+        matches = re.match(".*/(H[a-z0-9]+)/.*", str(path), re.IGNORECASE)
         if matches:
             mod = matches.group(1)
         else:
