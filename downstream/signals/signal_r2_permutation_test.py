@@ -10,7 +10,7 @@ from typing import List
 from itertools import chain
 
 from downstream.aging import is_od, is_yd
-from downstream.signals.pca_fit_error_permutation_test import collect_paths
+from downstream.signals.signal_pca_fit_error_pvalue_permutation_test import collect_paths
 
 import matplotlib
 
