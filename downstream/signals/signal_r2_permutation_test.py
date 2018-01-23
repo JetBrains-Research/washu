@@ -8,6 +8,7 @@ from multiprocessing import Pool
 from sklearn.metrics import r2_score
 from typing import List
 from itertools import chain
+import math
 
 from downstream.aging import is_od, is_yd
 from downstream.signals.signal_pca_fit_error_pvalue_permutation_test import collect_paths
@@ -56,7 +57,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
     if threads == 1:
         r2_list = _multiple_homogeneous_split_r2(donors, ods, yds, signal, simulations)
     else:
-        chunk_size = simulations // threads
+        chunk_size = math.ceil(simulations / threads)
         chunks = [(i, min(simulations, i + chunk_size)) for i in range(0, simulations, chunk_size)]
 
         with Pool(processes=threads) as pool:

@@ -7,6 +7,7 @@ import numpy.random as rnd
 from multiprocessing import Pool
 from typing import List
 from itertools import chain
+import math
 
 from downstream.aging import is_od, is_yd
 from downstream.signals.signals_visualize import pca_separation_fit_error, pca_signal
@@ -55,7 +56,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
     if threads == 1:
         rnd_results = _multiple_random_split_error(donors, x_r, simulations)
     else:
-        chunk_size = simulations // threads
+        chunk_size = math.ceil(simulations / threads)
         chunks = [(i, min(simulations, i + chunk_size)) for i in range(0, simulations, chunk_size)]
 
         with Pool(processes=threads) as pool:
