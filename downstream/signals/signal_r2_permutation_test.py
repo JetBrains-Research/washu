@@ -143,6 +143,8 @@ def process(paths, output_path, seed, simulations, threads):
         matches = re.match(".*/(H[a-z0-9]+)/.*", str(path), re.IGNORECASE)
         if matches:
             mod = matches.group(1)
+        elif "/meth/" in str(path):
+            mod = "meth"
         else:
             mod = "N/A"
         records.append((mod, str(path.parent), norm, r2_mean, r2_median))
