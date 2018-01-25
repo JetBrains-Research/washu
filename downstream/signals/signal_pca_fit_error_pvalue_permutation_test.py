@@ -1,13 +1,15 @@
 import argparse
 import re
-from pathlib import Path
-import pandas as pd
-import numpy as np
-import numpy.random as rnd
 from multiprocessing import Pool
 from typing import List
 from itertools import chain
 import math
+
+from pathlib import Path
+import pandas as pd
+import numpy as np
+import numpy.random as rnd
+from statsmodels.stats.multitest import multipletests
 
 from downstream.aging import is_od, is_yd
 from downstream.signals.signals_visualize import pca_separation_fit_error, pca_signal
@@ -105,18 +107,34 @@ def _cli():
                         type=int, default=4)
     parser.add_argument('-n', help="Simulations number to calculated pvalue", type=int,
                         default=100*1000)
-    #
+    parser.add_argument('--fdr', help="Perform FDR control", action="store_true")
+    parser.add_argument("--filter", required=True, metavar="SUBSTRINGS",
+                        help="Comma separated file names filters.")
+
     args = parser.parse_args()
     root = Path(args.path)
     seed = args.seed
     simulations = args.n
     threads = args.threads
+    fdr = args.fdr
+    filters = [s.strip() for s in args.filter.split(",")]
 
     print("Threads: {}, seed: {}, simulations: {}".format(threads, seed, simulations))
 
-    paths = collect_paths(root)
-    n_paths = len(paths)
+    paths = [p for p in collect_paths(root) if all(f in p.name for f in filters)]
 
+    if not paths:
+        print("No suitable files found for '{}' and filters: {}".format(root, filters))
+        exit(1)
+
+    process(paths,
+            str(root / "report.permutation_pvalue.{}.csv".format(simulations)),
+            seed, simulations, threads, fdr)
+
+
+def process(paths: List[Path], output_path: str, seed: int, simulations: int, threads: int,
+            fdr: bool):
+    n_paths = len(paths)
     records = []
     for i, path in enumerate(paths, 1):
         print("--- [{} / {}] -----------".format(i, n_paths))
@@ -135,21 +153,30 @@ def _cli():
 
     # sort by pvalue
     records.sort(key=lambda v: v[-1])
-
     if len(paths) > 1:
         print("====================")
-        for i, (_mod, path, _norm, pvalue) in enumerate(records, 1):
-            print("{}. {}: {}".format(i, pvalue, path))
+        for i, (_mod, path, norm, pvalue) in enumerate(records, 1):
+            print("{}. {}: [{}] {}".format(i, pvalue, norm, path))
 
         df = pd.DataFrame.from_records(
             records,
             columns=["modification", "file", "normalization", "pvalue"]
         )
-        # table: mod, folder, norm, error
-        out = str(root / "report.permutation_pvalue.csv")
-        df.to_csv(out, index=None)
 
-        print("P-values table saved to:", out)
+        if fdr:
+            # FDR control:
+            _reject, pvalues_corrected, *_ = multipletests(
+                pvals=df["pvalue"],
+                # fdr_bh, holm-sidak, bonferroni
+                alpha=0.05, method="fdr_bh"
+            )
+            df["pvalue_corr"] = pvalues_corrected
+            df.sort_values(by="pvalue_corr")
+
+        # table: mod, folder, norm, error
+        df.to_csv(output_path, index=None)
+
+        print("P-values table saved to:", output_path)
 
 
 def collect_paths(root: Path) -> List[Path]:

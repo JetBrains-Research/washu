@@ -151,10 +151,11 @@ def _cli():
     print("Threads: {}, seed: {}, simulations: {}".format(threads, seed, simulations))
 
     paths = collect_paths(root)
-    process(paths, str(root / "report.permutation_r2.csv"), seed, simulations, threads)
+    process(paths, str(root / "report.permutation_r2.{}.csv".format(simulations)),
+            seed, simulations, threads)
 
 
-def process(paths, output_path, seed, simulations, threads):
+def process(paths: List[Path], output_path: str, seed: int, simulations: int, threads: int):
     n_paths = len(paths)
     records = []
     for i, path in enumerate(paths, 1):
