@@ -176,12 +176,12 @@ def frip_normalization(data_path, loaded, sizes_path, peaks_sizes_path):
 
     # Quantile normalization
     frip_quantile_path = re.sub('.tsv', '_fripq.tsv', data_path)
-    process_quantile(frip_quantile_path, data)
+    process_quantile(frip_quantile_path, frip_df)
     signals_visualize.process(frip_quantile_path)
 
     # Z normalization
     frip_z_path = re.sub('.tsv', '_fripz.tsv', data_path)
-    process_z(frip_z_path, data)
+    process_z(frip_z_path, frip_df)
     signals_visualize.process(frip_z_path)
 
 
