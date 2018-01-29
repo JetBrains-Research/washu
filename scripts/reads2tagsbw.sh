@@ -20,7 +20,8 @@ fi
 
 SHIFT=$(($INSERT_SIZE / 2))
 
-# Optional load technical stuff:
+# Check configuration
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 
 

@@ -7,7 +7,7 @@
 #
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
 
-which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
+which bedtools &>/dev/null || { echo "ERROR: bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 
 if [ $# -lt 3 ]; then
     echo "Need 3 parameters! <BED_1> <BED_2> <OUT_PREFIX>"
@@ -19,7 +19,8 @@ BED_1=$1
 BED_2=$2
 OUT_PREFIX=$3
 
-# Optional load technical stuff:
+# Check configuration
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"

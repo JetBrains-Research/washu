@@ -2,7 +2,7 @@
 # This script is used to compute number of reads in peaks.
 # author oleg.shpynov@jetbrains.com
 
-which bedtools &>/dev/null || { echo "bedtools not found!"; exit 1; }
+which bedtools &>/dev/null || { echo "ERROR: bedtools not found!"; exit 1; }
 >&2 echo "rip.sh: $@"
 
 if [ $# -lt 2 ]; then
@@ -29,6 +29,7 @@ if [[ -f ${RIP_FILE} ]]; then
     exit 0
 fi
 
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"

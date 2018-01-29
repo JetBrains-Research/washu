@@ -3,9 +3,10 @@
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
 # author Roman Chernyatchik (roman.chernyatchik@jetbrains.com)
 
-which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
+which bedtools &>/dev/null || { echo "ERROR: bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 
-# Load technical stuff
+# Check configuration
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "peaks_frip.sh: $@"

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-which macs14 &>/dev/null || { echo "MACS14 not found! Download MACS14: <http://liulab.dfci.harvard.edu/MACS/00README.html>"; exit 1; }
+which macs14 &>/dev/null || { echo "ERROR: MACS14 not found! Download MACS14: <http://liulab.dfci.harvard.edu/MACS/00README.html>"; exit 1; }
 
-# Load technical stuff
+# Check configuration
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch macs14 $@"

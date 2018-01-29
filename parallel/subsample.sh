@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-# Load technical stuff
+# Check configuration
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch subsample $@"

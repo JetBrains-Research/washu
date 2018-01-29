@@ -3,7 +3,7 @@
 # https://github.com/ENCODE-DCC/chip-seq-pipeline/blob/master/dnanexus/filter_qc/src/filter_qc.py
 # author oleg.shpynov@jetbrains.com
 
-which bedtools &>/dev/null || { echo "bedtools not found!"; exit 1; }
+which bedtools &>/dev/null || { echo "ERROR: bedtools not found!"; exit 1; }
 >&2 echo "pbc_nrf.sh: $@"
 
 if [ $# -lt 1 ]; then
@@ -17,6 +17,7 @@ PILEUP_BED=${BAM/.bam/_pileup.bed}
 >&2 echo "BAM: ${BAM}"
 >&2 echo "PILEUP_BED: ${PILEUP_BED}"
 
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"

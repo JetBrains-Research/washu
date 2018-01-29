@@ -11,7 +11,8 @@ which bedtools &>/dev/null || {
     exit 1;
    }
 
-# Load technical stuff
+# Check configuration
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "bam2bw $@"

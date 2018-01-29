@@ -14,31 +14,31 @@ export PYTHONPATH="$WASHU_ROOT:$PYTHONPATH"
 echo "Check tools available by module load"
 module load bedtools2
 #which bedtools &>/dev/null && { echo "bedtools: HIDE until module load bedtools2"; exit 1; }
-which R &>/dev/null && { echo "FAILED R: HIDE until module load R"; exit 1; }
-which Rscript &>/dev/null && { echo "FAILED Rscript: HIDE until module load R"; exit 1; }
-which bowtie &>/dev/null && { echo "FAILED bowtie: HIDE until module load bowtie"; exit 1; }
-which bowtie2 &>/dev/null && { echo "FAILED bowtie2: HIDE until module load bowtie2"; exit 1; }
-which samtools &>/dev/null && { echo "FAILED samtools: HIDE until module load samtools"; exit 1; }
-which fastq-dump &>/dev/null && { echo "FAILED fastq-dump: HIDE until module load sratoolkit"; exit 1; }
-which fastqc &>/dev/null && { echo "FAILED fastqc: HIDE until module load fastqc"; exit 1; }
-which java &>/dev/null && { echo "FAILED java: HIDE until module load java"; exit 1; }
+which R &>/dev/null && { echo "ERROR R: HIDE until module load R"; exit 1; }
+which Rscript &>/dev/null && { echo "ERROR Rscript: HIDE until module load R"; exit 1; }
+which bowtie &>/dev/null && { echo "ERROR bowtie: HIDE until module load bowtie"; exit 1; }
+which bowtie2 &>/dev/null && { echo "ERROR bowtie2: HIDE until module load bowtie2"; exit 1; }
+which samtools &>/dev/null && { echo "ERROR samtools: HIDE until module load samtools"; exit 1; }
+which fastq-dump &>/dev/null && { echo "ERROR fastq-dump: HIDE until module load sratoolkit"; exit 1; }
+which fastqc &>/dev/null && { echo "ERROR fastqc: HIDE until module load fastqc"; exit 1; }
+which java &>/dev/null && { echo "ERROR java: HIDE until module load java"; exit 1; }
 
 echo "Check tools required by other scripts"
-which macs2 &>/dev/null || { echo "FAILED: macs2 not found"; exit 1; }
-which SICER.sh &>/dev/null || { echo "FAILED: SICER.sh not found"; exit 1; }
-which rseg &>/dev/null || { echo "FAILED: rseg not found"; exit 1; }
-which bedGraphToBigWig &>/dev/null || { echo "FAILED: bedGraphToBigWig not found"; exit 1; }
-which bedClip &>/dev/null || { echo "FAILED: bedClip not found"; exit 1; }
-which bigWigAverageOverBed &>/dev/null || { echo "FAILED: bigWigAverageOverBed not found"; exit 1; }
-which multiqc &>/dev/null || { echo "FAILED: multiqc not found"; exit 1; }
-which bamCoverage &>/dev/null || { echo "FAILED: bamCoverage not found"; exit 1; }
+which macs2 &>/dev/null || { echo "ERROR: macs2 not found"; exit 1; }
+which SICER.sh &>/dev/null || { echo "ERROR: SICER.sh not found"; exit 1; }
+which rseg &>/dev/null || { echo "ERROR: rseg not found"; exit 1; }
+which bedGraphToBigWig &>/dev/null || { echo "ERROR: bedGraphToBigWig not found"; exit 1; }
+which bedClip &>/dev/null || { echo "ERROR: bedClip not found"; exit 1; }
+which bigWigAverageOverBed &>/dev/null || { echo "ERROR: bigWigAverageOverBed not found"; exit 1; }
+which multiqc &>/dev/null || { echo "ERROR: multiqc not found"; exit 1; }
+which bamCoverage &>/dev/null || { echo "ERROR: bamCoverage not found"; exit 1; }
 
 echo "Check downloaded files"
 if [ ! -f ~/picard.jar ]; then
-    echo "FAILED: Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"
+    echo "ERROR: Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"
 fi
 if [ ! -f ~/zinbra.jar ]; then
-    echo "FAILED: Zinbra not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"
+    echo "ERROR: Zinbra not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"
 fi
 
 echo "Prepare data"

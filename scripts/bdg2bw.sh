@@ -2,9 +2,9 @@
 
 # this script is from Tao Liu https://gist.github.com/taoliu/2469050 
 
-which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/> or conda install bedtools"; exit 1; }
-which bedGraphToBigWig &>/dev/null || { echo "bedGraphToBigWig not found! Download: <http://hgdownload.cse.ucsc.edu/admin/exe/> or conda install -c bioconda ucsc-bedgraphtobigwig"; exit 1; }
-which bedClip &>/dev/null || { echo "bedClip not found! Download: <http://hgdownload.cse.ucsc.edu/admin/exe/> or conda install -c bioconda ucsc-bedclip"; exit 1; }
+which bedtools &>/dev/null || { echo "ERROR: bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/> or conda install bedtools"; exit 1; }
+which bedGraphToBigWig &>/dev/null || { echo "ERROR: bedGraphToBigWig not found! Download: <http://hgdownload.cse.ucsc.edu/admin/exe/> or conda install -c bioconda ucsc-bedgraphtobigwig"; exit 1; }
+which bedClip &>/dev/null || { echo "ERROR: bedClip not found! Download: <http://hgdownload.cse.ucsc.edu/admin/exe/> or conda install -c bioconda ucsc-bedclip"; exit 1; }
  
 # end of checking
  
@@ -16,7 +16,8 @@ fi
 BDG_FILE=$1
 CHROM_SIZES=$2
 
-# Optional load technical stuff:
+# Check configuration
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"

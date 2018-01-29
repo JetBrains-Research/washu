@@ -2,7 +2,7 @@
 # This script is used to compute jaccard index of 2 BED files
 # author Oleg Shpynov (oleg.shpynov@jetbrains.com)
 
-which bedtools &>/dev/null || { echo "bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
+which bedtools &>/dev/null || { echo "ERROR: bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
 
 >&2 echo "jaccard $@"
 
@@ -68,7 +68,8 @@ if [ -f ${TMP} ]; then
     rm $TMP
 fi
 
-# Optional load technical stuff:
+# Check configuration
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"

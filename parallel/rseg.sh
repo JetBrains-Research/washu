@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-which rseg &>/dev/null || { echo "rseg not found! Download rseg: <http://smithlabresearch.org/software/rseg/>"; exit 1; }
+which rseg &>/dev/null || { echo "ERROR: rseg not found! Download rseg: <http://smithlabresearch.org/software/rseg/>"; exit 1; }
 
-# Load technical stuff
+# Check configuration
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch rseg $@"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-# Load technical stuff
+# Check configuration
 source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "index-bowtie $@"
