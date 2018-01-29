@@ -18,8 +18,8 @@ def test_rip_sh(test_data, bam, peaks):
     try:
         run_bash("{}/scripts/rip.sh".format(PROJECT_ROOT_PATH),
                  bam, peaks)
-        assert Path(rip_csv).read_text() == """file,peaks_file,reads,peaks,rip
-{},{},11,1,12
+        assert Path(rip_csv).read_text() == """file,peaks_file,reads,peaks,length,rip
+{},{},11,1,20000000,12
 """.format(bam, peaks)
     finally:
         if os.path.exists(rip_csv):
