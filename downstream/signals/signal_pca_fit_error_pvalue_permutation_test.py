@@ -90,7 +90,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
         plt.savefig(str(path.with_suffix(".permutations.pvalue.png")))
         plt.close()
 
-    return pvalue
+    return pvalue, actual_error
 
 
 def _cli():
@@ -139,7 +139,7 @@ def process(paths: List[Path], output_path: str, seed: int, simulations: int, th
     for i, path in enumerate(paths, 1):
         print("--- [{} / {}] -----------".format(i, n_paths))
         print("Process:", path)
-        pvalue = _process(path, simulations=simulations, seed=seed, threads=threads)
+        pvalue, actual_error = _process(path, simulations=simulations, seed=seed, threads=threads)
 
         norm = re.sub('(.*_)|(\\.tsv$)', '', path.name)
         matches = re.match(".*/(H[a-z0-9]+)/.*", str(path), re.IGNORECASE)
@@ -149,7 +149,7 @@ def process(paths: List[Path], output_path: str, seed: int, simulations: int, th
             mod = "meth"
         else:
             mod = "N/A"
-        records.append((mod, str(path.parent), norm, pvalue))
+        records.append((mod, str(path.parent), norm, actual_error, pvalue))
 
     # sort by pvalue
     records.sort(key=lambda v: v[-1])
@@ -160,7 +160,7 @@ def process(paths: List[Path], output_path: str, seed: int, simulations: int, th
 
         df = pd.DataFrame.from_records(
             records,
-            columns=["modification", "file", "normalization", "pvalue"]
+            columns=["modification", "file", "normalization", "error", "pvalue"]
         )
 
         if fdr:
