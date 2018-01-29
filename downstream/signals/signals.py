@@ -14,8 +14,8 @@ from downstream.signals import signals_visualize
 from scripts.util import *
 
 
-def process(data_path, sizes_path, peaks_sizes_path, *, processed=4):
-    pool = multiprocessing.Pool(processes=processed)
+def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
+    pool = multiprocessing.Pool(processes=processes)
     loaded = pd.read_csv(data_path, sep='\t',
                          names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
 
