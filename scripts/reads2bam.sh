@@ -3,11 +3,17 @@
 
 # Check tools
 which bedtools &>/dev/null || {
-    echo "bedtools not found! You can install it using:"
+    echo "ERROR: bedtools not found! You can install it using:"
     echo "  conda install -c bioconda bedtools"
     echo "For further details see http://code.google.com/p/bedtools"
     exit 1;
    }
+which samtools &>/dev/null || {
+    echo "ERROR: samtools not found! You can install it using:"
+    echo "  conda install -c bioconda samtools"
+    echo "For further details see http://www.htslib.org/doc/samtools.html"
+    exit 1;
+    }
 
 
 >&2 echo "reads2bam $@"
@@ -25,26 +31,38 @@ if [ ! -f "${CHROM_SIZES}" ]; then
   exit 1
 fi
 
+# Check configuration
+[[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
+source ${WASHU_ROOT}/parallel/util/util.sh
+
+export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+mkdir -p "${TMPDIR}"
+
 case "$INPUT" in
   *.bed.gz )
-    >&2 echo "bed.gz: $INPUT"
     BAM=${INPUT/.bed.gz/.bam}
+    >&2 echo "bed.gz: $INPUT -> ${BAM}"
     if [[ ! -f ${BAM} ]]; then
         UNZIPPED=${INPUT%%.gz}
         gunzip -c ${INPUT} > ${UNZIPPED}
-        bedtools bedtobam -i ${UNZIPPED} -g ${CHROM_SIZES} > ${BAM}
+        NS=${BAM}_not_sorted.bam
+        bedtools bedtobam -i ${UNZIPPED} -g ${CHROM_SIZES} > ${NS}
         rm -f ${UNZIPPED}
+        samtools sort -T ${TMPDIR}/bam.sorted -o ${BAM} ${NS}
+        rm ${NS}
     fi
     ;;
   *.bed )
-    >&2 echo "bed: $INPUT"
     BAM=${INPUT/.bed/.bam}
+    >&2 echo "bed: $INPUT -> ${BAM}"
     if [[ ! -f ${BAM} ]]; then
-        bedtools bedtobam -i ${INPUT} -g ${CHROM_SIZES} > ${BAM}
+        NS=${BAM}_not_sorted.bam
+        bedtools bedtobam -i ${INPUT} -g ${CHROM_SIZES} > ${NS}
+        samtools sort -T ${TMPDIR}/bam.sorted -o ${BAM} ${NS}
+        rm ${NS}
     fi
     ;;
   *.bam )
-    >&2 echo "bam: $INPUT"
     BAM=${INPUT}
     ;;
   * )
@@ -52,5 +70,8 @@ case "$INPUT" in
     exit 1;
     ;;
 esac
+
+# Cleanup
+type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 
 echo ${BAM}
