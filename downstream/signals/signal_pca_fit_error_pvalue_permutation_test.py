@@ -155,8 +155,8 @@ def process(paths: List[Path], output_path: str, seed: int, simulations: int, th
     records.sort(key=lambda v: v[-1])
     if len(paths) > 1:
         print("====================")
-        for i, (_mod, path, norm, pvalue) in enumerate(records, 1):
-            print("{}. {}: [{}] {}".format(i, pvalue, norm, path))
+        for i, (_mod, path, norm, actual_error, pvalue) in enumerate(records, 1):
+            print("{}. {}: {} [{}] {}".format(i, pvalue, actual_error, norm, path))
 
         df = pd.DataFrame.from_records(
             records,
