@@ -80,26 +80,28 @@ def test_macs2_broad():
     check_files("fastq_bams_macs2_broad_0.1/*.broadPeak", 4)
     check_files("fastq_bams_macs2_broad_0.1/*.broadPeak_rip.csv", 4)
     check_files("fastq_bams_macs2_broad_0.1/macs2_report.csv", 1)
+    check_files("pileup/*pileup.bed", 6)
 
 
 def test_macs2_narrow():
     check_files("fastq_bams_macs2_q0.01/*.narrowPeak", 4)
     check_files("fastq_bams_macs2_q0.01/*.narrowPeak_rip.csv", 4)
     check_files("fastq_bams_macs2_q0.01/macs2_report.csv", 1)
+    check_files("pileup/*pileup.bed", 6)
 
 
 def test_rseg():
     check_files("fastq_bams_rseg/*_domains.bed", 4)
     check_files("fastq_bams_rseg/peaks_report.csv", 1)
+    check_files("pileup/*pileup.bed", 6)
 
 
 def test_sicer():
+    check_files("pileup/*pileup.bed", 6)
     check_files("fastq_bams_sicer/*island.bed", 4)
     check_files("fastq_bams_sicer/*island.bed_rip.csv", 4)
     check_files("fastq_bams_sicer/*removed-1.bed", 0)
-    # BATCH is true, these shouldn't be cleaned up
-    check_files("fastq_bams_sicer/*input*.bed", 4)
-    check_files("fastq_bams_sicer/*pileup.bed", 6)
+    check_files("fastq_bams_sicer/*input*.bed", 2)
     check_files("fastq_bams_sicer/peaks_report.csv", 1)
 
 

@@ -14,12 +14,10 @@ READS_BAM=$1
 PEAKS_FILE=$2
 
 READS_PREFIX=${READS_BAM%%.bam}
-PILEUP_BED=${READS_PREFIX}_pileup.bed
 RIP_FILE=${PEAKS_FILE}_rip.csv
 
 echo "BAM_FILE: ${READS_BAM}"
 echo "PEAKS_FILE: ${PEAKS_FILE}"
-echo "PILEUP_BED: ${PILEUP_BED}"
 echo "RIP_FILE: ${RIP_FILE}"
 
 # If we already have rip file, do not recalculate
@@ -34,27 +32,9 @@ source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
-# To pileup bed
-if [ -f ${PILEUP_BED} ]; then
-    echo "Pileup file already exists: ${PILEUP_BED}"
-else
-    # Safely recalc in tmpfile if not exists:
-    # - recalc in tmp file
-    # - then move to desired location
-    # This script could be launched in parallel on cluster, and *pileup.bed fill
-    # is shared among peaks filtering tasks. So as not to get inconsistent
-    # file state let's change file in atomic like way
-    PILEUP_TMP=$(mktemp $TMPDIR/pileup.XXXXXX.bed)
-    echo "Calculate pileup file in tmp file: ${PILEUP_TMP}"
-    bedtools bamtobed -i ${READS_BAM} > ${PILEUP_TMP}
-    if [ -f ${PILEUP_BED} ]; then
-        echo "  Ignore result, file has been already calculated: ${PILEUP_BED}"
-    else
-        # if still doesn't exists:
-        echo "  Move ${PILEUP_TMP} -> ${PILEUP_BED}"
-        mv ${PILEUP_TMP} ${PILEUP_BED}
-    fi
-fi
+PILEUP_BED=$(pileup ${READS_BAM})
+echo "PILEUP_BED: ${PILEUP_BED}"
+
 READS=$(wc -l ${PILEUP_BED} | awk '{print $1}')
 echo "READS: $READS"
 

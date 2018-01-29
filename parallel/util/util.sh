@@ -113,3 +113,70 @@ clean_job_tmp_dir() {
       rm -rf "$(job_tmp_dir)"
     fi
 }
+
+# Convert path to absolute path and expand all symlinks
+function expand_path() {
+    # expand ".." and "." including trailing case
+    # based on https://stackoverflow.com/questions/3915040/bash-fish-command-to-print-absolute-path-to-a-file
+    TARGET_FILE="$(pwd)/$1"
+
+    if [ -d "$1" ]; then
+        # dir
+        TARGET_FILE="$(cd "$1"; pwd)"
+    elif [ -f "$1" ]; then
+        # file
+        if [[ $1 == */* ]]; then
+            TARGET_FILE="$(cd "${1%/*}"; pwd)/${1##*/}"
+        fi
+    fi
+
+    # resolve symlinks:
+    # replacement for `readlink -f path` which isn't available in MacOS
+    # http://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
+    cd "$(dirname ${TARGET_FILE})"
+    TARGET_FILE=`basename ${TARGET_FILE}`
+
+    # Iterate down a (possible) chain of symlinks
+    while [ -L "$TARGET_FILE" ]
+    do
+        TARGET_FILE="$(readlink ${TARGET_FILE})"
+        cd "$(dirname ${TARGET_FILE})"
+        TARGET_FILE="$(basename ${TARGET_FILE})"
+    done
+
+    # Compute the canonicalized name by finding the physical path
+    # for the directory we're in and appending the target file.
+    PHYS_DIR="$(pwd -P)"
+    echo "${PHYS_DIR}/${TARGET_FILE}"
+}
+
+
+# Computes and returns pileup file for given BAM file
+function pileup(){
+    if [ ! $# -eq 1 ]; then
+        echo "Need 1 argument! <bam_file>"
+        exit 1
+    fi
+    BAM=$1
+    PILEUP_DIR=$(dirname $(expand_path $(dirname ${BAM})))/pileup
+    if [[ ! -d ${PILEUP_DIR} ]]; then
+        >&2 echo "Create pileup dir ${PILEUP_DIR}"
+        mkdir -p ${PILEUP_DIR}
+    fi
+    NAME=$(basename ${BAM/.bam/_pileup.bed})
+    RESULT=${PILEUP_DIR}/${NAME}
+    if [[ ! -f ${RESULT} ]]; then
+        export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
+        mkdir -p "${TMPDIR}"
+        PILEUP_TMP=$(mktemp $TMPDIR/pileup.XXXXXX.bed)
+        >&2 echo "Calculate ${BAM} pileup file in tmp file: ${PILEUP_TMP}"
+        bedtools bamtobed -i ${BAM} > ${PILEUP_TMP}
+        # Check that we are the first in async calls, not 100% safe
+        if [ ! -f ${RESULT} ]; then
+            mv ${PILEUP_TMP} ${RESULT}
+        else
+            >&2 echo "Ignore result, file has been already calculated: ${RESULT}"
+        fi
+    fi
+    echo "${RESULT}"
+}

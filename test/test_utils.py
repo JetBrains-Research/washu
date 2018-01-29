@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 import pytest
 from test.fixtures import test_data, tmp_dir
@@ -138,3 +139,48 @@ Exception ValueError: 'cannot resize this array: it does not own its data' in ..
     out, _err = capfd.readouterr()
     assert _err.replace(tmp_dir, ".") == "Local tasks WASHU_PARALLELISM=8\n"
     assert out.replace(tmp_dir, ".") == "bash ./foo.sh\n"
+
+
+@pytest.mark.parametrize("path,expected", [
+    ("geo", "geo"),
+    ("geo/.", "geo"),
+    ("geo/tmp/..", "geo"),
+    ("geo/../geo/tmp/doo/..", "geo/tmp"),
+    ("geo/../geo/tmp/doo/file.txt", "geo/tmp/doo/file.txt"),
+    ("geo/symlink", "geo/tmp"),
+    ("geo/symlink/..", "geo"),
+    ("geo/../geo/symlink/doo/file.txt", "geo/tmp/doo/file.txt"),
+])
+def test_expand_path(tmp_dir, capfd, path, expected):
+    os.makedirs(os.path.join(tmp_dir, "geo/tmp/doo"))
+    os.symlink(os.path.join(tmp_dir, "geo/tmp"),
+               os.path.join(tmp_dir, "geo/symlink"))
+    open(os.path.join(tmp_dir, "geo/tmp/doo/file.txt"), 'a').close()
+
+    path = os.path.join(tmp_dir, path)
+    util_sh = os.path.join(PROJECT_ROOT_PATH, "parallel/util/util.sh")
+    subprocess.run(
+        "bash -c 'source {}; echo $(expand_path \"{}\")'".format(util_sh, path),
+        shell=True, check=True)
+    out, _err = capfd.readouterr()
+    assert out == os.path.join(tmp_dir, expected) + "\n"
+
+
+@pytest.mark.parametrize("path,expected,home", [
+    ("bams/foo.bam", "pileup/foo_pileup.bed", None),
+    ("foo.bam", "pileup/foo_pileup.bed", "bams"),
+])
+def test_pileup(tmp_dir, capfd, path, expected, home):
+    os.makedirs(os.path.join(tmp_dir, "bams"))
+    open(os.path.join(tmp_dir, "bams/foo.bam"), 'a').close()
+    if home is None:
+        home = tmp_dir
+        path = os.path.join(tmp_dir, path)
+    else:
+        home = os.path.join(tmp_dir, home)
+    util_sh = os.path.join(PROJECT_ROOT_PATH, "parallel/util/util.sh")
+    subprocess.run(
+        "bash -c 'cd \"{}\"; source {}; echo $(pileup \"{}\")'".format(home, util_sh, path),
+        shell=True, check=True)
+    out, _err = capfd.readouterr()
+    assert out == os.path.join(tmp_dir, expected) + "\n"

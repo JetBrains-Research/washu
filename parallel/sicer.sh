@@ -16,26 +16,23 @@ source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch sicer $@"
 if [ $# -lt 4 ]; then
-    echo "Need at least 4 parameters! <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)] [batch]"
+    echo "Need at least 4 parameters! <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)]"
     exit 1
 fi
-
-WINDOW_SIZE=200
-FRAGMENT_SIZE=150
-GAP_SIZE=600
-
-if [ $# -ge 5 ]; then WINDOW_SIZE=$5 ; fi
-if [ $# -ge 6 ]; then FRAGMENT_SIZE=$6 ; fi
-if [ $# -ge 7 ]; then GAP_SIZE=$7 ; fi
-
-# Batch means no cleanup _pileup.bed for reuse
-BATCH_MODE=""
-if [ $# -ge 8 ]; then BATCH_MODE="TRUE" ; fi
 
 WORK_DIR=$1
 GENOME=$2
 CHROM_SIZES=$3
 FDR=$4
+
+WINDOW_SIZE=200
+if [ $# -ge 5 ]; then WINDOW_SIZE=$5 ; fi
+
+FRAGMENT_SIZE=150
+if [ $# -ge 6 ]; then FRAGMENT_SIZE=$6 ; fi
+
+GAP_SIZE=600
+if [ $# -ge 7 ]; then GAP_SIZE=$7 ; fi
 
 EFFECTIVE_GENOME_FRACTION=$(python ${WASHU_ROOT}/scripts/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
 echo "EFFECTIVE_GENOME_FRACTION: ${EFFECTIVE_GENOME_FRACTION}"
@@ -61,8 +58,6 @@ do :
     ISLAND_BED="${NAME}-W${WINDOW_SIZE}-G${GAP_SIZE}-FDR${FDR}-island.bed"
     if [ ! -f "${ISLAND_BED}" ]; then
         FILE_BED=${NAME}.bed # It is used for results naming
-        PILEUP_BED=${NAME}_pileup.bed
-
         INPUT=$(python ${WASHU_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
         echo "${FILE} input: ${INPUT}"
         if [ ! -f "${INPUT}" ]; then
@@ -93,30 +88,12 @@ cd ${WORK_DIR}
 module load bedtools2
 
 # SICER works with BED only, reuse _pileup.bed if possible
-if [ -f ${WORK_DIR}/${PILEUP_BED} ]; then
-    echo "Pileup file already exists: ${PILEUP_BED}"
-    ln -s ${WORK_DIR}/${PILEUP_BED} \${SICER_FOLDER}/${FILE_BED}
-else
-    echo "Calculate pileup file in tmp file: \${SICER_FOLDER}/${FILE_BED}"
-    export LC_ALL=C
-    bedtools bamtobed -i ${FILE} > \${SICER_FOLDER}/${FILE_BED}
-fi
+PILEUP_BED=\$(pileup ${WORK_DIR}/${FILE})
+ln -s \${PILEUP_BED} \${SICER_FOLDER}/${FILE_BED}
 
-# Use tmp files to reduced async problems with same input parallel processing
 echo "${FILE}: control file found: ${INPUT}"
-if [ ! -f ${WORK_DIR}/${INPUT_BED} ]; then
-    INPUT_TMP=\$(mktemp \${SICER_FOLDER}/input.XXXXXX.bed)
-    echo "Calculate input ${INPUT} pileup file in tmp file: \${INPUT_TMP}"
-    bedtools bamtobed -i ${INPUT} > \${INPUT_TMP}
-    # Check that we are the first in async calls, not 100% safe
-    if [ ! -f ${WORK_DIR}/${INPUT_BED} ]; then
-        mv \${INPUT_TMP} ${WORK_DIR}/${INPUT_BED}
-    else
-        echo "Ignore result, file has been already calculated: ${WORK_DIR}/${INPUT_BED}"
-    fi
-fi
-# Symlink
-ln -sf ${WORK_DIR}/${INPUT_BED} \${SICER_FOLDER}/${INPUT_BED}
+INPUT_PILEUP_BED=\$(pileup ${WORK_DIR}/${INPUT})
+ln -sf \${INPUT_PILEUP_BED} \${SICER_FOLDER}/${INPUT_BED}
 
 cd \${SICER_FOLDER}
 # Usage: SICER.sh [InputDir] [bed file] [control file] [OutputDir] [Species]
@@ -133,10 +110,7 @@ SICER.sh \${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} \${SICER_OUT_FOLDER} ${GENOME
 # SICER generates lots of output, ignore it: resulting BED only.
 # See https://github.com/JetBrains-Research/washu/issues/27
 mv \${SICER_OUT_FOLDER}/*island.bed ${WORK_DIR}
-# Prepare for rip.sh
-if [ ! -f ${WORK_DIR}/${PILEUP_BED} ]; then
-    mv \${SICER_FOLDER}/${FILE_BED} ${WORK_DIR}/${PILEUP_BED}
-fi
+
 # Cleanup everything else
 rm -r \${SICER_FOLDER}
 
@@ -145,10 +119,6 @@ cd ${WORK_DIR}
 # Compute Reads in Peaks
 bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${ISLAND_BED}
 
-# Cleanup
-if [ -z ${BATCH_MODE} ]; then
-    rm ${PILEUP_BED}
-fi
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 SCRIPT
 
