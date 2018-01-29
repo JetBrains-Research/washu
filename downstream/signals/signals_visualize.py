@@ -77,35 +77,34 @@ def mean_regions(df, title, ax, plot_type):
     ods = [c for c in df.columns if is_od(c)]
     yds = [c for c in df.columns if is_yd(c)]
 
+    # Use LOG mean signal, since this is what people are used to
     signal = pd.DataFrame()
-    signal["ODS"] = df[ods].mean(axis=1)
-    signal["YDS"] = df[yds].mean(axis=1)
+    signal["O"] = np.log(df[ods].mean(axis=1)) / np.log(10)
+    signal["Y"] = np.log(df[yds].mean(axis=1)) / np.log(10)
+    # Fix NA
+    signal.loc[~np.isfinite(signal["O"]), "O"] = 0.0
+    signal.loc[~np.isfinite(signal["Y"]), "Y"] = 0.0
 
     if plot_type == Plot.MA:
-        signal["M"] = signal["ODS"] / signal["YDS"]
-        # Fix division by zero to 0.0
-        signal.loc[~np.isfinite(signal["M"]), "M"] = 1.0
-        signal["A"] = 0.5 * (signal["ODS"] + signal["YDS"])
+        signal["M"] = signal["O"] - signal["Y"]
+        signal["A"] = 0.5 * (signal["O"] + signal["Y"])
         ax.scatter(signal["A"], signal["M"], alpha=.3, s=1)
         ax.set_xlabel("A")
         ax.set_ylabel("M")
 
         xmin = np.min(ax.get_xlim())
         xmax = np.max(ax.get_xlim())
-        ax.plot([xmin, xmax], [1, 1], c="red", alpha=0.75, lw=1, ls='dotted')
+        ax.plot([xmin, xmax], [0, 0], c="red", alpha=0.75, lw=1, ls='dotted')
         ax.set_xlim([xmin, xmax])
 
     elif plot_type == Plot.HIST:
-        signal["ODS"] = signal["ODS"]
-        signal["YDS"] = signal["YDS"]
-
-        ax.hist(signal["ODS"], color=OLD.color, bins=100, alpha=0.3, label="ODS")
-        ax.hist(signal["YDS"], color=YOUNG.color, bins=100, alpha=0.3, label="YDS")
+        ax.hist(signal["O"], color=OLD.color, bins=100, alpha=0.3, label="log10(O)")
+        ax.hist(signal["Y"], color=YOUNG.color, bins=100, alpha=0.3, label="log10(Y)")
         ax.legend()
     else:
-        ax.scatter(signal["ODS"], signal["YDS"], alpha=.3, s=1)
-        ax.set_xlabel("mean ODS")
-        ax.set_ylabel("mean YDS")
+        ax.scatter(signal["O"], signal["Y"], alpha=.3, s=1)
+        ax.set_xlabel("log10(O)")
+        ax.set_ylabel("log10(Y)")
         # x = y
         lims = [
             np.min([ax.get_xlim(), ax.get_ylim()]),  # min of both axes
@@ -125,8 +124,8 @@ def mean_boxplots(df, title, ax):
     signal = df.mean(axis=1).to_frame("value")
     signal.index = [age(n) for n in signal.index]
     # Setup age
-    signal["age"] = "ODS"
-    signal.loc[[bool(is_yd(str(x))) for x in signal.index], "age"] = "YDS"
+    signal["age"] = "O"
+    signal.loc[[bool(is_yd(str(x))) for x in signal.index], "age"] = "Y"
 
     age_labels = list(reversed(sorted(set(signal['age']))))
     sns.boxplot(x="age", y="value", data=signal, palette="Set3",
@@ -138,41 +137,37 @@ def mean_boxplots(df, title, ax):
         for j, label in enumerate(age_data.index):
             ax.annotate(label, xy=(i, age_data.iloc[j, :]['value']),
                         xytext=(5, 0),
-                        color=OLD.color if age_label == "YDS" else YOUNG.color,
+                        color=OLD.color if age_label == "O" else YOUNG.color,
                         textcoords='offset points')
 
     ax.set_title(title)
 
 
 def visualize(f, signal_type):
-    try:
-        print('Visualizing', signal_type, f)
-        df = pd.read_csv(f, sep='\t')
-        od_inputs = [c for c in df.columns.values if is_od_input(c)]
-        yd_inputs = [c for c in df.columns.values if is_yd_input(c)]
-        if od_inputs and yd_inputs:
-            signal = df.drop(['chr', 'start', 'end', od_inputs[0], yd_inputs[0]], axis=1)
-        else:
-            signal = df.drop(['chr', 'start', 'end'], axis=1)
+    print('Visualizing', signal_type, f)
+    df = pd.read_csv(f, sep='\t')
+    od_inputs = [c for c in df.columns.values if is_od_input(c)]
+    yd_inputs = [c for c in df.columns.values if is_yd_input(c)]
+    if od_inputs and yd_inputs:
+        signal = df.drop(['chr', 'start', 'end', od_inputs[0], yd_inputs[0]], axis=1)
+    else:
+        signal = df.drop(['chr', 'start', 'end'], axis=1)
 
-        plt.figure(figsize=(30, 6))
-        fit_error = signal_pca_plot(signal, title=signal_type, ax=plt.subplot(1, 5, 1))
-        mean_regions(df, title=signal_type, ax=plt.subplot(1, 5, 2),
-                     plot_type=Plot.SCATTER)
-        mean_regions(df, title='MA {}'.format(signal_type), ax=plt.subplot(1, 5, 3),
-                     plot_type=Plot.MA)
-        mean_regions(df, title='Log {}'.format(signal_type), ax=plt.subplot(1, 5, 4),
-                     plot_type=Plot.HIST)
-        mean_boxplots(signal.T, title=signal_type, ax=plt.subplot(1, 5, 5))
-        plt.savefig(re.sub('.tsv', '.png', f))
-        plt.close()
+    plt.figure(figsize=(30, 6))
+    fit_error = signal_pca_plot(signal, title=signal_type, ax=plt.subplot(1, 5, 1))
+    mean_regions(df, title='O vs Y {}'.format(signal_type), ax=plt.subplot(1, 5, 2),
+                 plot_type=Plot.SCATTER)
+    mean_regions(df, title='MA log10 {}'.format(signal_type), ax=plt.subplot(1, 5, 3),
+                 plot_type=Plot.MA)
+    mean_regions(df, title='Histogram {}'.format(signal_type), ax=plt.subplot(1, 5, 4),
+                 plot_type=Plot.HIST)
+    mean_boxplots(signal.T, title=signal_type, ax=plt.subplot(1, 5, 5))
+    plt.savefig(re.sub('.tsv', '.png', f))
+    plt.close()
 
-        # Save pca fit errors to file
-        pd.DataFrame(data=[[fit_error]]).to_csv(re.sub('.tsv', '_pca_fit_error.csv', f),
-                                                index=None, header=False)
-
-    except FileNotFoundError as e:
-        print(e)
+    # Save pca fit errors to file
+    pd.DataFrame(data=[[fit_error]]).to_csv(re.sub('.tsv', '_pca_fit_error.csv', f),
+                                            index=None, header=False)
 
 
 def process(path):
