@@ -11,14 +11,16 @@ export PYTHONPATH="$WASHU_ROOT:$PYTHONPATH"
 ##################
 # Pipeline tests #
 ##################
-echo "Check tools available by module load"
 module load bedtools2
+module load samtools
 #which bedtools &>/dev/null && { echo "bedtools: HIDE until module load bedtools2"; exit 1; }
+#which samtools &>/dev/null && { echo "ERROR samtools: HIDE until module load samtools"; exit 1; }
+
+echo "Check tools available by module load"
 which R &>/dev/null && { echo "ERROR R: HIDE until module load R"; exit 1; }
 which Rscript &>/dev/null && { echo "ERROR Rscript: HIDE until module load R"; exit 1; }
 which bowtie &>/dev/null && { echo "ERROR bowtie: HIDE until module load bowtie"; exit 1; }
 which bowtie2 &>/dev/null && { echo "ERROR bowtie2: HIDE until module load bowtie2"; exit 1; }
-which samtools &>/dev/null && { echo "ERROR samtools: HIDE until module load samtools"; exit 1; }
 which fastq-dump &>/dev/null && { echo "ERROR fastq-dump: HIDE until module load sratoolkit"; exit 1; }
 which fastqc &>/dev/null && { echo "ERROR fastqc: HIDE until module load fastqc"; exit 1; }
 which java &>/dev/null && { echo "ERROR java: HIDE until module load java"; exit 1; }
