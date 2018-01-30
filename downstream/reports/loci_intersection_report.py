@@ -140,8 +140,8 @@ def _cli():
     plot_sizes = {
         "notch_pathways": 20,
         "aging_pathways": 200,
-        "chromhmm": 10,
-        "chromhmm2": 10,
+        "chromhmm_encsr907lcd": 10,
+        "chromhmm_encsr511wof": 10,
         "genes": 10,
         "repeats": 15,
         "wo_pathways": 20,
