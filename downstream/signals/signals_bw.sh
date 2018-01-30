@@ -138,11 +138,13 @@ else
     echo "NO peaks file given"
 fi
 
-echo "Compute regions coverage ${REGIONS_BED}"
-cat $REGIONS_BED | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
-    sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/regions.bed4
+if [[ ! -f ${RESULTS_FOLDER}/${ID}.tsv ]]; then
+    echo "Compute regions coverage ${REGIONS_BED}"
+    cat $REGIONS_BED | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
+        sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/regions.bed4
 
-process_coverage ${TMPDIR}/regions.bed4 ${ID} ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}
+    process_coverage ${TMPDIR}/regions.bed4 ${ID} ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}
+fi
 
 echo "Processing signals for ${ID}.tsv"
 run_parallel << SCRIPT

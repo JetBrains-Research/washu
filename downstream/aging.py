@@ -5,9 +5,9 @@ from collections import namedtuple
 # Age and donors utility code
 #################################################################
 
-Age = namedtuple('Age', 'name color prefix')
-OLD = Age('O', 'blue', '')
-YOUNG = Age('Y', 'red', '')
+Age = namedtuple('Age', 'name color')
+OLD = Age('O', 'blue')
+YOUNG = Age('Y', 'red')
 
 
 def is_od_input(c):

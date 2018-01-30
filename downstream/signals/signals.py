@@ -18,6 +18,7 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
     pool = multiprocessing.Pool(processes=processes)
     loaded = pd.read_csv(data_path, sep='\t',
                          names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
+    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
 
     processing_chipseq = not [n for n in loaded['name'] if re.match('.*(meth|trans|mirna).*', n)]
     if processing_chipseq:
@@ -30,16 +31,16 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
 
     if processing_chipseq:
         pool.apply_async(rpm_normalization,
-                         args=(data_path, loaded, sizes_path),
+                         args=(data_path, loaded, sizes),
                          error_callback=error_callback)
 
         if peaks_sizes_path and os.path.exists(peaks_sizes_path):
             pool.apply_async(frip_normalization,
-                             args=(data_path, loaded, sizes_path, peaks_sizes_path),
+                             args=(data_path, loaded, sizes, peaks_sizes_path),
                              error_callback=error_callback)
 
         pool.apply_async(diffbind_normalization,
-                         args=(data_path, loaded, sizes_path),
+                         args=(data_path, loaded, sizes),
                          error_callback=error_callback)
 
     pool.close()
@@ -47,46 +48,45 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
 
 
 def raw_normalization(data_path, loaded, processing_chipseq):
-    """Raw signal with Quantile normalization and standard scaling"""
+    """Raw signal with standard scaling"""
     print('Processing RAW signal')
     raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                               columns='name',
                               values='coverage' if processing_chipseq else 'mean',
                               fill_value=0)
     raw_path = re.sub('.tsv', '_raw.tsv', data_path)
-    raw_data.to_csv(raw_path, sep='\t')
-    print('Saved RAW signal to {}'.format(raw_path))
-    signals_visualize.process(raw_path)
+    if not os.path.exists(raw_path):
+        raw_data.to_csv(raw_path, sep='\t')
+        print('Saved RAW signal to {}'.format(raw_path))
+        signals_visualize.process(raw_path)
 
-    print("Processing QUANTILE normalization")
-    quantile_path = re.sub('.tsv', '_rawq.tsv', data_path)
-    process_quantile(quantile_path, raw_data)
-    signals_visualize.process(quantile_path)
-
-    print("Processing Z normalization")
     z_path = re.sub('.tsv', '_rawz.tsv', data_path)
-    process_z(z_path, raw_data)
-    signals_visualize.process(z_path)
+    if not os.path.exists(z_path):
+        print("Processing Z normalization")
+        process_z(z_path, raw_data)
+        signals_visualize.process(z_path)
 
 
-def rpm_normalization(data_path, loaded, sizes_path):
+def rpm_normalization(data_path, loaded, sizes):
     """RPM/RPKM normalization"""
-    print('Processing RPM normalization')
-    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     sizes_pm = sizes / 1000000.0
     sizes_pm.columns = ['size_pm']
     data = pd.merge(loaded, sizes_pm, left_on="name", how='left', right_index=True)
-    data['rpm'] = data['coverage'] / data['size_pm']
-    rpm_path = re.sub('.tsv', '_rpm.tsv', data_path)
-    save_signal(rpm_path, data, 'rpm', 'Saved RPM')
-    signals_visualize.process(rpm_path)
 
-    print('Processing RPKM normalization')
-    data['rpk'] = (data['end'] - data['start']) / 1000.0
-    data['rpkm'] = data['rpm'] / data['rpk']
+    rpm_path = re.sub('.tsv', '_rpm.tsv', data_path)
+    if not os.path.exists(rpm_path):
+        print('Processing RPM normalization')
+        data['rpm'] = data['coverage'] / data['size_pm']
+        save_signal(rpm_path, data, 'rpm', 'Saved RPM')
+        signals_visualize.process(rpm_path)
+
     rpkm_path = re.sub('.tsv', '_rpkm.tsv', data_path)
-    save_signal(rpkm_path, data, 'rpkm', 'Saved RPKM')
-    signals_visualize.process(rpkm_path)
+    if not os.path.exists(rpkm_path):
+        print('Processing RPKM normalization')
+        data['rpk'] = (data['end'] - data['start']) / 1000.0
+        data['rpkm'] = data['rpm'] / data['rpk']
+        save_signal(rpkm_path, data, 'rpkm', 'Saved RPKM')
+        signals_visualize.process(rpkm_path)
 
 
 def save_signal(path, data, signal_type, msg):
@@ -106,32 +106,11 @@ def process_z(output, data):
     print('{} to {}'.format('Saved Z', output))
 
 
-def quantile_normalize_using_target(x, target):
-    """Both `x` and `target` are numpy arrays of equal lengths."""
-    target_sorted = np.sort(target)
-    return target_sorted[x.argsort().argsort()]
-
-
-def process_quantile(output, data):
-    quantile_df = pd.DataFrame()
-    # Normalize everything to the first track
-    signal_columns = [c for c in data.columns if not is_input(c)]
-    target_column = signal_columns[0]
-    target = data[target_column]
-    print("Quantile normalization to", target_column)
-    quantile_df[target_column] = target
-    for c in signal_columns[1:]:
-        quantile_df[c] = quantile_normalize_using_target(data[c], target)
-    quantile_df.to_csv(output, sep='\t')
-    print('{} to {}'.format('Saved QUANTILE', output))
-
-
-def frip_normalization(data_path, loaded, sizes_path, peaks_sizes_path):
+def frip_normalization(data_path, loaded, sizes, peaks_sizes_path):
     print('Processing FRIP normalization')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
     """Normalization on library depths, FRIPs"""
-    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'tags'), index_col='name')
     peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
                               index_col='name')
 
@@ -160,67 +139,50 @@ def frip_normalization(data_path, loaded, sizes_path, peaks_sizes_path):
     for column in not_input_columns:
         frip_df[column] = np.maximum(0, data[column] - input_coef[column] * data[input_column])
 
-    frip_path = re.sub('.tsv', '_frip.tsv', data_path)
-    frip_df[not_input_columns].to_csv(frip_path, sep='\t')
-    print('{} to {}'.format('Saved FRIP normalized', frip_path))
-    signals_visualize.process(frip_path)
-
     # Per million reads normalization
-    frip_pm = pd.DataFrame()
-    for column in not_input_columns:
-        frip_pm[column] = frip_df[column] * 1000000.0 / counts['data'][column]
-    frip_linear_path = re.sub('.tsv', '_fripm.tsv', data_path)
-    frip_pm[not_input_columns].to_csv(frip_linear_path, sep='\t')
-    print('{} to {}'.format('Saved FRIP per million reads normalized', frip_linear_path))
-    signals_visualize.process(frip_linear_path)
-
-    # Quantile normalization
-    frip_quantile_path = re.sub('.tsv', '_fripq.tsv', data_path)
-    process_quantile(frip_quantile_path, frip_df)
-    signals_visualize.process(frip_quantile_path)
+    frip_pm_path = re.sub('.tsv', '_fripm.tsv', data_path)
+    if not os.path.exists(frip_pm_path):
+        frip_pm = pd.DataFrame()
+        for column in not_input_columns:
+            frip_pm[column] = frip_df[column] * 1000000.0 / counts['data'][column]
+        frip_pm[not_input_columns].to_csv(frip_pm_path, sep='\t')
+        print('{} to {}'.format('Saved FRIP per million reads normalized', frip_pm_path))
+        signals_visualize.process(frip_pm_path)
 
     # Z normalization
-    frip_z_path = re.sub('.tsv', '_fripz.tsv', data_path)
-    process_z(frip_z_path, frip_df)
-    signals_visualize.process(frip_z_path)
+    fripz_path = re.sub('.tsv', '_fripz.tsv', data_path)
+    if not os.path.exists(fripz_path):
+        process_z(fripz_path, frip_df)
+        signals_visualize.process(fripz_path)
+
+    # TMM normalization
+    friptmm_path = re.sub('.tsv', '_friptmm.tsv', data_path)
+    if not os.path.exists(friptmm_path):
+        scores_tmm = process_tmm(frip_df, sizes) * 1000000.0
+        scores_tmm.index = data.index
+        scores_tmm.to_csv(friptmm_path, sep='\t')
+        print('Saved friptmm scores to {}'.format(friptmm_path))
+        signals_visualize.process(friptmm_path)
 
 
-def diffbind_normalization(data_path, loaded, sizes_path):
-    print('Processing DiffBind scores')
-    data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
-                          columns='name', values='coverage', fill_value=0)
-    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
-
-    od_input = [c for c in data.columns if is_od_input(c)][0]
-    yd_input = [c for c in data.columns if is_yd_input(c)][0]
-    ods = [c for c in data.columns if is_od(c)]
-    yds = [c for c in data.columns if is_yd(c)]
-    records = [(d, od_input, OLD) for d in ods] + [(d, yd_input, YOUNG) for d in yds]
-    scores, lib_sizes = diffbind_scores(data, sizes, records)
-    scores_path = re.sub('.tsv', '_scores.tsv', data_path)
-    scores.index = data.index
-    scores.to_csv(scores_path, sep='\t')
-    print('Saved Diffbind scores to {}'.format(scores_path))
-    signals_visualize.process(scores_path)
-
-    # Quantile scores normalization
-    scores_quantile_path = re.sub('.tsv', '_scoresq.tsv', data_path)
-    process_quantile(scores_quantile_path, scores)
-    signals_visualize.process(scores_quantile_path)
-
-    # Z normalization
-    scores_z_path = re.sub('.tsv', '_scoresz.tsv', data_path)
-    process_z(scores_z_path, scores)
-    signals_visualize.process(scores_z_path)
-
-    # TMM normalization as in original DiffBind
-    tmm_results = process_tmm(scores, lib_sizes)
-    scores_tmm = tmm_results * 10000000
-    scores_tmm_path = re.sub('.tsv', '_scores_tmm.tsv', data_path)
-    scores_tmm.index = data.index
-    scores_tmm.to_csv(scores_path, sep='\t')
-    print('Saved Diffbind TMM scores to {}'.format(scores_tmm_path))
-    signals_visualize.process(scores_tmm_path)
+def diffbind_normalization(data_path, loaded, sizes):
+    diffbind_path = re.sub('.tsv', '_diffbind.tsv', data_path)
+    if not os.path.exists(diffbind_path):
+        print('processing diffbind scores')
+        data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
+                              columns='name', values='coverage', fill_value=0)
+        od_input = [c for c in data.columns if is_od_input(c)][0]
+        yd_input = [c for c in data.columns if is_yd_input(c)][0]
+        ods = [c for c in data.columns if is_od(c)]
+        yds = [c for c in data.columns if is_yd(c)]
+        records = [(d, od_input, OLD) for d in ods] + [(d, yd_input, YOUNG) for d in yds]
+        scores = diffbind_scores(data, sizes, records)
+        # TMM normalization
+        scores_tmm = process_tmm(scores, sizes) * 1000000.0
+        scores_tmm.index = data.index
+        scores_tmm.to_csv(diffbind_path, sep='\t')
+        print('saved diffbind tmm scores to {}'.format(diffbind_path))
+        signals_visualize.process(diffbind_path)
 
 
 def process_tmm(data, lib_sizes):
@@ -233,13 +195,10 @@ def process_tmm(data, lib_sizes):
     lib_sizes.to_csv(sizes_tmpfile, index=False, sep='\t', header=None)
     print('Saved sizes to', sizes_tmpfile)
     print('TMM normalization using R')
-    cmd = "Rscript " + os.path.dirname(os.path.realpath(__file__)) + '/tmm.R' + \
-          " " + scores_tmpfile + " " + sizes_tmpfile + " " + tmm_file
+    tmm_R = os.path.dirname(os.path.realpath(__file__)) + '/tmm.R'
+    cmd = "Rscript " + tmm_R + " " + scores_tmpfile + " " + sizes_tmpfile + " " + tmm_file
     subprocess.run(cmd, shell=True)
-    # Difference between DBA_SCORE_TMM_MINUS_FULL and DBA_SCORE_TMM_MINUS_FULL_CPM is in bCMP
-    print('TMM Scores DBA_SCORE_TMM_MINUS_FULL_CPM')
-    tmm_results = pd.read_csv(tmm_file, sep='\t')
-    return tmm_results
+    return pd.read_csv(tmm_file, sep='\t')
 
 
 def diffbind_scores(data, sizes, records):
@@ -248,25 +207,21 @@ def diffbind_scores(data, sizes, records):
     See documents on how to compute scores
     https://docs.google.com/document/d/1zH5cw5Zal546xkoFFCVqhhYmf3742efhddz5cqpD9PQ/edit?usp=sharing
     """
-
-    def score(condition, control, scale):
-        if scale > 1:
-            scale = 1
-        if scale != 0:
-            control = math.ceil(control * scale)
+    def score(cond, cont, s):
+        if s > 1:
+            s = 1
+        if s != 0:
+            cont = math.ceil(cont * s)
         # According to DiffBind pv.get_reads() function (utils.R:239)
         # if reads number is < 1 than it should be 1
-        return max(1, condition - control)
+        return max(1, cond - cont)
 
     scores = pd.DataFrame()
-    sizes_processed = pd.DataFrame(columns=['name', 'size'])
-    for cond, cont, g in records:
-        s = sizes.loc[cond]['size'] / sizes.loc[cont]['size']
-        prefix = '' if g is None else g.prefix
-        scores[prefix + cond] = \
-            [score(z[0], z[1], s) for z in zip(data[cond], data[cont])]
-        sizes_processed.loc[len(sizes_processed)] = (prefix + cond, sizes.loc[cond]['size'])
-    return scores, sizes_processed
+    for condition, control, group in records:
+        scale = sizes.loc[condition]['size'] / sizes.loc[control]['size']
+        scores[condition] = [score(z[0], z[1], scale) for z in zip(data[condition], data[control])]
+    scores.index = data.index
+    return scores
 
 
 def error_callback(e):
