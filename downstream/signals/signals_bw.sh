@@ -33,11 +33,7 @@ ID=${ID##*/};
 RESULTS_FOLDER=${WORK_DIR}/${ID}
 echo "RESULTS FOLDER: $RESULTS_FOLDER"
 
-# Skip if folder already processed
-if [[ -d "${RESULTS_FOLDER}" ]]; then
-    echo "FOLDER exists, skip";
-    exit 0
-else
+if [[ ! -d "${RESULTS_FOLDER}" ]]; then
     mkdir -p ${RESULTS_FOLDER}
 fi
 
