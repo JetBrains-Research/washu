@@ -90,7 +90,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
                 r2_list = list(chain(*(task.get(timeout=3600 * timeout_hours) for task in tasks)))
 
         # serialize:
-        pd.DataFrame.from_dict({"r2": r2_list_path}).to_csv(
+        pd.DataFrame.from_dict({"r2": r2_list}).to_csv(
             str(r2_list_path),
             index=None
         )
