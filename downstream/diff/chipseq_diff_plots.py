@@ -313,6 +313,7 @@ class ChangeCollector:
         self.process_diffreps("diffReps_broad")
         self.process_diffreps("diffReps_broad_input")
 
+
 class DiffProcessor:
     def __init__(self, input, output, mark):
 
