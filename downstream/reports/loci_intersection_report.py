@@ -39,6 +39,8 @@ def _cli():
                         help="Stat tests on all pathways")
     parser.add_argument('--tuned', action="store_true",
                         help="Use tuned peaks")
+    parser.add_argument('--tool',
+                        help="Process peaks only for these peak caller tool folder")
     parser.add_argument('--failed_tracks', metavar="PATH",
                         default="/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv",
                         help="Failed tracks *.csv path")
@@ -55,6 +57,7 @@ def _cli():
     all_pathways = args.allpws
     skip_plots = args.skip_plots
     skip_stats = args.skip_stats
+    custom_tool = args.tool
     ########################################################################
 
     loci_dict = loi.collect_loci(loci_root)
@@ -69,6 +72,9 @@ def _cli():
                 for tool_dir in (d for d in hist_dir.iterdir() if d.is_dir()):
                     tool = tool_dir.name
 
+                    if custom_tool and tool != custom_tool:
+                        continue
+
                     if tool == "macs_narrow":
                         # We decided to ignore Macs2 narrow
                         continue
@@ -76,6 +82,7 @@ def _cli():
                     peaks = loi.collect_peaks_in_folder(tool_dir)
                     if peaks:
                         peaks_map[tool][hist] = peaks
+
             tools_for_stat_test = sorted(peaks_map.keys())
         else:
             # TODO: legacy peaks, cleanup required
