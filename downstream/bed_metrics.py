@@ -283,10 +283,13 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
             plt.setp(g.ax_row_colors.get_xticklabels(), rotation=-90)
         plt.setp(g.ax_heatmap.get_yticklabels(), rotation=0)
 
-        if col_color_annotator:
-            g.ax_col_colors.set_title(title)
+        if col_cluster:
+            g.ax_col_dendrogram.set_title(title)
         else:
-            g.ax_heatmap.set_title(title)
+            if col_color_annotator:
+                g.ax_col_colors.set_title(title)
+            else:
+                g.ax_heatmap.set_title(title)
 
     adjustments = adjustments or {}
     plt.subplots_adjust(left=adjustments.get('left', 0.2),

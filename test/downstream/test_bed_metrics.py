@@ -311,6 +311,15 @@ def test_plot_ann_custom_ticks(tmp_dir, test_data):
     assert_image(expected, result)
 
 
+def test_plot_cluster_metric_heatmap(tmp_dir, test_data):
+    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
+
+    result = tmp_dir + "foo.png"
+    plot_metric_heatmap("My title", df, save_to=result, col_cluster=True, row_cluster=True)
+
+    assert_image(test_data("metrics/img_cluster.png"), result)
+
+
 @pytest.mark.parametrize("label,value", [
     ("OD1", "OD1"),
     ("OD1_foo.broadPeak", "OD1_macs2"),
