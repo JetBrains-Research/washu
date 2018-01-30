@@ -19,7 +19,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # nopep8
 
-R2DistMetrics = namedtuple('R2DistMetrics', ['mean', 'median', 'p2', 'p5', 'p10'])
+R2DistMetrics = namedtuple('R2DistMetrics', ['mean', 'median', 'p2', 'p5', 'p10', 'wdist'])
 Record = namedtuple('Record', ['datatype', 'folder', 'norm', 'metrics'])
 
 
@@ -68,26 +68,44 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
     donors_groups_sizes = [k, k, k + (simulations % 3)]
     donors_groups_params = (ods, ods1, ods2), (yds, yds1, yds2), (donors, ods, yds)
 
-    if threads == 1:
-        r2_list = []
-        for n, (group_ab, group_a, group_b) in zip(donors_groups_sizes, donors_groups_params):
-            r2_list.extend(_multiple_homogeneous_split_r2(group_ab, group_a, group_b, signal, n))
-    else:
-        with Pool(processes=threads) as pool:
-            tasks = []
+    r2_list_path = path.with_suffix(".permutations.r2.csv")
+    if not r2_list_path.exists():
+        if threads == 1:
+            r2_list = []
             for n, (group_ab, group_a, group_b) in zip(donors_groups_sizes, donors_groups_params):
-                chunk_size = math.ceil(n / threads)
-                chunks = [min(n - ch_start, chunk_size) for ch_start in range(0, n, chunk_size)]
+                r2_list.extend(_multiple_homogeneous_split_r2(group_ab, group_a, group_b, signal,
+                                                              n))
+        else:
+            with Pool(processes=threads) as pool:
+                tasks = []
+                for n, (group_ab, group_a, group_b) in zip(donors_groups_sizes,
+                                                           donors_groups_params):
+                    chunk_size = math.ceil(n / threads)
+                    chunks = [min(n - start, chunk_size) for start in range(0, n, chunk_size)]
 
-                tasks.extend(
-                    [pool.apply_async(_multiple_homogeneous_split_r2,
-                                      (group_ab, group_a, group_b, signal, l)) for l in chunks]
-                )
-            r2_list = list(chain(*(task.get(timeout=3600 * timeout_hours) for task in tasks)))
+                    tasks.extend(
+                        [pool.apply_async(_multiple_homogeneous_split_r2,
+                                          (group_ab, group_a, group_b, signal, l)) for l in chunks]
+                    )
+                r2_list = list(chain(*(task.get(timeout=3600 * timeout_hours) for task in tasks)))
+
+        # serialize:
+        pd.DataFrame.from_dict({"r2": r2_list_path}).to_csv(
+            str(r2_list_path),
+            index=None
+        )
+    else:
+        r2_list = pd.DataFrame.from_csv(str(r2_list_path), index_col=None).r2.tolist()
+        assert len(r2_list) == simulations,\
+            "Expected {} simulations, but was {} in: {}".format(simulations, len(r2_list),
+                                                                r2_list_path)
 
     rr = np.asarray(r2_list)
+    # Wasserstein distance, Earth mover's distance
+    wdist = np.sqrt(np.mean((rr - 1) ** 2))
+
     dm = R2DistMetrics(np.mean(rr), np.median(rr), np.percentile(rr, 2), np.percentile(rr, 5),
-                       np.percentile(rr, 10))
+                       np.percentile(rr, 10), wdist)
 
     print("mean = {}, median = {}, [min, max] = [{}, {}], [2%, 5%, 10%, 98%] = [{}, {}, {}, "
           "{}]".format(dm.mean, dm.median, np.min(rr), np.max(rr), dm.p2, dm.p5, dm.p10,
@@ -183,8 +201,7 @@ def process(paths: List[Path], output_path: str, seed: int, simulations: int, th
 
         df = pd.DataFrame.from_records(
             [(r.datatype, r.folder, r.norm, *r.metrics) for r in records],
-            columns=["modification", "file", "normalization",
-                     "mean", "median", "p2", "p5", "p10"]
+            columns=["modification", "file", "normalization", *(R2DistMetrics._fields)]
         )
         # table: mod, folder, norm, error
         df.to_csv(output_path, index=None)
