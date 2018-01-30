@@ -49,7 +49,7 @@ def signal_pca_plot(signal, title, ax):
                    color=g.color, alpha=.8, label=g.name)
 
     for g, label, x, y in zip(groups, [age(d) for d in donors], x_r[:, 0], x_r[:, 1]):
-        ax.annotate(g.prefix + label,
+        ax.annotate(label,
                     xy=(x, y),
                     xytext=(5, 0),
                     color=g.color,
