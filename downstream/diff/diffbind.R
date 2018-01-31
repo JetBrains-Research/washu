@@ -26,7 +26,12 @@ require_or_install("ggplot2")
 require_or_install("stringr")
 
 # See DiffBind DiffBind-globals.Rd for the full list
-SCORE_FUNCTIONS = c(DBA_SCORE_TMM_READS_FULL,
+SCORE_FUNCTIONS = c(DBA_SCORE_READS,
+                    DBA_SCORE_READS_MINUS,
+                    DBA_SCORE_READS_FOLD,
+                    DBA_SCORE_RPKM,
+                    DBA_SCORE_RPKM_FOLD,
+                    DBA_SCORE_TMM_READS_FULL,
                     DBA_SCORE_TMM_READS_EFFECTIVE,
                     DBA_SCORE_TMM_MINUS_FULL,
                     DBA_SCORE_TMM_MINUS_EFFECTIVE,
@@ -35,7 +40,12 @@ SCORE_FUNCTIONS = c(DBA_SCORE_TMM_READS_FULL,
                     DBA_SCORE_TMM_MINUS_FULL_CPM,
                     DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM)
 
-SCORE_FUNCTIONS_NAMES =   c('DBA_SCORE_TMM_READS_FULL',
+SCORE_FUNCTIONS_NAMES =   c('DBA_SCORE_READS',
+                            'DBA_SCORE_READS_MINUS',
+                            'DBA_SCORE_READS_FOLD',
+                            'DBA_SCORE_RPKM',
+                            'DBA_SCORE_RPKM_FOLD',
+                            'DBA_SCORE_TMM_READS_FULL',
                             'DBA_SCORE_TMM_READS_EFFECTIVE',
                             'DBA_SCORE_TMM_MINUS_FULL',
                             'DBA_SCORE_TMM_MINUS_EFFECTIVE',
@@ -45,7 +55,7 @@ SCORE_FUNCTIONS_NAMES =   c('DBA_SCORE_TMM_READS_FULL',
                             'DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM')
 
 REMOVE_DUPLICATES = c(TRUE, FALSE)
-INSERT_SIZES = c(125) # Default insertSize
+INSERT_SIZES = c(125, 150) # Default insertSize
 
 main <- function(path, insertSize) {
     if (! missing(insertSize) && ! (insertSize %in% INSERT_SIZES)) {
@@ -63,7 +73,7 @@ main <- function(path, insertSize) {
                 print(paste('INSERT_SIZE', insertSize))
                 print(paste('REMOVE_DUPLICATES', removeDuplicates))
                 print(paste('SCORE_FUNCTION', scoreFunctionName))
-                id = paste(removeDuplicates, insertSize, scoreFunctionName, sep = '_')
+                id = paste('dedup', removeDuplicates, 'f', insertSize, scoreFunctionName, sep = '_')
 
                 print(paste('Count', id))
                 yo_counts = dba.count(yo,
