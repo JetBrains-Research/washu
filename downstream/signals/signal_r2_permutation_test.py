@@ -68,7 +68,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
     donors_groups_sizes = [k, k, k + (simulations % 3)]
     donors_groups_params = (ods, ods1, ods2), (yds, yds1, yds2), (donors, ods, yds)
 
-    r2_list_path = path.with_suffix(".permutations.r2.csv")
+    r2_list_path = path.with_suffix(".permutations.r2.{}.csv".format(simulations))
     if not r2_list_path.exists():
         if threads == 1:
             r2_list = []
@@ -123,7 +123,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
         plt.xlabel("Each locus R2 for mean signal @ group1 vs group2")
         plt.legend()
 
-        plt.savefig(str(path.with_suffix(".permutations.r2.png")))
+        plt.savefig(str(path.with_suffix(".permutations.r2.{}.png".format(simulations))))
         plt.close()
 
     return dm
