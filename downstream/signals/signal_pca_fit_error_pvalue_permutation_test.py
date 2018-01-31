@@ -83,16 +83,13 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
                                                                 rnd_results_path)
 
     # hack not to get zero pvalue
-    rnd_results.append(actual_error)
     rr = np.asarray(rnd_results)
-    pvalue = np.sum(rr <= actual_error) / len(rr)
+    pvalue = (np.sum(rr <= actual_error) + 1) / (len(rr) + 1)
 
     print("[ACTUAL]: {}, [SIMUL]: [min, max] = [{}, {}], [2%, 98%] = [{}, {}]; 50% = {}, "
-          "p-value: {}".format(actual_error,
-                               np.min(rr[0:len(rr) - 1]), np.max(rr[0:len(rr) - 1]),
+          "p-value: {}".format(actual_error, np.min(rr), np.max(rr),
                                np.percentile(rr, 2), np.percentile(rr, 98), np.percentile(rr, 50),
-                               pvalue
-                               )
+                               pvalue)
           )
 
     if plot:
