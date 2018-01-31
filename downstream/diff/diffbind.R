@@ -25,15 +25,25 @@ require_or_install("DiffBind", bioc = TRUE)
 require_or_install("ggplot2")
 require_or_install("stringr")
 
-SCORE_FUNCTIONS = c(DBA_SCORE_TMM_MINUS_FULL,
-                    DBA_SCORE_TMM_MINUS_FULL_CPM,
+# See DiffBind DiffBind-globals.Rd for the full list
+SCORE_FUNCTIONS = c(DBA_SCORE_TMM_READS_FULL,
+                    DBA_SCORE_TMM_READS_EFFECTIVE,
+                    DBA_SCORE_TMM_MINUS_FULL,
                     DBA_SCORE_TMM_MINUS_EFFECTIVE,
-                    DBA_SCORE_READS_MINUS)
-SCORE_FUNCTIONS_NAMES = c('DBA_SCORE_TMM_MINUS_FULL',
-                    'DBA_SCORE_TMM_MINUS_FULL_CPM',
-                    'DBA_SCORE_TMM_MINUS_EFFECTIVE',
-                    'DBA_SCORE_READS_MINUS')
-for (i in 1:length(SCORE_FUNCTIONS)) {
+                    DBA_SCORE_TMM_READS_FULL_CPM,
+                    DBA_SCORE_TMM_READS_EFFECTIVE_CPM,
+                    DBA_SCORE_TMM_MINUS_FULL_CPM,
+                    DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM)
+
+SCORE_FUNCTIONS_NAMES =   c('DBA_SCORE_TMM_READS_FULL',
+                            'DBA_SCORE_TMM_READS_EFFECTIVE',
+                            'DBA_SCORE_TMM_MINUS_FULL',
+                            'DBA_SCORE_TMM_MINUS_EFFECTIVE',
+                            'DBA_SCORE_TMM_READS_FULL_CPM',
+                            'DBA_SCORE_TMM_READS_EFFECTIVE_CPM',
+                            'DBA_SCORE_TMM_MINUS_FULL_CPM',
+                            'DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM')
+for (i in 1 : length(SCORE_FUNCTIONS)) {
     print(paste(SCORE_FUNCTIONS_NAMES[i], SCORE_FUNCTIONS[i]))
 }
 
@@ -42,7 +52,7 @@ REMOVE_DUPLICATES = c(TRUE, FALSE)
 INSERT_SIZES = c(125) # Default insertSize
 
 main <- function(path, insertSize) {
-    if (!missing(insertSize) && ! (insertSize %in% INSERT_SIZES)) {
+    if (! missing(insertSize) && ! (insertSize %in% INSERT_SIZES)) {
         INSERT_SIZES = c(insertSize, INSERT_SIZES)
     }
     print(paste("DiffBind version", packageVersion("DiffBind")))
@@ -59,7 +69,7 @@ main <- function(path, insertSize) {
 
                 print(paste('Count', id))
                 yo_counts = dba.count(yo,
-                    bRemoveDuplicates = removeDuplicates, fragmentSize = insertSize, score = scoreFunction)
+                bRemoveDuplicates = removeDuplicates, fragmentSize = insertSize, score = scoreFunction)
                 print(paste('PeakSets', id))
                 peaksets <- dba.peakset(yo_counts, bRetrieve = TRUE)
                 scores_csv = str_replace(path, '.csv', paste('_', id, '_counts.csv', sep = ''))
@@ -108,7 +118,7 @@ main <- function(path, insertSize) {
     }
 }
 
-if (!interactive()) {
+if (! interactive()) {
     args <- commandArgs(TRUE)
     if (length(args) < 1) {
         print("Usage: [executable] config.csv [insertSize]", stderr())
