@@ -108,8 +108,10 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
                        np.percentile(rr, 10), wdist)
 
     print("mean = {}, median = {}, [min, max] = [{}, {}], [2%, 5%, 10%, 98%] = [{}, {}, {}, "
-          "{}]".format(dm.mean, dm.median, np.min(rr), np.max(rr), dm.p2, dm.p5, dm.p10,
-                       np.percentile(rr, 98)))
+          "{}], wd = {}".format(
+        dm.mean, dm.median, np.min(rr), np.max(rr), dm.p2, dm.p5, dm.p10,
+        np.percentile(rr, 98), dm.wdist)
+    )
 
     if plot:
         plt.hist(rr, color="darkgray")
