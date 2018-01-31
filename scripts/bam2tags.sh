@@ -25,7 +25,8 @@ source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
-bedtools bamtobed -i ${BAM} |\
+PILEUP_BED=$(pileup ${BAM})
+cat ${PILEUP_BED} |\
     awk -v OFS='\t' -v S=${SHIFT} \
     '{if ($6 != "-") {print($1, $2+S, $2+S+1)} else {if ($3-S>=1) {print($1, $3-S, $3-S+1)}}}' |\
     sort -u -k1,1 -k3,3n -k2,2n -T ${TMPDIR}

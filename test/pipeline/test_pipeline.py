@@ -69,7 +69,7 @@ def test_bam_qc():
 
 
 def test_unique_tags_bws():
-    check_files("fastq_bams_unique_tags_bws/*.bw", 6)
+    check_files("fastq_bams_tags_bws/*.bw", 6)
 
 
 def test_rpkm_step():
@@ -105,15 +105,6 @@ def test_sicer():
     check_files("fastq_bams_sicer/peaks_report.csv", 1)
 
 
-def test_bam2tags():
-    with tempfile.NamedTemporaryFile(
-            mode='w', suffix='.tags', prefix='bam', delete=False) as tmpfile:
-        run([["bash", "/washu/scripts/bam2tags.sh",
-              os.path.expanduser("~/fastq_bams/OD1_k4me3_hg19.bam"), "150"],
-             ["head"]], stdout=tmpfile)
-        assert Path(tmpfile.name).read_text() == Path("data/bam2tags.tag").read_text()
-
-
 def test_reads2bam():
     bam = run([["bash", "/washu/scripts/reads2bam.sh",
                 os.path.expanduser("~/data/reads.bed"),
@@ -137,16 +128,15 @@ def test_signals():
     if os.path.exists("fastq_bams_bws/regions"):
         shutil.rmtree("fastq_bams_bws/regions")
     call(["bash", "/washu/downstream/signals/signals_bw.sh",
-          os.path.expanduser("~/fastq_bams_unique_tags_bws"),
+          os.path.expanduser("~/fastq_bams_tags_bws"),
           os.path.expanduser("~/data/regions.bed"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
           os.path.expanduser("~/data/regions.bed")])
 
-    check_files("fastq_bams_unique_tags_bws/hg19.chrom.sizes.tsv", 1)
-    check_files("fastq_bams_unique_tags_bws/regions/*_signal.log", 1)
-    check_files("fastq_bams_unique_tags_bws/regions/bw_signals_*.log", 1)
-    check_files("fastq_bams_unique_tags_bws/regions/regions.tsv", 1)
-    check_files("fastq_bams_unique_tags_bws/regions/regions_raw.tsv", 1)
-    check_files("fastq_bams_unique_tags_bws/regions/regions_raw.png", 1)
-    check_files("fastq_bams_unique_tags_bws/regions/regions_rawq.png", 1)
-    check_files("fastq_bams_unique_tags_bws/regions/regions_raw_pca_fit_error.csv", 1)
+    check_files("fastq_bams_tags_bws/hg19.chrom.sizes.tsv", 1)
+    check_files("fastq_bams_tags_bws/regions/*_signal.log", 1)
+    check_files("fastq_bams_tags_bws/regions/bw_signals_*.log", 1)
+    check_files("fastq_bams_tags_bws/regions/regions.tsv", 1)
+    check_files("fastq_bams_tags_bws/regions/regions_raw.tsv", 1)
+    check_files("fastq_bams_tags_bws/regions/regions_raw.png", 1)
+    check_files("fastq_bams_tags_bws/regions/regions_raw_pca_fit_error.csv", 1)
