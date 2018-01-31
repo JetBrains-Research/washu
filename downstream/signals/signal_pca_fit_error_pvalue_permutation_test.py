@@ -55,16 +55,32 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
     actual_error = pca_separation_fit_error(x_r,
                                             [0 if is_yd(d) else 1 for d in donors])
 
-    if threads == 1:
-        rnd_results = _multiple_random_split_error(donors, x_r, simulations)
-    else:
-        chunk_size = math.ceil(simulations / threads)
-        chunks = [(i, min(simulations, i + chunk_size)) for i in range(0, simulations, chunk_size)]
+    rnd_results_path = path.with_suffix(".permutations.error.{}.csv".format(simulations))
+    if not rnd_results_path.exists():
+        if threads == 1:
+            rnd_results = _multiple_random_split_error(donors, x_r, simulations)
+        else:
+            chunk_size = math.ceil(simulations / threads)
+            chunks = [(i, min(simulations, i + chunk_size)) for i in range(0, simulations,
+                                                                           chunk_size)]
 
-        with Pool(processes=threads) as pool:
-            tasks = [pool.apply_async(_multiple_random_split_error, (donors, x_r, e - s))
-                     for s, e in chunks]
-            rnd_results = list(chain(*(task.get(timeout=3600*timeout_hours) for task in tasks)))
+            with Pool(processes=threads) as pool:
+                tasks = [pool.apply_async(_multiple_random_split_error, (donors, x_r, e - s))
+                         for s, e in chunks]
+                rnd_results = list(
+                    chain(*(task.get(timeout=3600*timeout_hours) for task in tasks))
+                )
+
+        # serialize:
+        pd.DataFrame.from_dict({"error": rnd_results}).to_csv(
+            str(rnd_results_path),
+            index=None
+        )
+    else:
+        rnd_results = pd.DataFrame.from_csv(str(rnd_results_path), index_col=None).error.tolist()
+        assert len(rnd_results) == simulations,\
+            "Expected {} simulations, but was {} in: {}".format(simulations, len(rnd_results),
+                                                                rnd_results_path)
 
     # hack not to get zero pvalue
     rnd_results.append(actual_error)
@@ -87,7 +103,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
         plt.xlabel("PCA classification error")
         plt.legend()
 
-        plt.savefig(str(path.with_suffix(".permutations.pvalue.png")))
+        plt.savefig(str(path.with_suffix(".permutations.pvalue.{}.png".format(simulations))))
         plt.close()
 
     return pvalue, actual_error
