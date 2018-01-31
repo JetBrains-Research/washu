@@ -43,10 +43,6 @@ SCORE_FUNCTIONS_NAMES =   c('DBA_SCORE_TMM_READS_FULL',
                             'DBA_SCORE_TMM_READS_EFFECTIVE_CPM',
                             'DBA_SCORE_TMM_MINUS_FULL_CPM',
                             'DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM')
-for (i in 1 : length(SCORE_FUNCTIONS)) {
-    print(paste(SCORE_FUNCTIONS_NAMES[i], SCORE_FUNCTIONS[i]))
-}
-
 
 REMOVE_DUPLICATES = c(TRUE, FALSE)
 INSERT_SIZES = c(125) # Default insertSize
@@ -61,11 +57,13 @@ main <- function(path, insertSize) {
     yo = dba(sampleSheet = path)
     for (insertSize in INSERT_SIZES) {
         for (removeDuplicates in REMOVE_DUPLICATES) {
-            for (scoreFunction in SCORE_FUNCTIONS) {
+            for (i in 1 : length(SCORE_FUNCTIONS)) {
+                scoreFunction = SCORE_FUNCTIONS[i]
+                scoreFunctionName = SCORE_FUNCTIONS_NAMES[i]
                 print(paste('INSERT_SIZE', insertSize))
                 print(paste('REMOVE_DUPLICATES', removeDuplicates))
-                print(paste('SCORE_FUNCTION', scoreFunction))
-                id = paste(removeDuplicates, insertSize, scoreFunction, sep = '_')
+                print(paste('SCORE_FUNCTION', scoreFunctionName))
+                id = paste(removeDuplicates, insertSize, scoreFunctionName, sep = '_')
 
                 print(paste('Count', id))
                 yo_counts = dba.count(yo,
