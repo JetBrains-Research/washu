@@ -158,7 +158,7 @@ function pileup(){
         exit 1
     fi
     BAM=$1
-    PILEUP_DIR=$(dirname $(expand_path $(dirname ${BAM})))/pileup
+    PILEUP_DIR=$(dirname $(expand_path ${BAM}))/pileup
     if [[ ! -d ${PILEUP_DIR} ]]; then
         >&2 echo "Create pileup dir ${PILEUP_DIR}"
         mkdir -p ${PILEUP_DIR}
