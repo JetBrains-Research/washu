@@ -25,7 +25,46 @@ require_or_install("DiffBind", bioc = TRUE)
 require_or_install("ggplot2")
 require_or_install("stringr")
 
-# See DiffBind DiffBind-globals.Rd for the full list
+# SeeDiffBind DiffBind-globals.Rd for the full list
+#
+# DBA_SCORE_READS
+# dba.count score is number of reads in ChIP
+#
+# DBA_SCORE_READS_FOLD
+# dba.count score is number of reads in ChIP divided by number of reads in Control
+#
+# DBA_SCORE_READS_MINUS
+# dba.count score is number of reads in ChIP minus  number of reads in Control
+#
+# DBA_SCORE_RPKM
+# dba.count score is RPKM of ChIP 
+#
+# DBA_SCORE_RPKM_FOLD
+# dba.count score is RPKM of ChIP divided by RPKM of Control
+#
+# DBA_SCORE_TMM_READS_FULL
+# dba.count score is TMM normalized (using edgeR), using ChIP read counts and Full Library size
+#
+# DBA_SCORE_TMM_READS_EFFECTIVE
+# dba.count score is TMM normalized (using edgeR), using ChIP read counts and Effective Library size
+#
+# DBA_SCORE_TMM_MINUS_FULL
+# dba.count score is TMM normalized (using edgeR), using ChIP read counts minus Control read counts and Full Library size
+#
+# DBA_SCORE_TMM_MINUS_EFFECTIVE
+# dba.count score is TMM normalized (using edgeR), using ChIP read counts minus Control read counts and Effective Library size
+#
+# DBA_SCORE_TMM_READS_FULL_CPM
+# dba.count score is TMM normalized (using edgeR), using ChIP read counts and Full Library size, reported in counts-per-million.
+#
+# DBA_SCORE_TMM_READS_EFFECTIVE_CPM
+# dba.count score is TMM normalized (using edgeR), using ChIP read counts and Effective Library size, reported in counts-per-million.
+#
+# DBA_SCORE_TMM_MINUS_FULL_CPM
+# dba.count score is TMM normalized (using edgeR), using ChIP read counts minus Control read counts and Full Library size, reported in counts-per-million.
+#
+# DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM
+# dba.count score is TMM normalized (using edgeR), using ChIP read counts minus Control read counts and Effective Library size, reported in counts-per-million.
 SCORE_FUNCTIONS = c(DBA_SCORE_READS,
                     DBA_SCORE_READS_MINUS,
                     DBA_SCORE_READS_FOLD,
