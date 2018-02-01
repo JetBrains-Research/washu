@@ -108,10 +108,10 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
                        np.percentile(rr, 10), wdist)
 
     print("mean = {}, median = {}, [min, max] = [{}, {}], [2%, 5%, 10%, 98%] = [{}, {}, {}, "
-          "{}], wd = {}".format(
-        dm.mean, dm.median, np.min(rr), np.max(rr), dm.p2, dm.p5, dm.p10,
-        np.percentile(rr, 98), dm.wdist)
-    )
+          "{}], wd = {}".format(dm.mean, dm.median, np.min(rr), np.max(rr),
+                                dm.p2, dm.p5, dm.p10,
+                                np.percentile(rr, 98), dm.wdist)
+          )
 
     if plot:
         plt.hist(rr, color="darkgray")
@@ -160,7 +160,7 @@ def _cli():
     parser.add_argument('-p', '--threads', help="Threads number for parallel processing",
                         type=int, default=4)
     parser.add_argument('-n', help="Simulations number to calculated pvalue", type=int,
-                        default=100*1000)
+                        default=100 * 1000)
 
     args = parser.parse_args()
     root = Path(args.path)
