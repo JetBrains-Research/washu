@@ -26,7 +26,7 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
     else:
         print("Processing Methylation|Transcription|miRNA, input not found")
     pool.apply_async(raw_normalization,
-                     args=(data_path, loaded, processing_chipseq),
+                     args=(data_path, loaded, sizes, processing_chipseq),
                      error_callback=error_callback)
 
     if processing_chipseq:
@@ -39,15 +39,15 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
                              args=(data_path, loaded, sizes, peaks_sizes_path),
                              error_callback=error_callback)
 
-        pool.apply_async(diffbind_normalization,
-                         args=(data_path, loaded, sizes),
-                         error_callback=error_callback)
+            pool.apply_async(diffbind_normalization,
+                             args=(data_path, loaded, sizes, peaks_sizes_path),
+                             error_callback=error_callback)
 
     pool.close()
     pool.join()
 
 
-def raw_normalization(data_path, loaded, processing_chipseq):
+def raw_normalization(data_path, loaded, sizes, processing_chipseq):
     """Raw signal with standard scaling"""
     print('Processing RAW signal')
     raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
@@ -107,25 +107,24 @@ def process_z(output, data):
 
 
 def frip_normalization(data_path, loaded, sizes, peaks_sizes_path):
+    """Normalization on library depths, FRIPs"""
     print('Processing FRIP normalization')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
-    """Normalization on library depths, FRIPs"""
     peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
                               index_col='name')
-
     counts = pd.merge(sizes, peaks_sizes, left_index=True, right_index=True)
 
     # Here we assume that we have single input for everything
     input_column = [c for c in data.columns if is_input(c)][0]
     not_input_columns = [c for c in data.columns if not is_input(c)]
-    counts['input_tags'] = counts.loc[input_column, 'tags']
+    counts['input_tags'] = counts.loc[input_column, 'size']
     counts['input_tags_in_peaks'] = counts.loc[input_column, 'tags_in_peaks']
 
     # Omit input columns
     counts = counts[~ counts.index.str.contains("input")]
 
-    no_peaks_coverages = counts['tags'] - counts['tags_in_peaks']
+    no_peaks_coverages = counts['size'] - counts['tags_in_peaks']
     no_peaks_input_coverages = counts['input_tags'] - counts['input_tags_in_peaks']
 
     # Input coefficient shows the ratio of signal track noise to input track level.
@@ -155,53 +154,61 @@ def frip_normalization(data_path, loaded, sizes, peaks_sizes_path):
         process_z(fripz_path, frip_df)
         signals_visualize.process(fripz_path)
 
-    # TMM normalization
-    friptmm_path = re.sub('.tsv', '_friptmm.tsv', data_path)
-    if not os.path.exists(friptmm_path):
-        scores_tmm = process_tmm(frip_df, sizes) * 1000000.0
-        scores_tmm.index = data.index
-        scores_tmm.to_csv(friptmm_path, sep='\t')
-        print('Saved friptmm scores to {}'.format(friptmm_path))
-        signals_visualize.process(friptmm_path)
 
+def diffbind_normalization(data_path, loaded, sizes, peaks_sizes_path):
+    data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
+                          columns='name', values='coverage', fill_value=0)
+    print('Processing DBA_SCORE_TMM_READS_EFFECTIVE_CPM')
+    scores_tmm_reads_effective_cpm_path = re.sub('.tsv', '_diffbind_reads_tmm_effective_cpm.tsv', data_path)
+    if not os.path.exists(scores_tmm_reads_effective_cpm_path):
+        peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
+                                  index_col='name')
+        scores_tmm_reads_effective_cpm = process_tmm(data, peaks_sizes) * 1000000.0
+        scores_tmm_reads_effective_cpm.to_csv(scores_tmm_reads_effective_cpm_path, sep='\t')
+        print('Saved Diffbind to {}'.format(scores_tmm_reads_effective_cpm_path))
+        signals_visualize.process(scores_tmm_reads_effective_cpm_path)
 
-def diffbind_normalization(data_path, loaded, sizes):
-    diffbind_path = re.sub('.tsv', '_diffbind.tsv', data_path)
-    if not os.path.exists(diffbind_path):
-        print('processing diffbind scores')
-        data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
-                              columns='name', values='coverage', fill_value=0)
+    print('Processing DBA_SCORE_TMM_READS_FULL_CPM')
+    scores_tmm_reads_full_cpm_path = re.sub('.tsv', '_diffbind_reads_tmm_full_cpm.tsv', data_path)
+    if not os.path.exists(scores_tmm_reads_full_cpm_path):
+        scores_tmm_reads_full_cpm = process_tmm(data, sizes) * 1000000.0
+        scores_tmm_reads_full_cpm.to_csv(scores_tmm_reads_full_cpm_path, sep='\t')
+        print('Saved Diffbind to {}'.format(scores_tmm_reads_full_cpm_path))
+        signals_visualize.process(scores_tmm_reads_full_cpm_path)
+
+    print('Processing DBA_SCORE_TMM_MINUS_FULL')
+    scores_tmm_minus_full_path = re.sub('.tsv', '_diffbind_tmm_minus_full.tsv', data_path)
+    if not os.path.exists(scores_tmm_minus_full_path):
         od_input = [c for c in data.columns if is_od_input(c)][0]
         yd_input = [c for c in data.columns if is_yd_input(c)][0]
         ods = [c for c in data.columns if is_od(c)]
         yds = [c for c in data.columns if is_yd(c)]
         records = [(d, od_input, OLD) for d in ods] + [(d, yd_input, YOUNG) for d in yds]
-        scores = diffbind_scores(data, sizes, records)
-        # TMM normalization
-        scores_tmm = process_tmm(scores, sizes) * 1000000.0
-        scores_tmm.index = data.index
-        scores_tmm.to_csv(diffbind_path, sep='\t')
-        print('saved diffbind tmm scores to {}'.format(diffbind_path))
-        signals_visualize.process(diffbind_path)
+        scores_minus_scaled_control = diffbind_scores_minus(data, sizes, records)
+        scores_tmm_minus_full = process_tmm(scores_minus_scaled_control, sizes) * np.mean(sizes)
+        scores_tmm_minus_full.to_csv(scores_tmm_minus_full_path, sep='\t')
+        print('Saved Diffbind to {}'.format(scores_tmm_minus_full_path))
+        signals_visualize.process(scores_tmm_minus_full_path)
 
 
-def process_tmm(data, lib_sizes):
+def process_tmm(data, sizes):
     print('Scores TMM normalization')
     scores_tmpfile = tempfile.NamedTemporaryFile(prefix='scores', suffix='.tsv').name
     data.to_csv(scores_tmpfile, index=False, sep='\t')
-    print('Saved scores to', scores_tmpfile)
     tmm_file = scores_tmpfile.replace('.tsv', '_tmm.tsv')
     sizes_tmpfile = tempfile.NamedTemporaryFile(prefix='sizes', suffix='.tsv').name
-    lib_sizes.to_csv(sizes_tmpfile, index=False, sep='\t', header=None)
-    print('Saved sizes to', sizes_tmpfile)
-    print('TMM normalization using R')
+    sizes.to_csv(sizes_tmpfile, sep='\t', header=None)
     tmm_R = os.path.dirname(os.path.realpath(__file__)) + '/tmm.R'
     cmd = "Rscript " + tmm_R + " " + scores_tmpfile + " " + sizes_tmpfile + " " + tmm_file
+    print(cmd)
     subprocess.run(cmd, shell=True)
-    return pd.read_csv(tmm_file, sep='\t')
+    result = pd.read_csv(tmm_file, sep='\t')
+    result.index = data.index
+    return result
 
 
-def diffbind_scores(data, sizes, records):
+# DBA_SCORE_TMM_MINUS_FULL
+def diffbind_scores_minus(data, sizes, records):
     """
     Computes DiffBind score
     See documents on how to compute scores
