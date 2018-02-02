@@ -159,7 +159,7 @@ def diffbind_normalization(data_path, loaded, sizes, peaks_sizes_path):
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
     print('Processing DBA_SCORE_TMM_READS_EFFECTIVE_CPM')
-    scores_tmm_reads_effective_cpm_path = re.sub('.tsv', '_diffbind_reads_tmm_effective_cpm.tsv', data_path)
+    scores_tmm_reads_effective_cpm_path = re.sub('.tsv', '_diffbind_tmm_reads_effective_cpm.tsv', data_path)
     if not os.path.exists(scores_tmm_reads_effective_cpm_path):
         peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
                                   index_col='name')
@@ -169,7 +169,7 @@ def diffbind_normalization(data_path, loaded, sizes, peaks_sizes_path):
         signals_visualize.process(scores_tmm_reads_effective_cpm_path)
 
     print('Processing DBA_SCORE_TMM_READS_FULL_CPM')
-    scores_tmm_reads_full_cpm_path = re.sub('.tsv', '_diffbind_reads_tmm_full_cpm.tsv', data_path)
+    scores_tmm_reads_full_cpm_path = re.sub('.tsv', '_diffbind_tmm_reads_full_cpm.tsv', data_path)
     if not os.path.exists(scores_tmm_reads_full_cpm_path):
         scores_tmm_reads_full_cpm = process_tmm(data, sizes) * 1000000.0
         scores_tmm_reads_full_cpm.to_csv(scores_tmm_reads_full_cpm_path, sep='\t')
@@ -185,7 +185,8 @@ def diffbind_normalization(data_path, loaded, sizes, peaks_sizes_path):
         yds = [c for c in data.columns if is_yd(c)]
         records = [(d, od_input, OLD) for d in ods] + [(d, yd_input, YOUNG) for d in yds]
         scores_minus_scaled_control = diffbind_scores_minus(data, sizes, records)
-        scores_tmm_minus_full = process_tmm(scores_minus_scaled_control, sizes) * np.mean(sizes)
+        scores_tmm_minus_full = \
+            process_tmm(scores_minus_scaled_control, sizes) * float(np.mean(sizes))
         scores_tmm_minus_full.to_csv(scores_tmm_minus_full_path, sep='\t')
         print('Saved Diffbind to {}'.format(scores_tmm_minus_full_path))
         signals_visualize.process(scores_tmm_minus_full_path)
