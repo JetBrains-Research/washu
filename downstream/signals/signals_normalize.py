@@ -165,9 +165,12 @@ def frip_normalization(data_path, loaded, sizes, peaks_sizes_path):
 
 
 def diffbind_normalization(data_path, loaded, sizes, peaks_sizes_path):
-    scores_tmm_reads_effective_cpm_path = re.sub('.tsv', '_diffbind_tmm_reads_effective_cpm.tsv', data_path)
-    scores_tmm_reads_full_cpm_path = re.sub('.tsv', '_diffbind_tmm_reads_full_cpm.tsv', data_path)
-    scores_tmm_minus_full_path = re.sub('.tsv', '_diffbind_tmm_minus_full.tsv', data_path)
+    scores_tmm_reads_effective_cpm_path = \
+        re.sub('.tsv', '_diffbind_tmm_reads_effective_cpm.tsv', data_path)
+    scores_tmm_reads_full_cpm_path = \
+        re.sub('.tsv', '_diffbind_tmm_reads_full_cpm.tsv', data_path)
+    scores_tmm_minus_full_path = \
+        re.sub('.tsv', '_diffbind_tmm_minus_full.tsv', data_path)
     if os.path.exists(scores_tmm_reads_effective_cpm_path) and \
             os.path.exists(scores_tmm_reads_full_cpm_path) and \
             os.path.exists(scores_tmm_minus_full_path):
