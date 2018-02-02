@@ -175,12 +175,12 @@ if [[ ! -f ${REGIONS_SIZES} ]]; then
     # to ensure that we counted all the intersections between fragments and regions.
     cat ${REGIONS_BED} |\
         awk -v S=${SHIFT} '{if ($2-S<1){L=1}else{L=$2-S};R=$3+S;printf("%s\t%s\t%s\t%s#%s#%s\n",$1,L,R,$1,$2,$3)}' |\
-        sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/regions.bed4
+        sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/${ID}.bed4
 
-    process_coverage ${TMPDIR}/regions.bed4 ${ID} ${REGIONS_SIZES} ${RESULTS_FOLDER}
+    process_coverage ${TMPDIR}/${ID}.bed4 ${ID} ${REGIONS_SIZES} ${RESULTS_FOLDER}
 fi
 
-echo "Processing signals for ${ID}.tsv"
+echo "Processing signals normalization and visualization for ${ID}.tsv"
 run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N signal_${ID}
