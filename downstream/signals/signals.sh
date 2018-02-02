@@ -174,7 +174,7 @@ if [[ ! -f ${REGIONS_SIZES} ]]; then
     # Here we extend all the regions left and right to FRAGMENT / 2
     # to ensure that we counted all the intersections between fragments and regions.
     cat ${REGIONS_BED} |\
-        awk -v S=${SHIFT} '{if ($2-S>0){L=1}else{L=$2-S};R=$3+S;printf("%s\t%s\t%s\t%s#%s#%s\n",$1,L,R,$1,$2,$3)}' |\
+        awk -v S=${SHIFT} '{if ($2-S<1){L=1}else{L=$2-S};R=$3+S;printf("%s\t%s\t%s\t%s#%s#%s\n",$1,L,R,$1,$2,$3)}' |\
         sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/regions.bed4
 
     process_coverage ${TMPDIR}/regions.bed4 ${ID} ${REGIONS_SIZES} ${RESULTS_FOLDER}
