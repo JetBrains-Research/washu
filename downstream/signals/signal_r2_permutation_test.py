@@ -41,7 +41,8 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
     rnd.seed(seed)  # is actual for tests in single thread mode
 
     ##################################################
-    df = pd.read_csv(str(path), sep='\t')
+    df = pd.read_csv(str(path),
+                     sep="," if path.suffix == ".csv" else "\t")
 
     ##################################################
     # Make ODS, YDS groups even length for simplicity:
@@ -183,7 +184,9 @@ def process(paths: List[Path], output_path: str, seed: int, simulations: int, th
         print("Process:", path)
         dm = _process(path, simulations=simulations, seed=seed, threads=threads)
 
-        norm = re.sub('(.*_)|(\\.tsv$)', '', path.name)
+        norm_match = re.match(".*_([^_]+)\\.tsv", path.name)
+        norm = path.name if not norm_match else norm_match.group(1)
+
         matches = re.match(".*/(H[a-z0-9]+)/.*", str(path), re.IGNORECASE)
         if matches:
             mod = matches.group(1)
