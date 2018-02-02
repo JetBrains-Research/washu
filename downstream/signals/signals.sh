@@ -12,7 +12,7 @@ which bigWigAverageOverBed &>/dev/null || {
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 
->&2 echo "Batch signals_bw $@"
+>&2 echo "Batch signals $@"
 if [ $# -lt 4 ]; then
     echo "Need at least 4 parameters! <WORK_DIR_WITH_BAMS> <FRAGMENT> <REGIONS.BED> <CHROM.SIZES> [<PEAKS_FILE.BED>]"
     exit 1
@@ -85,6 +85,7 @@ process_coverage()
         rm -r $_RESULT
     fi
 
+    NAMES=()
     TASKS=()
     TSVS=()
     LOGS=()
@@ -92,7 +93,8 @@ process_coverage()
     for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
     do :
         NAME=${FILE%%.bw}
-        TSV=$TMPDIR/${NAME}.tsv
+        NAMES+=("$NAME")
+        TSV=$TMPDIR/${ID}_${NAME}.tsv
         TSVS+=("$TSV")
         LOG=${_LOGS_DIR}/${ID}_${NAME}_tsv.log
         LOGS+=("$LOG")
@@ -103,29 +105,31 @@ process_coverage()
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=8gb
 #PBS -j oe
 #PBS -o ${LOG}
-
-# Process regions coverage
-#   sum - sum of values over all bases covered
-#   mean0 - average over bases with non-covered bases counting as zeroes
-#   mean - average over just covered bases
-# Fields \$6 \$7 \$8 - sum, mean0, mean values, after chr#start#end split by #
 cd ${WORK_DIR}
-bigWigAverageOverBed ${FILE} ${_BED4} ${TSV}.tmp
-cat ${TSV}.tmp | tr '#' '\t' | awk -v NAME=${NAME} -v OFS='\t' '{print \$1,\$2,\$3,\$6,\$7,\$8,NAME}' > ${TSV}
-rm ${TSV}.tmp
+bigWigAverageOverBed ${FILE} ${_BED4} ${TSV}
 SCRIPT
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
         TASKS+=("$QSUB_ID")
     done
     wait_complete ${TASKS[@]}
+    check_logs
 
-    for TSV in ${TSVS[@]}; do
-        cat ${TSV} >> ${_RESULT}
-        rm ${TSV}
-    done
-    # Merge all logs to master and cleanup
+    # Master log
     MASTER_LOG=${_LOGS_DIR}/${ID}_tsv.log
-    for LOG in ${LOGS[@]}; do
+    for I in $(seq 0 $((${#NAMES[@]} - 1))); do
+        # Merge tsv result
+        NAME=${NAMES[$I]}
+        TSV=${TSVS[$I]}
+        # Process regions coverage
+        #   sum - sum of values over all bases covered
+        #   mean0 - average over bases with non-covered bases counting as zeroes
+        #   mean - average over just covered bases
+        # Fields in ${TSV}:  $6 $7 $8 - sum, mean0, mean values, after chr#start#end split by #
+        cat ${TSV} | tr '#' '\t' | awk -v N=${NAME} -v OFS='\t' '{print $1,$2,$3,$6,$7,$8,N}' >> ${_RESULT}
+        rm ${TSV}
+
+        # Merge log
+        LOG=${LOGS[$I]}
         echo "$LOG" >> ${MASTER_LOG}
         cat ${LOG} >> ${MASTER_LOG}
         rm ${LOG}
@@ -200,4 +204,4 @@ wait_complete $QSUB_ID
 # TMP dir cleanup:
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 
->&2 echo "Done. Batch signals_bw $@"
+>&2 echo "Done. Batch signals $@"
