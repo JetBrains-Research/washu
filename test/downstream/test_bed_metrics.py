@@ -11,7 +11,7 @@ import pytest
 from test.fixtures import test_data, tmp_dir
 
 from downstream.bed_metrics import bed_metric_table, color_annotator_age, \
-    plot_metric_heatmap, _run_metric_jaccard, _run_metric_intersection, \
+    plot_metric_heatmap, run_metric_jaccard, run_metric_intersection, \
     label_converter_donor_and_tool, color_annotator_chain, \
     color_annotator_outlier, save_plot  # nopep8
 
@@ -48,9 +48,9 @@ def test_metric_empty_file(test_data, capfd, jaccard, a, b, value):
     b_path = test_data("metrics/" + b)
 
     if jaccard:
-        metric = _run_metric_jaccard
+        metric = run_metric_jaccard
     else:
-        metric = _run_metric_intersection
+        metric = run_metric_intersection
 
     args = [1, 3, "foo"]
     assert (value, *args) == metric(a_path, b_path, *args)

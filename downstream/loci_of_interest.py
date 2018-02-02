@@ -94,7 +94,8 @@ def label_converter_shorten_loci(name):
 def collect_peaks_in_folder(peaks_root):
     return sorted(chain(peaks_root.glob("*_peaks.bed"),
                         peaks_root.glob("*-island.bed"),
-                        peaks_root.glob("*.*Peak")),
+                        peaks_root.glob("*.*broadPeak"),
+                        peaks_root.glob("*.*narrowPeak")),
                   key=donor_order_id)
 
 
