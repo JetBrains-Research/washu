@@ -7,6 +7,7 @@ import pandas as pd
 import sys
 
 from downstream.aging import *
+from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 
@@ -36,6 +37,7 @@ def pca_signal(signal):
 
 
 def signal_pca_plot(signal, title, ax):
+    signal = preprocessing.scale(signal)
     donors = signal.columns
     groups = [OLD if is_od(d) else YOUNG for d in donors]
     pca, x_r = pca_signal(signal)
@@ -49,7 +51,7 @@ def signal_pca_plot(signal, title, ax):
                    color=g.color, alpha=.8, label=g.name)
 
     for g, label, x, y in zip(groups, [age(d) for d in donors], x_r[:, 0], x_r[:, 1]):
-        ax.annotate(label,
+        ax.annotate('',
                     xy=(x, y),
                     xytext=(5, 0),
                     color=g.color,
@@ -153,7 +155,7 @@ def visualize(f, signal_type):
     else:
         signal = df.drop(['chr', 'start', 'end'], axis=1)
 
-    plt.figure(figsize=(30, 6))
+    plt.figure(figsize=(36, 6))
     fit_error = signal_pca_plot(signal, title=signal_type, ax=plt.subplot(1, 5, 1))
     mean_regions(df, title='O vs Y {}'.format(signal_type), ax=plt.subplot(1, 5, 2),
                  plot_type=Plot.SCATTER)

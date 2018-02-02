@@ -84,10 +84,6 @@ run_bash("parallel/remove_duplicates.sh", PICARD_TOOLS, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_unique",
              ["*_unique*", "*_metrics.txt", "*duplicates.log"])
 
-# Tags BW visualization
-run_bash("parallel/tags_bigwig.sh", CHROM_SIZES, 150, WORK_DIR)
-move_forward(WORK_DIR, WORK_DIR + "_tags_bws", ["*bw*"])
-
 # Batch RPKM visualization
 run_bash("parallel/rpkm.sh", WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"])

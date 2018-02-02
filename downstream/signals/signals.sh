@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Script to compute signal for BW files at given regions
+# Script to compute signal for BAM files at given regions
 # author oleg.shpynov@jetbrains.com
 
 which bigWigAverageOverBed &>/dev/null || {
@@ -12,34 +12,66 @@ which bigWigAverageOverBed &>/dev/null || {
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 
->&2 echo "Batch bw_signal $@"
-if [ $# -lt 3 ]; then
-    echo "Need at least 3 parameters! <WORK_DIR_WITH_BWS> <REGIONS.BED> <CHROM.SIZES> [<PEAKS_FILE.BED>]"
+>&2 echo "Batch signals_bw $@"
+if [ $# -lt 4 ]; then
+    echo "Need at least 4 parameters! <WORK_DIR_WITH_BAMS> <FRAGMENT> <REGIONS.BED> <CHROM.SIZES> [<PEAKS_FILE.BED>]"
     exit 1
 fi
 
-WORK_DIR=$1
-REGIONS_BED=$2
-CHROM_SIZES=$3
-PEAKS_FILE_BED=$4
+WORK_DIR=$(expand_path $1)
+FRAGMENT=$2
+REGIONS_BED=$(expand_path $3)
+CHROM_SIZES=$(expand_path $4)
+if [[ -f $5 ]]; then
+    PEAKS_FILE_BED=$(expand_path $5)
+fi
 
 echo "WORK_DIR: $WORK_DIR"
 echo "REGIONS: $REGIONS_BED"
 echo "CHROM_SIZES: $CHROM_SIZES"
 echo "PEAKS_FILE: $PEAKS_FILE_BED"
-
 ID=${REGIONS_BED%%.bed};
 ID=${ID##*/};
-RESULTS_FOLDER=${WORK_DIR}/${ID}
+RESULTS_FOLDER=${WORK_DIR}/${FRAGMENT}/${ID}
 echo "RESULTS FOLDER: $RESULTS_FOLDER"
-
 if [[ ! -d "${RESULTS_FOLDER}" ]]; then
     mkdir -p ${RESULTS_FOLDER}
 fi
 
+echo "Prepare tags BW in ${WORK_DIR}/${FRAGMENT}"
+TASKS=()
+cd ${WORK_DIR}
+for BAM in $(find . -name '*.bam' | sed 's#\./##g' | grep -vE ".tr")
+do :
+    NAME=${BAM%%.bam} # file name without extension
+    RESULT=${WORK_DIR}/${FRAGMENT}/${NAME}.bw
+    if [[ ! -f ${RESULT} ]]; then
+        # Submit task
+        run_parallel << SCRIPT
+#!/bin/sh
+#PBS -N tags_${NAME}_${FRAGMENT}.bw
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
+#PBS -j oe
+#PBS -o ${WORK_DIR}/${FRAGMENT}/${NAME}.log
+
+# This is necessary because qsub default working dir is user home
+cd ${WORK_DIR}
+
+module load bedtools2
+bash ${WASHU_ROOT}/downstream/signals/bam2tagsbw.sh ${BAM} ${FRAGMENT} ${CHROM_SIZES} ${RESULT}
+SCRIPT
+        echo "FILE: ${WORK}/${BAM}; TASK: ${QSUB_ID}"
+        TASKS+=("$QSUB_ID")
+    fi
+done
+wait_complete ${TASKS[@]}
+check_logs
+
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p $TMPDIR
 
+# Work in dedicated folder now
+WORK_DIR=${WORK_DIR}/${FRAGMENT}
 cd ${WORK_DIR}
 
 # Function to process all the summary coverages for given file
@@ -56,17 +88,18 @@ process_coverage()
     TASKS=()
     TSVS=()
     LOGS=()
+    cd ${WORK_DIR}
     for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
     do :
         NAME=${FILE%%.bw}
-        TSV=$TMPDIR/$NAME.tsv
+        TSV=$TMPDIR/${NAME}.tsv
         TSVS+=("$TSV")
-        LOG=${_LOGS_DIR}/bw_signals_${ID}_${NAME}.log
+        LOG=${_LOGS_DIR}/${ID}_${NAME}_tsv.log
         LOGS+=("$LOG")
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
-#PBS -N bw_signals_${ID}_${NAME}
+#PBS -N ${ID}_${NAME}_tsv
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=8gb
 #PBS -j oe
 #PBS -o ${LOG}
@@ -76,6 +109,7 @@ process_coverage()
 #   mean0 - average over bases with non-covered bases counting as zeroes
 #   mean - average over just covered bases
 # Fields \$6 \$7 \$8 - sum, mean0, mean values, after chr#start#end split by #
+cd ${WORK_DIR}
 bigWigAverageOverBed ${FILE} ${_BED4} ${TSV}.tmp
 cat ${TSV}.tmp | tr '#' '\t' | awk -v NAME=${NAME} -v OFS='\t' '{print \$1,\$2,\$3,\$6,\$7,\$8,NAME}' > ${TSV}
 rm ${TSV}.tmp
@@ -86,11 +120,11 @@ SCRIPT
     wait_complete ${TASKS[@]}
 
     for TSV in ${TSVS[@]}; do
-        cat ${TSV} >> $_RESULT
+        cat ${TSV} >> ${_RESULT}
         rm ${TSV}
     done
     # Merge all logs to master and cleanup
-    MASTER_LOG=${_LOGS_DIR}/bw_signals_${ID}.log
+    MASTER_LOG=${_LOGS_DIR}/${ID}_tsv.log
     for LOG in ${LOGS[@]}; do
         echo "$LOG" >> ${MASTER_LOG}
         cat ${LOG} >> ${MASTER_LOG}
@@ -99,7 +133,7 @@ SCRIPT
 }
 
 LIBRARIES_SIZES=${WORK_DIR}/${CHROM_SIZES##*/}.tsv
-echo "Compute libraries size ${LIBRARIES_SIZES}"
+echo "Compute FULL ${CHROM_SIZES} libraries size ${LIBRARIES_SIZES}"
 if [[ ! -f ${LIBRARIES_SIZES} ]]; then
     # Prepare BED4 region
     cat ${CHROM_SIZES} | awk '{printf("%s\t1\t%s\t%s#1#%s\n",$1,$2,$1,$2)}' > ${TMPDIR}/chrom.sizes.bed4
@@ -116,7 +150,7 @@ fi
 
 if [[ -f ${PEAKS_FILE_BED} ]]; then
     LIBRARIES_PEAKS_SIZES=${WORK_DIR}/${PEAKS_FILE_BED##*/}.tsv
-    echo "Compute libraries peaks size ${LIBRARIES_PEAKS_SIZES}"
+    echo "Compute peaks ${PEAKS_FILE_BED} size ${LIBRARIES_PEAKS_SIZES}"
     if [[ ! -f ${LIBRARIES_PEAKS_SIZES} ]]; then
         cat ${PEAKS_FILE_BED} | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
             sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/peaks.sizes.bed4
@@ -133,19 +167,23 @@ if [[ -f ${PEAKS_FILE_BED} ]]; then
 else
     echo "NO peaks file given"
 fi
-
-if [[ ! -f ${RESULTS_FOLDER}/${ID}.tsv ]]; then
-    echo "Compute regions coverage ${REGIONS_BED}"
-    cat $REGIONS_BED | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
+REGIONS_SIZES=${RESULTS_FOLDER}/${ID}.tsv
+if [[ ! -f ${REGIONS_SIZES} ]]; then
+    echo "Compute regions ${REGIONS_BED} coverage ${REGIONS_SIZES}"
+    SHIFT=$(($FRAGMENT / 2))
+    # Here we extend all the regions left and right to FRAGMENT / 2
+    # to ensure that we counted all the intersections between fragments and regions.
+    cat ${REGIONS_BED} |\
+        awk -v S=${SHIFT} '{if ($2-S>0){L=1}else{L=$2-S};R=$3+S;printf("%s\t%s\t%s\t%s#%s#%s\n",$1,L,R,$1,$2,$3)}' |\
         sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/regions.bed4
 
-    process_coverage ${TMPDIR}/regions.bed4 ${ID} ${RESULTS_FOLDER}/${ID}.tsv ${RESULTS_FOLDER}
+    process_coverage ${TMPDIR}/regions.bed4 ${ID} ${REGIONS_SIZES} ${RESULTS_FOLDER}
 fi
 
 echo "Processing signals for ${ID}.tsv"
 run_parallel << SCRIPT
 #!/bin/sh
-#PBS -N peaks_signal_${ID}
+#PBS -N signal_${ID}
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o ${RESULTS_FOLDER}/${ID}_signal.log
@@ -154,12 +192,12 @@ if [[ \$PY_MAJOR_VERS != "3" ]]
 then
     source activate py35 || source activate py3.5
 fi
-cd $RESULTS_FOLDER
-python ${WASHU_ROOT}/downstream/signals/signals.py ${RESULTS_FOLDER}/${ID}.tsv ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
+cd ${RESULTS_FOLDER}
+python ${WASHU_ROOT}/downstream/signals/signals_normalize.py ${REGIONS_SIZES} ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
 SCRIPT
 wait_complete $QSUB_ID
 
 # TMP dir cleanup:
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 
->&2 echo "Done. Batch bw_signal $@"
+>&2 echo "Done. Batch signals_bw $@"

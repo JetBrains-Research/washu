@@ -11,13 +11,13 @@ which bedtools &>/dev/null || {
 
 >&2 echo "bam2tags $@"
 if [ $# -lt 2 ]; then
-    echo "Need 2 parameters! <BAM> <INSERT_SIZE>"
+    echo "Need 2 parameters! <BAM> <FRAGMENT>"
     exit 1
 fi
 
 BAM=$1
-INSERT_SIZE=$2
-SHIFT=$(($INSERT_SIZE / 2))
+FRAGMENT=$2
+SHIFT=$(($FRAGMENT / 2))
 
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }

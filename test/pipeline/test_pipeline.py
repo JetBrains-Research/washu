@@ -69,7 +69,7 @@ def test_bam_qc():
 
 
 def test_unique_tags_bws():
-    check_files("fastq_bams_tags_bws/*.bw", 6)
+    check_files("signals/*.bw", 6)
 
 
 def test_rpkm_step():
@@ -116,27 +116,34 @@ def test_reads2bam():
     assert reads1 == reads2
 
 
-def test_tags2bdg():
-    bdg = run([["bash", "/washu/scripts/tags2bdg.sh",
-                os.path.expanduser("~/data/bam2tags.tag")]])[0].decode('utf-8')
-    assert Path("data/bam2tags.bdg").read_text() == bdg
-
-
 def test_signals():
+    # Copy regions.bed
     if not os.path.exists("regions.bed"):
         shutil.copy("washu_test_data/data/regions.bed", "regions.bed")
     if os.path.exists("fastq_bams_bws/regions"):
         shutil.rmtree("fastq_bams_bws/regions")
-    call(["bash", "/washu/downstream/signals/signals_bw.sh",
-          os.path.expanduser("~/fastq_bams_tags_bws"),
+
+    # Create signals folder
+    signals_path = os.path.expanduser("~/signals")
+    if not os.path.exists(signals_path):
+        os.mkdir(signals_path)
+
+    # Create symbolic links for BAMs
+    bams_path = os.path.expanduser("~/fastq_bams")
+    for f in glob.glob("{}/*.bam".format(bams_path)):
+        call(["bash", "-c", "ln -sf {} {}/".format(f, signals_path)])
+
+    # Call
+    call(["bash", "/washu/downstream/signals/signals.sh",
+          signals_path,
+          "150",
           os.path.expanduser("~/data/regions.bed"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
           os.path.expanduser("~/data/regions.bed")])
 
-    check_files("fastq_bams_tags_bws/hg19.chrom.sizes.tsv", 1)
-    check_files("fastq_bams_tags_bws/regions/*_signal.log", 1)
-    check_files("fastq_bams_tags_bws/regions/bw_signals_*.log", 1)
-    check_files("fastq_bams_tags_bws/regions/regions.tsv", 1)
-    check_files("fastq_bams_tags_bws/regions/regions_raw.tsv", 1)
-    check_files("fastq_bams_tags_bws/regions/regions_raw.png", 1)
-    check_files("fastq_bams_tags_bws/regions/regions_raw_pca_fit_error.csv", 1)
+    # And check
+    check_files("signals/150/hg19.chrom.sizes.tsv", 1)
+    check_files("signals/150/regions/*_signal.log", 1)
+    check_files("signals/150/regions/bw_signals_*.log", 1)
+    check_files("signals/150/regions/regions.tsv", 1)
+    check_files("signals/150/regions/regions_raw.tsv", 1)
