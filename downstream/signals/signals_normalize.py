@@ -49,18 +49,21 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
 
 def raw_normalization(data_path, loaded, sizes, processing_chipseq):
     """Raw signal with standard scaling"""
+    raw_path = re.sub('.tsv', '_raw.tsv', data_path)
+    z_path = re.sub('.tsv', '_rawz.tsv', data_path)
+    if os.path.exists(raw_path) and os.path.exists(z_path):
+        return
+
     print('Processing RAW signal')
     raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                               columns='name',
                               values='coverage' if processing_chipseq else 'mean',
                               fill_value=0)
-    raw_path = re.sub('.tsv', '_raw.tsv', data_path)
     if not os.path.exists(raw_path):
         raw_data.to_csv(raw_path, sep='\t')
         print('Saved RAW signal to {}'.format(raw_path))
         signals_visualize.process(raw_path)
 
-    z_path = re.sub('.tsv', '_rawz.tsv', data_path)
     if not os.path.exists(z_path):
         print("Processing Z normalization")
         process_z(z_path, raw_data)
@@ -69,18 +72,21 @@ def raw_normalization(data_path, loaded, sizes, processing_chipseq):
 
 def rpm_normalization(data_path, loaded, sizes):
     """RPM/RPKM normalization"""
+    rpm_path = re.sub('.tsv', '_rpm.tsv', data_path)
+    rpkm_path = re.sub('.tsv', '_rpkm.tsv', data_path)
+    if os.path.exists(rpm_path) and os.path.exists(rpkm_path):
+        return
+
     sizes_pm = sizes / 1000000.0
     sizes_pm.columns = ['size_pm']
     data = pd.merge(loaded, sizes_pm, left_on="name", how='left', right_index=True)
 
-    rpm_path = re.sub('.tsv', '_rpm.tsv', data_path)
     if not os.path.exists(rpm_path):
         print('Processing RPM normalization')
         data['rpm'] = data['coverage'] / data['size_pm']
         save_signal(rpm_path, data, 'rpm', 'Saved RPM')
         signals_visualize.process(rpm_path)
 
-    rpkm_path = re.sub('.tsv', '_rpkm.tsv', data_path)
     if not os.path.exists(rpkm_path):
         print('Processing RPKM normalization')
         data['rpk'] = (data['end'] - data['start']) / 1000.0
@@ -108,6 +114,11 @@ def process_z(output, data):
 
 def frip_normalization(data_path, loaded, sizes, peaks_sizes_path):
     """Normalization on library depths, FRIPs"""
+    frip_pm_path = re.sub('.tsv', '_fripm.tsv', data_path)
+    fripz_path = re.sub('.tsv', '_fripz.tsv', data_path)
+    if os.path.exists(frip_pm_path) and os.path.exists(fripz_path):
+        return
+
     print('Processing FRIP normalization')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
@@ -139,7 +150,6 @@ def frip_normalization(data_path, loaded, sizes, peaks_sizes_path):
         frip_df[column] = np.maximum(0, data[column] - input_coef[column] * data[input_column])
 
     # Per million reads normalization
-    frip_pm_path = re.sub('.tsv', '_fripm.tsv', data_path)
     if not os.path.exists(frip_pm_path):
         frip_pm = pd.DataFrame()
         for column in not_input_columns:
@@ -149,17 +159,23 @@ def frip_normalization(data_path, loaded, sizes, peaks_sizes_path):
         signals_visualize.process(frip_pm_path)
 
     # Z normalization
-    fripz_path = re.sub('.tsv', '_fripz.tsv', data_path)
     if not os.path.exists(fripz_path):
         process_z(fripz_path, frip_df)
         signals_visualize.process(fripz_path)
 
 
 def diffbind_normalization(data_path, loaded, sizes, peaks_sizes_path):
+    scores_tmm_reads_effective_cpm_path = re.sub('.tsv', '_diffbind_tmm_reads_effective_cpm.tsv', data_path)
+    scores_tmm_reads_full_cpm_path = re.sub('.tsv', '_diffbind_tmm_reads_full_cpm.tsv', data_path)
+    scores_tmm_minus_full_path = re.sub('.tsv', '_diffbind_tmm_minus_full.tsv', data_path)
+    if os.path.exists(scores_tmm_reads_effective_cpm_path) and \
+            os.path.exists(scores_tmm_reads_full_cpm_path) and \
+            os.path.exists(scores_tmm_minus_full_path):
+        return
+
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
     print('Processing DBA_SCORE_TMM_READS_EFFECTIVE_CPM')
-    scores_tmm_reads_effective_cpm_path = re.sub('.tsv', '_diffbind_tmm_reads_effective_cpm.tsv', data_path)
     if not os.path.exists(scores_tmm_reads_effective_cpm_path):
         peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
                                   index_col='name')
@@ -169,7 +185,6 @@ def diffbind_normalization(data_path, loaded, sizes, peaks_sizes_path):
         signals_visualize.process(scores_tmm_reads_effective_cpm_path)
 
     print('Processing DBA_SCORE_TMM_READS_FULL_CPM')
-    scores_tmm_reads_full_cpm_path = re.sub('.tsv', '_diffbind_tmm_reads_full_cpm.tsv', data_path)
     if not os.path.exists(scores_tmm_reads_full_cpm_path):
         scores_tmm_reads_full_cpm = process_tmm(data, sizes) * 1000000.0
         scores_tmm_reads_full_cpm.to_csv(scores_tmm_reads_full_cpm_path, sep='\t')
@@ -177,7 +192,6 @@ def diffbind_normalization(data_path, loaded, sizes, peaks_sizes_path):
         signals_visualize.process(scores_tmm_reads_full_cpm_path)
 
     print('Processing DBA_SCORE_TMM_MINUS_FULL')
-    scores_tmm_minus_full_path = re.sub('.tsv', '_diffbind_tmm_minus_full.tsv', data_path)
     if not os.path.exists(scores_tmm_minus_full_path):
         od_input = [c for c in data.columns if is_od_input(c)][0]
         yd_input = [c for c in data.columns if is_yd_input(c)][0]
