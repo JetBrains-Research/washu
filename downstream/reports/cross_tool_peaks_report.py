@@ -73,16 +73,16 @@ def _cli():
                                                             'value': peaks_count2},
                                                            ignore_index=True)
 
-        with PdfPages(pdf_path) as pdf:
-            plot_bar_from_df(df_metrics, pdf)
-            plot_bar_from_df(df_peaks_count, pdf)
+    with PdfPages(pdf_path) as pdf:
+        plot_bar_from_df(df_metrics, pdf)
+        plot_bar_from_df(df_peaks_count, pdf)
 
-            desc = pdf.infodict()
-            desc['Title'] = 'Report: Combined peaks plots for different callers'
-            desc['Author'] = 'JetBrains Research BioLabs'
-            desc['Subject'] = 'peaks'
-            desc['CreationDate'] = datetime.datetime.today()
-            desc['ModDate'] = datetime.datetime.today()
+        desc = pdf.infodict()
+        desc['Title'] = 'Report: Combined peaks plots for different callers'
+        desc['Author'] = 'JetBrains Research BioLabs'
+        desc['Subject'] = 'peaks'
+        desc['CreationDate'] = datetime.datetime.today()
+        desc['ModDate'] = datetime.datetime.today()
 
 
 def plot_bar_from_df(df_metrics, pdf):
