@@ -40,7 +40,7 @@ def _try_parse_stdout(func, stdout, stderr):
         raise
 
 
-def _run_metric_intersection(a, b, *args, **kw):
+def run_metric_intersection(a, b, *args, **kw):
     """
     Metric intersection (#1):
         (wc -l $a) / (bedtools intersect -a $a -b $b -wa | uniq | wc -l)
@@ -73,7 +73,7 @@ def _run_metric_intersection(a, b, *args, **kw):
     return (metric, *args)
 
 
-def _run_metric_jaccard(a, b, *args, **kw):
+def run_metric_jaccard(a, b, *args, **kw):
     """
     :param id: Id for parallel execution
     :param a: A.bed
@@ -111,7 +111,7 @@ def bed_metric_table(a_paths: List[Path], b_paths: List[Path],
         for j, b in enumerate(b_paths, 0):
             path_pairs.append((a, b, (i, j)))
 
-    inner_metric = _run_metric_jaccard if jaccard else _run_metric_intersection
+    inner_metric = run_metric_jaccard if jaccard else run_metric_intersection
 
     with Pool(processes=threads) as pool:
         multiple_results = [pool.apply_async(inner_metric, (a, b, ij), kw)
