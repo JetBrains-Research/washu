@@ -103,7 +103,7 @@ run_macs2(GENOME, CHROM_SIZES, 'broad_0.1', '--broad', '--broad-cutoff',
           0.1, work_dirs=[WORK_DIR])
 
 # MACS2 Regular peak calling. Default: Q=0.05
-run_macs2(GENOME, CHROM_SIZES, 'q0.01', '-q', 0.05, work_dirs=[WORK_DIR])
+run_macs2(GENOME, CHROM_SIZES, 'q0.05', '-q', 0.05, work_dirs=[WORK_DIR])
 
 # MACS1.4 P=1e-5 is default
 # P = 0.00001

@@ -84,9 +84,9 @@ def test_macs2_broad():
 
 
 def test_macs2_narrow():
-    check_files("fastq_bams_macs2_q0.01/*.narrowPeak", 4)
-    check_files("fastq_bams_macs2_q0.01/*.narrowPeak_rip.csv", 4)
-    check_files("fastq_bams_macs2_q0.01/macs2_report.csv", 1)
+    check_files("fastq_bams_macs2_q0.05/*.narrowPeak", 4)
+    check_files("fastq_bams_macs2_q0.05/*.narrowPeak_rip.csv", 4)
+    check_files("fastq_bams_macs2_q0.05/macs2_report.csv", 1)
     check_files("fastq_bams/pileup/*pileup.bed", 6)
 
 
