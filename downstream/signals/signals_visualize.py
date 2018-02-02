@@ -7,7 +7,6 @@ import pandas as pd
 import sys
 
 from downstream.aging import *
-from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 
@@ -37,7 +36,6 @@ def pca_signal(signal):
 
 
 def signal_pca_plot(signal, title, ax):
-    signal = preprocessing.scale(signal)
     donors = signal.columns
     groups = [OLD if is_od(d) else YOUNG for d in donors]
     pca, x_r = pca_signal(signal)
