@@ -106,8 +106,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
     # Wasserstein distance, Earth mover's distance
     wdist = np.sqrt(np.mean((rr - 1) ** 2))
 
-    dm = R2DistMetrics(np.mean(rr), np.median(rr), np.percentile(rr, 2), np.percentile(rr, 5),
-                       wdist)
+    dm = R2DistMetrics(np.mean(rr), np.median(rr), np.percentile(rr, 2), wdist)
 
     print("mean = {}, median = {}, [min, max] = [{}, {}], [2%, 98%] = [{}, {}], wd = {}".format(
         dm.mean, dm.median, np.min(rr), np.max(rr), dm.p2, np.percentile(rr, 98), dm.wdist)
