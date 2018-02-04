@@ -20,7 +20,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # nopep8
 
-R2DistMetrics = namedtuple('R2DistMetrics', ['mean', 'median', 'p2', 'p5', 'p10', 'wdist'])
+R2DistMetrics = namedtuple('R2DistMetrics', ['mean', 'median', 'p2', 'wdist'])
 Record = namedtuple('Record', ['datatype', 'folder', 'norm', 'metrics'])
 
 
@@ -107,13 +107,11 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
     wdist = np.sqrt(np.mean((rr - 1) ** 2))
 
     dm = R2DistMetrics(np.mean(rr), np.median(rr), np.percentile(rr, 2), np.percentile(rr, 5),
-                       np.percentile(rr, 10), wdist)
+                       wdist)
 
-    print("mean = {}, median = {}, [min, max] = [{}, {}], [2%, 5%, 10%, 98%] = [{}, {}, {}, "
-          "{}], wd = {}".format(dm.mean, dm.median, np.min(rr), np.max(rr),
-                                dm.p2, dm.p5, dm.p10,
-                                np.percentile(rr, 98), dm.wdist)
-          )
+    print("mean = {}, median = {}, [min, max] = [{}, {}], [2%, 98%] = [{}, {}], wd = {}".format(
+        dm.mean, dm.median, np.min(rr), np.max(rr), dm.p2, np.percentile(rr, 98), dm.wdist)
+    )
 
     if plot:
         plt.hist(rr, color="darkgray")
