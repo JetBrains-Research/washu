@@ -112,7 +112,6 @@ SCRIPT
         TASKS+=("$QSUB_ID")
     done
     wait_complete ${TASKS[@]}
-    check_logs
 
     # Master log
     MASTER_LOG=${_LOGS_DIR}/${ID}_tsv.log
@@ -200,6 +199,9 @@ cd ${RESULTS_FOLDER}
 python ${WASHU_ROOT}/downstream/signals/signals_normalize.py ${REGIONS_SIZES} ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
 SCRIPT
 wait_complete $QSUB_ID
+
+cd ${RESULTS_FOLDER}
+check_logs
 
 # TMP dir cleanup:
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
