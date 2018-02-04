@@ -22,4 +22,3 @@ def extract_datatype(path: Path):
         return "meth"
 
     return "N/A"
-
