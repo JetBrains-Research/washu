@@ -38,10 +38,10 @@ def stat_test(f, test_name, test, fdr):
     df['od_mean'] = df[ods].mean(axis=1).to_frame('od_mean')['od_mean']
     df['yd_mean'] = df[yds].mean(axis=1).to_frame('yd_mean')['yd_mean']
     df['logfc'] = np.log(df['od_mean'] / df['yd_mean'])
-    # Sort by adjusted pvalue
-    pvals_adj_order = pvals_adj.argsort()
-    df = df.loc[pvals_adj_order]
-    h0_rejects = h0_rejects[pvals_adj_order]
+    # Sort by pvalue
+    pvals_order = pvals.argsort()
+    df = df.loc[pvals_order]
+    h0_rejects = h0_rejects[pvals_order]
 
     # Save results
     results = re.sub('\.tsv', '_{}.tsv'.format(test_name), f)
