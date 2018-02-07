@@ -43,11 +43,9 @@ def _cli():
         pdf_path = str(output_folder / (hist_mod + "_" + tool1 + "_vs_" + tool2 + "_" +
                                         today.strftime("%d.%m.%Y") + ".pdf"))
         tracks_paths1 = sorted({peaks_folder1 / file for file in os.listdir(str(peaks_folder1)) if
-                               re.match('.*(?:_peaks.bed|-island.bed|Peak)$', file)},
-                               key=loi.donor_order_id)
+                                regions_extension(file)}, key=loi.donor_order_id)
         tracks_paths2 = sorted({peaks_folder2 / file for file in os.listdir(str(peaks_folder2)) if
-                               re.match('.*(?:_peaks.bed|-island.bed|Peak)$', file)},
-                               key=loi.donor_order_id)
+                                regions_extension(file)}, key=loi.donor_order_id)
         if len(tracks_paths1) > 0 and len(tracks_paths2) > 0:
             tracks_paths = tracks_paths1 + tracks_paths2
 
@@ -108,6 +106,7 @@ if __name__ == "__main__":
     import downstream.loci_of_interest as loi
     import matplotlib.pyplot as plt
     from matplotlib.backends.backend_pdf import PdfPages
+    from downstream.aging import regions_extension
     from downstream.bed_metrics import bed_metric_table, plot_metric_heatmap, \
         label_converter_donor_and_tool, save_plot
     from downstream.peak_metrics import calc_consensus_file, bar_consensus, detect_tool
