@@ -17,7 +17,7 @@ from scripts.util import *
 def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
     pool = multiprocessing.Pool(processes=processes)
     pool.apply_async(raw_normalization,
-                     args=(data_path),
+                     args=(data_path, ),
                      error_callback=error_callback)
 
     pool.apply_async(rpm_normalization,
