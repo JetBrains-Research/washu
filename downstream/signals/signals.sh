@@ -39,6 +39,10 @@ if [[ ! -d "${RESULTS_FOLDER}" ]]; then
 fi
 
 echo "Prepare tags BW in ${WORK_DIR}/${FRAGMENT}"
+TAGS_BW_LOGS="${WORK_DIR}/${FRAGMENT}/tags_bw_logs"
+if [[ ! -d "${TAGS_BW_LOGS}" ]]; then
+    mkdir -p ${TAGS_BW_LOGS}
+fi
 TASKS=()
 cd ${WORK_DIR}
 for BAM in $(find . -name '*.bam' | sed 's#\./##g' | grep -vE ".tr")
@@ -49,10 +53,10 @@ do :
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
-#PBS -N tags_${NAME}_${FRAGMENT}.bw
+#PBS -N tags_bw_${NAME}_${FRAGMENT}.bw
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${FRAGMENT}/${NAME}.log
+#PBS -o ${TAGS_BW_LOGS}/${NAME}_${FRAGMENT}.log
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
@@ -65,6 +69,7 @@ SCRIPT
     fi
 done
 wait_complete ${TASKS[@]}
+cd ${TAGS_BW_LOGS}
 check_logs
 
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
@@ -112,7 +117,6 @@ SCRIPT
         TASKS+=("$QSUB_ID")
     done
     wait_complete ${TASKS[@]}
-    check_logs
 
     # Master log
     MASTER_LOG=${_LOGS_DIR}/${ID}_tsv.log
@@ -200,6 +204,9 @@ cd ${RESULTS_FOLDER}
 python ${WASHU_ROOT}/downstream/signals/signals_normalize.py ${REGIONS_SIZES} ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
 SCRIPT
 wait_complete $QSUB_ID
+
+cd ${RESULTS_FOLDER}
+check_logs
 
 # TMP dir cleanup:
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir

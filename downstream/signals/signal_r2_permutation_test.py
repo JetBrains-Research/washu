@@ -12,6 +12,7 @@ import math
 from collections import namedtuple
 
 from downstream.aging import is_od, is_yd
+from downstream.signals.signals_util import extract_normalization, extract_datatype
 from downstream.signals.signal_pca_fit_error_pvalue_permutation_test import collect_paths
 
 import matplotlib
@@ -19,7 +20,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # nopep8
 
-R2DistMetrics = namedtuple('R2DistMetrics', ['mean', 'median', 'p2', 'p5', 'p10', 'wdist'])
+R2DistMetrics = namedtuple('R2DistMetrics', ['mean', 'median', 'p2', 'wdist'])
 Record = namedtuple('Record', ['datatype', 'folder', 'norm', 'metrics'])
 
 
@@ -105,14 +106,11 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
     # Wasserstein distance, Earth mover's distance
     wdist = np.sqrt(np.mean((rr - 1) ** 2))
 
-    dm = R2DistMetrics(np.mean(rr), np.median(rr), np.percentile(rr, 2), np.percentile(rr, 5),
-                       np.percentile(rr, 10), wdist)
+    dm = R2DistMetrics(np.mean(rr), np.median(rr), np.percentile(rr, 2), wdist)
 
-    print("mean = {}, median = {}, [min, max] = [{}, {}], [2%, 5%, 10%, 98%] = [{}, {}, {}, "
-          "{}], wd = {}".format(dm.mean, dm.median, np.min(rr), np.max(rr),
-                                dm.p2, dm.p5, dm.p10,
-                                np.percentile(rr, 98), dm.wdist)
-          )
+    print("mean = {}, median = {}, [min, max] = [{}, {}], [2%, 98%] = [{}, {}], wd = {}".format(
+        dm.mean, dm.median, np.min(rr), np.max(rr), dm.p2, np.percentile(rr, 98), dm.wdist)
+    )
 
     if plot:
         plt.hist(rr, color="darkgray")
@@ -184,17 +182,9 @@ def process(paths: List[Path], output_path: str, seed: int, simulations: int, th
         print("Process:", path)
         dm = _process(path, simulations=simulations, seed=seed, threads=threads)
 
-        norm_match = re.match(".*_([^_]+)\\.tsv", path.name)
-        norm = path.name if not norm_match else norm_match.group(1)
-
-        matches = re.match(".*/(H[a-z0-9]+)/.*", str(path), re.IGNORECASE)
-        if matches:
-            mod = matches.group(1)
-        elif "/meth/" in str(path):
-            mod = "meth"
-        else:
-            mod = "N/A"
-        records.append(Record(mod, str(path.parent), norm, dm))
+        norm = extract_normalization(path)
+        dtype = extract_datatype(path)
+        records.append(Record(dtype, str(path.parent), norm, dm))
 
     # sort by first 3 cols: (mod, hist, norm)
     records.sort(key=lambda r: r[:3])

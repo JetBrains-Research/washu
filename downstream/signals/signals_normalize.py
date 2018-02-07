@@ -16,48 +16,43 @@ from scripts.util import *
 
 def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
     pool = multiprocessing.Pool(processes=processes)
-    loaded = pd.read_csv(data_path, sep='\t',
-                         names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
-    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
-
-    processing_chipseq = not [n for n in loaded['name'] if re.match('.*(meth|trans|mirna).*', n)]
-    if processing_chipseq:
-        print("Processing ChIP-Seq")
-    else:
-        print("Processing Methylation|Transcription|miRNA, input not found")
     pool.apply_async(raw_normalization,
-                     args=(data_path, loaded, sizes, processing_chipseq),
+                     args=(data_path, ),
                      error_callback=error_callback)
 
-    if processing_chipseq:
-        pool.apply_async(rpm_normalization,
-                         args=(data_path, loaded, sizes),
+    pool.apply_async(rpm_normalization,
+                     args=(data_path, sizes_path),
+                     error_callback=error_callback)
+
+    if peaks_sizes_path and os.path.exists(peaks_sizes_path):
+        pool.apply_async(frip_normalization,
+                         args=(data_path, sizes_path, peaks_sizes_path),
                          error_callback=error_callback)
 
-        if peaks_sizes_path and os.path.exists(peaks_sizes_path):
-            pool.apply_async(frip_normalization,
-                             args=(data_path, loaded, sizes, peaks_sizes_path),
-                             error_callback=error_callback)
-
-            pool.apply_async(diffbind_normalization,
-                             args=(data_path, loaded, sizes, peaks_sizes_path),
-                             error_callback=error_callback)
-
+        pool.apply_async(diffbind_normalization,
+                         args=(data_path, sizes_path, peaks_sizes_path),
+                         error_callback=error_callback)
     pool.close()
     pool.join()
 
 
-def raw_normalization(data_path, loaded, sizes, processing_chipseq):
+def processing_chipseq(loaded):
+    return not [n for n in loaded['name'] if re.match('.*(meth|trans|mirna).*', n)]
+
+
+def raw_normalization(data_path):
     """Raw signal with standard scaling"""
     raw_path = re.sub('.tsv', '_raw.tsv', data_path)
     z_path = re.sub('.tsv', '_rawz.tsv', data_path)
     if os.path.exists(raw_path) and os.path.exists(z_path):
         return
 
+    loaded = pd.read_csv(data_path, sep='\t',
+                         names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
     print('Processing RAW signal')
     raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                               columns='name',
-                              values='coverage' if processing_chipseq else 'mean',
+                              values='coverage' if processing_chipseq(loaded) else 'mean',
                               fill_value=0)
     if not os.path.exists(raw_path):
         raw_data.to_csv(raw_path, sep='\t')
@@ -70,13 +65,18 @@ def raw_normalization(data_path, loaded, sizes, processing_chipseq):
         signals_visualize.process(z_path)
 
 
-def rpm_normalization(data_path, loaded, sizes):
+def rpm_normalization(data_path, sizes_path):
     """RPM/RPKM normalization"""
     rpm_path = re.sub('.tsv', '_rpm.tsv', data_path)
     rpkm_path = re.sub('.tsv', '_rpkm.tsv', data_path)
     if os.path.exists(rpm_path) and os.path.exists(rpkm_path):
         return
 
+    loaded = pd.read_csv(data_path, sep='\t',
+                         names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
+    if not processing_chipseq(loaded):
+        return
+    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     sizes_pm = sizes / 1000000.0
     sizes_pm.columns = ['size_pm']
     data = pd.merge(loaded, sizes_pm, left_on="name", how='left', right_index=True)
@@ -112,14 +112,19 @@ def process_z(output, data):
     print('{} to {}'.format('Saved Z', output))
 
 
-def frip_normalization(data_path, loaded, sizes, peaks_sizes_path):
+def frip_normalization(data_path, sizes_path, peaks_sizes_path):
     """Normalization on library depths, FRIPs"""
     frip_pm_path = re.sub('.tsv', '_fripm.tsv', data_path)
     fripz_path = re.sub('.tsv', '_fripz.tsv', data_path)
     if os.path.exists(frip_pm_path) and os.path.exists(fripz_path):
         return
 
+    loaded = pd.read_csv(data_path, sep='\t',
+                         names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
+    if not processing_chipseq(loaded):
+        return
     print('Processing FRIP normalization')
+    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
     peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
@@ -164,7 +169,7 @@ def frip_normalization(data_path, loaded, sizes, peaks_sizes_path):
         signals_visualize.process(fripz_path)
 
 
-def diffbind_normalization(data_path, loaded, sizes, peaks_sizes_path):
+def diffbind_normalization(data_path, sizes_path, peaks_sizes_path):
     scores_tmm_reads_effective_cpm_path = \
         re.sub('.tsv', '_diffbind_tmm_reads_effective_cpm.tsv', data_path)
     scores_tmm_reads_full_cpm_path = \
@@ -176,6 +181,11 @@ def diffbind_normalization(data_path, loaded, sizes, peaks_sizes_path):
             os.path.exists(scores_tmm_minus_full_path):
         return
 
+    loaded = pd.read_csv(data_path, sep='\t',
+                         names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
+    if not processing_chipseq(loaded):
+        return
+    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
     print('Processing DBA_SCORE_TMM_READS_EFFECTIVE_CPM')
