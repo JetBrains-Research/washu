@@ -144,30 +144,33 @@ def mean_boxplots(df, title, ax):
 
 
 def visualize(f, signal_type):
-    print('Visualizing', signal_type, f)
-    df = pd.read_csv(f, sep='\t')
-    od_inputs = [c for c in df.columns.values if is_od_input(c)]
-    yd_inputs = [c for c in df.columns.values if is_yd_input(c)]
-    if od_inputs and yd_inputs:
-        signal = df.drop(['chr', 'start', 'end', od_inputs[0], yd_inputs[0]], axis=1)
-    else:
-        signal = df.drop(['chr', 'start', 'end'], axis=1)
+    try:
+        print('Visualizing', signal_type, f)
+        df = pd.read_csv(f, sep='\t')
+        od_inputs = [c for c in df.columns.values if is_od_input(c)]
+        yd_inputs = [c for c in df.columns.values if is_yd_input(c)]
+        if od_inputs and yd_inputs:
+            signal = df.drop(['chr', 'start', 'end', od_inputs[0], yd_inputs[0]], axis=1)
+        else:
+            signal = df.drop(['chr', 'start', 'end'], axis=1)
 
-    plt.figure(figsize=(36, 6))
-    fit_error = signal_pca_plot(signal, title=signal_type, ax=plt.subplot(1, 5, 1))
-    mean_regions(df, title='O vs Y {}'.format(signal_type), ax=plt.subplot(1, 5, 2),
-                 plot_type=Plot.SCATTER)
-    mean_regions(df, title='MA log10 {}'.format(signal_type), ax=plt.subplot(1, 5, 3),
-                 plot_type=Plot.MA)
-    mean_regions(df, title='Histogram {}'.format(signal_type), ax=plt.subplot(1, 5, 4),
-                 plot_type=Plot.HIST)
-    mean_boxplots(signal.T, title=signal_type, ax=plt.subplot(1, 5, 5))
-    plt.savefig(re.sub('.tsv', '.png', f))
-    plt.close()
+        plt.figure(figsize=(36, 6))
+        fit_error = signal_pca_plot(signal, title=signal_type, ax=plt.subplot(1, 5, 1))
+        mean_regions(df, title='O vs Y {}'.format(signal_type), ax=plt.subplot(1, 5, 2),
+                     plot_type=Plot.SCATTER)
+        mean_regions(df, title='MA log10 {}'.format(signal_type), ax=plt.subplot(1, 5, 3),
+                     plot_type=Plot.MA)
+        mean_regions(df, title='Histogram {}'.format(signal_type), ax=plt.subplot(1, 5, 4),
+                     plot_type=Plot.HIST)
+        mean_boxplots(signal.T, title=signal_type, ax=plt.subplot(1, 5, 5))
+        plt.savefig(re.sub('.tsv', '.png', f))
+        plt.close()
 
-    # Save pca fit errors to file
-    pd.DataFrame(data=[[fit_error]]).to_csv(re.sub('.tsv', '_pca_fit_error.csv', f),
-                                            index=None, header=False)
+        # Save pca fit errors to file
+        pd.DataFrame(data=[[fit_error]]).to_csv(re.sub('.tsv', '_pca_fit_error.csv', f),
+                                                index=None, header=False)
+    except:  # nopep8
+        print('Error visualizing', signal_type, f, sys.exc_info())
 
 
 def process(path):
