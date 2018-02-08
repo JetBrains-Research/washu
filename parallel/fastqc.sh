@@ -31,20 +31,18 @@ TASKS=()
 for WORK_DIR in ${WORK_DIRS}; do :
     cd ${WORK_DIR}
     WORK_DIR_NAME=${WORK_DIR##*/}
-
-    mkdir -p "${WORK_DIR}/fastqc"
+    RESULTS_DIR="${WORK_DIR}/fastqc"
+    if [ -d "${RESULTS_DIR}" ]; then
+        echo "   [Skipped] ${RESULTS_DIR} was already processed"
+        continue
+    else
+        mkdir -p "${RESULTS_DIR}"
+    fi
 
     for FILE in $(find . -regextype posix-extended -regex '.*\.f.*q(\.gz)?')
     do :
         FILE_NAME=${FILE##*/}
         NAME=${FILE_NAME%%.fast*} # file name without extension
-
-        RESULTS_DIR="${WORK_DIR}/fastqc"
-        if [ -d "${RESULTS_DIR}" ]; then
-            echo "   [Skipped] ${RESULTS_DIR} was already processed"
-            continue
-        fi
-
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
