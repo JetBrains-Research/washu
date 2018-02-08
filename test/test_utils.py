@@ -16,6 +16,19 @@ def test_lcs():
     assert lcs1 < lcs2
 
 
+@pytest.mark.parametrize("value,expected", [
+    ("foo_input_boo", True),
+    ("foo_od.input_boo", True),
+    ("foo_input.yd_boo", True),
+    ("geo/tmp_noinput/foo_yd_boo", False),
+    ("geo/tmp_noinput/foo_od_boo", False),
+    ("geo/tmp/foo_yd_input_boo", True),
+    ("geo/tmp/foo_input_od_boo", True),
+])
+def test_is_input(value, expected):
+    assert su.is_input(value) == expected
+
+
 @pytest.mark.parametrize("input,donor", [
     ("", "40_donor6_input.bam"),
     ("40_donor6_input.bam", "37_donor6_k27ac.bam"),

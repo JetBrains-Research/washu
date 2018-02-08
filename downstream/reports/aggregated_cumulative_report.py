@@ -42,7 +42,7 @@ def _cli():
                 plt.figure()
                 for index, tool_path in enumerate([tool_new_path, tool_old_path]):
                     tracks_paths = collect_peaks_in_folder(tool_path)
-                    filter_paths = [p for p in tracks_paths if age(p.name) in filter_donors]
+                    filter_paths = [p for p in tracks_paths if donor(p.name) in filter_donors]
                     if len(filter_paths) > 0:
                         tracks_union = union(*[Bed(str(p)) for p in filter_paths])
                         tracks_union.compute()
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from matplotlib.backends.backend_pdf import PdfPages
 
-    from downstream.aging import age
+    from downstream.aging import donor
     from bed.bedtrace import Bed, union
     from downstream.loci_of_interest import collect_peaks_in_folder
 

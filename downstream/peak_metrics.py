@@ -13,7 +13,7 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt  # nopep8
 import seaborn as sns  # nopep8
-from downstream.aging import age, is_od_or_yd  # nopep8
+from downstream.aging import donor, is_od_or_yd  # nopep8
 from bed.bedtrace import intersect, Bed, metapeaks, union, consensus  # nopep8
 from downstream.bed_metrics import save_plot  # nopep8
 
@@ -255,7 +255,7 @@ def calc_frip(rip_paths):
         rip = float(data["rip"].loc[0])
         df.loc[df.size] = (rip_file, reads, peaks, rip)
     df["frip"] = 100.0 * df["rip"] / df["reads"]
-    df.index = [age(df.loc[n]["file"]) for n in df.index]
+    df.index = [donor(df.loc[n]["file"]) for n in df.index]
     df["age"] = "ODS"
     df.loc[df.index.str.startswith("Y"), "age"] = "YDS"
     age_labels = list(reversed(sorted(list(set(df['age'])))))
@@ -287,7 +287,7 @@ def length_bar_plots(tracks_paths, min_power, max_power, threads_num, save_to=No
         ax.set_xlabel('Peaks length')
         ax.set_ylabel('Peaks count')
         ax.set_ylim([0, max_bar_height])
-        ax.set_title(age(track_path) if is_od_or_yd(track_path) else Path(track_path).name)
+        ax.set_title(donor(track_path) if is_od_or_yd(track_path) else Path(track_path).name)
 
         if i % 9 == 8:
             plt.tight_layout()

@@ -35,9 +35,9 @@ def _cli():
         filtered_paths = paths
 
     tracks_paths = sorted({path for path in filtered_paths if is_od_or_yd(path)})
-    od_paths_map = {age(track_path): track_path for track_path in tracks_paths
+    od_paths_map = {donor(track_path): track_path for track_path in tracks_paths
                     if regions_extension(track_path) and is_od(track_path)}
-    yd_paths_map = {age(track_path): track_path for track_path in tracks_paths
+    yd_paths_map = {donor(track_path): track_path for track_path in tracks_paths
                     if regions_extension(track_path) and is_yd(track_path)}
 
     with PdfPages(args[2]) as pdf:
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     matplotlib.use('Agg')
 
     from matplotlib.backends.backend_pdf import PdfPages
-    from downstream.aging import regions_extension, age, is_od, is_yd, is_od_or_yd
+    from downstream.aging import regions_extension, donor, is_od, is_yd, is_od_or_yd
     from bed.bedtrace import run
     from downstream.peak_metrics import calc_consensus_file, venn_consensus, bar_consensus
 

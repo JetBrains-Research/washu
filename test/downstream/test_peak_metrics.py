@@ -11,7 +11,7 @@ from bed.bedtrace import Bed
 from downstream.peak_metrics import calc_consensus_file, bar_consensus, groups_sizes, \
     cumulative_consensus, calc_frip, frip_peaks, frip_boxplot, length_bar_plots, \
     _calculate_lengths  # nopep8
-from downstream.aging import age  # nopep8
+from downstream.aging import donor  # nopep8
 from test.downstream.test_bed_metrics import assert_image
 from test.fixtures import test_data, tmp_dir
 
@@ -88,7 +88,7 @@ def test_cumulative_consensus(tmp_dir, test_data, fname):
 ])
 def test_calc_frip(test_data, fname):
     expected_df = pd.read_csv(test_data("rip/" + fname))
-    expected_df.index = [age(expected_df.loc[n]["file"]) for n in expected_df.index]
+    expected_df.index = [donor(expected_df.loc[n]["file"]) for n in expected_df.index]
     rip_paths = [str(rip_path) for rip_path in Path(test_data("rip/")).glob("*_rip.csv")]
 
     age_labels, df = calc_frip(rip_paths)

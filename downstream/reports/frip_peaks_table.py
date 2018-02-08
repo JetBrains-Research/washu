@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 from pathlib import Path
-from downstream.aging import age
+from downstream.aging import donor
 
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """Script for calculating mean FRIP and peaks count"""
@@ -42,7 +42,7 @@ def _cli():
                     rip = float(data["rip"].loc[0])
                     df.loc[df.size] = (rip_file, reads, peaks, length, rip)
                 df["frip"] = 100.0 * df["rip"] / df["reads"]
-                df.index = [age(df.loc[n]["file"]) for n in df.index]
+                df.index = [donor(df.loc[n]["file"]) for n in df.index]
 
                 for donor in failed_tracks_df.loc[:, hist_mod].index:
                     if failed_tracks_df.loc[:, hist_mod][donor] == 1:

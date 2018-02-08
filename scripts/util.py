@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import getopt
+import glob
 import os
 import re
 import subprocess
@@ -72,26 +73,37 @@ def lcs(x, y):
     return len(back_track(m, n))
 
 
+def is_input(c):
+    return re.match('.*input.*', re.sub('.*/', '', str(c)), flags=re.IGNORECASE) is not None
+
+
+def find_input_name(c, variants):
+    if is_input(c):
+        return None
+
+    def sort_function(x):
+        return lcs(str(c), x.lower())
+
+    inputs = [str(v) for v in variants if is_input(v)]
+    if len(inputs) > 0:
+        return max(inputs, key=sort_function)
+    else:
+        return None
+
+
 def find_input(bam):
     bam_name = os.path.basename(bam).lower()
     if 'input' in bam_name:
         return ''
 
     # Find all the files within folder
-    dir_path = os.path.dirname(bam)
-    f = []
-    for (_, _, name) in os.walk(dir_path):
-        f.extend(name)
-        break
-
-    def sort_function(x):
-        return lcs(bam_name, x.lower())
-
-    inputs = [x for x in f if re.match('.*input.*\\.bam$', x, flags=re.IGNORECASE)]
-    if len(inputs) > 0:
-        return max(inputs, key=sort_function)
-    else:
+    dirname = os.path.dirname(bam)
+    names = [os.path.basename(n) for n in glob.glob('{}/*.bam'.format(dirname))]
+    input_name = find_input_name(bam_name, names)
+    if input_name is None:
         return ''
+    else:
+        return input_name
 
 
 def macs_species(genome):

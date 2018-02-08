@@ -1,48 +1,37 @@
 import re
 from collections import namedtuple
+from scripts.util import is_input
 
-#################################################################
-# Age and donors utility code
-#################################################################
-
-Age = namedtuple('Age', 'name color')
-OLD = Age('O', 'blue')
-YOUNG = Age('Y', 'red')
-
-
-def is_od_input(c):
-    c = re.sub(".*/", "", str(c))
-    input_od = re.match('.*input.*od.*', c, flags=re.IGNORECASE) is not None
-    od_input = re.match('.*od.*input.*', c, flags=re.IGNORECASE) is not None
-    return input_od or od_input
-
-
-def is_yd_input(c):
-    c = re.sub(".*/", "", str(c))
-    input_yd = re.match('.*input.*yd.*', c, flags=re.IGNORECASE) is not None
-    yd_input = re.match('.*yd.*input.*', c, flags=re.IGNORECASE) is not None
-    return input_yd or yd_input
-
-
-def is_input(c):
-    return is_od_input(c) or is_yd_input(c)
+Group = namedtuple('Group', 'name color')
+OLD = Group('O', 'blue')
+YOUNG = Group('Y', 'red')
+UNKNOWN = Group('', 'black')
 
 
 def is_od(c):
-    return (re.match('.*od\\d+.*', str(c), flags=re.IGNORECASE) is not None) and not is_input(c)
+    return not is_input(c) and group(c) == OLD
 
 
 def is_yd(c):
-    return (re.match('.*yd\\d+.*', str(c), flags=re.IGNORECASE) is not None) and not is_input(c)
+    return not is_input(c) and group(c) == YOUNG
 
 
 def is_od_or_yd(c):
-    return (re.match('.*[yo]d\\d+.*', str(c), flags=re.IGNORECASE) is not None) and not is_input(c)
+    return is_od(c) or is_yd(c)
 
 
-def age(n):
-    match = re.search('[yo]d\\d+', str(n), flags=re.IGNORECASE)
-    return None if not match else match.group(0)
+def group(c):
+    if re.match('.*od\\d+.*', str(c), flags=re.IGNORECASE):
+        return OLD
+    if re.match('.*yd\\d+.*', str(c), flags=re.IGNORECASE):
+        return YOUNG
+    return UNKNOWN
+
+
+def donor(c):
+    name = re.sub('.*/', '', str(c))
+    match = re.search('[yo]d\\d+', name, flags=re.IGNORECASE)
+    return name if not match else match.group(0)
 
 
 def regions_extension(c):
