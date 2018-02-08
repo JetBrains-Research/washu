@@ -167,8 +167,8 @@ def test_expand_path(tmp_dir, capfd, path, expected):
 
 
 @pytest.mark.parametrize("path,expected,home", [
-    ("bams/foo.bam", "pileup/foo_pileup.bed", None),
-    ("foo.bam", "pileup/foo_pileup.bed", "bams"),
+    ("bams/foo.bam", "bams/pileup/foo_pileup.bed", None),
+    ("foo.bam", "bams/pileup/foo_pileup.bed", "bams"),
 ])
 def test_pileup(tmp_dir, capfd, path, expected, home):
     os.makedirs(os.path.join(tmp_dir, "bams"))
