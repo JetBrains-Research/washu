@@ -17,10 +17,16 @@ from scripts.util import *
 def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
     pool = multiprocessing.Pool(processes=processes)
     pool.apply_async(raw_normalization,
-                     args=(data_path, ),
+                     args=(data_path,),
+                     error_callback=error_callback)
+    pool.apply_async(rpm_normalization,
+                     args=(data_path, sizes_path),
                      error_callback=error_callback)
 
-    pool.apply_async(rpm_normalization,
+    pool.apply_async(diffbind_tmm_minus_full,
+                     args=(data_path, sizes_path),
+                     error_callback=error_callback)
+    pool.apply_async(diffbind_tmm_reads_full_cpm,
                      args=(data_path, sizes_path),
                      error_callback=error_callback)
 
@@ -28,9 +34,8 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
         pool.apply_async(frip_normalization,
                          args=(data_path, sizes_path, peaks_sizes_path),
                          error_callback=error_callback)
-
-        pool.apply_async(diffbind_normalization,
-                         args=(data_path, sizes_path, peaks_sizes_path),
+        pool.apply_async(diffbind_tmm_reads_effective_cpm,
+                         args=(data_path, peaks_sizes_path),
                          error_callback=error_callback)
     pool.close()
     pool.join()
@@ -169,54 +174,70 @@ def frip_normalization(data_path, sizes_path, peaks_sizes_path):
         signals_visualize.process(fripz_path)
 
 
-def diffbind_normalization(data_path, sizes_path, peaks_sizes_path):
+def diffbind_tmm_reads_effective_cpm(data_path, peaks_sizes_path):
     scores_tmm_reads_effective_cpm_path = \
         re.sub('.tsv', '_diffbind_tmm_reads_effective_cpm.tsv', data_path)
+    if os.path.exists(scores_tmm_reads_effective_cpm_path):
+        return
+    loaded = pd.read_csv(data_path, sep='\t',
+                         names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
+    if not processing_chipseq(loaded):
+        return
+
+    print('Processing DBA_SCORE_TMM_READS_EFFECTIVE_CPM')
+    data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
+                          columns='name', values='coverage', fill_value=0)
+    peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
+                              index_col='name')
+    scores_tmm_reads_effective_cpm = process_tmm(data, peaks_sizes) * 1000000.0
+    scores_tmm_reads_effective_cpm.to_csv(scores_tmm_reads_effective_cpm_path, sep='\t')
+    print('Saved Diffbind DBA_SCORE_TMM_READS_EFFECTIVE_CPM to {}'.format(scores_tmm_reads_effective_cpm_path))
+    signals_visualize.process(scores_tmm_reads_effective_cpm_path)
+
+
+def diffbind_tmm_reads_full_cpm(data_path, sizes_path):
     scores_tmm_reads_full_cpm_path = \
         re.sub('.tsv', '_diffbind_tmm_reads_full_cpm.tsv', data_path)
-    scores_tmm_minus_full_path = \
-        re.sub('.tsv', '_diffbind_tmm_minus_full.tsv', data_path)
-    if os.path.exists(scores_tmm_reads_effective_cpm_path) and \
-            os.path.exists(scores_tmm_reads_full_cpm_path) and \
-            os.path.exists(scores_tmm_minus_full_path):
+    if os.path.exists(scores_tmm_reads_full_cpm_path):
         return
 
     loaded = pd.read_csv(data_path, sep='\t',
                          names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
     if not processing_chipseq(loaded):
         return
+
+    print('Processing DBA_SCORE_TMM_READS_FULL_CPM')
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
-    print('Processing DBA_SCORE_TMM_READS_EFFECTIVE_CPM')
-    if not os.path.exists(scores_tmm_reads_effective_cpm_path):
-        peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
-                                  index_col='name')
-        scores_tmm_reads_effective_cpm = process_tmm(data, peaks_sizes) * 1000000.0
-        scores_tmm_reads_effective_cpm.to_csv(scores_tmm_reads_effective_cpm_path, sep='\t')
-        print('Saved Diffbind to {}'.format(scores_tmm_reads_effective_cpm_path))
-        signals_visualize.process(scores_tmm_reads_effective_cpm_path)
+    scores_tmm_reads_full_cpm = process_tmm(data, sizes) * 1000000.0
+    scores_tmm_reads_full_cpm.to_csv(scores_tmm_reads_full_cpm_path, sep='\t')
+    print('Saved Diffbind DBA_SCORE_TMM_READS_FULL_CPM to {}'.format(scores_tmm_reads_full_cpm_path))
+    signals_visualize.process(scores_tmm_reads_full_cpm_path)
 
-    print('Processing DBA_SCORE_TMM_READS_FULL_CPM')
-    if not os.path.exists(scores_tmm_reads_full_cpm_path):
-        scores_tmm_reads_full_cpm = process_tmm(data, sizes) * 1000000.0
-        scores_tmm_reads_full_cpm.to_csv(scores_tmm_reads_full_cpm_path, sep='\t')
-        print('Saved Diffbind to {}'.format(scores_tmm_reads_full_cpm_path))
-        signals_visualize.process(scores_tmm_reads_full_cpm_path)
 
+def diffbind_tmm_minus_full(data_path, sizes_path):
+    scores_tmm_minus_full_path = \
+        re.sub('.tsv', '_diffbind_tmm_minus_full.tsv', data_path)
+    if os.path.exists(scores_tmm_minus_full_path):
+        return
+
+    loaded = pd.read_csv(data_path, sep='\t',
+                         names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
+    if not processing_chipseq(loaded):
+        return
     print('Processing DBA_SCORE_TMM_MINUS_FULL')
-    if not os.path.exists(scores_tmm_minus_full_path):
-        od_input = [c for c in data.columns if is_od_input(c)][0]
-        yd_input = [c for c in data.columns if is_yd_input(c)][0]
-        ods = [c for c in data.columns if is_od(c)]
-        yds = [c for c in data.columns if is_yd(c)]
-        records = [(d, od_input, OLD) for d in ods] + [(d, yd_input, YOUNG) for d in yds]
-        scores_minus_scaled_control = diffbind_scores_minus(data, sizes, records)
-        scores_tmm_minus_full = \
-            process_tmm(scores_minus_scaled_control, sizes) * float(np.mean(sizes))
-        scores_tmm_minus_full.to_csv(scores_tmm_minus_full_path, sep='\t')
-        print('Saved Diffbind to {}'.format(scores_tmm_minus_full_path))
-        signals_visualize.process(scores_tmm_minus_full_path)
+
+    sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
+    data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
+                          columns='name', values='coverage', fill_value=0)
+    pairs = [(c, find_input(c, data.columns)) for c in data.columns if not is_input(c)]
+    scores_minus_scaled_control = diffbind_scores_minus(data, sizes, pairs)
+    scores_tmm_minus_full = \
+        process_tmm(scores_minus_scaled_control, sizes) * float(np.mean(sizes))
+    scores_tmm_minus_full.to_csv(scores_tmm_minus_full_path, sep='\t')
+    print('Saved Diffbind DBA_SCORE_TMM_MINUS_FULL to {}'.format(scores_tmm_minus_full_path))
+    signals_visualize.process(scores_tmm_minus_full_path)
 
 
 def process_tmm(data, sizes):
@@ -235,13 +256,13 @@ def process_tmm(data, sizes):
     return result
 
 
-# DBA_SCORE_TMM_MINUS_FULL
-def diffbind_scores_minus(data, sizes, records):
+def diffbind_scores_minus(data, sizes, pairs):
     """
-    Computes DiffBind score
+    Computes DiffBind score DBA_SCORE_TMM_MINUS_FULL
     See documents on how to compute scores
     https://docs.google.com/document/d/1zH5cw5Zal546xkoFFCVqhhYmf3742efhddz5cqpD9PQ/edit?usp=sharing
     """
+
     def score(cond, cont, s):
         if s > 1:
             s = 1
@@ -252,7 +273,7 @@ def diffbind_scores_minus(data, sizes, records):
         return max(1, cond - cont)
 
     scores = pd.DataFrame()
-    for condition, control, group in records:
+    for condition, control in pairs:
         scale = sizes.loc[condition]['size'] / sizes.loc[control]['size']
         scores[condition] = [score(z[0], z[1], scale) for z in zip(data[condition], data[control])]
     scores.index = data.index
