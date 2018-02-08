@@ -9,12 +9,11 @@ import numpy as np
 import pandas as pd
 from sklearn import preprocessing
 
-from downstream.aging import *
 from downstream.signals import signals_visualize
 from scripts.util import *
 
 
-def process(data_path, sizes_path, peaks_sizes_path, *, processes=4):
+def process(data_path, sizes_path, peaks_sizes_path, *, processes=6):
     pool = multiprocessing.Pool(processes=processes)
     pool.apply_async(raw_normalization,
                      args=(data_path,),
@@ -191,7 +190,8 @@ def diffbind_tmm_reads_effective_cpm(data_path, peaks_sizes_path):
                               index_col='name')
     scores_tmm_reads_effective_cpm = process_tmm(data, peaks_sizes) * 1000000.0
     scores_tmm_reads_effective_cpm.to_csv(scores_tmm_reads_effective_cpm_path, sep='\t')
-    print('Saved Diffbind DBA_SCORE_TMM_READS_EFFECTIVE_CPM to {}'.format(scores_tmm_reads_effective_cpm_path))
+    print('Saved Diffbind DBA_SCORE_TMM_READS_EFFECTIVE_CPM to {}'.format(
+        scores_tmm_reads_effective_cpm_path))
     signals_visualize.process(scores_tmm_reads_effective_cpm_path)
 
 
@@ -212,7 +212,8 @@ def diffbind_tmm_reads_full_cpm(data_path, sizes_path):
                           columns='name', values='coverage', fill_value=0)
     scores_tmm_reads_full_cpm = process_tmm(data, sizes) * 1000000.0
     scores_tmm_reads_full_cpm.to_csv(scores_tmm_reads_full_cpm_path, sep='\t')
-    print('Saved Diffbind DBA_SCORE_TMM_READS_FULL_CPM to {}'.format(scores_tmm_reads_full_cpm_path))
+    print('Saved Diffbind DBA_SCORE_TMM_READS_FULL_CPM to {}'.format(
+        scores_tmm_reads_full_cpm_path))
     signals_visualize.process(scores_tmm_reads_full_cpm_path)
 
 
@@ -231,12 +232,14 @@ def diffbind_tmm_minus_full(data_path, sizes_path):
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
-    pairs = [(c, find_input(c, data.columns)) for c in data.columns if not is_input(c)]
+    pairs = [(c, find_input_name(c, data.columns))
+             for c in data.columns if not is_input(c)]
     scores_minus_scaled_control = diffbind_scores_minus(data, sizes, pairs)
     scores_tmm_minus_full = \
         process_tmm(scores_minus_scaled_control, sizes) * float(np.mean(sizes))
     scores_tmm_minus_full.to_csv(scores_tmm_minus_full_path, sep='\t')
-    print('Saved Diffbind DBA_SCORE_TMM_MINUS_FULL to {}'.format(scores_tmm_minus_full_path))
+    print('Saved Diffbind DBA_SCORE_TMM_MINUS_FULL to {}'.format(
+        scores_tmm_minus_full_path))
     signals_visualize.process(scores_tmm_minus_full_path)
 
 
@@ -275,7 +278,8 @@ def diffbind_scores_minus(data, sizes, pairs):
     scores = pd.DataFrame()
     for condition, control in pairs:
         scale = sizes.loc[condition]['size'] / sizes.loc[control]['size']
-        scores[condition] = [score(z[0], z[1], scale) for z in zip(data[condition], data[control])]
+        scores[condition] = [score(z[0], z[1], scale)
+                             for z in zip(data[condition], data[control])]
     scores.index = data.index
     return scores
 
