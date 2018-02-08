@@ -62,7 +62,7 @@ do :
 cd ${WORK_DIR}
 
 module load bedtools2
-bash ${WASHU_ROOT}/downstream/signals/bam2tagsbw.sh ${BAM} ${FRAGMENT} ${CHROM_SIZES} ${RESULT}
+bash ${WASHU_ROOT}/downstream/signals/bam2tagsbw.sh ${WORK_DIR}/${BAM} ${FRAGMENT} ${CHROM_SIZES} ${RESULT}
 SCRIPT
         echo "FILE: ${WORK}/${BAM}; TASK: ${QSUB_ID}"
         TASKS+=("$QSUB_ID")
