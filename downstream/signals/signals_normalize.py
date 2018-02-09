@@ -8,6 +8,7 @@ import tempfile
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
+from sklearn import linear_model
 
 from downstream.signals import signals_visualize
 from scripts.util import *
@@ -20,6 +21,10 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processes=6):
                      error_callback=error_callback)
     pool.apply_async(rpm_normalization,
                      args=(data_path, sizes_path),
+                     error_callback=error_callback)
+
+    pool.apply_async(ma_normalization,
+                     args=(data_path,),
                      error_callback=error_callback)
 
     pool.apply_async(diffbind_tmm_minus_full,
@@ -114,6 +119,56 @@ def process_z(output, data):
     z_df.index = data.index
     z_df.to_csv(output, sep='\t')
     print('{} to {}'.format('Saved Z', output))
+
+
+def ma_normalization(data_path):
+    """Normalization based on MA plot"""
+    manm_path = re.sub('.tsv', '_manorm.tsv', data_path)
+
+    if os.path.exists(manm_path) :
+        return
+
+    loaded = pd.read_csv(data_path, sep='\t',
+                         names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
+
+    if not processing_chipseq(loaded):
+        return
+
+    print('Processing MA normalization')
+    data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
+                          columns='name', values='coverage', fill_value=0)
+    not_input_columns = [c for c in data.columns if not is_input(c)]
+
+    mean = data[not_input_columns].values.mean(axis=1)
+
+    ma_df = pd.DataFrame()
+    for column in not_input_columns:
+        values = data[column].copy()
+
+        indexes = np.logical_and(values > 0, mean > 0).values
+        x = values[indexes].values
+        y = mean[indexes]
+
+        log_x = np.log(x)
+        log_y = np.log(y)
+
+        m = log_x - log_y
+        a = 0.5 * (log_x + log_y)
+
+        regr = linear_model.LinearRegression()
+        a_rs = a.reshape((len(a), 1))
+        regr.fit(a_rs, m)
+        m_pred = regr.predict(a_rs)
+
+        x_new = np.exp(log_x - m_pred)
+
+        values[indexes] = x_new
+
+        ma_df[column] = values
+
+    ma_df.to_csv(manm_path, sep='\t')
+    print('{} to {}'.format('Saved MA normalized', manm_path))
+    signals_visualize.process(manm_path)
 
 
 def frip_normalization(data_path, sizes_path, peaks_sizes_path):
