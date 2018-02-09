@@ -36,7 +36,7 @@ def pca_signal(signal):
     return pca, x_r
 
 
-def signal_pca_plot(signal, title, ax, groups):
+def signal_pca_plot(signal, title, ax, groups=None):
     columns = signal.columns
     if groups is None:
         groups = [group(d) for d in columns]
