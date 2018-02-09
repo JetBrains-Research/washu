@@ -42,6 +42,11 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True):
     df = pd.read_csv(str(path),
                      sep="," if path.suffix == ".csv" else "\t")
 
+    if len(df) < 2:
+        # cannot do PCA here
+        print("[IGNORED] Not enough features {} < 2 in {}".format(len(df), path))
+        return 1, None
+
     ##################################################
     # Make ODS, YDS groups even length for simplicity:
     ods = [c for c in df.columns if is_od(c)]
