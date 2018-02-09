@@ -15,7 +15,10 @@ def test_is_yd():
     ("foo.OD17.boo", "OD17"),
     ("foo.YD17.boo", "YD17"),
     ("foo.OD_OD5.boo", "OD5"),
-    ("foo.ODS.boo", None),
+    ("foo.ODS.boo", "foo.ODS.boo"),
+    ("bar/foo.ODS.boo", "foo.ODS.boo"),
+    ("foo/od17.boo", "od17"),
+    ("CD14_GSM1003564_k27me3", "GSM1003564"),
 ])
 def test_age(value, expected):
     assert aging.donor(value) == expected

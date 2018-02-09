@@ -31,7 +31,12 @@ def group(c):
 def donor(c):
     name = re.sub('.*/', '', str(c))
     match = re.search('[yo]d\\d+', name, flags=re.IGNORECASE)
-    return name if not match else match.group(0)
+    if match is not None:
+        return match.group(0)
+    match = re.search('gsm\\d+', name, flags=re.IGNORECASE)
+    if match is not None:
+        return match.group(0)
+    return name
 
 
 def regions_extension(c):

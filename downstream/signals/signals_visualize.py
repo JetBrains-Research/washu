@@ -36,9 +36,10 @@ def pca_signal(signal):
     return pca, x_r
 
 
-def signal_pca_plot(signal, title, ax):
+def signal_pca_plot(signal, title, ax, groups):
     columns = signal.columns
-    groups = [group(d) for d in columns]
+    if groups is None:
+        groups = [group(d) for d in columns]
     pca, x_r = pca_signal(signal)
 
     y = [0 if g == YOUNG else 1 for g in groups]
@@ -65,8 +66,10 @@ def signal_pca_plot(signal, title, ax):
     pc2_var = 0.0 if math.isnan(var2) else int(var2 * 100)
     ax.set_xlabel('PC1 {}%'.format(pc1_var))
     ax.set_ylabel('PC2 {}%'.format(pc2_var))
-
-    ax.set_title('{} error: {}'.format(title, error))
+    if error is not None:
+        ax.set_title('{} error: {}'.format(title, error))
+    else:
+        ax.set_title(title)
     return error
 
 
