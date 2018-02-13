@@ -81,14 +81,6 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
     donors = sorted(ods + yds)
     signal = df.loc[:, donors]
 
-    n_nans = len(np.where(np.isnan(signal))[0])
-    n_infs = len(np.where(np.isinf(signal))[0])
-    if n_nans or n_infs:
-        # cannot do PCA here
-        print("[IGNORED] Signal contains Inf({}) or NaN({}) values, PCA will fail. "
-              "File: {}".format(n_infs, n_nans, path))
-        return path, 1, None
-
     pca, x_r = pca_signal(signal)
     actual_error = pca_separation_fit_error(x_r,
                                             [0 if is_yd(d) else 1 for d in donors])
