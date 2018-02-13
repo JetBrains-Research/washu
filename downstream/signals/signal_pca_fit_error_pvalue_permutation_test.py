@@ -68,7 +68,7 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
 
     if len(df) < 2:
         # cannot do PCA here
-        print("[IGNORED] Not enough features {} < 2 in {}".format(len(df), path))
+        print("[IGNORED] Not enough features {} < 2 in {}".format(len(df), path), flush=True)
         return path, 1, None
 
     ##################################################
@@ -81,6 +81,14 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
     donors = sorted(ods + yds)
     signal = df.loc[:, donors]
 
+    n_nans = len(np.where(np.isnan(signal))[0])
+    n_infs = len(np.where(np.isinf(signal))[0])
+    if n_nans or n_infs:
+        # cannot do PCA here
+        print("[IGNORED] Signal contains Inf({}) or NaN({}) values, PCA will fail. "
+              "File: {}".format(n_infs, n_nans, path))
+        return path, 1, None
+
     pca, x_r = pca_signal(signal)
     actual_error = pca_separation_fit_error(x_r,
                                             [0 if is_yd(d) else 1 for d in donors])
@@ -92,7 +100,7 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
                 donors, x_r, simulations, actual_error, opt_by_pvalue_cutoff
             )
             # TODO: cleanup?
-            print("[{}] fake pvalue: {}".format(path.name, fake_pvalue))
+            print("[{}] fake pvalue: {}. No path: {}".format(path.name, fake_pvalue, rnd_results_path))
         else:
             fake_pvalue = False
             assert not opt_by_pvalue_cutoff,  \
