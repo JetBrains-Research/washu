@@ -13,7 +13,7 @@ def extract_normalization(path: Path):
 
 
 def extract_datatype(path: Path):
-    matches = re.match(".*/(H[a-z0-9]+)/.*", str(path), re.IGNORECASE)
+    matches = re.match(".*/(H[0-9]+K[a-z0-9]+)/.*", str(path), re.IGNORECASE)
 
     if matches:
         return matches.group(1)
