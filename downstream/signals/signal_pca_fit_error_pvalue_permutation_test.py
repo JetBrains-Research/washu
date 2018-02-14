@@ -192,17 +192,22 @@ def _cli():
                         type=int, default=4)
     parser.add_argument('-n', help="Simulations number to calculated pvalue", type=int,
                         default=100*1000)
-    # TODO: rename arg
+
     parser.add_argument('--opt_max_pvalues',
-                        help="Optimize permutation test so as to find no more than desired max "
-                             "pvalues number. Simulations for pvalues which are predicted to be "
-                             "above threshold will be stop and pvalue set to 1. Could be useful "
+                        help="Optimize permutation test so as to stop permutation test if pvalue "
+                             "will not pass a threshold. By default p-values threshold is:"
+                             "0.05 * opt_max_pvalues / hypothesis number. This threshold expects "
+                             "to return <= opt_max_pvalues values passing FDR 0.05. All p-values "
+                             "which won't pass the threshold are changed to 1.0. Could be useful "
                              "when default permutation test works too long. By default is turned "
                              "off.",
                         type=int,
                         default=None)
     parser.add_argument('--fdr', help="Perform FDR control", action="store_true")
     parser.add_argument('--verbose', help="Detailed logging", action="store_true")
+    parser.add_argument('--plots', help="Plot PCA classification error distribution for "
+                                        "each loci",
+                        action="store_true")
     parser.add_argument("--filter", metavar="SUBSTRINGS",
                         help="Comma separated file names filters.")
 
@@ -215,6 +220,7 @@ def _cli():
     filters = [] if not args.filter else [s.strip() for s in args.filter.split(",")]
     opt_max_pvalues = args.opt_max_pvalues
     verbose = args.verbose
+    plots = args.plots
 
     print("Threads: {}, seed: {}, simulations: {}".format(threads, seed, simulations))
 
@@ -227,7 +233,7 @@ def _cli():
     process(paths,
             str(root / "report.permutation_pvalue.{}.csv".format(simulations)),
             seed, simulations, threads, fdr, opt_fdr=0.1, opt_max_pvalues=opt_max_pvalues,
-            verbose=verbose)
+            verbose=verbose, plot_simulations=plots)
 
 
 def process(paths: List[Path], output_path: str, seed: int, simulations: int, threads: int,
