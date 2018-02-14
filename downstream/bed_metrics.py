@@ -43,7 +43,7 @@ def _try_parse_stdout(func, stdout, stderr):
 def run_metric_intersection(a, b, *args, **kw):
     """
     Metric intersection (#1):
-        (wc -l $a) / (bedtools intersect -a $a -b $b -wa | uniq | wc -l)
+        (bedtools intersect -a $a -b $b -wa | uniq | wc -l) / (wc -l $a)
 
     :param a: A.bed
     :param b: B.bed
