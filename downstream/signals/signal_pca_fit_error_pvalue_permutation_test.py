@@ -193,6 +193,7 @@ def _cli():
                              "off.",
                         type=int,
                         default=None)
+    parser.add_argument('--pvalue-thr', help="Custom p-value threshold", type=float)
     parser.add_argument('--fdr', help="Perform FDR control", action="store_true")
     parser.add_argument('--verbose', help="Detailed logging", action="store_true")
     parser.add_argument('--plots', help="Plot PCA classification error distribution for "
@@ -211,6 +212,7 @@ def _cli():
     opt_max_pvalues = args.opt_max_pvalues
     verbose = args.verbose
     plots = args.plots
+    pvalue_threshold = args.pvalue_thr
 
     print("Threads: {}, seed: {}, simulations: {}".format(threads, seed, simulations))
 
@@ -222,13 +224,13 @@ def _cli():
 
     process(paths,
             str(root / "report.permutation_pvalue.{}.csv".format(simulations)),
-            seed, simulations, threads, fdr, opt_fdr=0.1, opt_max_pvalues=opt_max_pvalues,
-            verbose=verbose, plot_simulations=plots)
+            seed, simulations, threads, fdr, opt_max_pvalues=opt_max_pvalues,
+            verbose=verbose, plot_simulations=plots, pvalue_threshold=pvalue_threshold)
 
 
 def process(paths: List[Path], output_path: str, seed: int, simulations: int, threads: int,
             fdr: bool, opt_fdr=0.1, opt_max_pvalues=None, verbose=False,
-            plot_simulations=True):
+            plot_simulations=True, custom_pvalue_threshold=None):
 
     started_ts = datetime.datetime.now()
     print("[{}] Starting..".format(started_ts.strftime('%Y-%m-%d %H:%M:%S')))
@@ -247,7 +249,8 @@ def process(paths: List[Path], output_path: str, seed: int, simulations: int, th
         # So if we fix 'k' as max desired results number, we can estimate pvalue cutoff.
         # If we consider stricter FDR this cutoff wan't affect results. So let's take
         # rather weak FDR, e.g. 0.05 or 0.1
-        pval_cutoff = opt_fdr * opt_max_pvalues / len(paths)
+        pval_cutoff = custom_pvalue_threshold if custom_pvalue_threshold \
+            else 0.05 * opt_max_pvalues / len(paths)
         print("P-value cutoff: ", pval_cutoff)
 
         # parallelize by loci
