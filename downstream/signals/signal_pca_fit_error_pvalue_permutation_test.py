@@ -159,23 +159,13 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
 def _pvalue(actual_error, errors, pvalue_cutoff, simulations):
     # hack not to get zero pvalue: pvalue = (better_errors number + 1) / (simulations number + 1)
 
-    #TODO (n_better_errors + 1) / (simulations + 1) ? pvalue_cutoff
-    #TODO pvalue_cutoff * (simulations + 1) - 1 = max_better_values
-    #TODO
-    #TODO
-
-    if pvalue_cutoff is None:
-        max_better_errors = simulations
-    else:
-        # Max allowed better results to get final pvalue
-        max_better_errors = (simulations + 1) * pvalue_cutoff - 1
-
     n_better_errors = sum(1 for e in errors if e <= actual_error)
-    if n_better_errors > max_better_errors:
-        # Do not care about particular value above threshold in terms of further B-H FDR control
+    pvalue = (n_better_errors + 1) / (simulations + 1)
+
+    if pvalue_cutoff and (pvalue > pvalue_cutoff):
         return None
-    else:
-        return (n_better_errors + 1) / (len(errors) + 1)
+
+    return pvalue
 
 
 def _cli():
