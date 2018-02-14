@@ -225,12 +225,13 @@ def _cli():
     process(paths,
             str(root / "report.permutation_pvalue.{}.csv".format(simulations)),
             seed, simulations, threads, fdr, opt_max_pvalues=opt_max_pvalues,
-            verbose=verbose, plot_simulations=plots, pvalue_threshold=pvalue_threshold)
+            verbose=verbose, plot_simulations=plots,
+            custom_pvalue_threshold=pvalue_threshold)
 
 
 def process(paths: List[Path], output_path: str, seed: int, simulations: int, threads: int,
-            fdr: bool, opt_fdr=0.1, opt_max_pvalues=None, verbose=False,
-            plot_simulations=True, custom_pvalue_threshold=None):
+            fdr: bool, opt_max_pvalues=None, verbose=False, plot_simulations=True,
+            custom_pvalue_threshold=None):
 
     started_ts = datetime.datetime.now()
     print("[{}] Starting..".format(started_ts.strftime('%Y-%m-%d %H:%M:%S')))
