@@ -4,6 +4,7 @@ from multiprocessing import Pool
 from typing import List
 from itertools import chain
 import math
+import datetime
 
 from pathlib import Path
 import pandas as pd
@@ -29,13 +30,11 @@ def _random_split_error(donors, x_r):
 
 
 def _multiple_random_split_error(donors, x_r, simulations, actual_error,
-                                 opt_by_pvalue_cutoff):
+                                 opt_by_pvalue_cutoff, verbose):
     if not opt_by_pvalue_cutoff:
         return ([_random_split_error(donors, x_r) for _i in range(simulations)], False)
     else:
         res = []
-        # TODO!!!!!: cleanup
-        print("!!!! Opt cutoff ", opt_by_pvalue_cutoff)
         was_aborted = False
         # Check pvalue according threshold every 1000 simulations:
         chunk_size = 1000
@@ -47,14 +46,16 @@ def _multiple_random_split_error(donors, x_r, simulations, actual_error,
                 # stop, no sense go further!
                 was_aborted = True
                 break
-            else:
+            elif verbose:
                 print("###", len(res), pvalue, pvalue * len(res), ":", (simulations + 1) *
                       opt_by_pvalue_cutoff - 1)
 
         return (res, was_aborted)
 
 
-def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=None, plot=True):
+def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=None,
+             plot=True, verbose=True):
+
     # In case of 14 ODS, 14 YDS we expect about C[14,7]*C[14,7]/2 different
     # separation in random groups 'OY vs OY' contained 7 ODS and 7 YDS donors
     # Also C[14,7]/2 for "O vs O" and "Y vs Y"
@@ -89,10 +90,10 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
     if not rnd_results_path.exists():
         if threads == 1:
             rnd_results, fake_pvalue = _multiple_random_split_error(
-                donors, x_r, simulations, actual_error, opt_by_pvalue_cutoff
+                donors, x_r, simulations, actual_error, opt_by_pvalue_cutoff, verbose
             )
-            # TODO: cleanup?
-            print("[{}] fake pvalue: {}. No path: {}".format(path.name, fake_pvalue, rnd_results_path))
+            if verbose:
+                print("[{}] fake pvalue: {}".format(path.name, fake_pvalue))
         else:
             fake_pvalue = False
             assert not opt_by_pvalue_cutoff,  \
@@ -106,7 +107,7 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
 
             with Pool(processes=threads) as pool:
                 tasks = [pool.apply_async(_multiple_random_split_error,
-                                          (donors, x_r, e - s, actual_error, None))
+                                          (donors, x_r, e - s, actual_error, None, verbose))
                          for s, e in chunks]
                 rnd_results = list(
                     chain(*(task.get(timeout=3600*timeout_hours)[0] for task in tasks))
@@ -116,12 +117,6 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
         if not fake_pvalue:
             pd.DataFrame.from_dict({"error": rnd_results}).to_csv(
                 str(rnd_results_path),
-                index=None
-            )
-        else:
-            # TODO cleanup
-            pd.DataFrame.from_dict({"error": rnd_results}).to_csv(
-                str(rnd_results_path.with_name(rnd_results_path.stem + "_fake.csv")),
                 index=None
             )
 
@@ -135,16 +130,17 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
     if pvalue is None:
         pvalue = 1.0
 
-    rr = np.asarray(rnd_results)
-    print("[ACTUAL]: {}, [SIMUL]: [min, max] = [{}, {}], [2%, 98%] = [{}, {}]; 50% = {}, "
-          "p-value: {}".format(actual_error, np.min(rr), np.max(rr),
-                               np.percentile(rr, 2), np.percentile(rr, 98), np.percentile(rr, 50),
-                               pvalue)
-          )
+    if verbose:
+        rr = np.asarray(rnd_results)
+        print("[ACTUAL]: {}, [SIMUL]: [min, max] = [{}, {}], [2%, 98%] = [{}, {}]; 50% = {}, "
+              "p-value: {}".format(actual_error, np.min(rr), np.max(rr),
+                                   np.percentile(rr, 2), np.percentile(rr, 98),
+                                   np.percentile(rr, 50), pvalue)
+              )
 
     if plot:
-        plt.hist(rr)
-        plt.title("Pvalue for {} random groups = {}".format(len(rr), pvalue))
+        plt.hist(np.asarray(rnd_results))
+        plt.title("Pvalue for {} random groups = {}".format(len(rnd_results), pvalue))
         plt.axvline(x=actual_error, color="red", label="ODS vs YDS error", linestyle="--",
                     linewidth=0.9)
         plt.xlabel("PCA classification error")
@@ -152,6 +148,10 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
 
         plt.savefig(str(path.with_suffix(".permutations.pvalue.{}.png".format(simulations))))
         plt.close()
+
+    if not verbose:
+        # print progress
+        print('.', end="")
 
     return path, pvalue, actual_error
 
@@ -202,6 +202,7 @@ def _cli():
                         type=int,
                         default=None)
     parser.add_argument('--fdr', help="Perform FDR control", action="store_true")
+    parser.add_argument('--verbose', help="Detailed logging", action="store_true")
     parser.add_argument("--filter", metavar="SUBSTRINGS",
                         help="Comma separated file names filters.")
 
@@ -213,6 +214,7 @@ def _cli():
     fdr = args.fdr
     filters = [] if not args.filter else [s.strip() for s in args.filter.split(",")]
     opt_max_pvalues = args.opt_max_pvalues
+    verbose = args.verbose
 
     print("Threads: {}, seed: {}, simulations: {}".format(threads, seed, simulations))
 
@@ -224,11 +226,16 @@ def _cli():
 
     process(paths,
             str(root / "report.permutation_pvalue.{}.csv".format(simulations)),
-            seed, simulations, threads, fdr, opt_max_pvalues=opt_max_pvalues)
+            seed, simulations, threads, fdr, opt_fdr=0.1, opt_max_pvalues=opt_max_pvalues,
+            verbose=verbose)
 
 
 def process(paths: List[Path], output_path: str, seed: int, simulations: int, threads: int,
-            fdr: bool, opt_fdr=0.1, opt_max_pvalues=None):
+            fdr: bool, opt_fdr=0.1, opt_max_pvalues=None, verbose=False,
+            plot_simulations=True):
+
+    started_ts = datetime.datetime.now()
+    print("[{}] Starting..".format(started_ts.strftime('%Y-%m-%d %H:%M:%S')))
 
     if seed is not None:
         rnd.seed(seed)  # is actual for tests in single thread mode
@@ -245,34 +252,44 @@ def process(paths: List[Path], output_path: str, seed: int, simulations: int, th
         # If we consider stricter FDR this cutoff wan't affect results. So let's take
         # rather weak FDR, e.g. 0.05 or 0.1
         pval_cutoff = opt_fdr * opt_max_pvalues / len(paths)
+        print("P-value cutoff: ", pval_cutoff)
 
         # parallelize by loci
         with Pool(processes=threads) as pool:
-            tasks = [pool.apply_async(_process, (p, simulations, 1, pval_cutoff)) for p in paths]
+            tasks = [pool.apply_async(_process,
+                                      (p, simulations, 1, pval_cutoff),
+                                      dict(plot=plot_simulations, verbose=verbose))
+                     for p in paths]
             results = list(task.get(timeout=3600*timeout_hours) for task in tasks)
     else:
         # parallelize by simulations
+        progress_step = n_paths // (100/5)  # every 5%
         for i, path in enumerate(paths, 1):
-            print("--- [{} / {}] -----------".format(i, n_paths))
-            print("Process:", path)
-            results.append(_process(path, simulations, threads, opt_by_pvalue_cutoff=None))
+            if verbose:
+                print("[{} / {}] Process: {}".format(i, n_paths, path))
+
+            results.append(_process(
+                path, simulations, threads, opt_by_pvalue_cutoff=None, plot=plot_simulations,
+                verbose=verbose
+            ))
+
+            if not verbose and (i % progress_step == 0):
+                print("  {}%", i // progress_step)
 
     records = []
-    # TODO: cleanup
-    print("!!!!", type(results))
-    print("!!!!", results)
+
     for (path, pvalue, actual_error) in results:
         norm = extract_normalization(path)
         dtype = extract_datatype(path)
         records.append((dtype, str(path.parent), norm, actual_error, pvalue))
 
+    finished_ts = datetime.datetime.now()
+    print("[{}] Pvalues calculated in {} s".format(finished_ts.strftime('%Y-%m-%d %H:%M:%S'),
+                                                   finished_ts - started_ts))
+
     # sort by pvalue
     records.sort(key=lambda v: v[-1])
     if len(paths) > 1:
-        print("====================")
-        for i, (_mod, path, norm, actual_error, pvalue) in enumerate(records, 1):
-            print("{}. {}: {} [{}] {}".format(i, pvalue, actual_error, norm, path))
-
         df = pd.DataFrame.from_records(
             records,
             columns=["modification", "file", "normalization", "error", "pvalue"]
