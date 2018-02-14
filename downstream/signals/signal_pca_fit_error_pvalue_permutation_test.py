@@ -151,7 +151,7 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
 
     if not verbose:
         # print progress
-        print('.', end="")
+        print('.', end="", flush=True)
 
     return path, pvalue, actual_error
 
