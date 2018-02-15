@@ -40,8 +40,10 @@ for WORK_DIR in ${WORK_DIRS}; do :
         NAME=${FILE%%.bam} # file name without extension
         ID=${NAME}_${SUFFIX}
 
-        # Submit task
-        run_parallel << SCRIPT
+        PEAKS_FILE=$(find . -name "${ID}*.*Peak")
+        if [[ -z ${PEAKS_FILE} ]]; then
+            # Submit task
+            run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N macs2_${WORK_DIR_NAME}_${ID}
 #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
@@ -75,8 +77,9 @@ fi
 bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${ID}*.*Peak
 SCRIPT
 
-        echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
-        TASKS+=("$QSUB_ID")
+            echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
+            TASKS+=("$QSUB_ID")
+        fi
     done
 done
 wait_complete ${TASKS[@]}
