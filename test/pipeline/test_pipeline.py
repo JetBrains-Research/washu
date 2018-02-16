@@ -68,10 +68,6 @@ def test_bam_qc():
     check_files("fastq_bams/qc/*.pdf", 6)
 
 
-def test_unique_tags_bws():
-    check_files("signals/*.bw", 6)
-
-
 def test_rpkm_step():
     check_files("fastq_bams_rpkms/*.bw", 6)
 
@@ -142,8 +138,10 @@ def test_signals():
           os.path.expanduser("~/data/regions.bed")])
 
     # And check
+    check_files("signals/150/*.bw", 6)
+    check_files("signals/150/tags_bw_logs/*.log", 6)
     check_files("signals/150/hg19.chrom.sizes.tsv", 1)
+    check_files("signals/150/regions_tsv.log", 1)
     check_files("signals/150/regions/*_signal.log", 1)
-    check_files("signals/150/regions/bw_signals_*.log", 1)
     check_files("signals/150/regions/regions.tsv", 1)
     check_files("signals/150/regions/regions_raw.tsv", 1)
