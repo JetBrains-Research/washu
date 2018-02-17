@@ -41,14 +41,14 @@ def pca_signal(signal):
     return pca, x_r
 
 
-def signal_pca_plot(signal, title, ax, groups=None):
+def signal_pca_plot(signal, title, ax, *, groups=None, show_error=True):
     columns = signal.columns
     if groups is None:
         groups = [group(d) for d in columns]
     pca, x_r = pca_signal(signal)
 
     y = [0 if g == YOUNG else 1 for g in groups]
-    if len(set(y)) > 1:
+    if show_error and len(set(y)) > 1:
         error = pca_separation_fit_error(x_r, y)
     else:
         error = None
