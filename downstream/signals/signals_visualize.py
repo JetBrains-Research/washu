@@ -6,6 +6,7 @@ from enum import Enum
 import matplotlib
 import numpy as np
 import pandas as pd
+from sklearn import preprocessing
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 
@@ -35,7 +36,8 @@ def pca_signal(signal):
     # such values otherwise PCA will fail
     with pd.option_context('mode.use_inf_as_null', True):
         df = signal.dropna(how="any", axis=0).T
-
+    # Use scaled PCA anyway
+    df = preprocessing.scale(df)
     pca = PCA(n_components=2)
     x_r = pca.fit_transform(df)
     return pca, x_r
