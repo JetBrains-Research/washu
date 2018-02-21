@@ -66,7 +66,6 @@ def signal_pca_plot(signal, title, ax, *, groups=None, show_error=True):
                     textcoords='offset points',
                     ha='right', va='bottom')
     (var1, var2) = pca.explained_variance_ratio_
-    var2 = pca.explained_variance_ratio_[0]
     pc1_var = 0.0 if math.isnan(var1) else int(var1 * 100)
     pc2_var = 0.0 if math.isnan(var2) else int(var2 * 100)
     ax.set_xlabel('PC1 {}%'.format(pc1_var))
