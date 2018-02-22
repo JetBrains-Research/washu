@@ -31,7 +31,7 @@ def pca_separation_fit_error(x_r, y):
     return error
 
 
-def pca_signal(signal, *, scale=True):
+def pca_signal(signal, scale):
     # Data may contain "Inf" or "NaN" values for some rages, let's just skip
     # such values otherwise PCA will fail
     with pd.option_context('mode.use_inf_as_null', True):
@@ -44,11 +44,12 @@ def pca_signal(signal, *, scale=True):
     return pca, x_r
 
 
-def signal_pca_plot(signal, title, ax, *, groups=None, show_error=True):
+def signal_pca_plot(signal, title, ax, *,
+                    scale=True, groups=None, show_error=True, show_names=True):
     columns = signal.columns
     if groups is None:
         groups = [group(d) for d in columns]
-    pca, x_r = pca_signal(signal)
+    pca, x_r = pca_signal(signal, scale)
 
     y = [0 if g == YOUNG else 1 for g in groups]
     if show_error and len(set(y)) > 1:
@@ -62,7 +63,7 @@ def signal_pca_plot(signal, title, ax, *, groups=None, show_error=True):
                    color=g.color, alpha=.8, label=g.name)
 
     for c, g, x, y in zip(columns, groups, x_r[:, 0], x_r[:, 1]):
-        ax.annotate(donor(c),
+        ax.annotate(donor(c) if show_names else '',
                     xy=(x, y),
                     xytext=(5, 0),
                     color=g.color,
