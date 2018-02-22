@@ -65,40 +65,46 @@ require_or_install("stringr")
 #
 # DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM
 # dba.count score is TMM normalized (using edgeR), using ChIP read counts minus Control read counts and Effective Library size, reported in counts-per-million.
-SCORE_FUNCTIONS = c(DBA_SCORE_READS,
-                    DBA_SCORE_READS_MINUS,
-                    DBA_SCORE_READS_FOLD,
-                    DBA_SCORE_RPKM,
-                    DBA_SCORE_RPKM_FOLD,
-                    DBA_SCORE_TMM_READS_FULL,
-                    DBA_SCORE_TMM_READS_EFFECTIVE,
-                    DBA_SCORE_TMM_MINUS_FULL,
-                    DBA_SCORE_TMM_MINUS_EFFECTIVE,
-                    DBA_SCORE_TMM_READS_FULL_CPM,
-                    DBA_SCORE_TMM_READS_EFFECTIVE_CPM,
-                    DBA_SCORE_TMM_MINUS_FULL_CPM,
-                    DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM)
+# SCORE_FUNCTIONS = c(DBA_SCORE_READS,
+#                     DBA_SCORE_READS_MINUS,
+#                     DBA_SCORE_READS_FOLD,
+#                     DBA_SCORE_RPKM,
+#                     DBA_SCORE_RPKM_FOLD,
+#                     DBA_SCORE_TMM_READS_FULL,
+#                     DBA_SCORE_TMM_READS_EFFECTIVE,
+#                     DBA_SCORE_TMM_MINUS_FULL,
+#                     DBA_SCORE_TMM_MINUS_EFFECTIVE,
+#                     DBA_SCORE_TMM_READS_FULL_CPM,
+#                     DBA_SCORE_TMM_READS_EFFECTIVE_CPM,
+#                     DBA_SCORE_TMM_MINUS_FULL_CPM,
+#                     DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM)
 
-SCORE_FUNCTIONS_NAMES =   c('DBA_SCORE_READS',
-                            'DBA_SCORE_READS_MINUS',
-                            'DBA_SCORE_READS_FOLD',
-                            'DBA_SCORE_RPKM',
-                            'DBA_SCORE_RPKM_FOLD',
-                            'DBA_SCORE_TMM_READS_FULL',
-                            'DBA_SCORE_TMM_READS_EFFECTIVE',
-                            'DBA_SCORE_TMM_MINUS_FULL',
-                            'DBA_SCORE_TMM_MINUS_EFFECTIVE',
-                            'DBA_SCORE_TMM_READS_FULL_CPM',
-                            'DBA_SCORE_TMM_READS_EFFECTIVE_CPM',
-                            'DBA_SCORE_TMM_MINUS_FULL_CPM',
-                            'DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM')
+# SCORE_FUNCTIONS_NAMES =   c('DBA_SCORE_READS',
+#                             'DBA_SCORE_READS_MINUS',
+#                             'DBA_SCORE_READS_FOLD',
+#                             'DBA_SCORE_RPKM',
+#                             'DBA_SCORE_RPKM_FOLD',
+#                             'DBA_SCORE_TMM_READS_FULL',
+#                             'DBA_SCORE_TMM_READS_EFFECTIVE',
+#                             'DBA_SCORE_TMM_MINUS_FULL',
+#                             'DBA_SCORE_TMM_MINUS_EFFECTIVE',
+#                             'DBA_SCORE_TMM_READS_FULL_CPM',
+#                             'DBA_SCORE_TMM_READS_EFFECTIVE_CPM',
+#                             'DBA_SCORE_TMM_MINUS_FULL_CPM',
+#                             'DBA_SCORE_TMM_MINUS_EFFECTIVE_CPM')
 
-REMOVE_DUPLICATES = c(TRUE, FALSE)
-INSERT_SIZES = c(125, 150) # Default insertSize
+SCORE_FUNCTIONS = c(DBA_SCORE_TMM_MINUS_FULL)
+SCORE_FUNCTIONS_NAMES =   c('DBA_SCORE_TMM_MINUS_FULL')
+
+# REMOVE_DUPLICATES = c(TRUE, FALSE)
+# INSERT_SIZES = c(125, 150) # Default insertSize
+
+REMOVE_DUPLICATES = c(TRUE)
+INSERT_SIZES = c(125) # Default insertSize
 
 main <- function(path, insertSize) {
-    if (! missing(insertSize) && ! (insertSize %in% INSERT_SIZES)) {
-        INSERT_SIZES = c(insertSize, INSERT_SIZES)
+    if (! missing(insertSize)) {
+        INSERT_SIZES = c(insertSize)
     }
     print(paste("DiffBind version", packageVersion("DiffBind")))
     print(paste("Processing file", path))
@@ -142,7 +148,7 @@ main <- function(path, insertSize) {
                 dev.off()
                 print(peaks_overlap_pdf)
 
-                print(paste('PCA, MA plots', id))
+                print(paste('PCA, MA, Volcano plots', id))
                 pca_pdf = str_replace(path, '.csv', paste('_', id, '_pca.pdf', sep = ''))
                 pdf(file = pca_pdf)
                 dba.plotPCA(yo_contrast)
@@ -154,6 +160,12 @@ main <- function(path, insertSize) {
                 dba.plotMA(yo_contrast)
                 dev.off()
                 print(ma_pdf)
+
+                vlc_pdf = str_replace(path, '.csv', paste('_', id, '_vlc.pdf', sep = ''))
+                pdf(file = vlc_pdf)
+                dba.plotVolcano(yo_contrast)
+                dev.off()
+                print(vlc_pdf)
 
                 print(paste('Save difference to resulting csv file', id))
                 db = dba.report(yo_contrast)
