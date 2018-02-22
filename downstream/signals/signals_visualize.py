@@ -31,13 +31,14 @@ def pca_separation_fit_error(x_r, y):
     return error
 
 
-def pca_signal(signal):
+def pca_signal(signal, *, scale=True):
     # Data may contain "Inf" or "NaN" values for some rages, let's just skip
     # such values otherwise PCA will fail
     with pd.option_context('mode.use_inf_as_null', True):
         df = signal.dropna(how="any", axis=0).T
     # Use scaled PCA anyway
-    df = preprocessing.scale(df)
+    if scale:
+        df = preprocessing.scale(df)
     pca = PCA(n_components=2)
     x_r = pca.fit_transform(df)
     return pca, x_r
