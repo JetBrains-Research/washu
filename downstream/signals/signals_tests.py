@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import scipy
-from scipy.stats import mannwhitneyu
+from scipy.stats import mannwhitneyu, wilcoxon
 from statsmodels.sandbox.stats.multicomp import multipletests
 
 from scripts.util import *
@@ -60,6 +60,7 @@ def stat_test(f, test_name, test, fdr):
 
 def process(path):
     stat_test(path, 'u', mann_whitney, 0.05)
+    stat_test(path, 'w', wilcoxon, 0.05)
     stat_test(path, 't', ttest, 0.05)
 
 
