@@ -7,7 +7,6 @@ import tempfile
 
 import numpy as np
 import pandas as pd
-from sklearn import preprocessing
 from sklearn import linear_model
 
 from downstream.signals import signals_visualize
@@ -50,7 +49,7 @@ def processing_chipseq(loaded):
 
 
 def raw_normalization(data_path):
-    """Raw signal with standard scaling"""
+    """Raw signal with Q scaling"""
     raw_path = re.sub('.tsv', '_raw.tsv', data_path)
     q_path = re.sub('.tsv', '_rawq.tsv', data_path)
     if os.path.exists(raw_path) and os.path.exists(q_path):
