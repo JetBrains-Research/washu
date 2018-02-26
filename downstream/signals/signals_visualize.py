@@ -31,25 +31,26 @@ def pca_separation_fit_error(x_r, y):
     return error
 
 
-def pca_signal(signal, scale):
+def pca_signal(signal):
     # Data may contain "Inf" or "NaN" values for some rages, let's just skip
     # such values otherwise PCA will fail
     with pd.option_context('mode.use_inf_as_null', True):
-        df = signal.dropna(how="any", axis=0).T
-    # Use scaled PCA anyway
-    if scale:
-        df = preprocessing.scale(df)
+        signal = signal.dropna(how="any", axis=0).T
     pca = PCA(n_components=2)
-    x_r = pca.fit_transform(df)
+    x_r = pca.fit_transform(signal)
     return pca, x_r
 
 
 def signal_pca_plot(signal, title, ax, *,
-                    scale=True, groups=None, show_error=True, show_names=True):
+                    scale=False, groups=None, show_error=True, show_names=True):
     columns = signal.columns
     if groups is None:
         groups = [group(d) for d in columns]
-    pca, x_r = pca_signal(signal, scale)
+
+    # Use scaled PCA anyway
+    if scale:
+        signal = preprocessing.scale(signal)
+    pca, x_r = pca_signal(signal)
 
     y = [0 if g == YOUNG else 1 for g in groups]
     if show_error and len(set(y)) > 1:
