@@ -129,19 +129,38 @@ def test_signals():
     for f in glob.glob("{}/*.bam".format(bams_path)):
         call(["bash", "-c", "ln -sf {} {}/".format(f, signals_path)])
 
-    # Call
+    # Process single file
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
           "150",
-          os.path.expanduser("~/data/regions.bed"),
+          os.path.expanduser("/washu/test/testdata/signal/regions.bed"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
-          os.path.expanduser("~/data/regions.bed")])
+          os.path.expanduser("/washu/test/testdata/bed/peaks.bed")])
 
     # And check
     check_files("signals/150/*.bw", 6)
     check_files("signals/150/tags_bw_logs/*.log", 6)
     check_files("signals/150/hg19.chrom.sizes.tsv", 1)
-    check_files("signals/150/regions_tsv.log", 1)
+    check_files("signals/150/peaks.bed.tsv", 1)
+    check_files("signals/150/*_tsv.log", 1)
     check_files("signals/150/regions/*_signal.log", 1)
     check_files("signals/150/regions/regions.tsv", 1)
     check_files("signals/150/regions/regions_raw.tsv", 1)
+    check_files("signals/150/regions/*.tsv", 8)
+    check_files("signals/150/regions/*.png", 7)
+    check_files("signals/150/regions/*_pca_fit_error.csv", 7)
+
+    # Process folder
+    call(["bash", "/washu/downstream/signals/signals.sh",
+          signals_path,
+          "150",
+          os.path.expanduser("/washu/test/testdata/signal"),
+          os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
+          os.path.expanduser("/washu/test/testdata/bed/peaks.bed")])
+
+    # And check
+    check_files("signals/150/a/a1/a1*.tsv", 8)
+    check_files("signals/150/a/a2/a2*.tsv", 8)
+    check_files("signals/150/b/c/c/c*.tsv", 8)
+    check_files("signals/150/b/regions/regions*.tsv", 8)
+    check_files("signals/150/regions/regions*.tsv", 8)

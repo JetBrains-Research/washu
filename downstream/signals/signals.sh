@@ -14,30 +14,23 @@ source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch signals $@"
 if [ $# -lt 4 ]; then
-    echo "Need at least 4 parameters! <WORK_DIR_WITH_BAMS> <FRAGMENT> <REGIONS.BED> <CHROM.SIZES> [<PEAKS_FILE.BED>]"
+    echo "Need at least 4 parameters! <WORK_DIR_WITH_BAMS> <FRAGMENT> <FOLDER or REGIONS.BED> <CHROM.SIZES> [<PEAKS_FILE.BED>]"
     exit 1
 fi
 
 WORK_DIR=$(expand_path $1)
 FRAGMENT=$2
-REGIONS_BED=$(expand_path $3)
 CHROM_SIZES=$(expand_path $4)
 if [[ -f $5 ]]; then
     PEAKS_FILE_BED=$(expand_path $5)
 fi
-
 echo "WORK_DIR: $WORK_DIR"
-echo "REGIONS: $REGIONS_BED"
 echo "CHROM_SIZES: $CHROM_SIZES"
 echo "PEAKS_FILE: $PEAKS_FILE_BED"
-ID=${REGIONS_BED%%.bed};
-ID=${ID##*/};
-RESULTS_FOLDER=${WORK_DIR}/${FRAGMENT}/${ID}
-echo "RESULTS FOLDER: $RESULTS_FOLDER"
-if [[ ! -d "${RESULTS_FOLDER}" ]]; then
-    mkdir -p ${RESULTS_FOLDER}
-fi
 
+########################################################################################################################
+# Prepare BW files
+########################################################################################################################
 echo "Prepare tags BW in ${WORK_DIR}/${FRAGMENT}"
 TAGS_BW_LOGS="${WORK_DIR}/${FRAGMENT}/tags_bw_logs"
 if [[ ! -d "${TAGS_BW_LOGS}" ]]; then
@@ -76,10 +69,12 @@ export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/
 mkdir -p $TMPDIR
 
 # Work in dedicated folder now
-WORK_DIR=${WORK_DIR}/${FRAGMENT}
-cd ${WORK_DIR}
+WORK_DIR_FRAGMENT=${WORK_DIR}/${FRAGMENT}
+cd ${WORK_DIR_FRAGMENT}
 
+########################################################################################################################
 # Function to process all the summary coverages for given file
+########################################################################################################################
 process_coverage()
 {
     _BED4=$1
@@ -94,7 +89,7 @@ process_coverage()
     TASKS=()
     TSVS=()
     LOGS=()
-    cd ${WORK_DIR}
+    cd ${WORK_DIR_FRAGMENT}
     for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
     do :
         NAME=${FILE%%.bw}
@@ -110,7 +105,7 @@ process_coverage()
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=8gb
 #PBS -j oe
 #PBS -o ${LOG}
-cd ${WORK_DIR}
+cd ${WORK_DIR_FRAGMENT}
 bigWigAverageOverBed ${FILE} ${_BED4} ${TSV}
 SCRIPT
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
@@ -140,7 +135,11 @@ SCRIPT
     done
 }
 
-LIBRARIES_SIZES=${WORK_DIR}/${CHROM_SIZES##*/}.tsv
+
+########################################################################################################################
+# Process libraries
+########################################################################################################################
+LIBRARIES_SIZES=${WORK_DIR_FRAGMENT}/${CHROM_SIZES##*/}.tsv
 echo "Compute FULL ${CHROM_SIZES} libraries size ${LIBRARIES_SIZES}"
 if [[ ! -f ${LIBRARIES_SIZES} ]]; then
     # Prepare BED4 region
@@ -156,14 +155,18 @@ if [[ ! -f ${LIBRARIES_SIZES} ]]; then
     done
 fi
 
+
+########################################################################################################################
+# Processing Peaks files
+########################################################################################################################
 if [[ -f ${PEAKS_FILE_BED} ]]; then
-    LIBRARIES_PEAKS_SIZES=${WORK_DIR}/${PEAKS_FILE_BED##*/}.tsv
+    LIBRARIES_PEAKS_SIZES=${WORK_DIR_FRAGMENT}/${PEAKS_FILE_BED##*/}.tsv
     echo "Compute peaks ${PEAKS_FILE_BED} size ${LIBRARIES_PEAKS_SIZES}"
     if [[ ! -f ${LIBRARIES_PEAKS_SIZES} ]]; then
         cat ${PEAKS_FILE_BED} | awk '{printf("%s\t%s\t%s\t%s#%s#%s\n",$1,$2,$3,$1,$2,$3)}' |\
             sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/peaks.sizes.bed4
 
-        process_coverage ${TMPDIR}/peaks.sizes.bed4 "peaks.sizes" ${TMPDIR}/peaks.sizes.tsv ${WORK_DIR}
+        process_coverage ${TMPDIR}/peaks.sizes.bed4 "peaks.sizes" ${TMPDIR}/peaks.sizes.tsv ${WORK_DIR_FRAGMENT}
 
         for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
         do :
@@ -175,21 +178,52 @@ if [[ -f ${PEAKS_FILE_BED} ]]; then
 else
     echo "NO peaks file given"
 fi
-REGIONS_SIZES=${RESULTS_FOLDER}/${ID}.tsv
-if [[ ! -f ${REGIONS_SIZES} ]]; then
-    echo "Compute regions ${REGIONS_BED} coverage ${REGIONS_SIZES}"
-    SHIFT=$(($FRAGMENT / 2))
-    # Here we extend all the regions left and right to FRAGMENT / 2
-    # to ensure that we counted all the intersections between fragments and regions.
-    cat ${REGIONS_BED} |\
-        awk -v S=${SHIFT} '{if ($2-S<1){L=1}else{L=$2-S};R=$3+S;printf("%s\t%s\t%s\t%s#%s#%s\n",$1,L,R,$1,$2,$3)}' |\
-        sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/${ID}.bed4
 
-    process_coverage ${TMPDIR}/${ID}.bed4 ${ID} ${REGIONS_SIZES} ${RESULTS_FOLDER}
+
+########################################################################################################################
+# Processing BED files
+########################################################################################################################
+REGIONS_ARG=$(expand_path $3)
+if [[ -d ${REGIONS_ARG} ]]; then
+    echo "Folder with BED files provided: ${REGIONS_ARG}"
+    REGIONS=$(find ${REGIONS_ARG} -name '*.bed')
+    REGIONS_ROOT=${REGIONS_ARG}
+    echo "REGIONS_ROOT: ${REGIONS_ROOT}"
+else
+    echo "Single BED file provided"
+    REGIONS=( "${REGIONS_ARG}" )
+    REGIONS_ROOT=$(dirname ${REGIONS_ARG})
+    echo "REGIONS_ROOT: ${REGIONS_ROOT}"
 fi
 
-echo "Processing signals normalization and visualization for ${ID}.tsv"
-run_parallel << SCRIPT
+
+for REGIONS_BED in ${REGIONS}; do
+    echo "REGIONS: ${REGIONS_BED}"
+    SUB_PATH=$(dirname ${REGIONS_BED} | sed "s#$REGIONS_ROOT##g")
+    echo "SUB_PATH: ${SUB_PATH}"
+    ID=${REGIONS_BED%%.bed}
+    ID=${ID##*/}
+    RESULTS_FOLDER=${WORK_DIR_FRAGMENT}/${SUB_PATH}/${ID}
+    echo "RESULTS FOLDER: $RESULTS_FOLDER"
+    if [[ ! -d "${RESULTS_FOLDER}" ]]; then
+        mkdir -p ${RESULTS_FOLDER}
+    fi
+
+    REGIONS_SIZES=${RESULTS_FOLDER}/${ID}.tsv
+    if [[ ! -f ${REGIONS_SIZES} ]]; then
+        echo "Compute regions ${REGIONS_BED} coverage ${REGIONS_SIZES}"
+        SHIFT=$(($FRAGMENT / 2))
+        # Here we extend all the regions left and right to FRAGMENT / 2
+        # to ensure that we counted all the intersections between fragments and regions.
+        cat ${REGIONS_BED} |\
+            awk -v S=${SHIFT} '{if ($2-S<1){L=1}else{L=$2-S};R=$3+S;printf("%s\t%s\t%s\t%s#%s#%s\n",$1,L,R,$1,$2,$3)}' |\
+         sort -k1,1 -k3,3n -k2,2n --unique -T $TMPDIR > ${TMPDIR}/${ID}.bed4
+
+        process_coverage ${TMPDIR}/${ID}.bed4 ${ID} ${REGIONS_SIZES} ${RESULTS_FOLDER}
+    fi
+
+    echo "Processing signals normalization and visualization for ${ID}.tsv"
+    run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N signal_${ID}
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=16gb
@@ -203,12 +237,14 @@ fi
 cd ${RESULTS_FOLDER}
 python ${WASHU_ROOT}/downstream/signals/signals_normalize.py ${REGIONS_SIZES} ${LIBRARIES_SIZES} ${LIBRARIES_PEAKS_SIZES}
 SCRIPT
-wait_complete $QSUB_ID
+    wait_complete $QSUB_ID
 
-cd ${RESULTS_FOLDER}
-check_logs
+    cd ${RESULTS_FOLDER}
+    check_logs
+done
 
-# TMP dir cleanup:
+
+# Cleanup
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 
 >&2 echo "Done. Batch signals $@"
