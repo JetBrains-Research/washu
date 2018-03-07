@@ -6,10 +6,8 @@ This is just an image `continuumio/miniconda` with test data from
 
 Build
 -----
-To build you have to copy file `washu_test_data.tar.gz` to folder with this image.
-
 ```bash
-# Copy test data to folder with Docker file
+# Create .tar.gz with test data
 tar -cvzf washu_test_data.tar.gz -C /mnt/stripe/ washu_test_data
 
 # Build Docker
@@ -33,19 +31,11 @@ docker push biolabs/test-data
 
 Test data
 ---------
-
-* `data` - test data for random scripts in tools in `/scripts` folder
-* `fastq` - 4 k4me3 fastq files limited to chr22
-* `index` - indices for hg19 genome limiter to chr22
+* `fastq` - fastq files (chr22)
+* `index` - indices for hg19 genome (chr22)
 ```
 > tree washu_test_data
 washu_test_data/
-├── data
-│   ├── bam2tags.bdg
-│   ├── bam2tags.tag
-│   ├── reads.bed
-│   ├── regions.bed
-│   └── regions_raw.tsv
 ├── fastq
 │   ├── OD1_k4me3.fq
 │   ├── OD3_k4me3.fq
