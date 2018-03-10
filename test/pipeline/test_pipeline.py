@@ -120,35 +120,35 @@ def test_signals():
         shutil.rmtree("fastq_bams_bws/regions")
 
     # Create signals folder
-    signals_path = os.path.expanduser("~/signals")
+    signals_path = os.path.expanduser("~/signals/H3K4me3")
     if not os.path.exists(signals_path):
-        os.mkdir(signals_path)
+        os.makedirs(signals_path)
 
     # Create symbolic links for BAMs
     bams_path = os.path.expanduser("~/fastq_bams")
-    for f in glob.glob("{}/*.bam".format(bams_path)):
-        call(["bash", "-c", "ln -sf {} {}/".format(f, signals_path)])
+    for r in glob.glob("{}/*.bam".format(bams_path)):
+        call(["bash", "-c", "ln -sf {} {}/".format(r, signals_path)])
 
     # Process single file
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
-          "150",
+          "120",
           os.path.expanduser("/washu/test/testdata/signal/regions.bed"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
           os.path.expanduser("/washu/test/testdata/bed/peaks.bed")])
 
     # And check
-    check_files("signals/150/*.bw", 6)
-    check_files("signals/150/tags_bw_logs/*.log", 6)
-    check_files("signals/150/hg19.chrom.sizes.tsv", 1)
-    check_files("signals/150/peaks.bed.tsv", 1)
-    check_files("signals/150/*_tsv.log", 1)
-    check_files("signals/150/regions/*_signal.log", 1)
-    check_files("signals/150/regions/regions.tsv", 1)
-    check_files("signals/150/regions/regions_raw.tsv", 1)
-    check_files("signals/150/regions/*.tsv", 8)
-    check_files("signals/150/regions/*.png", 7)
-    check_files("signals/150/regions/*_pca_fit_error.csv", 7)
+    check_files(signals_path + "/120/*.bw", 6)
+    check_files(signals_path + "/120/tags_bw_logs/*.log", 6)
+    check_files(signals_path + "/120/hg19.chrom.sizes.tsv", 1)
+    check_files(signals_path + "/120/peaks.bed.tsv", 1)
+    check_files(signals_path + "/120/*_tsv.log", 1)
+    check_files(signals_path + "/120/regions/*_signal.log", 1)
+    check_files(signals_path + "/120/regions/regions.tsv", 1)
+    check_files(signals_path + "/120/regions/regions_raw.tsv", 1)
+    check_files(signals_path + "/120/regions/*.tsv", 8)
+    check_files(signals_path + "/120/regions/*.png", 7)
+    check_files(signals_path + "/120/regions/*_pca_fit_error.csv", 7)
 
     # Process folder
     call(["bash", "/washu/downstream/signals/signals.sh",
@@ -159,8 +159,21 @@ def test_signals():
           os.path.expanduser("/washu/test/testdata/bed/peaks.bed")])
 
     # And check
-    check_files("signals/150/a/a1/a1*.tsv", 8)
-    check_files("signals/150/a/a2/a2*.tsv", 8)
-    check_files("signals/150/b/c/c/c*.tsv", 8)
-    check_files("signals/150/b/regions/regions*.tsv", 8)
-    check_files("signals/150/regions/regions*.tsv", 8)
+    check_files(signals_path + "/150/a/a1/a1*.tsv", 8)
+    check_files(signals_path + "/150/a/a2/a2*.tsv", 8)
+    check_files(signals_path + "/150/b/c/c/c*.tsv", 8)
+    check_files(signals_path + "/150/b/regions/regions*.tsv", 8)
+    check_files(signals_path + "/150/regions/regions*.tsv", 8)
+
+    # Create and check report
+    report_path = os.path.expanduser("~/signals/report.tsv")
+    with open(report_path, 'w') as r:
+        call(["bash", "/washu/downstream/signals/signals_report.sh",
+              os.path.expanduser("~/signals")], stdout=r)
+    check_files(report_path, 1)
+    lines = {line.rstrip('\n') for line in open(report_path)}
+    assert 'H3K4me3\t150\tb/c/c\tfripm_1kbp\t0' in lines
+    assert 'H3K4me3\t150\ta/a1\trawq\t0' in lines
+    assert 'H3K4me3\t120\tregions\traw\t1' in lines
+    assert len(lines) == 43
+

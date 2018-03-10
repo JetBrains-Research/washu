@@ -18,11 +18,13 @@ T=$'\t';
 echo "modification${T}fragment${T}file${T}normalization${T}e"
 for F in $(find . -name "*_pca_fit_error.csv"); do
     IFS='/' read -ra CHUNKS <<< "$F"
+    L=${#CHUNKS[@]}
     MODIFICATION=${CHUNKS[1]}
     FRAGMENT=${CHUNKS[2]}
-    FOLDER=${CHUNKS[3]}
-    FILE=${CHUNKS[4]}
-    NORMALIZATION=$(echo "$FILE" | sed 's#_pca_fit_error.csv##g' | sed "s#${FOLDER}_##g" | sed "s#.*\]_##g")
+    ID=${CHUNKS[$(($L - 2))]}
+    FILE=${CHUNKS[$(($L - 1))]}
+    FOLDER=$(echo "$F" | sed "s#.*/${MODIFICATION}/${FRAGMENT}/##g" | sed "s#/${FILE}##g")
+    NORMALIZATION=$(echo "$FILE" | sed 's#_pca_fit_error.csv##g' | sed "s#${ID}_##g" | sed "s#.*\]_##g")
     ERROR=$(cat $F)
     echo "$MODIFICATION$T$FRAGMENT$T$FOLDER$T$NORMALIZATION$T$ERROR"
 done
