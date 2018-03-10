@@ -3,11 +3,9 @@ FROM biolabs/test-data
 USER root
 # Fix default shell for CONDA source activate command.
 RUN ln -snf /bin/bash /bin/sh
-RUN apt-get update
 
 # Essential development tools and headers
-RUN apt-get install --yes build-essential libgl1-mesa-dev bc unzip quota libssl-dev \
-libboost-dev curl libssh2-1-dev libcurl4-openssl-dev
+RUN apt-get install --yes build-essential bc unzip curl libssl-dev libssh2-1-dev libcurl4-openssl-dev
 
 # GNU AWK requered for proper scripts work.
 RUN apt-get install --yes gawk
@@ -75,7 +73,7 @@ RUN cd ~ && curl --location https://github.com/broadinstitute/picard/releases/do
     --output picard.jar
 
 # Download ZINBRA
-RUN cd ~ && curl --location https://github.com/JetBrains-Research/zinbra/releases/download/v0.4.0/zinbra-0.4.0.jar \
+RUN cd ~ && curl --location https://github.com/JetBrains-Research/zinbra/releases/download/v0.5.1/zinbra-0.5.1.jar \
     --output zinbra.jar
 
 # Install phantom peak qual tools
