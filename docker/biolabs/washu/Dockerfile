@@ -5,9 +5,10 @@ USER root
 RUN ln -snf /bin/bash /bin/sh
 
 # Essential development tools and headers
-RUN apt-get install --yes build-essential bc unzip curl libssl-dev libssh2-1-dev libcurl4-openssl-dev
+RUN apt-get install --yes build-essential libgl1-mesa-dev bc unzip quota libssl-dev \
+libboost-dev curl libssh2-1-dev libcurl4-openssl-dev
 
-# GNU AWK requered for proper scripts work.
+# GNU AWK requered for proper scripts work
 RUN apt-get install --yes gawk
 
 # Conda envs:
