@@ -113,12 +113,6 @@ def test_reads2bam():
 
 
 def test_signals():
-    # Copy regions.bed
-    if not os.path.exists("regions.bed"):
-        shutil.copy("washu_test_data/data/regions.bed", "regions.bed")
-    if os.path.exists("fastq_bams_bws/regions"):
-        shutil.rmtree("fastq_bams_bws/regions")
-
     # Create signals folder
     signals_path = os.path.expanduser("~/signals/H3K4me3")
     if not os.path.exists(signals_path):
