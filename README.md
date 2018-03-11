@@ -94,12 +94,17 @@ Pipelines
 
 Docker
 ------
-There is a Docker hub image `biolabs/washu` with all the necessary data and tools for pipeline and tests.
+Build Docker image `biolabs/washu` with all the necessary data and tools for pipeline and tests.
 Docker configurations are available under `/docker` folder.
 
-Update necessary docker image.
+Ensure your `biolabs/test-data` image is up to date.
 ```bash
-docker pull biolabs/washu
+docker pull biolabs/test-data
+```
+
+Build image:
+```bash
+docker build -t biolabs/washu /docker/biolabs/washu
 ```
 
 Tests
