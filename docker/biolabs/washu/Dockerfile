@@ -1,12 +1,16 @@
 FROM biolabs/test-data
 
 USER root
-# Fix default shell for CONDA source activate command.
+
+# Fix default shell for CONDA source activate command
 RUN ln -snf /bin/bash /bin/sh
+
+# Fix missing gtar for R devtools
+RUN ln -snf /bin/tar /bin/gtar
 
 # Essential development tools and headers
 RUN apt-get install --yes build-essential libgl1-mesa-dev bc unzip quota libssl-dev \
-libboost-dev curl libssh2-1-dev libcurl4-openssl-dev
+    libboost-dev curl libssh2-1-dev libcurl4-openssl-dev libxml2-dev
 
 # GNU AWK requered for proper scripts work
 RUN apt-get install --yes gawk
