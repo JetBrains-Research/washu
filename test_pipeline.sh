@@ -51,7 +51,6 @@ fi
 
 cp -r ~/washu_test_data/fastq ~/
 cp -r ~/washu_test_data/index ~/
-cp -r ~/washu_test_data/data ~/
 
 # Prepare regions for RSEG
 if [[ ! -d ~/fastq_bams ]]; then
@@ -68,5 +67,4 @@ python -m pytest test/pipeline/*.py
 mkdir -p /washu/out
 cp -r ~/fastq* /washu/out
 cp -r ~/index* /washu/out
-cp -r ~/data* /washu/out
 cp -r ~/signals* /washu/out
