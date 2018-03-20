@@ -170,4 +170,3 @@ def test_signals():
     assert 'H3K4me3\t150\ta/a1\trawq\t0' in lines
     assert 'H3K4me3\t120\tregions\traw\t1' in lines
     assert len(lines) == 43
-

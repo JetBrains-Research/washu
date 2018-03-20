@@ -11,7 +11,7 @@ Usage:
     cross_tool_peaks_report.py [input folder] [output folder] [first tool] [second tool]
 
 Script creates pdf reports with peaks statistics:
- 1) Bar plot with inclusion and jaccard metrics 
+ 1) Bar plot with inclusion and jaccard metrics
  2) Bar plot with peaks count
 """
 

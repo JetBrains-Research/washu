@@ -327,7 +327,8 @@ def normalize_1kbp(path_1kbp, scores):
     not_input_columns = [c for c in scores.columns if not is_input(c)]
     scores_1kbp = pd.DataFrame(scores[not_input_columns].to_records())
     for column in not_input_columns:
-        scores_1kbp[column] = scores_1kbp[column] * 1000.0 / (scores_1kbp['end'] - scores_1kbp['start'])
+        scores_1kbp[column] = scores_1kbp[column] * 1000.0 /\
+                              (scores_1kbp['end'] - scores_1kbp['start'])
     scores_1kbp.to_csv(path_1kbp, sep='\t', index=False)
 
 
