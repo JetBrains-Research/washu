@@ -44,10 +44,18 @@ def download_all(path):
 
 def get_1000g(base_path):
     path = os.path.join(base_path, "1000g")
-    os.chdir(path)
     if not os.path.exists(path):
         os.mkdir(path)
+
+    os.chdir(path)
+
+    result_path = "{}/g1000.vcf.gz".format(path)
+
+    if os.path.exists(result_path):
+        return
+
     download_all(path)
+
 
     files = [os.path.join(path, f) for f in file_names]
 
@@ -56,7 +64,6 @@ def get_1000g(base_path):
                            "-o", tmp_path,
                            "-O", "z"] + files)
 
-    result_path = "{}/g1000.vcf.gz".format(path)
 
     os.rename(tmp_path, result_path)
 
