@@ -90,9 +90,6 @@ else
     echo "${FILE}: no control file"
     rseg -c ${GENOME}_chrom_sizes.bed -o ${NAME}_domains.bed -i 20 -v -d ${DEADZONES} ${TMP_FOLDER}/${FILE_BED}
 fi
-
-# Compute Reads in Peaks
-bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${NAME}_domains.bed
 SCRIPT
 
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

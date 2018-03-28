@@ -8,7 +8,6 @@ from typing import Tuple, List
 
 import pandas as pd
 
-from parallel.util.bowtie_logs import process_bowtie_logs
 from pipeline_utils import *
 from scripts.util import run_macs2
 
@@ -28,20 +27,6 @@ def cli():
     args = parser.parse_args()
 
     run_pipeline(args.out, args.data)
-
-
-def filter_peaks(result_dirs: List[Tuple[str, str]],
-                 bams_dir: str, peaks_dir: str,
-                 q_src: float, q_target: float):
-
-    out_dir = peaks_dir.replace(str(q_src), str(q_target))
-    if os.path.exists(out_dir):
-        print('[Peaks Filter] Already processed: ', out_dir)
-        return
-
-    run_bash('bed/macs2_filter_fdr.sh', peaks_dir, out_dir,
-             q_src, q_target, bams_dir)
-    result_dirs.append((out_dir, bams_dir))
 
 
 def run_pipeline(out, data):
@@ -132,9 +117,6 @@ def run_pipeline(out, data):
         # multiqc is able to process Bowtie report
         run("multiqc", "-f", "-o", bams_dir, " ".join(bams_dirs))
 
-        # Create summary
-        process_bowtie_logs(bams_dir)
-
     if len(data_dirs) > 1:
         run("multiqc", "-f", "-o", out, " ".join(data_dirs + bams_dirs))
 
@@ -193,36 +175,13 @@ def run_pipeline(out, data):
 
         # MACS2 Broad peak calling (https://github.com/taoliu/MACS) Q=0.1
         #  in example
-        peaks_dirs = run_macs2(genome, chrom_sizes,
-                               'broad_0.1', '--broad', '--broad-cutoff', 0.1,
-                               work_dirs=bams_dirs_for_peakcalling)
-
-        for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
-                                              peaks_dirs):
-            filter_peaks(fpeaks_and_bams_dirs, bams_dir_signal, peaks_dir,
-                         0.1, 0.05)
-            filter_peaks(fpeaks_and_bams_dirs, bams_dir_signal, peaks_dir,
-                         0.1, 0.01)
+        run_macs2(genome, chrom_sizes,
+                  'broad_0.1', '--broad', '--broad-cutoff', 0.1,
+                  work_dirs=bams_dirs_for_peakcalling)
 
         # # MACS2 Regular peak calling (https://github.com/taoliu/MACS)
         # # Q=0.01 in example
-        peaks_dirs = run_macs2(genome, chrom_sizes, 'q0.1', '-q', 0.1,
-                               work_dirs=bams_dirs_for_peakcalling)
-
-        for bams_dir_signal, peaks_dir in zip(bams_dirs_for_peakcalling,
-                                              peaks_dirs):
-            filter_peaks(fpeaks_and_bams_dirs, bams_dir_signal, peaks_dir,
-                         0.1, 0.05)
-            filter_peaks(fpeaks_and_bams_dirs, bams_dir_signal, peaks_dir,
-                         0.1, 0.01)
-
-        # Calc FRiPs for filtered dirs:
-        # process_dirs(bams_dirs, "_rpkms", ["*.bw", "*rpkm.log"],
-        #              lambda dirs: run_bash("parallel/rpkm.sh", *dirs))
-        run_bash('parallel/peaks_frip.sh',
-                 ",".join(list(zip(*fpeaks_and_bams_dirs))[0]),
-                 ",".join(list(zip(*fpeaks_and_bams_dirs))[1]))
-
+        run_macs2(genome, chrom_sizes, 'q0.1', '-q', 0.1, work_dirs=bams_dirs_for_peakcalling)
     finally:
         for f in files_to_cleanup:
             print("Cleanup:")

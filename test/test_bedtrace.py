@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from bed.bedtrace import Bed, union, intersect, minus, compare, jaccard
+from test.fixtures import test_data, bedtrace_cleanup
 
 
 # 0      100  200    300  400    500  600    700

@@ -72,10 +72,6 @@ else
         --output ${OUTPUT_DIR} \
         --threads=4 ${GAP}
 fi
-
-module load bedtools2
-# Compute Reads in Peaks
-bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${ID}_peaks.bed
 SCRIPT
 
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

@@ -49,9 +49,6 @@ else
     echo "${FILE}: no control file"
     macs14 -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} -p ${P}
 fi
-
-# Compute Reads in Peaks
-bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${ID}*.narrowPeak
 SCRIPT
     echo "FILE: ${FILE}; TASK: ${QSUB_ID}"
     TASKS+=("$QSUB_ID")

@@ -72,9 +72,6 @@ else
     echo "${FILE}: no control file"
     macs2 callpeak --tempdir \${TMPDIR} -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
 fi
-
-# Compute Reads in Peaks
-bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${ID}*.*Peak
 SCRIPT
 
             echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"

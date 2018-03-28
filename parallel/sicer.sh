@@ -113,13 +113,6 @@ mv \${SICER_OUT_FOLDER}/*island.bed ${WORK_DIR}
 
 # Cleanup everything else
 rm -r \${SICER_FOLDER}
-
-cd ${WORK_DIR}
-
-# Compute Reads in Peaks
-bash ${WASHU_ROOT}/scripts/rip.sh ${FILE} ${ISLAND_BED}
-
-type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 SCRIPT
 
         echo "FILE: ${FILE}; TASK: ${QSUB_ID}"

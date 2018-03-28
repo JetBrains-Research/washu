@@ -19,8 +19,6 @@ NOTE: python3 required
 
 author oleg.shpynov@jetbrains.com
 """
-from parallel.util.bowtie_logs import process_bowtie_logs
-from parallel.util.peaks_logs import process_peaks_logs
 from pipeline_utils import *
 from scripts.util import run_macs2
 
@@ -58,18 +56,18 @@ run_bash("parallel/index_genome.sh", GENOME, INDEXES)
 
 # Batch QC
 run_bash("parallel/fastqc.sh", WORK_DIR)
+# multiqc
+subprocess.run("multiqc " + WORK_DIR, shell=True)
 
 # Batch Bowtie with trim 5 first base pairs
 run_bash("parallel/index_bowtie.sh", GENOME, INDEXES)
 run_bash("parallel/bowtie.sh", GENOME, INDEXES, "5", WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_bams", ["*.bam", "*bowtie*.log"])
+# multiqc
+subprocess.run("multiqc " + WORK_DIR + "_bams", shell=True)
+
 WORK_DIR = WORK_DIR + "_bams"
 os.chdir(WORK_DIR)
-
-# multiqc is able to process Bowtie report
-subprocess.run("multiqc " + WORK_DIR, shell=True)
-# Create summary
-process_bowtie_logs(WORK_DIR)
 
 # Batch BigWig visualization
 run_bash("parallel/bigwig.sh", CHROM_SIZES, WORK_DIR)
@@ -114,7 +112,6 @@ run_macs2(GENOME, CHROM_SIZES, 'q0.05', '-q', 0.05, work_dirs=[WORK_DIR])
 #     run_bash("macs14.sh", WORK_DIR, GENOME, str(P))
 #     move_forward(WORK_DIR, FOLDER, ['*{}*'.format(NAME), '*rip.csv'],
 #                  chdir=False)
-#     process_macs2_logs(FOLDER)
 
 # Batch RSEG
 rseg_suffix = '_rseg'
@@ -123,7 +120,8 @@ if not os.path.exists(WORK_DIR + rseg_suffix):
     move_forward(WORK_DIR, WORK_DIR + rseg_suffix,
                  ['*domains*', '*rseg*', '*.bam.bed', 'deadzones*',
                   '*_chrom_sizes.bed', '*rip.csv'])
-    process_peaks_logs(WORK_DIR + rseg_suffix)
+    # multiqc
+    subprocess.run("multiqc " + WORK_DIR + rseg_suffix, shell=True)
 
 # Batch SICER
 sicer_suffix = '_sicer'
@@ -132,4 +130,5 @@ if not os.path.exists(WORK_DIR + sicer_suffix):
     run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, "0.01", "200", "150", "0")
     move_forward(WORK_DIR, WORK_DIR + sicer_suffix,
                  ['*sicer.log', '*.bed', '*rip.csv'])
-    process_peaks_logs(WORK_DIR + sicer_suffix)
+    # multiqc
+    subprocess.run("multiqc " + WORK_DIR + sicer_suffix, shell=True)

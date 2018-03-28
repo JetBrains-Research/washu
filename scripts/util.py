@@ -16,7 +16,6 @@ project_root_path \
 sys.path.insert(0, project_root_path)
 
 from pipeline_utils import run_bash, move_forward  # nopep8
-from parallel.util.macs2_logs import process_macs2_logs  # nopep8
 
 #################################################################
 
@@ -183,8 +182,7 @@ Defaults for MACS2 broad peak calling:
         move_forward(
             wd, result_dir,
             ['*{}*'.format(name), '*rip.csv', '*_signal.bdg', '*_signal.bw'])
-
-        process_macs2_logs(result_dir)
+        subprocess.run("multiqc " + result_dir, shell=True)
 
     return [os.path.join(wd, wd2result[wd]) for wd in work_dirs]
 
