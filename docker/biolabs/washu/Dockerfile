@@ -56,7 +56,7 @@ install.packages('devtools', repos='http://cran.us.r-project.org');require(devto
 devtools::install_github('hms-dbmi/spp', build_vignettes = FALSE)"
 
 # To prevent problems with Java interfierence just move execuble to emulate module
-RUN mkdir /opt/fastqc && mv /opt/conda/envs/java/bin/fastqc /opt/fastqc
+RUN mkdir /opt/fastqc && ln -sf /opt/conda/envs/java/FastQC/fastqc /opt/fastqc/
 
 # We need this for "which module" command
 COPY ./module.sh /opt/
