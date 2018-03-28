@@ -1,9 +1,8 @@
-import os
 from pathlib import Path
-from bed.bedtrace import Bed, union, intersect, minus, compare, jaccard
 
 import pytest
-from test.fixtures import test_data, bedtrace_cleanup
+
+from bed.bedtrace import Bed, union, intersect, minus, compare, jaccard
 
 
 # 0      100  200    300  400    500  600    700
@@ -105,54 +104,6 @@ def test_jaccard_self_intersections(test_data):
 def test_save(test_data):
     assert union(Bed(test_data("bed/A.bed")),
                  Bed(test_data("bed/B.bed"))).count() == 3
-
-
-def test_process_pvalue(test_data):
-    u = union(Bed(test_data("bed/A.narrowPeak")),
-              Bed(test_data("bed/B.narrowPeak")))
-
-    f = u.process_pvalue()
-    assert Path(f).read_text() == """chr2	9745187	9746077	26
-chr2	9746391	9746765	20
-chr1	4857963	4858364	6
-chr1	4807879	4808181	4
-"""
-
-
-def test_process_pvalue_single(test_data):
-    u = minus(Bed(test_data("bed/A.narrowPeak")),
-              intersect(Bed(test_data("bed/A.narrowPeak")),
-                        Bed(test_data("bed/B.narrowPeak"))))
-    f = u.process_pvalue()
-    assert Path(f).read_text() == """chr2	9745187	9746077	26
-chr2	9746391	9746765	20
-"""
-
-
-def test_process_diffbind(test_data):
-    u = minus(Bed(test_data("bed/A_diffbind.bed")),
-              Bed(test_data("bed/A.narrowPeak")))
-    f = u.process_pvalue()
-    assert Path(f).read_text() == """chr1	28417357	28419402	1.53e-06
-chr1	8212454	8213531	7.98e-10
-"""
-
-
-def test_process_bdgdiff(test_data):
-    u = Bed(test_data("bed/A_B_bdgdiff_cond1.bed"))
-    f = u.process_pvalue()
-    assert Path(f).read_text() == """chr1	92780966	92781404	5.47439
-chr1	10571239	10571874	4.94096
-"""
-
-
-def test_save3(test_data):
-    u = Bed(test_data("bed/A_B_bdgdiff_cond1.bed"))
-    # TODO test save3
-    f = u.process_pvalue()
-    assert Path(f).read_text() == """chr1	92780966	92781404	5.47439
-chr1	10571239	10571874	4.94096
-"""
 
 
 def test_cat(test_data):

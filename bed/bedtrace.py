@@ -10,22 +10,14 @@ Simple bedtools / bash scripts wrapper with the following operations:
                   _common.bed files
 * metapeaks       compares multiple files and creates Venn diagram in case of
                   2 or 3 files
-* process_pvalue  for each range show it's predecessors and compute min of
-                  p_values (-log 10p)
 
 NOTE: it is not supposed to replace pybedtools, but add some missing
 functionality.
 
 Major differences are:
  * union and intersection operations are commutative and associative
- * TRACE available for all the operations, i.e. consider operation
-        minus(minus(intersect(A1, A2), intersect(B1, B2)), C)
-   you would like to find out what were the predecessors of result and sort
-   result by p-value.
-
 
 NOTE: python3 required
-> source activate py3.5
 
 author oleg.shpynov@jetbrains.com
 """
@@ -106,70 +98,6 @@ class Bed:
         print('TAIL')
         stdout, _stderr = run([['tail', '-{}'.format(lines), self.path]])
         print(stdout.decode('utf-8'))
-
-    def pvalue_position(self):
-        # TODO[shpynov]: add peak caller option as in diffbind?
-        path = self.path
-        if path.endswith('.broadPeak') or path.endswith('.narrowPeak'):
-            return 8
-        if 'diffbind' in path:
-            return 10
-        if 'bdgdiff' in path:
-            return 5
-        raise Exception('PValue column is unknown for {}'.format(path))
-
-    def process_pvalue(self):
-        """
-        Method to process each row of resulting bed with the union of parents.
-        """
-        # Ensure that we've already computed result
-        self.compute()
-        c = columns(self.path)
-        beds = self.collect_beds()
-        with tempfile.NamedTemporaryFile(mode='w', suffix='_trace.bed',
-                                         prefix='bedtrace',
-                                         delete=False) as tmpfile:
-            run([['bedtools', 'intersect', '-wa', '-wb', '-a', self.path,
-                  '-b', *[x.path for x in beds],
-                  '-names', *[str(x) for x in beds], '-sorted']],
-                stdout=tmpfile)
-            TEMPFILES.append(tmpfile.name)
-
-            # Extract only pvalue_associated columns
-            filtered_path = tmpfile.name.replace('_trace.bed', '_filtered.bed')
-            TEMPFILES.append(filtered_path)
-            with open(filtered_path, mode='a') as filtered_file:
-                for bed in beds:
-                    pvalue_position = bed.pvalue_position()
-                    if len(beds) > 1:
-                        # Names are available for multiple -b intersection
-                        #  files only
-                        run([['grep', str(bed)],
-                             ['awk', "-v", "OFS=\\t",
-                              '{{print $1,$2,$3,${}}}'
-                              ''.format(c + pvalue_position + 1)]],
-                            stdin=open(tmpfile.name), stdout=filtered_file)
-                    else:
-                        run([['awk', "-v", "OFS=\\t",
-                              '{{print $1,$2,$3,${}}}'
-                              ''.format(c + pvalue_position)]],
-                            stdin=open(tmpfile.name), stdout=filtered_file)
-
-            # Finally merge pvalues with min function
-            result_path = filtered_path.replace('_filtered.bed', '_pvalue.bed')
-            TEMPFILES.append(result_path)
-            with open(result_path, 'w') as result_file:
-                run([['sort', '-k1,1', '-k2,2n'],
-                     ['bedtools', 'merge', '-c', '4', '-o', 'min'],
-                     ['sort', '-k4,4gr']],
-                    stdin=open(filtered_path), stdout=result_file)
-            print('TRACE', tmpfile.name)
-            print('RESULT', result_path)
-            result_bed = Bed(result_path)
-            result_bed.head()
-            result_bed.tail()
-            os.remove(filtered_path)
-            return result_path
 
 
 class Operation(Bed):
