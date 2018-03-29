@@ -23,14 +23,14 @@ cd ${FOLDER}
 if [ ! -f "chr22.fa" ]; then
     # Download only chromosomes sequences
     rsync -avzP --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/chromosomes/ .
-    gunzip *.fa.gz
+    gunzip -f *.fa.gz
     chmod a+r *
 fi
 
 echo "Check chrom.sizes file"
 if [ ! -f "${GENOME}.chrom.sizes" ]; then
     echo "Downloading chrom.sizes file"
-    wget http://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/bigZips/${GENOME}.chrom.sizes
+    wget -nc http://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/bigZips/${GENOME}.chrom.sizes
     chmod a+r *
 fi
 
