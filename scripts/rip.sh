@@ -41,7 +41,7 @@ echo "READS: $READS"
 PEAKS=$(wc -l ${PEAKS_FILE} | awk '{print $1}')
 echo "PEAKS: $PEAKS"
 
-LENGTH=$(awk '{l+=($3-$2)} END {print l}' ${PEAKS_FILE})
+LENGTH=$(awk 'BEGIN{l=0} {l+=($3-$2)} END{print l}' ${PEAKS_FILE})
 echo "LENGTH: $LENGTH"
 
 # Compute number of reads, intersecting with peaks
