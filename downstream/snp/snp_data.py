@@ -1,5 +1,6 @@
-import os.path
+import os
 import subprocess
+from pathlib import Path
 
 base_url = "ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20130502/"
 
@@ -36,39 +37,60 @@ def download_file(url, result_file):
 
 def download_all(path):
     phenotype = "integrated_call_samples.20130502.ALL.ped"
-    download_file(base_url + "/" + phenotype, os.path.join(path, phenotype))
+    download_file(base_url + "/" + phenotype, path / phenotype)
     for file in file_names:
-        download_file(base_url + file, os.path.join(path, file))
-        download_file(base_url + file + ".tbi", os.path.join(path, file + ".tbi"))
+        download_file(base_url + file, path / file)
+        download_file(base_url + file + ".tbi", path / (file + ".tbi"))
 
 
-def get_1000g(base_path):
-    path = os.path.join(base_path, "1000g")
-    if not os.path.exists(path):
-        os.mkdir(path)
+def get_1000g(snp_path):
+    path = snp_path / "1000g"
+    if not path.exists():
+        path.mkdir()
 
-    os.chdir(path)
+    result_path = path / "g1000.vcf.gz"
 
-    result_path = "{}/g1000.vcf.gz".format(path)
-
-    if os.path.exists(result_path):
+    if result_path.exists():
+        print("1000 genomes exists: {}".format(result_path))
         return
+
+    path.chdir()
 
     download_all(path)
 
+    files = [str(path / f) for f in file_names]
 
-    files = [os.path.join(path, f) for f in file_names]
-
-    tmp_path = ("{}/g1000_tmp.vcf.gz".format(path))
+    tmp_path = path / "g1000_tmp.vcf.gz"
     subprocess.check_call(["bcftools", "concat",
                            "-o", tmp_path,
                            "-O", "z"] + files)
 
-
-    os.rename(tmp_path, result_path)
+    tmp_path.rename(result_path)
 
     subprocess.check_call(["tabix", "-p", "vcf", result_path])
 
     for file in file_names:
-        os.remove(os.path.join(path, file))
-        os.remove(os.path.join(path, file + ".tbi"))
+        (path / file).unlink()
+        (path / (file + ".tbi")).unlink()
+
+
+def get_snp_path():
+    snp_dir = Path("/mnt/stripe/bio/experiments/snp")
+    if not snp_dir.exists():
+        snp_dir.mkdir()
+
+    return Path(snp_dir)
+
+
+def get_ucsc_path():
+    snp_path = get_snp_path()
+    ucsc_dir = snp_path / "ucsc"
+    if ucsc_dir.exists():
+        return ucsc_dir
+
+    ucsc_tmp = snp_path / "ucsc_tmp"
+
+    if not ucsc_tmp.exists():
+        ucsc_tmp.mkdir()
+
+    return ucsc_dir
