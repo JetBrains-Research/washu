@@ -86,11 +86,25 @@ def get_ucsc_path():
     snp_path = get_snp_path()
     ucsc_dir = snp_path / "ucsc"
     if ucsc_dir.exists():
-        return ucsc_dir
+        return ucsc_dir / "ucsc.hg19.fasta"
 
     ucsc_tmp = snp_path / "ucsc_tmp"
 
     if not ucsc_tmp.exists():
         ucsc_tmp.mkdir()
 
-    return ucsc_dir
+    return ucsc_dir / "ucsc.hg19.fasta"
+
+
+def get_dbsnp_path():
+    snp_path = get_snp_path()
+    dbsnp_dir = snp_path / "dbsnp"
+    if dbsnp_dir.exists():
+        return dbsnp_dir / "dbsnp_138.hg19.vcf"
+
+    dbsnp_tmp = snp_path / "dbsnp_tmp"
+
+    if not dbsnp_tmp.exists():
+        dbsnp_tmp.mkdir()
+
+    return dbsnp_dir / "dbsnp_138.hg19.vcf"
