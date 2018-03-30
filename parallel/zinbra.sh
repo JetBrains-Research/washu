@@ -61,15 +61,15 @@ export _JAVA_OPTIONS="-Xmx30g"
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
     java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} -c ${INPUT} \
-        --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --bed ${ID}_peaks.bed \
-        --output ${OUTPUT_DIR} \
+        --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --output ${ID}_peaks.bed \
+        --workdir ${OUTPUT_DIR} \
         --threads=4 ${GAP}
 
 else
     echo "${FILE}: no control file"
     java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} \
-        --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --bed ${ID}_peaks.bed \
-        --output ${OUTPUT_DIR} \
+        --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --output ${ID}_peaks.bed \
+        --workdir ${OUTPUT_DIR} \
         --threads=4 ${GAP}
 fi
 SCRIPT
