@@ -161,11 +161,12 @@ main <- function(path, insertSize) {
                 dev.off()
                 print(ma_pdf)
 
-                vlc_pdf = str_replace(path, '.csv', paste('_', id, '_vlc.pdf', sep = ''))
-                pdf(file = vlc_pdf)
-                dba.plotVolcano(yo_contrast)
-                dev.off()
-                print(vlc_pdf)
+                # dba.plotVolcano fails if not difference found
+                # vlc_pdf = str_replace(path, '.csv', paste('_', id, '_vlc.pdf', sep = ''))
+                # pdf(file = vlc_pdf)
+                # dba.plotVolcano(yo_contrast)
+                # dev.off()
+                # print(vlc_pdf)
 
                 print(paste('Save difference to resulting csv file', id))
                 db = dba.report(yo_contrast)
