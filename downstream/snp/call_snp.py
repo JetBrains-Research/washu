@@ -48,6 +48,7 @@ def call_donor_snp(snp_path, ucsc_path, dbsnp_path, donor):
         pooled_dir.mkdir()
 
     result_path = pooled_dir / "{}.g.vcf.gz".format(donor)
+    result_idx_path = pooled_dir / "{}.g.vcf.gz.tbi".format(donor)
 
     if result_path.exists():
         return result_path
@@ -71,6 +72,8 @@ def call_donor_snp(snp_path, ucsc_path, dbsnp_path, donor):
         cmd += ["-I", str(bam)]
 
     tmp_path = pooled_dir / "{}_tmp.g.vcf.gz".format(donor)
+    tmp_idx_path = pooled_dir / "{}_tmp.g.vcf.gz.tbi".format(donor)
+
     cmd += ["-O", str(tmp_path), "-ERC", "GVCF"]
 
     subprocess.check_call(cmd)
@@ -80,5 +83,6 @@ def call_donor_snp(snp_path, ucsc_path, dbsnp_path, donor):
         bai.unlink()
 
     tmp_path.rename(result_path)
+    tmp_idx_path.rename(result_idx_path)
 
     return result_path
