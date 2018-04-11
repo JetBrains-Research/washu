@@ -74,12 +74,17 @@ def _cli():
 
 
 def find_diff(od_values, yd_values, output_path, prefix, consensus_path):
-    count_peaks(od_values, output_path, "OD_" + prefix, consensus_path)
-    count_peaks(yd_values, output_path, "YD_" + prefix, consensus_path)
+    merged_path = "{}/{}_result.bed".format(output_path, prefix)
 
-    cmd = "cat {}/{}_result.bed {}/{}_result.bed | ".format(output_path, "OD_" + prefix, output_path, "YD_" + prefix)
-    cmd += "sort -k 1,1 -k2,2n | bedtools merge -c 5 -o collapse >{}/{}_result.bed".format(output_path, prefix)
+    y_peaks = count_peaks(od_values, output_path, "OD", consensus_path)
+    o_peaks = count_peaks(yd_values, output_path, "YD", consensus_path)
+
+    cmd = "cat {} | ".format(" ".join(y_peaks + o_peaks))
+    cmd += "sort -k 1,1 -k2,2n | bedtools merge -c 4 -o collapse >{}".format(merged_path)
     subprocess.check_call(["bash", "-c", cmd])
+
+    for file in y_peaks + o_peaks:
+        os.remove(file)
 
     on = len(od_values)
     yn = len(yd_values)
@@ -88,21 +93,24 @@ def find_diff(od_values, yd_values, output_path, prefix, consensus_path):
     p_vals = []
     change = []
 
-    with open("{}/{}_result.bed".format(output_path, prefix)) as f:
+    with open(merged_path) as f:
         for l in f:
             parts = l.split()
-            counts = parts[3].split(",")
-            if len(counts) == 2:
-                op = int(counts[0])
-                yp = int(counts[1])
+            op = 0
+            yp = 0
 
-            if yp > yn or op > on:
-                print(l, on, yn)
+            for v in parts[3].split(","):
+                if v == "YD":
+                    yp += 1
+                if v == "OD":
+                    op += 1
 
             oddsratio, pvalue = fisher_exact([[yp, yn - yp], [op, on - op]])
-            lines.append(l)
+            lines.append("\t".join(parts[0:3]) + "\t{},{}".format(yp, op))
             p_vals.append(pvalue)
             change.append(op / on - yp / yn)
+
+    os.remove(merged_path)
 
     p_adjs = p_adjust_bh(p_vals)
 
@@ -141,18 +149,12 @@ def count_peaks(files, output_path, prefix, consensus_path):
     intersected_files = []
     for file in files:
         intersection_file = output_path / os.path.basename(file)
-        cmd = "bedtools intersect -wa -u -a {} -b {} >{}".format(consensus_path, file, intersection_file)
+        cmd = "bedtools intersect -wa -u -a {} -b {} | sed \'s/$/\t{}/\' >{}".format(
+            consensus_path, file, prefix, intersection_file)
         subprocess.check_call(["bash", "-c", cmd])
         intersected_files.append(str(intersection_file))
-    cmd = "cat {} | ".format(" ".join(intersected_files))
-    cmd += "sort -k1,1 -k2,2n | bedtools merge -c 1 -o count | "
-    cmd += "awk -v OFS='\t' '{print $1, $2, $3, \"" + prefix + "\", $4}' "
-    cmd += ">{}/{}_result.bed".format(output_path, prefix)
 
-    subprocess.check_call(["bash", "-c", cmd])
-
-    for file in intersected_files:
-        os.remove(file)
+    return intersected_files
 
 
 if __name__ == "__main__":
