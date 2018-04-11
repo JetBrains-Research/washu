@@ -6,6 +6,8 @@ import os
 
 chip_seq_path = Path("/mnt/stripe/bio/experiments/aging/chipseq")
 
+gatk_path = "/mnt/stripe/tools/gatk-4.0.3.0/gatk"
+
 subdirs = [
     "k27ac/k27ac_20vs20_bams",
     "k27ac/k27ac_20vs20_redo_bams",
@@ -41,7 +43,7 @@ def preprocess_bam(pooled_dir, bam_path, donor):
     return result_bam, result_bai
 
 
-def call_donor_snp(snp_path, ucsc_path, dbsnp_path, donor):
+def call_donor_variants(snp_path, ucsc_path, dbsnp_path, donor):
     pooled_dir = snp_path / "pooled"
 
     if not pooled_dir.exists():
@@ -64,7 +66,7 @@ def call_donor_snp(snp_path, ucsc_path, dbsnp_path, donor):
     for bam in all_bams:
         fixed_bams.append(preprocess_bam(pooled_dir, bam, donor))
 
-    cmd = ["/mnt/stripe/tools/gatk-4.0.3.0/gatk", "--java-options", "-Xmx32g", "HaplotypeCaller"]
+    cmd = [gatk_path, "--java-options", "-Xmx32g", "HaplotypeCaller"]
     cmd += ["-R", str(ucsc_path)]
     cmd += ["--dbsnp", str(dbsnp_path)]
 
@@ -86,3 +88,26 @@ def call_donor_snp(snp_path, ucsc_path, dbsnp_path, donor):
     tmp_idx_path.rename(result_idx_path)
 
     return result_path
+
+
+def combine_gvcfs(paths, snp_path, reference_path):
+    combined_dir = snp_path / "combined"
+
+    if not combined_dir.exists():
+        combined_dir.mkdir()
+
+    output_path = combined_dir / "combined.g.vcf.gz"
+
+    if output_path.exists():
+        return output_path
+
+    cmd = [gatk_path, "CombineGVCFs", "-R", str(reference_path)]
+    subprocess.check_call(cmd)
+
+    for path in paths:
+        cmd += ["--variant", str(path)]
+    cmd += ["-O", str(output_path)]
+
+    print(cmd)
+
+    subprocess.check_call(cmd)
