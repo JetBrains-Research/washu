@@ -102,10 +102,10 @@ def combine_gvcfs(paths, snp_path, reference_path):
         return output_path
 
     cmd = [gatk_path, "CombineGVCFs", "-R", str(reference_path)]
-    subprocess.check_call(cmd)
 
     for path in paths:
         cmd += ["--variant", str(path)]
+
     cmd += ["-O", str(output_path)]
 
     print(cmd)
