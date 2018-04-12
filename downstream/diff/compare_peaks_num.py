@@ -129,7 +129,7 @@ def find_diff(od_values, yd_values, output_path, prefix, consensus_path):
             f.write("{}\t{}\t{}\n".format(l.strip(), p_val, p_adj))
             counter += 1
 
-            if counter > 500:
+            if counter > 400:
                 break
 
     counter = 1
@@ -141,7 +141,7 @@ def find_diff(od_values, yd_values, output_path, prefix, consensus_path):
             f.write("{}\t{}\t{}\n".format(l.strip(), p_val, p_adj))
             counter += 1
 
-            if counter > 500:
+            if counter > 400:
                 break
 
 
