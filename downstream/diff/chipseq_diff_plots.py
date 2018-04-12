@@ -109,87 +109,6 @@ class ChangeCollector:
             size += count_lines(file) - 1
         self.change_counts.append((folder_name + "_" + self.mark, size))
 
-    def process_macs_pooled(self):
-        folder_name = "diff_macs_pooled"
-        macs_pooled = os.path.join(self.input_path, folder_name)
-
-        size = 0
-        result_name = "diff_macs_pooled_{}".format(self.mark)
-
-        result_file_name = self.get_file_name(result_name)
-        with open(os.path.join(self.output, result_file_name), "w") as out:
-            if self.change_type == "both":
-                pattern = "{}_*_cond*.bed"
-            elif self.change_type == "young":
-                pattern = "{}_*_cond1.bed"
-            elif self.change_type == "old":
-                pattern = "{}_*_cond2.bed"
-            else:
-                raise ValueError("Wrong change_type")
-
-            for file in glob.glob(os.path.join(macs_pooled, pattern.format(self.mark))):
-                size += count_lines(file)
-
-                with open(file) as f:
-                    out.writelines(f.readlines())
-
-        self.change_files_produced.append(result_file_name)
-
-        self.change_counts.append((result_name, size))
-
-    def process_macs_pooled_Y_vs_O(self):
-        folder_name = "diff_macs_pooled_Y_O"
-        macs_pooled_Y_vs_O = os.path.join(self.input_path, folder_name)
-
-        size = 0
-        result_name = folder_name + "_" + self.mark
-        result_file_name = self.get_file_name(result_name)
-        with open(os.path.join(self.output, result_file_name), "w") as out:
-
-            if self.change_type == "both":
-                pattern = os.path.join(macs_pooled_Y_vs_O, "{}_*.broadPeak".format(self.mark))
-            elif self.change_type == "young":
-                pattern = os.path.join(macs_pooled_Y_vs_O, "{}_Y_vs_O*.broadPeak".format(self.mark))
-            elif self.change_type == "old":
-                pattern = os.path.join(macs_pooled_Y_vs_O, "{}_O_vs_Y*.broadPeak".format(self.mark))
-            else:
-                raise ValueError("Wrong change_type")
-
-            for file in glob.glob(pattern):
-                size += count_lines(file)
-
-                with open(file) as f:
-                    out.writelines(f.readlines())
-
-        self.change_counts.append((result_name, size))
-        self.change_files_produced.append(result_file_name)
-
-    def process_median_consensus(self, tool):
-        consensus_path = "/mnt/stripe/bio/raw-data/aging/loci_of_interest/median_consensus"
-
-        if self.change_type == "both":
-            pattern = "*_without_*"
-        elif self.change_type == "young":
-            pattern = "YDS_without_ODS"
-        elif self.change_type == "old":
-            pattern = "ODS_without_YDS"
-        else:
-            raise ValueError("Wrong change_type: {}".format(self.change_type))
-
-        result_name = "median_consensus_{}_{}".format(tool, self.mark)
-        result_file_name = self.get_file_name(result_name)
-
-        size = 0
-        with open(os.path.join(self.output, result_file_name), "w") as out:
-            for file in glob.glob(
-                    os.path.join(consensus_path, "{}_{}_{}*.bed".format(self.mark, tool, pattern))):
-                size += count_lines(file)
-                with open(file) as f:
-                    out.writelines(f.readlines())
-
-        self.change_counts.append((result_name, size))
-        self.change_files_produced.append(result_file_name)
-
     def process_diffreps(self, folder_name):
         folder = os.path.join(self.input_path, folder_name)
 
@@ -228,7 +147,6 @@ class ChangeCollector:
         self.change_counts.append(("chipdiff_{}".format(self.mark), size))
 
     def collect_difference(self):
-        self.process_diff_bind("diff_bind")
         self.process_diff_bind("diff_bind_zinbra")
         self.process_diff_bind("diff_bind_cons_zinbra")
 
@@ -238,13 +156,6 @@ class ChangeCollector:
         self.process_zinbra(True)
 
         self.process_macs_bg_diff()
-
-        self.process_macs_pooled()
-
-        self.process_macs_pooled_Y_vs_O()
-
-        self.process_median_consensus("zinbra")
-        self.process_median_consensus("macs2")
 
         self.process_diffreps("diffReps")
         self.process_diffreps("diffReps_broad")
