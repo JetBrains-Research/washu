@@ -65,7 +65,7 @@ def _cli():
             if donor in yd_paths_map.keys():
                 del yd_paths_map[donor]
 
-        weak_cons = consensus(list(od_paths_map.values()) + list(yd_paths_map.values()), 0, 30)
+        weak_cons = consensus(list(od_paths_map.values()) + list(yd_paths_map.values()), 0, 15)
         consensus_path = output_path / "{}_consensus.bed".format(hist_mod)
         save_cons_to_file(weak_cons, consensus_path)
 
