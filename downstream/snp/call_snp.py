@@ -111,3 +111,26 @@ def combine_gvcfs(paths, snp_path, reference_path):
     print(cmd)
 
     subprocess.check_call(cmd)
+
+
+def call_snp(snp_path, reference_path):
+    combined_dir = snp_path / "combined"
+
+    if not combined_dir.exists():
+        combined_dir.mkdir()
+
+    input_path = combined_dir / "combined.g.vcf.gz"
+
+    output_path = combined_dir / "cohort.vcf.gz"
+
+    if output_path.exists():
+        return output_path
+
+    cmd = [gatk_path, "--java-options", "-Xmx32g",
+           "GenotypeGVCFs", "-R", str(reference_path),
+           "-V", str(input_path),
+           "-O", str(output_path)]
+
+    print(cmd)
+
+    subprocess.check_call(cmd)
