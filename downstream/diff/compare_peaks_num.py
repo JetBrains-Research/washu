@@ -6,15 +6,13 @@ from pathlib import Path
 import numpy as np
 from scipy.stats import fisher_exact
 
-import pandas as pd
-
 import downstream.loci_of_interest as loi
 from bed.bedtrace import consensus
 from downstream.consensus import save_cons_to_file
 
 help_data = """
 Usage:
-    compare_peaks_num.py [input folder] [outliers path] [output folder] 
+    compare_peaks_num.py [input folder] [prefix] [output folder] 
 
 Scripts search for difference based on number of track with peaks 
 """
@@ -34,43 +32,29 @@ def _cli():
     parser = argparse.ArgumentParser(description=help_data,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("peaks", help="Peaks folder")
-    parser.add_argument("outliers_path", help="Outlier file path")
+    parser.add_argument("prefix", help="Result file prefix")
     parser.add_argument("output", help="Output folder")
 
     args = parser.parse_args()
     peaks_path = Path(args.peaks)
+    prefix = Path(args.prefix)
     output_path = Path(args.output)
-    outliers_path = args.outliers_path
-    outliers_df = pd.read_csv(outliers_path, delimiter="\t", skiprows=1, index_col="donor")
 
-    for hist_mod in ["H3K27ac", "H3K27me3", "H3K36me3", "H3K4me3", "H3K4me1"]:
-        tool = "zinbra"
+    print("Processing")
+    tracks_paths = sorted({peaks_path / file for file in os.listdir(str(peaks_path)) if
+                           re.match('.*(?:.bed)$', file)},
+                          key=loi.donor_order_id)
+    tracks_names = list({str(tracks_path) for tracks_path in tracks_paths})
 
-        print("Processing {}".format(hist_mod))
-        tool_path = peaks_path / hist_mod / tool
-        tracks_paths = sorted({tool_path / file for file in os.listdir(str(tool_path)) if
-                               re.match('.*(?:_peaks.bed)$', file)},
-                              key=loi.donor_order_id)
-        tracks_names = list({str(tracks_path) for tracks_path in tracks_paths})
-        od_paths_map = {re.findall('OD\\d+', track_name)[0]:
-                            track_name for track_name in tracks_names if re.match('.*OD\\d+.*',
-                                                                                  track_name)}
-        yd_paths_map = {re.findall('YD\\d+', track_name)[0]:
-                            track_name for track_name in tracks_names if re.match('.*YD\\d+.*',
-                                                                                  track_name)}
+    od_paths = [name for name in tracks_names if re.match('.*OD\\d+.*', name)]
+    yd_paths = [name for name in tracks_names if re.match('.*YD\\d+.*', name)]
 
-        for donor in outliers_df.loc[:, hist_mod][outliers_df.loc[:, hist_mod] == 1].keys():
-            if donor in od_paths_map.keys():
-                del od_paths_map[donor]
-            if donor in yd_paths_map.keys():
-                del yd_paths_map[donor]
+    weak_cons = consensus(list(od_paths) + list(yd_paths), 0, 15)
+    consensus_path = output_path / "{}_consensus.bed".format(prefix)
+    save_cons_to_file(weak_cons, consensus_path)
 
-        weak_cons = consensus(list(od_paths_map.values()) + list(yd_paths_map.values()), 0, 15)
-        consensus_path = output_path / "{}_consensus.bed".format(hist_mod)
-        save_cons_to_file(weak_cons, consensus_path)
-
-        find_diff(list(od_paths_map.values()), list(yd_paths_map.values()),
-                  output_path, hist_mod + "_" + tool, consensus_path)
+    find_diff(list(od_paths), list(yd_paths),
+              output_path, prefix, consensus_path)
 
 
 def find_diff(od_values, yd_values, output_path, prefix, consensus_path):
