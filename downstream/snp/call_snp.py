@@ -158,6 +158,9 @@ def filter_snp(snp_path, reference_path):
 
     result_path = combined_dir / "final.vcf.gz"
 
+    if result_path.exists():
+        return result_path
+
     tmp1_path = combined_dir / "output_fg.vcf.gz"
     tmp2_path = combined_dir / "final_tmp.vcf.gz"
 
