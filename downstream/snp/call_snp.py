@@ -129,14 +129,14 @@ def call_snp(snp_path, reference_path):
 
     input_path = combined_dir / "combined.g.vcf.gz"
 
-    result_path = combined_dir / "cohort.g.vcf.gz"
-    result_idx_path = combined_dir / "cohort.g.vcf.gz.tbi"
+    result_path = combined_dir / "cohort.vcf.gz"
+    result_idx_path = combined_dir / "cohort.vcf.gz.tbi"
 
     if result_path.exists():
         return result_path
 
-    tmp_path = combined_dir / "cohort_tmp.g.vcf.gz"
-    tmp_idx_path = combined_dir / "cohort_tmp.g.vcf.gz.tbi"
+    tmp_path = combined_dir / "cohort_tmp.vcf.gz"
+    tmp_idx_path = combined_dir / "cohort_tmp.vcf.gz.tbi"
 
     cmd = [gatk_path, "--java-options", "-Xmx32g",
            "GenotypeGVCFs", "-R", str(reference_path),
