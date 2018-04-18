@@ -91,6 +91,13 @@ def call_donor_variants(snp_path, ucsc_path, dbsnp_path, donor):
     return result_path
 
 
+def move_file_with_tbi(from_file, to_file):
+    from_tbi = from_file.with_name(from_file.name + ".tbi")
+    to_tbi = to_file.with_name(to_file.name + ".tbi")
+    from_file.rename(to_file)
+    from_tbi.rename(to_tbi)
+
+
 def combine_gvcfs(paths, snp_path, reference_path):
     combined_dir = snp_path / "combined"
 
@@ -98,13 +105,11 @@ def combine_gvcfs(paths, snp_path, reference_path):
         combined_dir.mkdir()
 
     result_path = combined_dir / "combined.g.vcf.gz"
-    result_idx_path = combined_dir / "combined.g.vcf.gz.tbi"
 
     if result_path.exists():
         return result_path
 
     tmp_path = combined_dir / "combined_tmp.g.vcf.gz"
-    tmp_idx_path = combined_dir / "combined_tmp.g.vcf.gz.tbi"
 
     cmd = [gatk_path, "CombineGVCFs", "-R", str(reference_path)]
 
@@ -117,8 +122,7 @@ def combine_gvcfs(paths, snp_path, reference_path):
 
     subprocess.check_call(cmd)
 
-    tmp_path.rename(result_path)
-    tmp_idx_path.rename(result_idx_path)
+    move_file_with_tbi(tmp_path, result_path)
 
 
 def call_snp(snp_path, reference_path):
@@ -130,13 +134,11 @@ def call_snp(snp_path, reference_path):
     input_path = combined_dir / "combined.g.vcf.gz"
 
     result_path = combined_dir / "cohort.vcf.gz"
-    result_idx_path = combined_dir / "cohort.vcf.gz.tbi"
 
     if result_path.exists():
         return result_path
 
     tmp_path = combined_dir / "cohort_tmp.vcf.gz"
-    tmp_idx_path = combined_dir / "cohort_tmp.vcf.gz.tbi"
 
     cmd = [gatk_path, "--java-options", "-Xmx32g",
            "GenotypeGVCFs", "-R", str(reference_path),
@@ -147,8 +149,7 @@ def call_snp(snp_path, reference_path):
 
     subprocess.check_call(cmd)
 
-    tmp_path.rename(result_path)
-    tmp_idx_path.rename(result_idx_path)
+    move_file_with_tbi(tmp_path, result_path)
 
 
 def filter_snp(snp_path, reference_path):
@@ -156,11 +157,9 @@ def filter_snp(snp_path, reference_path):
     cohort_path = combined_dir / "cohort.vcf.gz"
 
     result_path = combined_dir / "final.vcf.gz"
-    result_idx_path = combined_dir / "final.vcf.gz.tbi"
 
     tmp1_path = combined_dir / "output_fg.vcf.gz"
     tmp2_path = combined_dir / "final_tmp.vcf.gz"
-    tmp2_idx_path = combined_dir / "final_tmp.vcf.gz"
 
     cmd = [gatk_path, "VariantFiltration", "-R", str(reference_path),
            "-V", str(cohort_path), "-O", str(tmp1_path),
@@ -177,5 +176,4 @@ def filter_snp(snp_path, reference_path):
 
     subprocess.check_call(cmd)
 
-    tmp2_path.rename(result_path)
-    tmp2_idx_path.rename(result_idx_path)
+    move_file_with_tbi(tmp2_path, result_path)
