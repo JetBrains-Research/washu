@@ -24,7 +24,8 @@ def preprocess_bam(pooled_dir, bam_path, donor):
     bam_name = bam_path.name
     print(bam_path)
 
-    cp = subprocess.run(["samtools view {} | head -n1".format(bam_path)], stdout=subprocess.PIPE, shell=True)
+    cp = subprocess.run(["samtools view {} | head -n1".format(bam_path)], stdout=subprocess.PIPE,
+                        shell=True)
     result = cp.stdout.decode("utf-8")
     parts = result.split('\t')[0].split(':')
 
@@ -96,21 +97,28 @@ def combine_gvcfs(paths, snp_path, reference_path):
     if not combined_dir.exists():
         combined_dir.mkdir()
 
-    output_path = combined_dir / "combined.g.vcf.gz"
+    result_path = combined_dir / "combined.g.vcf.gz"
+    result_idx_path = combined_dir / "combined.g.vcf.gz.tbi"
 
-    if output_path.exists():
-        return output_path
+    if result_path.exists():
+        return result_path
+
+    tmp_path = combined_dir / "combined_tmp.g.vcf.gz"
+    tmp_idx_path = combined_dir / "combined_tmp.g.vcf.gz.tbi"
 
     cmd = [gatk_path, "CombineGVCFs", "-R", str(reference_path)]
 
     for path in paths:
         cmd += ["--variant", str(path)]
 
-    cmd += ["-O", str(output_path)]
+    cmd += ["-O", str(tmp_path)]
 
     print(cmd)
 
     subprocess.check_call(cmd)
+
+    tmp_path.rename(result_path)
+    tmp_idx_path.rename(result_idx_path)
 
 
 def call_snp(snp_path, reference_path):
@@ -121,16 +129,23 @@ def call_snp(snp_path, reference_path):
 
     input_path = combined_dir / "combined.g.vcf.gz"
 
-    output_path = combined_dir / "cohort.vcf.gz"
+    result_path = combined_dir / "cohort.g.vcf.gz"
+    result_idx_path = combined_dir / "cohort.g.vcf.gz.tbi"
 
-    if output_path.exists():
-        return output_path
+    if result_path.exists():
+        return result_path
+
+    tmp_path = combined_dir / "cohort_tmp.g.vcf.gz"
+    tmp_idx_path = combined_dir / "cohort_tmp.g.vcf.gz.tbi"
 
     cmd = [gatk_path, "--java-options", "-Xmx32g",
            "GenotypeGVCFs", "-R", str(reference_path),
            "-V", str(input_path),
-           "-O", str(output_path)]
+           "-O", str(tmp_path)]
 
     print(cmd)
 
     subprocess.check_call(cmd)
+
+    tmp_path.rename(result_path)
+    tmp_idx_path.rename(result_idx_path)
