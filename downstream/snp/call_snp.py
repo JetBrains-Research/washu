@@ -149,3 +149,33 @@ def call_snp(snp_path, reference_path):
 
     tmp_path.rename(result_path)
     tmp_idx_path.rename(result_idx_path)
+
+
+def filter_snp(snp_path, reference_path):
+    combined_dir = snp_path / "combined"
+    cohort_path = combined_dir / "cohort.vcf.gz"
+
+    result_path = combined_dir / "final.vcf.gz"
+    result_idx_path = combined_dir / "final.vcf.gz.tbi"
+
+    tmp1_path = combined_dir / "output_fg.vcf.gz"
+    tmp2_path = combined_dir / "final_tmp.vcf.gz"
+    tmp2_idx_path = combined_dir / "final_tmp.vcf.gz"
+
+    cmd = [gatk_path, "VariantFiltration", "-R", str(reference_path),
+           "-V", str(cohort_path), "-O", str(tmp1_path),
+           "--genotype-filter-expression", "DP < 2", "--genotype-filter-name", "Low_DP",
+           "--set-filtered-genotype-to-no-call"]
+
+    subprocess.check_call(cmd)
+
+    cmd = [gatk_path, "SelectVariants", "-R", str(reference_path),
+           "--exclude-filtered",
+           "--max-nocall-number", "0",
+           "-V", str(tmp1_path),
+           "-O", str(tmp2_path)]
+
+    subprocess.check_call(cmd)
+
+    tmp2_path.rename(result_path)
+    tmp2_idx_path.rename(result_idx_path)

@@ -1,4 +1,4 @@
-from downstream.snp.call_snp import call_donor_variants, combine_gvcfs, call_snp
+import downstream.snp.call_snp as snp
 from downstream.snp.snp_data import get_snp_path, get_ucsc_path, get_1000g, get_dbsnp_path
 
 donors = ["YD1", "YD2", "YD3", "YD4", "YD5", "YD6", "YD7", "YD8", "YD9", "YD10",
@@ -16,11 +16,13 @@ def main():
     paths = []
 
     for donor in donors:
-        paths.append(call_donor_variants(snp_path, ucsc_path, dbsnp_path, donor))
+        paths.append(snp.call_donor_variants(snp_path, ucsc_path, dbsnp_path, donor))
 
-    combine_gvcfs(paths, snp_path, ucsc_path)
+    snp.combine_gvcfs(paths, snp_path, ucsc_path)
 
-    call_snp(snp_path, ucsc_path)
+    snp.call_snp(snp_path, ucsc_path)
+
+    snp.filter_snp(snp_path, ucsc_path)
 
 
 if __name__ == '__main__':
