@@ -73,9 +73,11 @@ def _cli():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument("hist", help="Histone modification")
+    parser.add_argument("output", help="Output file path")
 
     args = parser.parse_args()
     hist = args.hist
+    output = args.output
 
     y20o20_consensuses = search_in_url(Y20O20_CONSENSUS_PATH.format(hist),
                                        '<a href="([^"]*consensus[^"]*)">')
@@ -90,7 +92,7 @@ def _cli():
                                       '<a href="([^"]*{}[^"]*(?:peaks.bed|island.bed|broadPeak))">'
                                       .format(GSM_HIST_MAP[hist]))
 
-    with open(hist + "_session.xml", 'w') as f:
+    with open(output, 'w') as f:
         print(HEADER, file=f)
 
         for y20o20_cons in y20o20_consensuses:
