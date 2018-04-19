@@ -30,6 +30,13 @@ HIST_TOOL_PATH_MAP = {
     'H3K4me1': {'macs_broad/1.0E-4'},
     'H3K4me3': {'macs_broad/1.0E-4'}
 }
+HIST_COLOR_MAP = {
+    "H3K27ac": (255, 0, 0),
+    "H3K27me3": (153, 0, 255),
+    "H3K4me1": (255, 153, 0),
+    "H3K4me3": (51, 204, 51),
+    "H3K36me3": (0, 0, 204)
+}
 HEADER = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Session genome="hg19" hasGeneTrack="true" hasSequenceTrack="true" locus="All" \
 path="/home/user/aging/${HIST}_igv_session.xml" version="8">
@@ -37,9 +44,9 @@ path="/home/user/aging/${HIST}_igv_session.xml" version="8">
 RESOURCE_TEMPLATE = "        <Resource path=\"{}\"/>"
 RESOURCE_FOOTER = """    </Resources>
     <Panel height="591" name="DataPanel" width="1836">"""
-TRACK_TEMPLATE = """        <Track altColor="0,0,178" autoScale="false" \
-clazz="org.broad.igv.track.FeatureTrack" color="0,0,178" \
-colorScale="ContinuousColorScale;0.0;100.0;255,255,255;0,0,178" displayMode="COLLAPSED" \
+TRACK_TEMPLATE = """        <Track altColor="{}" autoScale="false" \
+clazz="org.broad.igv.track.FeatureTrack" color="{}" \
+colorScale="ContinuousColorScale;0.0;100.0;255,255,255;{}" displayMode="COLLAPSED" \
 featureVisibilityWindow="-1" fontSize="10" id="{}" name="{}" renderer="BASIC_FEATURE" \
 sortable="false" visible="true" windowFunction="count">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" \
@@ -65,6 +72,7 @@ minimum="0.0" type="LINEAR"/>
         <Attribute name="NAME"/>
     </HiddenAttributes>
 </Session>"""
+failed_tracks = []
 
 
 def _cli():
@@ -109,20 +117,41 @@ def _cli():
         print(RESOURCE_FOOTER, file=f)
 
         for y20o20_cons in y20o20_consensuses:
-            print(TRACK_TEMPLATE.format(y20o20_cons, Path(y20o20_cons).stem), file=f)
+            color = get_color(hist, y20o20_cons)
+            print(TRACK_TEMPLATE.format(color, color, color, y20o20_cons, Path(y20o20_cons).stem),
+                  file=f)
         for y20o20_bw in y20o20_bws:
-            print(TRACK_TEMPLATE.format(y20o20_bw, Path(y20o20_bw).stem.upper()), file=f)
+            color = get_color(hist, y20o20_bw)
+            print(TRACK_TEMPLATE.format(color, color, color, y20o20_bw,
+                                        Path(y20o20_bw).stem.upper()), file=f)
         for y20o20_peak in y20o20_peaks:
-            print(TRACK_TEMPLATE.format(y20o20_peak, "ZINBRA " + Path(y20o20_peak).stem), file=f)
+            color = get_color(hist, y20o20_peak)
+            print(TRACK_TEMPLATE.format(color, color, color, y20o20_peak,
+                                        "ZINBRA " + Path(y20o20_peak).stem), file=f)
         for encode_bw in encode_bws:
-            print(TRACK_TEMPLATE.format(encode_bw, Path(encode_bw).stem), file=f)
+            color = get_color(hist, encode_bw)
+            print(TRACK_TEMPLATE.format(color, color, color, encode_bw, Path(encode_bw).stem),
+                  file=f)
         for encode_peak in encode_peaks:
-            print(TRACK_TEMPLATE.format(encode_peak, Path(encode_peak).stem), file=f)
-        print(TRACK_TEMPLATE.format(LABELS_URL.format(hist), Path(LABELS_URL.format(hist)).stem),
-              file=f)
+            color = get_color(hist, encode_peak)
+            print(TRACK_TEMPLATE.format(color, color, color, encode_peak, Path(encode_peak).stem),
+                  file=f)
+        print(TRACK_TEMPLATE.format("178,0,0", "178,0,0", "178,0,0", LABELS_URL.format(hist),
+                                    Path(LABELS_URL.format(hist)).stem), file=f)
 
         print(FOOTER, file=f)
 
+
+def get_color(hist, filename):
+    if "failed" in filename.lower() or re.match('.*[YO]D\\d+.*', filename, flags=re.IGNORECASE) \
+            and re.findall('[YO]D\\d+', filename, flags=re.IGNORECASE)[0].lower() in failed_tracks:
+        failed_tracks.append(re.findall('[YO]D\\d+', filename, flags=re.IGNORECASE)[0].lower())
+        return "192,192,192"
+    if "od" in filename.lower():
+        return ','.join(str(int(x * 0.7)) for x in HIST_COLOR_MAP[hist])
+    else:
+        return ','.join(str(x) for x in HIST_COLOR_MAP[hist])
+    
 
 def search_in_url(url, regexp):
     html = str(urlopen(url).read())
