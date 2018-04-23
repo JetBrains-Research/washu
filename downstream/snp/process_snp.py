@@ -15,7 +15,7 @@ def make_combined_pca(snp_path, snp_file, g1000_path):
     os.chdir(str(path))
 
     script = "/mnt/stripe/washu/downstream/snp/combined_pca.sh"
-    cmd = ["bash", script, snp_file, g1000_path]
+    cmd = ["bash", script, str(snp_file), str(g1000_path)]
     subprocess.check_call(cmd)
 
 
