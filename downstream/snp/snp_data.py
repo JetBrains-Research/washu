@@ -73,6 +73,8 @@ def get_1000g(snp_path):
         (path / file).unlink()
         (path / (file + ".tbi")).unlink()
 
+    return result_path
+
 
 def get_snp_path():
     snp_dir = Path("/mnt/stripe/bio/experiments/snp")

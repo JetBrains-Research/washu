@@ -153,20 +153,24 @@ def call_snp(snp_path, reference_path):
 
 
 def filter_snp(snp_path, reference_path):
-    combined_dir = snp_path / "combined"
-    cohort_path = combined_dir / "cohort.vcf.gz"
+    filtered_dir = snp_path / "filtered"
 
-    result_path = combined_dir / "final.vcf.gz"
+    if not filtered_dir.exists():
+        filtered_dir.mkdir()
+
+    cohort_path = snp_path / "combined" / "cohort.vcf.gz"
+
+    result_path = filtered_dir / "final.vcf.gz"
 
     if result_path.exists():
         return result_path
 
-    tmp1_path = combined_dir / "output_fg.vcf.gz"
-    tmp2_path = combined_dir / "final_tmp.vcf.gz"
+    tmp1_path = filtered_dir / "output_fg.vcf.gz"
+    tmp2_path = filtered_dir / "final_tmp.vcf.gz"
 
     cmd = [gatk_path, "VariantFiltration", "-R", str(reference_path),
            "-V", str(cohort_path), "-O", str(tmp1_path),
-           "--genotype-filter-expression", "DP < 2", "--genotype-filter-name", "Low_DP",
+           "--genotype-filter-expression", "DP < 3", "--genotype-filter-name", "Low_DP",
            "--set-filtered-genotype-to-no-call"]
 
     subprocess.check_call(cmd)
@@ -180,3 +184,5 @@ def filter_snp(snp_path, reference_path):
     subprocess.check_call(cmd)
 
     move_file_with_tbi(tmp2_path, result_path)
+
+    return result_path
