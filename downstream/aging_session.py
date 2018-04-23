@@ -37,6 +37,12 @@ HIST_COLOR_MAP = {
     "H3K4me3": (51, 204, 51),
     "H3K36me3": (0, 0, 204)
 }
+TOOL_COLOR_MAP = {
+    "broad": (55, 126, 184),
+    "island": (228, 26, 28),
+    "peaks": (152, 78, 163),
+    "zinbra": (152, 78, 163)
+}
 HEADER = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Session genome="hg19" hasGeneTrack="true" hasSequenceTrack="true" locus="All" \
 path="/home/user/aging/${HIST}_igv_session.xml" version="8">
@@ -89,6 +95,8 @@ def _cli():
 
     y20o20_consensuses = search_in_url(Y20O20_CONSENSUS_PATH.format(hist),
                                        '<a href="([^"]*consensus[^"]*)">')
+    y20o20_total_consensuses = [y20o20_cons for y20o20_cons in y20o20_consensuses
+                                if "OD" not in y20o20_cons and "YD" not in y20o20_cons]
     y20o20_bws = search_in_url(Y20O20_BW_PATH.format(hist), '<a href="([^"]*bw)">')
     y20o20_peaks = search_in_url(Y20O20_PEAK_PATH.format(hist),
                                  '<a href="([^"]*(?:peaks.bed|island.bed|broadPeak))">')
@@ -103,7 +111,7 @@ def _cli():
     with open(output, 'w') as f:
         print(HEADER, file=f)
 
-        for y20o20_cons in y20o20_consensuses:
+        for y20o20_cons in y20o20_total_consensuses:
             print(RESOURCE_TEMPLATE.format(y20o20_cons), file=f)
         for y20o20_bw in y20o20_bws:
             print(RESOURCE_TEMPLATE.format(y20o20_bw), file=f)
@@ -116,7 +124,7 @@ def _cli():
         print(RESOURCE_TEMPLATE.format(LABELS_URL.format(hist)), file=f)
         print(RESOURCE_FOOTER, file=f)
 
-        for y20o20_cons in y20o20_consensuses:
+        for y20o20_cons in y20o20_total_consensuses:
             color = get_color(hist, y20o20_cons)
             print(TRACK_TEMPLATE.format(color, color, color, y20o20_cons, Path(y20o20_cons).stem),
                   file=f)
@@ -147,10 +155,15 @@ def get_color(hist, filename):
             and re.findall('[YO]D\\d+', filename, flags=re.IGNORECASE)[0].lower() in failed_tracks:
         failed_tracks.append(re.findall('[YO]D\\d+', filename, flags=re.IGNORECASE)[0].lower())
         return "192,192,192"
+    color = HIST_COLOR_MAP[hist]
+    for tool in TOOL_COLOR_MAP.keys():
+        if tool in filename:
+            color = TOOL_COLOR_MAP[tool]
+            break
     if "od" in filename.lower():
-        return ','.join(str(int(x * 0.7)) for x in HIST_COLOR_MAP[hist])
+        return ','.join(str(int(x * 0.7)) for x in color)
     else:
-        return ','.join(str(x) for x in HIST_COLOR_MAP[hist])
+        return ','.join(str(x) for x in color)
     
 
 def search_in_url(url, regexp):
