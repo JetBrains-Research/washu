@@ -54,7 +54,7 @@ def get_1000g(snp_path):
         print("1000 genomes exists: {}".format(result_path))
         return
 
-    path.chdir()
+    os.chdir(path)
 
     download_all(path)
 
