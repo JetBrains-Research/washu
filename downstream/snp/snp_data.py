@@ -52,7 +52,7 @@ def get_1000g(snp_path):
 
     if result_path.exists():
         print("1000 genomes exists: {}".format(result_path))
-        return
+        return result_path
 
     os.chdir(str(path))
 
