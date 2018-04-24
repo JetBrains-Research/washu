@@ -5,6 +5,11 @@ import sys
 import tempfile
 from itertools import chain
 from pathlib import Path
+import matplotlib.pyplot as plt
+from downstream.bed_metrics import save_plot
+import multiprocessing
+import functools
+from collections import namedtuple
 
 import pandas as pd
 
@@ -23,13 +28,15 @@ Script creates pdf report with ChIP-seq peaks statistics:
 
 loci_root = Path("/mnt/stripe/bio/raw-data/aging/loci_of_interest")
 
+Group = namedtuple('Group', 'name color')
 MONO = Group('M', 'blue')
 TCELL = Group('T', 'red')
+UNKNOWN = Group('', 'black')
 
 def mcgill_group(c):
-    if re.match('.*mono\\d+.*', str(c), flags=re.IGNORECASE):
+    if re.match('.*mn\\d+.*', str(c), flags=re.IGNORECASE):
         return MONO
-    if re.match('.*tcell\\d+.*', str(c), flags=re.IGNORECASE):
+    if re.match('.*tc\\d+.*', str(c), flags=re.IGNORECASE):
         return TCELL
     return UNKNOWN
 
@@ -41,6 +48,93 @@ def is_mono(c):
 
 def is_tcell(c):
     return mcgill_group(c) == TCELL
+
+def calc_consensus_file(mono_files_paths, tcell_files_paths, count=0, percent=0):
+    mono_cons = consensus(mono_files_paths, count, percent)
+    tcell_cons = consensus(tcell_files_paths, count, percent)
+
+    mono_consensus_path = tempfile.NamedTemporaryFile(mode='wb', suffix='.bed', prefix='mn_consensus',
+                                                    delete=False)
+    tcell_consensus_path = tempfile.NamedTemporaryFile(mode='wb', suffix='.bed', prefix='tc_consensus',
+                                                    delete=False)
+    mono_consensus_path.write(mono_cons)
+    tcell_consensus_path.write(tcell_cons)
+    mono_consensus_path.close()
+    tcell_consensus_path.close()
+
+    mono_consensus_bed = Bed(mono_consensus_path.name)
+    tcell_consensus_bed = Bed(tcell_consensus_path.name)
+    mono_tcell_int_bed = intersect(mono_consensus_bed, tcell_consensus_bed)
+    mono_tcell_int_bed.compute()
+
+    return mono_consensus_bed, tcell_consensus_bed, mono_tcell_int_bed
+
+def venn_consensus(mono_consensus_bed, tcell_consensus_bed, percent, save_to=None):
+    """
+    Plots venn diagram for consensus of selected scale:
+
+    :param od_consensus_bed: OD bed with od group consensus
+    :param yd_consensus_bed: YD bed with yd group consensus
+    :param percent: percent of tracks count needed for consensus
+    :param save_to: Object for plots saving
+    """
+    plt.figure()
+    plt.title("Required consensus: %.2f%%" % percent)
+    metapeaks({'Monocytes': mono_consensus_bed, 'T cells': tcell_consensus_bed})
+    save_plot(save_to)
+
+def donor_order_id(donor_data):
+    chunks = donor_data[0].split('_')
+    donor_id = chunks[0]
+    if len(chunks) > 1:
+        return chunks[1], donor_id[:2], int(donor_id[2:])
+    return donor_id
+
+def bar_consensus(mono_paths_map, tcell_paths_map, mono_consensus_bed, tcell_consensus_bed, mono_tcell_int_bed,
+                  threads_num, save_to=None, figsize=(10, 10), fontsize=6):
+    """
+    Plots venn diagram and bar plot for consensus of selected scale:
+
+    :param mono_paths_map: OD names as keys, od beds as values
+    :param tcell_paths_map: YD names as keys, yd beds as values
+    :param mono_consensus_bed: OD bed with od group consensus
+    :param tcell_consensus_bed: YD bed with yd group consensus
+    :param mono_tcell_int_bed: BED with intersection of od and yd groups consensuses
+    :param figsize: Plot figure size
+    :param save_to: Object for plots saving
+    :param fontsize: Size of xlabels on plot
+    :param threads_num: Threads number for parallel execution
+    """
+    pool = multiprocessing.Pool(processes=threads_num)
+    n = len(tcell_paths_map) + len(mono_paths_map)
+    ind = np.arange(n)
+
+    tcell_result = pool.map(
+        functools.partial(pm.groups_sizes, common_bed=mono_tcell_int_bed, own_group_bed=tcell_consensus_bed,
+                          opposite_group_bed=mono_consensus_bed), sorted(tcell_paths_map.items(),
+                                                                         key=operator.itemgetter(0)))
+    mono_result = pool.map(
+        functools.partial(pm.groups_sizes, common_bed=mono_tcell_int_bed, own_group_bed=mono_consensus_bed,
+                          opposite_group_bed=tcell_consensus_bed), sorted(mono_paths_map.items(),
+                                                                          key=operator.itemgetter(0)))
+    result = sorted(tcell_result + mono_result, key=donor_order_id)
+    result_columns = list(zip(*result))
+
+    plt.figure(figsize=figsize)
+    width = 0.35
+    p1 = plt.bar(ind, result_columns[1], width, color='green')
+    p2 = plt.bar(ind, result_columns[2], width, bottom=[mono_tcell_int_bed.count()] * n, color='blue')
+    p3 = plt.bar(ind, result_columns[3], width, bottom=[mono_tcell_int_bed.count() +
+                                                        max(result_columns[2])] * n, color='orange')
+    p4 = plt.bar(ind, result_columns[4], width, bottom=[mono_tcell_int_bed.count() +
+                                                        max(result_columns[2]) +
+                                                        max(result_columns[3])] * n, color='black')
+    plt.ylabel('Peaks count')
+    plt.xticks(ind, result_columns[0], rotation=90, fontsize=fontsize)
+    plt.legend((p1[0], p2[0], p3[0], p4[0]),
+               ('Common', 'Own Group', 'Opposite Group', 'Individual'))
+    plt.tight_layout()
+    save_plot(save_to)
 
 def _cli():
     parser = argparse.ArgumentParser(description=help_data,
@@ -102,10 +196,10 @@ def _cli():
     with PdfPages(pdf_path) as pdf:
         print("Calculating median consensus")
         mono_consensus_bed, tcell_consensus_bed, mono_tcell_int_bed = \
-            pm.calc_consensus_file(list(mono_paths_map.values()), list(tcell_paths_map.values()),
+            calc_consensus_file(list(mono_paths_map.values()), list(tcell_paths_map.values()),
                                    percent=50)
-        pm.venn_consensus(mono_consensus_bed, tcell_consensus_bed, 50, pdf)
-        pm.bar_consensus(mono_paths_map, tcell_paths_map, mono_consensus_bed, tcell_consensus_bed,
+        venn_consensus(mono_consensus_bed, tcell_consensus_bed, 50, pdf)
+        bar_consensus(mono_paths_map, tcell_paths_map, mono_consensus_bed, tcell_consensus_bed,
                          mono_tcell_int_bed, threads_num, pdf)
         print("Calculating cumulative consensus")
         pm.cumulative_consensus(tracks_paths, pdf)
@@ -147,8 +241,8 @@ if __name__ == "__main__":
 
     import seaborn as sns
     from matplotlib.backends.backend_pdf import PdfPages
-    from downstream.aging import regions_extension, donor, Group, UNKNOWN
-    from bed.bedtrace import run
+    from downstream.aging import regions_extension, donor
+    from bed.bedtrace import run, consensus, metapeaks, intersect
     import downstream.bed_metrics as bm
     import downstream.loci_of_interest as loi
     import downstream.peak_metrics as pm
