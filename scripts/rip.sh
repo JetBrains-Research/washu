@@ -34,24 +34,23 @@ mkdir -p "${TMPDIR}"
 if (echo $READS | grep -q ".*\\.bam$"); then
 
 READS_PREFIX=${READS%%.bam}
-
 PILEUP_BED=$(pileup ${READS})
 
 elif (echo $READS | grep -q ".*\\.bed$"); then
 
 READS_PREFIX=${READS%%.bed}
-
 PILEUP_BED=$READS
 
 elif (echo $READS | grep -q ".*\\.bed.gz$"); then
 
 READS_PREFIX=${READS%%.bed.gz}
-
 PILEUP_BED=${READS%%.gz}
 
+if [ ! -e ${PILEUP_BED} ]; then
 gunzip -c $READS > ${PILEUP_BED}
+fi;
 
-else echo "Unrecognized format of $READS, expected .bam, .bed or .bed.gz"
+else echo "Unrecognized format of $READS, expected .bam, .bed or .bed.gz"; exit 1;
 
 fi;
 
