@@ -9,14 +9,13 @@ if [ $# -lt 2 ]; then
     echo "Need 2 parameters! <bam> <peaks>"
     exit 1
 fi
- 
-READS_BAM=$1
+
+READS=$1
 PEAKS_FILE=$2
 
-READS_PREFIX=${READS_BAM%%.bam}
 RIP_FILE=${PEAKS_FILE}_rip.csv
 
-echo "BAM_FILE: ${READS_BAM}"
+echo "READS_FILE: ${READS}"
 echo "PEAKS_FILE: ${PEAKS_FILE}"
 echo "RIP_FILE: ${RIP_FILE}"
 
@@ -32,7 +31,30 @@ source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
-PILEUP_BED=$(pileup ${READS_BAM})
+if (echo $READS | grep -q ".*\\.bam$"); then
+
+READS_PREFIX=${READS%%.bam}
+
+PILEUP_BED=$(pileup ${READS})
+
+elif (echo $READS | grep -q ".*\\.bed$"); then
+
+READS_PREFIX=${READS%%.bed}
+
+PILEUP_BED=$READS
+
+elif (echo $READS | grep -q ".*\\.bed.gz$"); then
+
+READS_PREFIX=${READS%%.bed.gz}
+
+PILEUP_BED=${READS%%.gz}
+
+gunzip -c $READS > ${PILEUP_BED}
+
+else echo "Unrecognized format of $READS, expected .bam, .bed or .bed.gz"
+
+fi;
+
 echo "PILEUP_BED: ${PILEUP_BED}"
 
 READS=$(wc -l ${PILEUP_BED} | awk '{print $1}')
@@ -55,7 +77,7 @@ RIP=$(awk -v COLS=$COLS '{sum += $(COLS+1)} END {print sum}' ${INTERSECT_TMP})
 echo "RIP: $RIP"
 
 echo "file,peaks_file,reads,peaks,length,rip" > ${RIP_FILE}
-echo "${READS_BAM},${PEAKS_FILE},${READS},${PEAKS},${LENGTH},${RIP}" >> ${RIP_FILE}
+echo "${READS},${PEAKS_FILE},${READS},${PEAKS},${LENGTH},${RIP}" >> ${RIP_FILE}
 
 # Cleanup
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
