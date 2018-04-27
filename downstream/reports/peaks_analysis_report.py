@@ -5,6 +5,7 @@ import sys
 import tempfile
 from itertools import chain
 from pathlib import Path
+from collections import namedtuple
 
 import pandas as pd
 
@@ -53,11 +54,15 @@ def _cli():
     else:
         filtered_paths = paths
 
-    tracks_paths = sorted({path for path in filtered_paths if is_od_or_yd(path)})
+    tracks_paths = sorted({path for path in filtered_paths if group(path) ==
+                    namedtuple('Group', 'name color')('O', 'blue') or group(path) ==
+                    namedtuple('Group', 'name color')('Y', 'red')})
     od_paths_map = {donor(track_path): track_path for track_path in tracks_paths
-                    if regions_extension(track_path) and is_od(track_path)}
+                    if regions_extension(track_path) and group(track_path) ==
+                    namedtuple('Group', 'name color')('O', 'blue')}
     yd_paths_map = {donor(track_path): track_path for track_path in tracks_paths
-                    if regions_extension(track_path) and is_yd(track_path)}
+                    if regions_extension(track_path) and group(track_path) ==
+                    namedtuple('Group', 'name color')('Y', 'red')}
     rip_files = sorted([str(f) for f in folder_path.glob("*_rip.csv")])
 
     anns = [bm.color_annotator_age]
@@ -69,8 +74,9 @@ def _cli():
 
     peaks_paths = sorted(chain(folder_path.glob("*sicer*consensus*"),
                                folder_path.glob("*macs2*consensus*"),
-                               folder_path.glob("*zinbra*consensus*"), folder_path.glob("*Peak"),
-                               folder_path.glob("*-island.bed"), folder_path.glob("*peaks.bed")),
+                               folder_path.glob("*zinbra*consensus*"),
+                               folder_path.glob("*broadPeak"), folder_path.glob("*-island.bed"),
+                               folder_path.glob("*peaks.bed")),
                          key=loi.donor_order_id)
 
     df = bm.bed_metric_table(peaks_paths, peaks_paths, threads=threads_num)
@@ -134,7 +140,7 @@ if __name__ == "__main__":
 
     import seaborn as sns
     from matplotlib.backends.backend_pdf import PdfPages
-    from downstream.aging import regions_extension, donor, is_od, is_yd, is_od_or_yd
+    from downstream.aging import regions_extension, donor, group
     from bed.bedtrace import run
     import downstream.bed_metrics as bm
     import downstream.loci_of_interest as loi
