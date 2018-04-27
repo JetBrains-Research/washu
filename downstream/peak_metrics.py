@@ -80,12 +80,39 @@ def bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed
     save_plot(save_to)
 
 
+def bar_plot(hist_mod, tool, paths, save_to=None, figsize=(10, 10), fontsize=6):
+    """
+    Plots bar plot for selected tracks:
+
+    :param figsize: Plot figure size
+    :param save_to: Object for plots saving
+    :param fontsize: Size of xlabels on plot
+    """
+    ind = np.arange(len(paths))
+
+    result = []
+    for path in paths:
+        result.append((donor(path), Bed(path).count()))
+
+    result = sorted(result, key=donor_order_id)
+    result_columns = list(zip(*result))
+
+    plt.figure(figsize=figsize)
+    width = 0.35
+    plt.bar(ind, result_columns[1], width, color='black')
+    plt.ylabel('Peaks count', fontsize=fontsize)
+    plt.xticks(ind, result_columns[0], rotation=90, fontsize=fontsize)
+    plt.title(hist_mod + " " + tool, fontsize=fontsize)
+    plt.tight_layout()
+    save_plot(save_to)
+
+
 def donor_order_id(donor_data):
     chunks = donor_data[0].split('_')
     donor_id = chunks[0]
     if len(chunks) > 1:
         return chunks[1], donor_id[:2], int(donor_id[2:])
-    return donor_id
+    return donor_id[:2], int(donor_id[2:])
 
 
 def calc_consensus(od_paths_map, yd_paths_map, scale):
