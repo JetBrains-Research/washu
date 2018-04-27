@@ -4,24 +4,20 @@ from pathlib import Path
 from urllib.request import urlopen
 
 # Hardcoded URLs with data
-Y20O20_CONSENSUS_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
-                        "/Y20O20/peaks/{}/consensus"
-Y20O20_BW_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20" \
-                 "/bigwigs/{}"
-Y20O20_PEAK_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
-                   "/Y20O20/peaks/{}"
 ENCODE_BW_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
                  "/cd14encode/bigwigs"
 ENCODE_PEAK_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
                    "/cd14encode/peaks/{}"
+ENCODE_BB_PATH = "https://www.encodeproject.org/files/{}/@@download/{}.bigBed"
 LABELS_URL = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20" \
              "/labels/{}_labels.bed"
-GSM_HIST_MAP = {
-    'H3K27ac': 'GSM1102782',
-    'H3K27me3': 'GSM1102785',
-    'H3K36me3': 'GSM1102788',
-    'H3K4me1': 'GSM1102793',
-    'H3K4me3': 'GSM1102797'
+#'Encode GSM1102782 macs narrow'
+ENCODE_HIST_MAP = {
+    'H3K27ac': {'GSM': 'GSM1102782', 'ENC': 'ENCFF439NLA'},
+    'H3K27me3': {'GSM': 'GSM1102785', 'ENC': 'ENCFF575VMI'},
+    'H3K36me3': {'GSM': 'GSM1102788', 'ENC': 'ENCFF003KSH'},
+    'H3K4me1': {'GSM': 'GSM1102793', 'ENC': 'ENCFF158WJC'},
+    'H3K4me3': {'GSM': 'GSM1102797', 'ENC': 'ENCFF317WLK'}
 }
 HIST_TOOL_PATH_MAP = {
     'H3K27ac': {'macs_broad/1.0E-4'},
@@ -99,46 +95,45 @@ def _cli():
     output = args.output
     browser = args.browser
 
-    y20o20_consensuses = search_in_url(Y20O20_CONSENSUS_PATH.format(hist),
-                                       '<a href="([^"]*consensus[^"]*)">')
-    y20o20_total_consensuses = [y20o20_cons for y20o20_cons in y20o20_consensuses
-                                if "OD" not in y20o20_cons and "YD" not in y20o20_cons]
-    y20o20_bws = search_in_url(Y20O20_BW_PATH.format(hist), '<a href="([^"]*bw)">')
-    y20o20_peaks = search_in_url(Y20O20_PEAK_PATH.format(hist),
-                                 '<a href="([^"]*(?:peaks.bed|island.bed|broadPeak))">')
     encode_bws = search_in_url(ENCODE_BW_PATH,
-                               '<a href="([^"]*{}[^"]*bw)">'.format(GSM_HIST_MAP[hist]))
-    encode_peaks = []
+                               '<a href="([^"]*{}[^"]*bw)">'.format(ENCODE_HIST_MAP[hist]['GSM']))
+    encode_default_peaks = []
     for tool_path in HIST_TOOL_PATH_MAP[hist]:
-        encode_peaks += search_in_url(ENCODE_PEAK_PATH.format(hist) + "/" + tool_path,
-                                      '<a href="([^"]*{}[^"]*(?:peaks.bed|island.bed|broadPeak))">'
-                                      .format(GSM_HIST_MAP[hist]))
+        encode_default_peaks += search_in_url(
+            ENCODE_PEAK_PATH.format(hist) + "/" + tool_path,
+            '<a href="([^"]*{}[^"]*(?:peaks.bed|island.bed|broadPeak))">'
+            .format(ENCODE_HIST_MAP[hist]['GSM']))
+    encode_tuned_peaks = search_in_url(ENCODE_PEAK_PATH.format(hist),
+        '<a href="([^"]*{}[^"]*(?:peaks.bed|island.bed|broadPeak))">'.format(
+            ENCODE_HIST_MAP[hist]['GSM']))
 
     with open(output, 'w') as f:
+        big_bed_path = ENCODE_BB_PATH.format(ENCODE_HIST_MAP[hist]['ENC'],
+                                             ENCODE_HIST_MAP[hist]['ENC'])
+
         if browser == IGV_BROWSER:
             print(HEADER, file=f)
 
-            for path in y20o20_total_consensuses + y20o20_bws + y20o20_peaks + encode_bws + \
-                        encode_peaks + [LABELS_URL.format(hist)]:
+            for path in encode_bws + encode_default_peaks + encode_tuned_peaks + \
+                        [big_bed_path] + [LABELS_URL.format(hist)]:
                 print(RESOURCE_TEMPLATE.format(path), file=f)
             print(RESOURCE_FOOTER, file=f)
 
-        insensitive_hist = re.compile(re.escape(hist), re.IGNORECASE)
-
-        print_tracks(hist, browser, y20o20_total_consensuses, "", f, visibility="dense")
-        print_tracks(hist, browser, y20o20_bws, "type=bigWig", f, visibility="full",
-                     name_processor=lambda x: insensitive_hist.sub(hist, x.upper()))
-        print_tracks(hist, browser, y20o20_peaks, "type=broadPeak", f, visibility="dense",
-                     name_processor=lambda x: "ZINBRA " + x)
         print_tracks(hist, browser, encode_bws, "type=bigWig", f, visibility="full")
-        print_tracks(hist, browser, encode_peaks, "", f, visibility="dense")
+        print_tracks(hist, browser, encode_default_peaks, "", f, visibility="dense")
+        print(format_track(browser, ','.join(str(x) for x in TOOL_COLOR_MAP["broad"]),
+                           big_bed_path, "type=bigBed", visibility="dense",
+                           name_processor=lambda _:
+                           "Encode {} macs narrow".format(ENCODE_HIST_MAP[hist]['GSM'])), file=f)
+        print_tracks(hist, browser, encode_tuned_peaks, "type=broadPeak", f, visibility="dense")
         print(format_track(browser, "", LABELS_URL.format(hist), "", visibility="dense"), file=f)
 
         if browser == IGV_BROWSER:
             print(FOOTER, file=f)
 
 
-def print_tracks(hist, browser, paths, track_type, file, visibility="", name_processor=lambda x: x):
+def print_tracks(hist, browser, paths, track_type, file, visibility="",
+                 name_processor=lambda x: x):
     for path in paths:
         color = get_color(hist, path)
         print(format_track(browser, color, path, track_type, visibility=visibility,
