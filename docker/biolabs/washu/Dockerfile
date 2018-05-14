@@ -3,7 +3,14 @@ FROM biolabs/test-data
 USER root
 
 # Fix default shell for CONDA source activate command
+ENV PATH /opt/conda/bin:$PATH
 RUN ln -snf /bin/bash /bin/sh
+
+RUN apt-get update --fix-missing && apt-get install -y curl bzip2
+
+RUN curl --location https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh --output ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh
 
 # Fix missing gtar for R devtools
 RUN ln -snf /bin/tar /bin/gtar
@@ -15,39 +22,24 @@ RUN apt-get install --yes build-essential libgl1-mesa-dev bc unzip quota libssl-
 # GNU AWK requered for proper scripts work
 RUN apt-get install --yes gawk
 
-# Conda envs:
+# Conda envs
 COPY conda_envs /root/conda_envs
 
-# Hack to enable MACS2 in another conda environment
-RUN conda env create -q --name macs2 --file /root/conda_envs/macs2.environment.yml
-RUN ln -sf /opt/conda/envs/macs2/bin/macs2 /usr/local/bin/macs2
+## Packages to be loaded using module in dedicated envs
+RUN conda env create -q --name samtools --file /root/conda_envs/samtools.environment.yml
+RUN conda env create -q --name bedtools --file /root/conda_envs/bedtools.environment.yml
+RUN conda env create -q --name r --file /root/conda_envs/r.environment.yml
+RUN conda env create -q --name bowtie --file /root/conda_envs/bowtie.environment.yml
+RUN conda env create -q --name bowtie2 --file /root/conda_envs/bowtie2.environment.yml
+RUN conda env create -q --name java --file /root/conda_envs/java.environment.yml
+RUN conda env create -q --name sratoolkit --file /root/conda_envs/sratoolkit.environment.yml
 
-# SICER
-RUN conda env update -q --file /root/conda_envs/root.environment.yml
-RUN cd /tmp && curl --location http://home.gwu.edu/~wpeng/SICER_V1.1.tgz --output SICER_V1.1.tgz && \
-    tar xvf SICER_V1.1.tgz && mv SICER_V1.1 /opt
-# Please refer to README for installation instructions, modify scripts, i.e.
-RUN sed -i 's#/home/data/SICER1.1#/opt/SICER_V1.1#g' /opt/SICER_V1.1/SICER/SICER.sh
-# SICER is python2 library, force it!
-RUN sed -i 's#python#python2#g' /opt/SICER_V1.1/SICER/SICER.sh
-RUN chmod a+x /opt/SICER_V1.1/SICER/SICER.sh
-ENV PATH $PATH:/opt/SICER_V1.1/SICER
+# Python 2.7 with MACS2, SICER
+RUN conda env create -q --name py2.7 --file /root/conda_envs/py2.7.environment.yml
+RUN ln -sf /opt/conda/envs/py2.7/bin/macs2 /usr/local/bin/macs2
+RUN ln -sf /opt/conda/envs/py2.7/bin/SICER.sh /usr/local/bin/SICER.sh
 
-# Install packages to be loaded using module in dedicated envs
-RUN conda env create -q --name  samtools --file /root/conda_envs/samtools.environment.yml
-RUN conda env create -q --name  bedtools --file /root/conda_envs/bedtools.environment.yml
-RUN conda env create -q --name  r --file /root/conda_envs/r.environment.yml
-RUN conda env create -q --name  bowtie --file /root/conda_envs/bowtie.environment.yml
-RUN conda env create -q --name  bowtie2 --file /root/conda_envs/bowtie2.environment.yml
-RUN conda env create -q --name  java --file /root/conda_envs/java.environment.yml
-RUN conda env create -q --name  sratoolkit --file /root/conda_envs/sratoolkit.environment.yml
-
-# Deeptools installs samtools and lots of dependencies, isolate it
-RUN conda env create -q --name  deeptools --file /root/conda_envs/deeptools.environment.yml
-RUN ln -s /opt/conda/envs/deeptools/bin/deeptools /usr/local/bin/deeptools
-RUN ln -s /opt/conda/envs/deeptools/bin/bamCoverage /usr/local/bin/bamCoverage
-
-# Install env py3.5
+# Python 3.5 environment with all the bioinformatics and python packages
 RUN conda env create -q --name py3.5 --file /root/conda_envs/py3.5.environment.yml
 
 # Install spp R package for phantom peak qual tools

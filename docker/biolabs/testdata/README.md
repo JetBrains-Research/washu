@@ -1,7 +1,7 @@
 Docker Image with test data
 ===========================
 
-This is just an image `continuumio/miniconda` with test data from
+This is just an image `ubuntu:latest` - Ubuntu LTS with test data from
 `/mnt/stripe/washu_test_data`.
 
 Build
