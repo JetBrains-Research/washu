@@ -1,26 +1,14 @@
-FROM biolabs/test-data
+FROM ubuntu:latest
 
 USER root
 
-# Fix default shell for CONDA source activate command
-ENV PATH /opt/conda/bin:$PATH
-RUN ln -snf /bin/bash /bin/sh
-
+# Install conda
 RUN apt-get update --fix-missing && apt-get install -y curl bzip2
-
 RUN curl --location https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh --output ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh
-
-# Fix missing gtar for R devtools
-RUN ln -snf /bin/tar /bin/gtar
-
-# Essential development tools and headers
-RUN apt-get install --yes build-essential libgl1-mesa-dev bc unzip quota libssl-dev \
-    libboost-dev curl libssh2-1-dev libcurl4-openssl-dev libxml2-dev
-
-# GNU AWK requered for proper scripts work
-RUN apt-get install --yes gawk
+ENV PATH /opt/conda/bin:$PATH
+RUN ln -snf /bin/bash /bin/sh
 
 # Conda envs
 COPY conda_envs /root/conda_envs
@@ -41,14 +29,26 @@ RUN ln -sf /opt/conda/envs/py2.7/bin/SICER.sh /usr/local/bin/SICER.sh
 
 # Python 3.5 environment with all the bioinformatics and python packages
 RUN conda env create -q --name py3.5 --file /root/conda_envs/py3.5.environment.yml
+RUN source activate py3.5 && pip install teamcity-messages && source deactivate
+
+# Bio utils available in path
+RUN conda env create -q --name bio --file /root/conda_envs/bio.environment.yml
+ENV PATH /opt/conda/envs/bio/bin/:$PATH
+
+# Essential development tools and headers
+RUN apt-get install --yes gawk build-essential libgl1-mesa-dev bc unzip quota libssl-dev \
+    libboost-dev curl libssh2-1-dev libcurl4-openssl-dev libxml2-dev gfortran tar
+# Fix missing gtar for R devtools
+RUN ln -snf /bin/tar /bin/gtar
 
 # Install spp R package for phantom peak qual tools
-RUN /opt/conda/envs/r/bin/R -e "source('https://bioconductor.org/biocLite.R');biocLite(c('caTools', 'Rsamtools'));\
-install.packages('devtools', repos='http://cran.us.r-project.org');require(devtools);\
-devtools::install_github('hms-dbmi/spp', build_vignettes = FALSE)"
-
-# To prevent problems with Java interfierence just move execuble to emulate module
-RUN mkdir /opt/fastqc && ln -sf /opt/conda/envs/java/FastQC/fastqc /opt/fastqc/
+RUN source activate r && \
+    R -e "source('https://bioconductor.org/biocLite.R');\
+    biocLite(c('caTools', 'snow', 'snowfall', 'bitops', 'Rsamtools'));\
+    install.packages('devtools', repos='http://cran.us.r-project.org');\
+    require(devtools);options(unzip = 'internal');\
+    devtools::install_github('hms-dbmi/spp', build_vignettes = FALSE)" && \
+    source deactivate
 
 # We need this for "which module" command
 COPY ./module.sh /opt/

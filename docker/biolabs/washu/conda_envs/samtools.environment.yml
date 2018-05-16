@@ -3,13 +3,4 @@ channels:
 - bioconda
 - defaults
 dependencies:
-- samtools=1.6=0
-- bzip2=1.0.6=3
-- curl=7.54.1=0
-- krb5=1.13.2=0
-- libgcc=5.2.0=0
-- libssh2=1.8.0=0
-- openssl=1.0.2l=0
-- xz=5.2.3=0
-- zlib=1.2.8=3
-prefix: /opt/conda/envs/samtools
+- samtools=1.6

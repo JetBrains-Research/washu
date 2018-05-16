@@ -34,10 +34,11 @@ export WASHU_PARALLELISM=8
 
 * Install required tools using [Conda](https://conda.io/docs/)
 ```bash
-conda install --channel bioconda samtools bedtools bowtie bowtie2 fastqc sra-tools macs2 \
-    deeptools star rseg   ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed
+conda install --channel bioconda samtools bedtools bowtie bowtie2 fastqc sra-tools macs2 sicer \
+    deeptools star rseg ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed
 ```
-* Download [Picard tools](https://github.com/broadinstitute/picard):
+For more details see `docker/biolabs/washu/Dockerfile`.
+ * Download [Picard tools](https://github.com/broadinstitute/picard):
 ```bash 
 curl --location https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar \
     --output ~/picard.jar
@@ -94,17 +95,12 @@ Pipelines
 
 Docker
 ------
-Build Docker image `biolabs/washu` with all the necessary data and tools for pipeline and tests.
-Docker configurations are available under `/docker` folder.
+Fetch Docker images `biolabs/washu` and `biolabs/test-data`  
+with all the necessary data and tools for pipeline and tests.
 
-Ensure your `biolabs/test-data` image is up to date.
 ```bash
+docker pull biolabs/washu
 docker pull biolabs/test-data
-```
-
-Build image:
-```bash
-docker build -t biolabs/washu /docker/biolabs/washu
 ```
 
 Tests
@@ -114,7 +110,7 @@ Tests
 docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
 
 # Pipeline tests 
-docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
+docker run -v <project_path>:/washu -t -i biolabs/test-data /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
 ```
 
 Tools used
@@ -127,7 +123,6 @@ Tools used
 * [DiffBind](http://www.nature.com/nature/journal/v481/n7381/full/nature10730.html) 
 * [DiffReps](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0065598)
 * [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) 
-* [MACS1.4](https://github.com/taoliu/MACS)
 * [MACS2](https://github.com/taoliu/MACS)
 * [MANorm](https://www.ncbi.nlm.nih.gov/pubmed/22424423)
 * [MultiQC](http://multiqc.info/)

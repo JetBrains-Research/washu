@@ -9,13 +9,6 @@
 # author oleg.shpynov@jetbrains.com
 # author roman.chernyatchik@jetbrains.com
 
-which multiqc &>/dev/null || {
-    echo "fastq-dump not found! You can install it using:"
-    echo "  conda install -c bioconda multiqc"
-    echo "For further details see http://multiqc.info"
-    exit 1
-}
-
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh

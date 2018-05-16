@@ -3,7 +3,4 @@ channels:
 - bioconda
 - defaults
 dependencies:
-- bedtools=2.26.0=0
-- libgcc=5.2.0=0
-- zlib=1.2.11=0
-prefix: /opt/conda/envs/bedtools
+- bedtools=2.26.0

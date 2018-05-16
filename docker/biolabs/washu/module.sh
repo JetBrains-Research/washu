@@ -20,7 +20,7 @@ elif [ "bowtie2" == $2 ]; then
     which bowtie2 &>/dev/null || export PATH=$PATH:/opt/conda/envs/bowtie2/bin/
 elif [ "fastqc" == $2 ]; then
     which java &>/dev/null || {
-        export PATH=$PATH:/opt/fastqc/:/opt/conda/envs/java/bin/ ;
+        export PATH=$PATH:/opt/conda/envs/java/FastQC/:/opt/conda/envs/java/bin/
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/envs/java/lib/:/opt/conda/envs/java/jre/lib/amd64/
     }
 elif [ "java" == $2 ]; then

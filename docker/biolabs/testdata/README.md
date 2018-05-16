@@ -1,11 +1,15 @@
 Docker Image with test data
 ===========================
 
-This is just an image `ubuntu:latest` - Ubuntu LTS with test data from
-`/mnt/stripe/washu_test_data`.
+This is just an image `biolabs:washu` - with test data from `/mnt/stripe/washu_test_data`.
 
 Build
 -----
+Ensure your `biolabs/washu` image is up to date.
+```bash
+docker pull biolabs/washu
+```
+
 ```bash
 # Create .tar.gz with test data
 tar -cvzf washu_test_data.tar.gz -C /mnt/stripe/ washu_test_data
