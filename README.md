@@ -35,7 +35,7 @@ export WASHU_PARALLELISM=8
 * Install required tools using [Conda](https://conda.io/docs/)
 ```bash
 conda install --channel bioconda samtools bedtools bowtie bowtie2 fastqc sra-tools macs2 sicer \
-    deeptools star rseg ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed
+    star rseg ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed
 ```
 For more details see `docker/biolabs/washu/Dockerfile`.
  * Download [Picard tools](https://github.com/broadinstitute/picard):

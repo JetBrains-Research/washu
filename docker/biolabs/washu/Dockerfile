@@ -24,8 +24,7 @@ RUN conda env create -q --name sratoolkit --file /root/conda_envs/sratoolkit.env
 
 # Python 2.7 with MACS2, SICER
 RUN conda env create -q --name py2.7 --file /root/conda_envs/py2.7.environment.yml
-RUN ln -sf /opt/conda/envs/py2.7/bin/macs2 /usr/local/bin/macs2
-RUN ln -sf /opt/conda/envs/py2.7/bin/SICER.sh /usr/local/bin/SICER.sh
+ENV PATH /opt/conda/envs/py2.7/bin/:$PATH
 
 # Python 3.5 environment with all the bioinformatics and python packages
 RUN conda env create -q --name py3.5 --file /root/conda_envs/py3.5.environment.yml

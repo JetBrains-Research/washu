@@ -82,10 +82,6 @@ run_bash("parallel/remove_duplicates.sh", PICARD_TOOLS, WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_unique",
              ["*_unique*", "*_metrics.txt", "*duplicates.log"])
 
-# Batch RPKM visualization
-run_bash("parallel/rpkm.sh", WORK_DIR)
-move_forward(WORK_DIR, WORK_DIR + "_rpkms", ["*.bw", "*rpkm.log"])
-
 # Batch subsampling to 15mln reads
 # READS = 15
 # run_bash("subsample.sh", WORK_DIR, str(READS))

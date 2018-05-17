@@ -4,7 +4,6 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - deeptools=3.0.2
   - rseg=0.4.9
   - samtools=1.7
   - multiqc=0.9

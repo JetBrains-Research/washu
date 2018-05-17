@@ -87,9 +87,12 @@ fi
 # Checks for errors in logs, stops the world
 check_logs()
 {
-    # IGNORE macs2 ValueError
+    # IGNORE MACS2 ValueError
     # See for details: https://github.com/JetBrains-Research/washu/issues/14
-    ERRORS=$(find . -name "*.log" | xargs grep -i -E "error|exception|No such file or directory" | grep -v -E "ValueError|WARNING")
+    # Also ignore SPP failure
+    ERRORS=$(find . -name "*.log" | xargs grep -i -E "error|exception|No such file or directory" |\
+        grep -v -E "ValueError|WARNING" | grep -v -E "Error in runmean")
+
     if [ ! -z "$ERRORS" ]; then
         echo "ERRORS found"
         echo "$ERRORS"
