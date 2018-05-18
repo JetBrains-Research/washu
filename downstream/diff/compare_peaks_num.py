@@ -12,9 +12,9 @@ from downstream.consensus import save_cons_to_file
 
 help_data = """
 Usage:
-    compare_peaks_num.py [input folder] [prefix] [output folder] 
+    compare_peaks_num.py [input folder] [prefix] [output folder]
 
-Scripts search for difference based on number of track with peaks 
+Scripts search for difference based on number of track with peaks
 """
 
 
