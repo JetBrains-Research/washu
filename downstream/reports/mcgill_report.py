@@ -3,10 +3,11 @@ import datetime
 import re
 import sys
 import tempfile
+import operator
+from typing import List, Tuple
+import numpy as np
 from itertools import chain
 from pathlib import Path
-import matplotlib.pyplot as plt
-from downstream.bed_metrics import save_plot
 import multiprocessing
 import functools
 from collections import namedtuple
@@ -48,6 +49,17 @@ def is_mono(c):
 
 def is_tcell(c):
     return mcgill_group(c) == TCELL
+
+def color_annotator_cell(label) -> Tuple[Tuple[str, str]]:
+    chunks = [ch.lower() for ch in label.split("_")]
+
+    for ch in chunks:
+        if ch.startswith("mn"):
+            return (("cell", "b"),)
+        elif ch.startswith("tc"):
+            return (("cell", "r"),)
+
+    return (("cell", "gray"),)
 
 def calc_consensus_file(mono_files_paths, tcell_files_paths, count=0, percent=0):
     mono_cons = consensus(mono_files_paths, count, percent)
@@ -136,6 +148,97 @@ def bar_consensus(mono_paths_map, tcell_paths_map, mono_consensus_bed, tcell_con
     plt.tight_layout()
     save_plot(save_to)
 
+def label_converter_donor_and_tool(name):
+    chunks = []
+    suffix_tool_map = {"Peak": "macs2", "island.bed": "sicer", "peaks.bed": "zinbra"}
+    match = re.match("(?:^|.*_)((?:mn|tc)(?:s|\d+)).*", name, flags=re.IGNORECASE)
+
+    if match:
+        chunks.append(match.group(1))
+    if "consensus" in name:
+        chunks.append("consensus")
+
+    for suffix, tool in suffix_tool_map.items():
+        if tool in name or name.endswith(suffix):
+            chunks.append(tool)
+
+    return "_".join(chunks) if chunks else name
+
+def donor(c):
+    name = re.sub('.*/', '', str(c))
+    match = re.search('(?:tc|mn)\\d+', name, flags=re.IGNORECASE)
+    if match is not None:
+        return match.group(0)
+    return name
+
+def frip_peaks(cell_labels, df, save_to):
+    """
+    Plots FRiP via peaks number for passed in data frame donors:
+
+    :param age_labels: Age labels for dots coloring
+    :param df: Data frame with information about donors and their FRiP
+    :param save_to: Object for plots saving
+    """
+    plt.figure()
+    ax = plt.subplot()
+    for i, cell_label in enumerate(cell_labels):
+        cell_data = df[df['cell'] == cell_label]
+        plt.plot(cell_data["peaks"], cell_data["frip"], 'ro',
+                 color="red" if cell_label == "T cell" else "blue", label=cell_label)
+        for j, label in enumerate(cell_data.index):
+            ax.annotate(label, xy=(cell_data["peaks"][j], cell_data["frip"][j]), xytext=(5, 0),
+                        color="red" if cell_label == "T cell" else "blue", textcoords='offset points')
+    plt.xlabel('Peaks')
+    plt.ylabel('FRiP')
+    plt.legend(loc=4)
+    plt.tight_layout()
+    save_plot(save_to)
+
+
+def frip_boxplot(cell_labels, df, save_to):
+    """
+    Plots FRiP boxplot for passed in data frame donors:
+
+    :param age_labels: Age labels for dots coloring
+    :param df: Data frame with information about donors and their FRiP
+    :param save_to: Object for plots saving
+    """
+    plt.figure()
+    ax = plt.subplot()
+    sns.boxplot(x="cell", y="frip", data=df, palette="Set3", linewidth=1.0, order=cell_labels, ax=ax)
+    sns.swarmplot(x="cell", y="frip", data=df, color=".25", order=cell_labels, ax=ax)
+
+    for i, cell_label in enumerate(cell_labels):
+        cell_data = df[df['cell'] == cell_label]
+        for j, label in enumerate(cell_data.index):
+            ax.annotate(label, xy=(i, cell_data.iloc[j, :]['frip']), xytext=(5, 0),
+                        color="red" if cell_label == "T cell" else "blue", textcoords='offset points')
+    ax.set_title("Signal FRiP")
+    save_plot(save_to)
+
+
+def calc_frip(rip_paths):
+    """
+    Calculates FRiP for old and young donor groups:
+
+    :param rip_paths: List of absolute paths to rip files
+    :return Age labels and data frame with information about donors FRiP
+    """
+    df = pd.DataFrame(columns=["file", "reads", "peaks", "rip"])
+    for rip_path in rip_paths:
+        data = pd.read_csv(rip_path)
+        rip_file = rip_path.split('/')[-1]
+        reads = float(data["reads"].loc[0])
+        peaks = int(data["peaks"].loc[0])
+        rip = float(data["rip"].loc[0])
+        df.loc[df.size] = (rip_file, reads, peaks, rip)
+    df["frip"] = 100.0 * df["rip"] / df["reads"]
+    df.index = [donor(df.loc[n]["file"]) for n in df.index]
+    df["cell"] = "monocyte"
+    df.loc[df.index.str.startswith("TC"), "cell"] = "T cell"
+    cell_labels = list(reversed(sorted(list(set(df['cell'])))))
+    return cell_labels, df
+
 def _cli():
     parser = argparse.ArgumentParser(description=help_data,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -171,7 +274,7 @@ def _cli():
                     if regions_extension(track_path) and is_tcell(track_path)}
     rip_files = sorted([str(f) for f in folder_path.glob("*_rip.csv")])
 
-    anns = [bm.color_annotator_age]
+    anns = [color_annotator_cell]
     annotator = bm.color_annotator_chain(*anns)
 
     peaks_paths = sorted(chain(folder_path.glob("*sicer*consensus*"),
@@ -208,21 +311,21 @@ def _cli():
         bm.plot_metric_heatmap("Intersection metric", df, figsize=(8, 8), save_to=pdf,
                                row_cluster=True, col_cluster=True,
                                row_color_annotator=annotator, col_color_annotator=annotator,
-                               row_label_converter=bm.label_converter_donor_and_tool,
-                               col_label_converter=bm.label_converter_donor_and_tool)
+                               row_label_converter=label_converter_donor_and_tool,
+                               col_label_converter=label_converter_donor_and_tool)
         bm.plot_metric_heatmap(
             "IM peaks@loci", df_loci, figsize=(15, 8), save_to=pdf,
             adjustments=dict(left=0.15, top=0.95, right=0.9, bottom=0.3),
             row_cluster=False, col_cluster=False,
             row_color_annotator=annotator,
             col_label_converter=loi.label_converter_shorten_loci,
-            row_label_converter=bm.label_converter_donor_and_tool,
+            row_label_converter=label_converter_donor_and_tool,
         )
 
         print("Calculating frip vs age")
-        age_labels, df = pm.calc_frip(rip_files)
-        pm.frip_peaks(age_labels, df, pdf)
-        pm.frip_boxplot(age_labels, df, pdf)
+        cell_labels, df = calc_frip(rip_files)
+        frip_peaks(cell_labels, df, pdf)
+        frip_boxplot(cell_labels, df, pdf)
         print("Calculating peaks count vs length")
         pm.length_bar_plots(tracks_paths, 2.0, 4.0, threads_num, pdf)
 
@@ -240,9 +343,11 @@ if __name__ == "__main__":
     matplotlib.use('Agg')
 
     import seaborn as sns
+    import matplotlib.pyplot as plt
+    from downstream.bed_metrics import save_plot
     from matplotlib.backends.backend_pdf import PdfPages
-    from downstream.aging import regions_extension, donor
-    from bed.bedtrace import run, consensus, metapeaks, intersect
+    from downstream.aging import regions_extension
+    from bed.bedtrace import run, Bed, consensus, metapeaks, intersect
     import downstream.bed_metrics as bm
     import downstream.loci_of_interest as loi
     import downstream.peak_metrics as pm
