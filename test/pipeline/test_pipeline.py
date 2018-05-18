@@ -68,10 +68,6 @@ def test_bam_qc():
     check_files("fastq_bams/qc/*.pdf", 6)
 
 
-def test_rpkm_step():
-    check_files("fastq_bams_rpkms/*.bw", 6)
-
-
 def test_macs2_broad():
     check_files("fastq_bams_macs2_broad_0.1/*.broadPeak", 4)
     check_files("fastq_bams_macs2_broad_0.1/*.broadPeak_rip.csv", 4)
