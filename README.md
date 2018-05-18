@@ -4,7 +4,7 @@ Pipeline tests [![long tests](http://teamcity.jetbrains.com/app/rest/builds/buil
 
 Technical pipelines
 ===================
-Technical pipelines for ChIP-Seq, RNA-Seq, RRBS processing on Portable Batch System (qsub).
+Technical pipelines for ChIP-Seq processing on Portable Batch System (qsub).
 
 How do I launch the pipeline?
 --------------------------
@@ -59,32 +59,15 @@ Project
 * `/scripts`        - QC, Visualization, BAM conversions, Reads In Peaks, etc.
 * `/test`           - Tests
 
-Scripts
--------
-Scripts for batch processing.
+Batch processing
+---------------- 
+All the scripts from `/parallel` are suitable to work with Portable Batch System and on single machine.
 * `fastqc.sh`   - Quality control for raw-reads using [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) 
 and [MultiQC](http://multiqc.info/) for aggregated report  
-* `bowtie.sh`   - [Bowtie](http://bowtie-bio.sourceforge.net/index.shtml) alignment of all the read files in a folder. Creates summary report:
-
-| sample |  reads | aligned | not_aligned | supressed |
-| ------------- |-------------:| -----:| -----:| -----:|
-| CD14_H3K4me3_hg38_bowtie.log| 50000000 | 49000000  (98.0%) | 300000 (0.6%) | 7000000 (1.4%) |  
-* `bigwig.sh`   - Alignment files visualization suitable for UCSC in a folder
-* `macs2.sh`    - Peak calling using [MACS2](https://github.com/taoliu/MACS). 
-Creates summary report, with (**R**eads **I**n **P**eaks) and (**F**raction of **R**eads **I**n **P**eaks) metrics
-
-| sample |  tags | redundant_rate | paired_peaks | fragment| alternatives | peaks| rip| frip |
-| ------------- |-------------:| -----:| -----:| -----:|-----:|-----:|-----:|-----:|
-| CD14_H3K4me3_hg38_bowtie_macs_broad_0.1.log| 50000000 | 0.1 | 20500 | 150 | 3,150 | 40000 | 3500000 | 70 |
+* `bowtie.sh`   - [Bowtie](http://bowtie-bio.sourceforge.net/index.shtml) alignment of all the read files in a folder.
 * `rseg.sh`     - Peak calling using [RSeg](https://academic.oup.com/bioinformatics/article/27/6/870/236489/Identifying-dispersed-epigenomic-domains-from-ChIP) algorithm
 * `sicer.sh`    - Broad histone marks peak calling using [SICER](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/) algorithm
-* `rpkm.sh`     - Create deduplicated normalized tracks using [RPKM](http://www.rna-seqblog.com/rpkm-fpkm-and-tpm-clearly-explained/)				
 
-All the scripts are designed for batch processing, and print all the necessary tools and arguments.
-
-Parallel execution
-------------------
-All the scripts from `/paralles` are suitable to work with Portable Batch System and on single machine.
 Parallelism level on local machine can be configured via **WASHU_PARALLELISM** environment variable.
  
 Pipelines
@@ -95,12 +78,10 @@ Pipelines
 
 Docker
 ------
-Fetch Docker images `biolabs/washu` and `biolabs/test-data`  
-with all the necessary data and tools for pipeline and tests.
+Fetch Docker images `biolabs/washu` with all the necessary data and tools for pipeline and tests.
 
 ```bash
 docker pull biolabs/washu
-docker pull biolabs/test-data
 ```
 
 Tests
@@ -109,8 +90,8 @@ Tests
 # Tests
 docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
 
-# Pipeline tests 
-docker run -v <project_path>:/washu -t -i biolabs/test-data /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
+# Pipeline test
+docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
 ```
 
 Tools used

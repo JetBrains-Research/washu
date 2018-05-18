@@ -2,6 +2,9 @@ FROM ubuntu:latest
 
 USER root
 
+# Prepare testdata
+COPY washu_test_data.tar.gz /root/
+
 # Install conda
 RUN apt-get update --fix-missing && apt-get install -y curl bzip2
 RUN curl --location https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh --output ~/miniconda.sh && \
@@ -26,7 +29,7 @@ RUN conda env create -q --name sratoolkit --file /root/conda_envs/sratoolkit.env
 RUN conda env create -q --name py2.7 --file /root/conda_envs/py2.7.environment.yml
 RUN ln -sf /opt/conda/envs/py2.7/bin/macs2 /usr/local/bin/macs2
 # SICER is python2 library, force it!
-RUN sed -i 's#python#python2#g' /opt/conda/envs/py2.7/share/sicer-1.1-2/SICER.sh
+RUN sed -i 's#python#/opt/conda/envs/py2.7/bin/python#g' /opt/conda/envs/py2.7/share/sicer-1.1-2/SICER.sh
 RUN ln -sf /opt/conda/envs/py2.7/share/sicer-1.1-2/SICER.sh /usr/local/bin/SICER.sh
 
 # Python 3.5 environment with all the bioinformatics and python packages
