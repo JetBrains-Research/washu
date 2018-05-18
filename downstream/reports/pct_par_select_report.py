@@ -4,9 +4,11 @@ import argparse
 from pathlib import Path
 import pandas as pd
 
+
 def donor_order_id(path):
     name = path.stem.split('_')[1]
     return name
+
 
 def calc_overlap(folder_path):
     peaks_paths = sorted(folder_path.glob("*peaks.bed"),
@@ -17,6 +19,7 @@ def calc_overlap(folder_path):
 def strategy_folders(folder_path):
     return [Path(s) for s in next(os.walk(str(folder_path)))[1]]
 
+
 def _cli():
     parser = argparse.ArgumentParser(description="",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -26,7 +29,7 @@ def _cli():
     folder_path = Path(args.folder)
     output_path = Path(args.output)
     folders = strategy_folders(folder_path)
-    df = pd.DataFrame(columns=['strategy','a','b','overlap'])
+    df = pd.DataFrame(columns=['strategy', 'a', 'b', 'overlap'])
     for path in folders:
         print("Calculating overlap for " + str(path))
         overlap = calc_overlap(path)
