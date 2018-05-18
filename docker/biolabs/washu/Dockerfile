@@ -38,8 +38,8 @@ RUN conda env create -q --name bio --file /root/conda_envs/bio.environment.yml
 ENV PATH /opt/conda/envs/bio/bin/:$PATH
 
 # Essential development tools and headers
-RUN apt-get install --yes gawk build-essential libgl1-mesa-dev bc unzip quota libssl-dev \
-    libboost-dev curl libssh2-1-dev libcurl4-openssl-dev libxml2-dev gfortran tar
+RUN apt-get install --yes --fix-missing gawk build-essential libgl1-mesa-dev bc unzip quota libssl-dev \
+    libboost-dev libssh2-1-dev libxml2-dev gfortran tar
 # Fix missing gtar for R devtools
 RUN ln -snf /bin/tar /bin/gtar
 
