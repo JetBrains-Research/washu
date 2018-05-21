@@ -11,7 +11,7 @@ ENCODE_PEAK_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/ag
 ENCODE_BB_PATH = "https://www.encodeproject.org/files/{}/@@download/{}.bigBed"
 LABELS_URL = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20" \
              "/labels/{}_labels.bed"
-#'Encode GSM1102782 macs narrow'
+# 'Encode GSM1102782 macs narrow'
 ENCODE_HIST_MAP = {
     'H3K27ac': {'GSM': 'GSM1102782', 'ENC': 'ENCFF439NLA'},
     'H3K27me3': {'GSM': 'GSM1102785', 'ENC': 'ENCFF575VMI'},
@@ -104,8 +104,8 @@ def _cli():
             '<a href="([^"]*{}[^"]*(?:peaks.bed|island.bed|broadPeak))">'
             .format(ENCODE_HIST_MAP[hist]['GSM']))
     encode_tuned_peaks = search_in_url(ENCODE_PEAK_PATH.format(hist),
-        '<a href="([^"]*{}[^"]*(?:peaks.bed|island.bed|broadPeak))">'.format(
-            ENCODE_HIST_MAP[hist]['GSM']))
+                                       '<a href="([^"]*{}[^"]*(?:peaks.bed|island.bed|broadPeak))">'
+                                       .format(ENCODE_HIST_MAP[hist]['GSM']))
 
     with open(output, 'w') as f:
         big_bed_path = ENCODE_BB_PATH.format(ENCODE_HIST_MAP[hist]['ENC'],
@@ -115,7 +115,7 @@ def _cli():
             print(HEADER, file=f)
 
             for path in encode_bws + encode_default_peaks + encode_tuned_peaks + \
-                        [big_bed_path] + [LABELS_URL.format(hist)]:
+                    [big_bed_path] + [LABELS_URL.format(hist)]:
                 print(RESOURCE_TEMPLATE.format(path), file=f)
             print(RESOURCE_FOOTER, file=f)
 

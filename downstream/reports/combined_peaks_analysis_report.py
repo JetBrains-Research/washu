@@ -77,10 +77,10 @@ def _cli():
 
                     tracks_names = list({str(tracks_path) for tracks_path in tracks_paths})
                     od_paths_map = {re.findall('OD\\d+', track_name)[0] + detect_tool(track_name):
-                                        track_name for track_name in tracks_names if
+                                    track_name for track_name in tracks_names if
                                     re.match('.*OD\\d+.*', track_name)}
                     yd_paths_map = {re.findall('YD\\d+', track_name)[0] + detect_tool(track_name):
-                                        track_name for track_name in tracks_names if
+                                    track_name for track_name in tracks_names if
                                     re.match('.*YD\\d+.*', track_name)}
                     df = bed_metric_table(tracks_paths, tracks_paths, threads=threads_num)
 

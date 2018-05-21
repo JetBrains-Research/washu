@@ -55,8 +55,8 @@ def _cli():
         filtered_paths = paths
 
     tracks_paths = sorted({path for path in filtered_paths if group(path) ==
-                    namedtuple('Group', 'name color')('O', 'blue') or group(path) ==
-                    namedtuple('Group', 'name color')('Y', 'red')})
+                          namedtuple('Group', 'name color')('O', 'blue') or group(path) ==
+                          namedtuple('Group', 'name color')('Y', 'red')})
     od_paths_map = {donor(track_path): track_path for track_path in tracks_paths
                     if regions_extension(track_path) and group(track_path) ==
                     namedtuple('Group', 'name color')('O', 'blue')}

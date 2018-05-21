@@ -119,17 +119,18 @@ def _cli():
             print(HEADER, file=f)
 
             for path in y20o20_total_consensuses + y20o20_bws + y20o20_peaks + encode_bws + \
-                        encode_peaks + [LABELS_URL.format(hist)]:
+                    encode_peaks + [LABELS_URL.format(hist)]:
                 print(RESOURCE_TEMPLATE.format(path), file=f)
             print(RESOURCE_FOOTER, file=f)
 
         insensitive_hist = re.compile(re.escape(hist), re.IGNORECASE)
 
         print_tracks(hist, browser, y20o20_total_consensuses, "", f, visibility="dense")
-        print_tracks(hist, browser, y20o20_bws, "type=bigWig", f, visibility="full",
-                     name_processor=lambda x: insensitive_hist.sub(hist, x.upper()))
-        print_tracks(hist, browser, y20o20_peaks, "type=broadPeak", f, visibility="dense",
-                     name_processor=lambda x: "ZINBRA " + x)
+        for i in range(0, len(y20o20_bws)):
+            print_tracks(hist, browser, [y20o20_bws[i]], "type=bigWig", f, visibility="full",
+                         name_processor=lambda x: insensitive_hist.sub(hist, x.upper()))
+            print_tracks(hist, browser, [y20o20_peaks[i]], "type=broadPeak", f, visibility="dense",
+                         name_processor=lambda x: "ZINBRA " + x)
         print_tracks(hist, browser, encode_bws, "type=bigWig", f, visibility="full")
         print_tracks(hist, browser, encode_peaks, "", f, visibility="dense")
         print(format_track(browser, "", LABELS_URL.format(hist), "", visibility="dense"), file=f)
