@@ -112,7 +112,7 @@ def donor_order_id(donor_data):
     donor_id = chunks[0]
     if len(chunks) > 1:
         return chunks[1], donor_id[:2], int(donor_id[2:])
-    return donor_id[:2], int(donor_id[2:])
+    return donor_id[:2], donor_id[2:] if not donor_id[2:].isdigit() else int(donor_id[2:])
 
 
 def calc_consensus(od_paths_map, yd_paths_map, scale):

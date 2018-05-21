@@ -4,7 +4,7 @@ import re
 import sys
 import tempfile
 import operator
-from typing import List, Tuple
+from typing import Tuple
 import numpy as np
 from itertools import chain
 from pathlib import Path
@@ -60,11 +60,11 @@ def color_annotator_cell(label) -> Tuple[Tuple[str, str]]:
 
     for ch in chunks:
         if ch.startswith("mn"):
-            return (("cell", "b"),)
+            return ("cell", "b"),
         elif ch.startswith("tc"):
-            return (("cell", "r"),)
+            return ("cell", "r"),
 
-    return (("cell", "gray"),)
+    return ("cell", "gray"),
 
 
 def calc_consensus_file(mono_files_paths, tcell_files_paths, count=0, percent=0):
@@ -92,8 +92,8 @@ def venn_consensus(mono_consensus_bed, tcell_consensus_bed, percent, save_to=Non
     """
     Plots venn diagram for consensus of selected scale:
 
-    :param od_consensus_bed: OD bed with od group consensus
-    :param yd_consensus_bed: YD bed with yd group consensus
+    :param mono_consensus_bed: bed with mono group consensus
+    :param tcell_consensus_bed: bed with tcell group consensus
     :param percent: percent of tracks count needed for consensus
     :param save_to: Object for plots saving
     """
@@ -153,8 +153,8 @@ def bar_consensus(mono_paths_map, tcell_paths_map, mono_consensus_bed, tcell_con
                  bottom=[mono_tcell_int_bed.count() + max(result_columns[2])] * n,
                  color='orange')
     p4 = plt.bar(ind, result_columns[4], width,
-                 bottom=[mono_tcell_int_bed.count() + max(result_columns[2])
-                         + max(result_columns[3])] * n,
+                 bottom=[mono_tcell_int_bed.count() + max(result_columns[2]) +
+                         max(result_columns[3])] * n,
                  color='black')
     plt.ylabel('Peaks count')
     plt.xticks(ind, result_columns[0], rotation=90, fontsize=fontsize)
@@ -193,7 +193,7 @@ def frip_peaks(cell_labels, df, save_to):
     """
     Plots FRiP via peaks number for passed in data frame donors:
 
-    :param age_labels: Age labels for dots coloring
+    :param cell_labels: Age labels for dots coloring
     :param df: Data frame with information about donors and their FRiP
     :param save_to: Object for plots saving
     """
@@ -205,7 +205,7 @@ def frip_peaks(cell_labels, df, save_to):
                  color="red" if cell_label == "T cell" else "blue", label=cell_label)
         for j, label in enumerate(cell_data.index):
             ax.annotate(label, xy=(cell_data["peaks"][j], cell_data["frip"][j]), xytext=(5, 0),
-                        color="red" if cell_label == "T cell" else "blue",\
+                        color="red" if cell_label == "T cell" else "blue",
                         textcoords='offset points')
     plt.xlabel('Peaks')
     plt.ylabel('FRiP')
@@ -218,7 +218,7 @@ def frip_boxplot(cell_labels, df, save_to):
     """
     Plots FRiP boxplot for passed in data frame donors:
 
-    :param age_labels: Age labels for dots coloring
+    :param cell_labels: Age labels for dots coloring
     :param df: Data frame with information about donors and their FRiP
     :param save_to: Object for plots saving
     """
@@ -291,9 +291,9 @@ def _cli():
 
     tracks_paths = sorted({path for path in filtered_paths if is_mono_or_tcell(path)})
     mono_paths_map = {donor(track_path): track_path for track_path in tracks_paths
-                    if regions_extension(track_path) and is_mono(track_path)}
+                      if regions_extension(track_path) and is_mono(track_path)}
     tcell_paths_map = {donor(track_path): track_path for track_path in tracks_paths
-                    if regions_extension(track_path) and is_tcell(track_path)}
+                       if regions_extension(track_path) and is_tcell(track_path)}
     rip_files = sorted([str(f) for f in folder_path.glob("*_rip.csv")])
 
     anns = [color_annotator_cell]
@@ -322,10 +322,10 @@ def _cli():
         print("Calculating median consensus")
         mono_consensus_bed, tcell_consensus_bed, mono_tcell_int_bed = \
             calc_consensus_file(list(mono_paths_map.values()), list(tcell_paths_map.values()),
-                                   percent=50)
+                                percent=50)
         venn_consensus(mono_consensus_bed, tcell_consensus_bed, 50, pdf)
         bar_consensus(mono_paths_map, tcell_paths_map, mono_consensus_bed, tcell_consensus_bed,
-                         mono_tcell_int_bed, threads_num, pdf)
+                      mono_tcell_int_bed, threads_num, pdf)
         print("Calculating cumulative consensus")
         pm.cumulative_consensus(tracks_paths, pdf)
         print("Calculating Intersection metric")
