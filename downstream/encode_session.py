@@ -7,11 +7,11 @@ from urllib.request import urlopen
 ENCODE_BW_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
                  "/cd14encode/bigwigs"
 ENCODE_PEAK_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
-                   "/cd14encode/peaks/{}"
-ENCODE_BB_PATH = "https://www.encodeproject.org/files/{}/@@download/{}.bigBed"
+                   "/cd14encode/peaks/{}/{}/bigBed"
+ENCODE_BB_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
+                 "/cd14encode/peaks/{}/encode/{}.bigBed"
 LABELS_URL = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20" \
              "/labels/{}_labels.bed"
-# 'Encode GSM1102782 macs narrow'
 ENCODE_HIST_MAP = {
     'H3K27ac': {'GSM': 'GSM1102782', 'ENC': 'ENCFF439NLA'},
     'H3K27me3': {'GSM': 'GSM1102785', 'ENC': 'ENCFF575VMI'},
@@ -20,11 +20,11 @@ ENCODE_HIST_MAP = {
     'H3K4me3': {'GSM': 'GSM1102797', 'ENC': 'ENCFF317WLK'}
 }
 HIST_TOOL_PATH_MAP = {
-    'H3K27ac': {'macs_broad/1.0E-4'},
-    'H3K27me3': {'macs_broad/1.0E-4', 'sicer/1.0E-6_600'},
-    'H3K36me3': {'macs_broad/1.0E-4', 'sicer/1.0E-6_600'},
-    'H3K4me1': {'macs_broad/1.0E-4'},
-    'H3K4me3': {'macs_broad/1.0E-4'}
+    'H3K27ac': {'macs_broad'},
+    'H3K27me3': {'macs_broad', 'sicer'},
+    'H3K36me3': {'macs_broad', 'sicer'},
+    'H3K4me1': {'macs_broad'},
+    'H3K4me3': {'macs_broad'}
 }
 HIST_COLOR_MAP = {
     "H3K27ac": (255, 0, 0),
@@ -35,6 +35,7 @@ HIST_COLOR_MAP = {
 }
 TOOL_COLOR_MAP = {
     "broad": (55, 126, 184),
+    "narrow": (77, 175, 74),
     "island": (228, 26, 28),
     "peaks": (152, 78, 163),
     "zinbra": (152, 78, 163)
@@ -54,7 +55,7 @@ sortable="false" visible="true" windowFunction="count">
             <DataRange baseline="0.0" drawBaseline="true" flipAxis="false" maximum="100.0" \
 minimum="0.0" type="LINEAR"/>
         </Track>"""
-UCSC_TRACK_TEMPLATE = """track name={} {} visibility={} maxHeightPixels=50:100:11 \
+UCSC_TRACK_TEMPLATE = """track {} name="{}" visibility={} maxHeightPixels=50:100:11 \
 windowingFunction=maximum smoothingWIndow=off {} {}"""
 FOOTER = """    </Panel>
     <Panel height="367" name="FeaturePanel" width="1836">
@@ -99,17 +100,15 @@ def _cli():
                                '<a href="([^"]*{}[^"]*bw)">'.format(ENCODE_HIST_MAP[hist]['GSM']))
     encode_default_peaks = []
     for tool_path in HIST_TOOL_PATH_MAP[hist]:
-        encode_default_peaks += search_in_url(
-            ENCODE_PEAK_PATH.format(hist) + "/" + tool_path,
-            '<a href="([^"]*{}[^"]*(?:peaks.bed|island.bed|broadPeak))">'
-            .format(ENCODE_HIST_MAP[hist]['GSM']))
-    encode_tuned_peaks = search_in_url(ENCODE_PEAK_PATH.format(hist),
-                                       '<a href="([^"]*{}[^"]*(?:peaks.bed|island.bed|broadPeak))">'
+        encode_default_peaks += search_in_url(ENCODE_PEAK_PATH.format(hist, tool_path),
+                                              '<a href="([^"]*{}[^"]*.bb)">'
+                                              .format(ENCODE_HIST_MAP[hist]['GSM']))
+    encode_tuned_peaks = search_in_url(ENCODE_PEAK_PATH.format(hist, "zinbra"),
+                                       '<a href="([^"]*{}[^"]*.bb)">'
                                        .format(ENCODE_HIST_MAP[hist]['GSM']))
 
     with open(output, 'w') as f:
-        big_bed_path = ENCODE_BB_PATH.format(ENCODE_HIST_MAP[hist]['ENC'],
-                                             ENCODE_HIST_MAP[hist]['ENC'])
+        big_bed_path = ENCODE_BB_PATH.format(hist, ENCODE_HIST_MAP[hist]['ENC'])
 
         if browser == IGV_BROWSER:
             print(HEADER, file=f)
@@ -120,12 +119,14 @@ def _cli():
             print(RESOURCE_FOOTER, file=f)
 
         print_tracks(hist, browser, encode_bws, "type=bigWig", f, visibility="full")
-        print_tracks(hist, browser, encode_default_peaks, "", f, visibility="dense")
-        print(format_track(browser, ','.join(str(x) for x in TOOL_COLOR_MAP["broad"]),
+        print_tracks(hist, browser, encode_default_peaks, "type=bigBed", f, visibility="dense",
+                     name_processor=lambda x: ("MACS " if "broad" in x else "SICER ") + x)
+        print(format_track(browser, ','.join(str(x) for x in TOOL_COLOR_MAP["narrow"]),
                            big_bed_path, "type=bigBed", visibility="dense",
                            name_processor=lambda _:
                            "Encode {} macs narrow".format(ENCODE_HIST_MAP[hist]['GSM'])), file=f)
-        print_tracks(hist, browser, encode_tuned_peaks, "type=broadPeak", f, visibility="dense")
+        print_tracks(hist, browser, encode_tuned_peaks, "type=bigBed", f, visibility="dense",
+                     name_processor=lambda x: "ZINBRA " + x)
         print(format_track(browser, "", LABELS_URL.format(hist), "", visibility="dense"), file=f)
 
         if browser == IGV_BROWSER:
@@ -144,10 +145,9 @@ def format_track(browser, color, path, track_type, visibility="", name_processor
     if browser == IGV_BROWSER:
         return IGV_TRACK_TEMPLATE.format(color, color, color, path, name_processor(Path(path).stem))
     if browser == UCSC_BROWSER:
-        track_type = "type=broadPeak" if "broadPeak" in path else track_type
-        return UCSC_TRACK_TEMPLATE.format(name_processor(Path(path).stem),
-                                          "" if urlopen(path).getheader("Content-Length") == '0'
-                                          else track_type, visibility,
+        return UCSC_TRACK_TEMPLATE.format("" if urlopen(path).getheader("Content-Length") == '0'
+                                          else track_type, name_processor(Path(path).stem),
+                                          visibility,
                                           "itemRgb=On" if "labels" in path else "color=" + color,
                                           ("bigDataUrl=" if "big" in track_type else "\n") + path)
 
@@ -162,7 +162,7 @@ def get_color(hist, filename):
         if tool in filename:
             color = TOOL_COLOR_MAP[tool]
             break
-    if "od" in filename.lower():
+    if "od" in filename.split("/")[-1].lower():
         return ','.join(str(int(x * 0.7)) for x in color)
     else:
         return ','.join(str(x) for x in color)
