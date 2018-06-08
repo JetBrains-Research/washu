@@ -19,6 +19,10 @@ ENCODE_BB_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/agin
 LABELS_URL = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20" \
              "/labels/{}_labels.bed"
 
+BEDGZ_PATH = "http://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/bedgz/{}"
+PEAKS_PATH = "http://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/peaks/{}/{}"
+ZINBRA_MODELS_PATH = "http://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/zinbra"
+
 GSM_HIST_MAP = {
     'H3K27ac': 'GSM1102782',
     'H3K27me3': 'GSM1102785',
@@ -55,8 +59,8 @@ FOLDER = os.path.dirname(__file__)
 OUT_FOLDER = FOLDER + '/out'
 
 
-def create_hist_page(hist, hist_page):
-    print('Creating modification page {}'.format(hist_page))
+def create_explore_data_page(hist, hist_page):
+    print('Creating explore data page {}'.format(hist_page))
     tracks = []
 
     y20o20_consensuses = search_in_url(Y20O20_CONSENSUS_PATH.format(hist),
@@ -88,12 +92,12 @@ def create_hist_page(hist, hist_page):
         tracks.append(format_track(hist, LABELS_URL.format(hist)))
 
     print('Loading data template')
-    with open(FOLDER + '/_data.html', 'r') as file:
+    with open(FOLDER + '/_explore.html', 'r') as file:
         data_template_html = file.read()
     with open(OUT_FOLDER + '/' + hist_page, 'w') as file:
         file.write(data_template_html
-                   .replace('//@TRACKS@', ',\n'.join(tracks))
-                   .replace('@MODIFICATION@', hist.upper()))
+                   .replace('@MODIFICATION@', hist)
+                   .replace('//@TRACKS@', ',\n'.join(tracks)))
 
 
 def print_tracks(hist, paths, name_processor=lambda x: x):
@@ -109,8 +113,42 @@ def format_track(hist, uri, name_processor=lambda x: x):
         replace('@NAME@', name_processor(Path(uri).stem)).replace('@URI@', uri).replace('@RGB@', get_color(hist, uri))
 
 
-def _cli():
+def create_download_data_page(download_chipseq_page):
+    print('Creating download data page {}'.format(download_chipseq_page))
 
+    def create_tr(hist):
+        return '<tr><th>{}</th>'.format(hist) + \
+               '<th><a href="{}">Reads</a></th>'.format(BEDGZ_PATH.format(hist)) + \
+               '<th><a href="{}">BigWigs</a></th>'.format(Y20O20_BW_PATH.format(hist)) + \
+               '<th><a href="{}">Peaks</a></th>'.format(PEAKS_PATH.format(hist, 'zinbra')) + \
+               '<th><a href="{}">Labels</a></th>'.format(LABELS_URL.format(hist)) + \
+               '<th><a href="{}">Models</a></th>'.format(ZINBRA_MODELS_PATH) + '</tr>'
+
+    print('Loading data template')
+    with open(FOLDER + '/_download_chipseq.html', 'r') as file:
+        download_chipseq_template = file.read()
+    table = """<table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Modification</th>
+                            <th>Reads</th>
+                            <th>Bigwigs</th>
+                            <th>Peaks</th>
+                            <th>Labels</th>
+                            <th>Peak caller models</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>""" + \
+            '\n'.join([create_tr(hist) for hist in GSM_HIST_MAP.keys()]) + \
+            """</tr>
+            </tbody>
+        </table>"""
+    with open(OUT_FOLDER + '/' + download_chipseq_page, 'w') as file:
+        file.write(download_chipseq_template.replace('@TABLE@', table))
+
+
+def _cli():
     if os.path.exists(OUT_FOLDER):
         shutil.rmtree(OUT_FOLDER)
     os.mkdir(OUT_FOLDER)
@@ -146,17 +184,25 @@ def _cli():
                    replace('@SCRIPTS@', '').
                    replace('@CONTENT@', '_software.html'))
 
-    print('Creating explore pages')
+    print('Creating explore data pages')
     for hist in GSM_HIST_MAP.keys():
-        hist_page = 'data_{}.html'.format(hist).lower()
-        create_hist_page(hist, hist_page)
+        hist_page = '_data_{}.html'.format(hist).lower()
+        create_explore_data_page(hist, hist_page)
         # biodallance should be included within main html page
         with open(OUT_FOLDER + '/{}.html'.format(hist).lower(), 'w') as file:
             file.write(template_html.
-                       replace('@TITLE@', 'hist').
+                       replace('@TITLE@', hist).
                        replace('@SCRIPTS@',
                                """<script type="text/javascript" src="//www.biodalliance.org/release-0.13/dalliance-compiled.js"></script>""").
                        replace('@CONTENT@', hist_page))
+
+    print('Creating download chipseq page')
+    create_download_data_page('_download_chipseq.html')
+    with open(OUT_FOLDER + '/download_chipseq.html', 'w') as file:
+        file.write(template_html.
+                   replace('@TITLE@', 'Download ChIP-Seq').
+                   replace('@SCRIPTS@', '').
+                   replace('@CONTENT@', '_download_chipseq.html'))
 
 
 if __name__ == "__main__":
