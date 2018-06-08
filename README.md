@@ -125,5 +125,5 @@ Data standards and pipelines
 Useful links
 ------------
 * Washington University in Saint Louis Maxim Artyomov LAB [homepage](https://artyomovlab.wustl.edu/site/) 
-* JetBrains BioLabs [homepage](https://research.jetbrains.org/groups/biolabs)
+* JetBrains Research BioLabs [homepage](https://research.jetbrains.org/groups/biolabs)
 * Review on ChIP-Seq, ATAC-Seq and DNAse-Seq processing in latex [format](https://github.com/olegs/bioinformatics)
