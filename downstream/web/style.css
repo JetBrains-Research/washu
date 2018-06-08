@@ -1,37 +1,28 @@
-#genome-browser-footer {
-    width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 20px;
-    color: #777;
-}
-
-#genome-browser-footer a {
-    color: #777;
-}
-
-#genome-browser-footer li {
-    display: inline-block;
-    position: relative;
-    margin-left: 3px;
-    margin-right: 3px;
-}
-
-
 .content {
-    width: 1020px;
-    margin: 20px auto;
+    width: 1000px;
+    margin: 60px auto;
 }
 
-.browsers-list-li {
-    vertical-align: text-top;
+#footer {
+    text-align: center;
+    color: #777;
+}
+
+#footer a {
+    color: #777;
+}
+
+#footer li {
     display: inline-block;
+    margin-left: 20px;
 }
 
-.no-borders {
-    border-top: none !important;
+#footer ul {
+    margin-left: 20px;
+    margin-right: 20px;
+    position: center;
 }
 
-ul.footer {
-  display: inline;
+.dalliance-root {
+    max-height: 800px !important;
 }

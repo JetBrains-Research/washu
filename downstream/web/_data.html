@@ -1,0 +1,58 @@
+<!-- To be included inside template.html -->
+
+<div class="page-header">
+    <h1>@MODIFICATION@</h1>
+</div>
+
+<h2>Genome Browser</h2>
+<div id="svgHolder"></div>
+
+<h2>Sessions</h2>
+<h2>Download</h2>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        new Browser({
+            // 5:42,334,449..42,811,409 # GHR gene - see http://genomics.senescence.info/genes/
+            chr: '5',
+            viewStart: 42334449,
+            viewEnd: 42811409,
+
+            coordSystem: {
+                speciesName: 'Human',
+                auth: 'GRCh',
+                version: '37',
+                ucscName: 'hg19'
+            },
+
+            sources: [{
+                name: 'Genome',
+                twoBitURI: 'http://hgdownload.cse.ucsc.edu/goldenpath/hg19/bigZips/hg19.2bit',
+                tier_type: 'sequence'
+            },
+                {
+                    name: 'Genes',
+                    desc: 'Gene structures from GENCODE 19',
+                    bwgURI: '//www.biodalliance.org/datasets/gencode.bb',
+                    stylesheet_uri: '//www.biodalliance.org/stylesheets/gencode.xml',
+                    collapseSuperGroups: true,
+                    trixURI: '//www.biodalliance.org/datasets/geneIndex.ix'
+                },
+                {
+                    name: 'Repeats',
+                    desc: 'Repeat annotation from Ensembl',
+                    bwgURI: '//www.biodalliance.org/datasets/repeats.bb',
+                    stylesheet_uri: '//www.biodalliance.org/stylesheets/bb-repeats.xml'
+                },
+                {
+                    name: 'Conservation',
+                    desc: 'Conservation',
+                    bwgURI: '//www.biodalliance.org/datasets/phastCons46way.bw',
+                    noDownsample: true
+                },
+//@TRACKS@
+            ],
+        });
+    });
+</script>
+

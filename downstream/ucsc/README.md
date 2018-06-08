@@ -1,1 +1,0 @@
-Prepared custom tracks for UCSC genome [browser](https://genome.ucsc.edu/).
