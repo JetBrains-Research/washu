@@ -19,9 +19,9 @@ ENCODE_BB_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/agin
 LABELS_URL = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20" \
              "/labels/{}_labels.bed"
 
-BEDGZ_PATH = "http://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/bedgz/{}"
-PEAKS_PATH = "http://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/peaks/{}/{}"
-ZINBRA_MODELS_PATH = "http://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/zinbra"
+BEDGZ_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/bedgz/{}"
+PEAKS_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/peaks/{}/{}"
+ZINBRA_MODELS_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/zinbra"
 
 GSM_HIST_MAP = {
     'H3K27ac': 'GSM1102782',
