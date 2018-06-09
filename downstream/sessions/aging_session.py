@@ -166,8 +166,7 @@ def _cli():
 
 def print_tracks(hist, browser, paths, track_type, file, visibility="", name_processor=lambda x: x):
     for path in paths:
-        color = get_color(hist, path)
-        print(format_track(browser, color, path, track_type, visibility=visibility,
+        print(format_track(browser, get_color(hist, path), path, track_type, visibility=visibility,
                            name_processor=name_processor), file=file)
 
 
@@ -199,6 +198,7 @@ def get_color(hist, filename):
 
 
 def search_in_url(url, regexp):
+    """ Collects child urls by regexp """
     html = str(urlopen(url).read())
     file_names = re.findall(regexp, html)
     file_urls = [url + "/" + file_name for file_name in file_names]

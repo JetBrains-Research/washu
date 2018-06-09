@@ -59,8 +59,12 @@ FOLDER = os.path.dirname(__file__)
 OUT_FOLDER = FOLDER + '/out'
 
 
-def create_explore_data_page(hist, hist_page):
-    print('Creating explore data page {}'.format(hist_page))
+def generate_explore_data_page(hist, explore_data_page):
+    explore_data_template = FOLDER + '/_explore_data.html'
+    print('Creating explore data page {} by template {}'.format(explore_data_page, explore_data_template))
+    with open(explore_data_template, 'r') as file:
+        template_html = file.read()
+
     tracks = []
 
     y20o20_consensuses = search_in_url(Y20O20_CONSENSUS_PATH.format(hist),
@@ -79,28 +83,25 @@ def create_explore_data_page(hist, hist_page):
 
         insensitive_hist = re.compile(re.escape(hist), re.IGNORECASE)
 
-        tracks.extend(print_tracks(hist, y20o20_total_consensuses))
+        tracks.extend(format_tracks(hist, y20o20_total_consensuses))
         for i in range(0, len(y20o20_bws)):
-            tracks.extend(print_tracks(hist, [y20o20_bws[i]],
-                                       name_processor=lambda x: insensitive_hist.sub(hist, x.upper())))
-            tracks.extend(print_tracks(hist, [y20o20_zinbra_peaks[i]],
-                                       name_processor=lambda x: "ZINBRA " + x))
+            tracks.extend(format_tracks(hist, [y20o20_bws[i]],
+                                        name_processor=lambda x: insensitive_hist.sub(hist, x.upper())))
+            tracks.extend(format_tracks(hist, [y20o20_zinbra_peaks[i]],
+                                        name_processor=lambda x: "ZINBRA " + x))
 
-        tracks.extend(print_tracks(hist, encode_bws))
-        tracks.extend(print_tracks(hist, encode_peaks,
-                                   name_processor=lambda x: ("MACS " if "broad" in x else "SICER ") + x))
+        tracks.extend(format_tracks(hist, encode_bws))
+        tracks.extend(format_tracks(hist, encode_peaks,
+                                    name_processor=lambda x: ("MACS " if "broad" in x else "SICER ") + x))
         tracks.append(format_track(hist, LABELS_URL.format(hist)))
 
-    print('Loading data template')
-    with open(FOLDER + '/_explore.html', 'r') as file:
-        data_template_html = file.read()
-    with open(OUT_FOLDER + '/' + hist_page, 'w') as file:
-        file.write(data_template_html
+    with open(OUT_FOLDER + '/' + explore_data_page, 'w') as file:
+        file.write(template_html
                    .replace('@MODIFICATION@', hist)
                    .replace('//@TRACKS@', ',\n'.join(tracks)))
 
 
-def print_tracks(hist, paths, name_processor=lambda x: x):
+def format_tracks(hist, paths, name_processor=lambda x: x):
     return [format_track(hist, path, name_processor) for path in paths]
 
 
@@ -113,8 +114,11 @@ def format_track(hist, uri, name_processor=lambda x: x):
         replace('@NAME@', name_processor(Path(uri).stem)).replace('@URI@', uri).replace('@RGB@', get_color(hist, uri))
 
 
-def create_download_data_page(download_chipseq_page):
-    print('Creating download data page {}'.format(download_chipseq_page))
+def generate_download_data_page(download_chipseq_page):
+    download_chipseq_template = FOLDER + '/_download_chipseq.html'
+    print('Creating download data page {} by template {}'.format(download_chipseq_page, download_chipseq_template))
+    with open(download_chipseq_template, 'r') as file:
+        template_html = file.read()
 
     def create_tr(hist):
         return '<tr><th>{}</th>'.format(hist) + \
@@ -124,9 +128,6 @@ def create_download_data_page(download_chipseq_page):
                '<th><a href="{}">Labels</a></th>'.format(LABELS_URL.format(hist)) + \
                '<th><a href="{}">Models</a></th>'.format(ZINBRA_MODELS_PATH) + '</tr>'
 
-    print('Loading data template')
-    with open(FOLDER + '/_download_chipseq.html', 'r') as file:
-        download_chipseq_template = file.read()
     table = """<table class="table table-striped">
                         <thead>
                         <tr>
@@ -134,18 +135,31 @@ def create_download_data_page(download_chipseq_page):
                             <th>Reads</th>
                             <th>Bigwigs</th>
                             <th>Peaks</th>
-                            <th>Labels</th>
+                            <th>Peak caller labels</th>
                             <th>Peak caller models</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>""" + \
-            '\n'.join([create_tr(hist) for hist in GSM_HIST_MAP.keys()]) + \
+                        <tr>""" + '\n'.join([create_tr(hist) for hist in GSM_HIST_MAP.keys()]) + \
             """</tr>
             </tbody>
         </table>"""
     with open(OUT_FOLDER + '/' + download_chipseq_page, 'w') as file:
-        file.write(download_chipseq_template.replace('@TABLE@', table))
+        file.write(template_html.replace('@TABLE@', table))
+
+
+def generate_page(page, title, scripts, content):
+    template_path = FOLDER + '/template.html'
+    print('Creating page {} by template {}\ntitle={}\nscripts={}\ncontent={}'.format(
+        page, template_path, title, scripts, content
+    ))
+    with open(template_path, 'r') as file:
+        template_html = file.read()
+    with open(OUT_FOLDER + '/' + page, 'w') as file:
+        file.write(template_html.
+                   replace('@TITLE@', title).
+                   replace('@SCRIPTS@', scripts).
+                   replace('@CONTENT@', content))
 
 
 def _cli():
@@ -159,50 +173,28 @@ def _cli():
         if re.match('.*\.(html|css|png)', file) and not re.match('template\\.html', file):
             shutil.copy(file, OUT_FOLDER)
 
-    print('Loading template')
-    with open(FOLDER + '/template.html', 'r') as file:
-        template_html = file.read()
-
-    print('Creating index.html')
-    with open(OUT_FOLDER + '/index.html', 'w') as file:
-        file.write(template_html.
-                   replace('@TITLE@', 'Aging project').
-                   replace('@SCRIPTS@', '').
-                   replace('@CONTENT@', '_index.html'))
-
-    print('Creating paper.html')
-    with open(OUT_FOLDER + '/paper.html', 'w') as file:
-        file.write(template_html.
-                   replace('@TITLE@', 'Paper').
-                   replace('@SCRIPTS@', '').
-                   replace('@CONTENT@', '_paper.html'))
-
-    print('Creating software.html')
-    with open(OUT_FOLDER + '/software.html', 'w') as file:
-        file.write(template_html.
-                   replace('@TITLE@', 'Software').
-                   replace('@SCRIPTS@', '').
-                   replace('@CONTENT@', '_software.html'))
+    print('Generate static pages')
+    generate_page('index.html', title='Multiomics dissection of healthy human aging', scripts='', content='_index.html')
+    generate_page('paper.html', title='Paper', scripts='', content='_paper.html')
+    generate_page('software.html', title='Software', scripts='', content='_software.html')
 
     print('Creating explore data pages')
     for hist in GSM_HIST_MAP.keys():
-        hist_page = '_data_{}.html'.format(hist).lower()
-        create_explore_data_page(hist, hist_page)
+        content_page = '_explore_data_{}.html'.format(hist).lower()
+        generate_explore_data_page(hist, content_page)
         # biodallance should be included within main html page
-        with open(OUT_FOLDER + '/{}.html'.format(hist).lower(), 'w') as file:
-            file.write(template_html.
-                       replace('@TITLE@', hist).
-                       replace('@SCRIPTS@',
-                               """<script type="text/javascript" src="//www.biodalliance.org/release-0.13/dalliance-compiled.js"></script>""").
-                       replace('@CONTENT@', hist_page))
+        generate_page('{}.html'.format(hist).lower(),
+                      title=hist,
+                      scripts="""
+<script type="text/javascript" src="//www.biodalliance.org/release-0.13/dalliance-compiled.js"></script>""",
+                      content=content_page)
 
     print('Creating download chipseq page')
-    create_download_data_page('_download_chipseq.html')
-    with open(OUT_FOLDER + '/download_chipseq.html', 'w') as file:
-        file.write(template_html.
-                   replace('@TITLE@', 'Download ChIP-Seq').
-                   replace('@SCRIPTS@', '').
-                   replace('@CONTENT@', '_download_chipseq.html'))
+    content_page = '_download_chipseq.html'
+    generate_download_data_page(content_page)
+    generate_page('download_chipseq.html', title='Download ChIP-Seq', scripts='', content=content_page)
+
+    print('Done')
 
 
 if __name__ == "__main__":

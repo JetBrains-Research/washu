@@ -7,8 +7,8 @@
 <h2>JBR Genome browser</h2>
 <p>Most existing genome browsers (e.g. <a href="https://genome.ucsc.edu/">UCSC genome browser</a>, <a
         href="http://jbrowse.org/">JBrowse</a>, <a href="https://www.broadinstitute.org/igv/">IGV</a>, <a
-        href="http://epigenomegateway.wustl.edu/browser/">WashU</a>) weren’t designed with extensibility in mind. As a
-    result it is hard or impossible to customize or extend them. We’ve addressed the issue in the academic fashion by
+        href="http://epigenomegateway.wustl.edu/browser/">WashU</a>) were not designed with extensibility in mind. As a
+    result it is hard or impossible to customize or extend them. We addressed the issue in the academic fashion by
     developing a browser of our own. </p><p>Some features highlights:</p>
 <ul>
     <li>Supports semi-supervised peak calling using <a href="https://github.com/JetBrains-Research/zinbra">VPA?</a>
@@ -22,6 +22,7 @@
     <li>Custom statistics tracks for multiple regions available</li>
 </ul>
 
+<hr>
 
 <h2>VPA? Peak Caller</h2>
 <div>
@@ -29,29 +30,5 @@
         Both procedures rely on the Zero Inflated Negative Binomial Restricted Algorithm, see <a
                 href="https://github.com/JetBrains-Research/zinbra/blob/master/zinbra_scheme.pdf">zinbra_scheme.pdf</a>
         for details.</p>
-    <p>See <a href="https://github.com/JetBrains-Research/zinbra/releases">releases</a> for latest public release of
-        peak caller. Nightly builds are available <a
-                href="https://teamcity.jetbrains.com/viewLog.html?buildId=lastSuccessful&amp;buildTypeId=Epigenome_Zinbra&amp;tab=artifacts&amp;guest=1"
-                rel="nofollow">on teamcity CI</a>.</p>
-
-    <h3>Analysis</h3>
-    <p>To analyze a single (possibly replicated) biological condition use <code>analyze</code> command. See details
-        with command:</p>
-    <div class="highlight highlight-source-shell">
-        <pre>$ java -jar zinbra.jar analyze --help</pre>
-    </div>
-    <p>The <code>&lt;output.bed&gt;</code> file will contain predicted and FDR-controlled peaks in the <a
-            href="https://github.com/taoliu/MACS">MACS2</a> format:</p>
-    <pre><code>&lt;chromosome&gt; &lt;peak start offset&gt; &lt;peak end offset&gt; &lt;peak_name&gt; &lt;score&gt; . &lt;coverage or fold/change&gt; &lt;-log p-value&gt; &lt;-log Q-value&gt;
-</code></pre>
-    <p><code>analyze</code> reports p- and [Q-values] <a
-            href="http://en.wikipedia.org/wiki/False_discovery_rate#q-value" rel="nofollow">q</a> for the
-        null-hypothesis that a
-        given bin is not enriched with ChIP-Seq modification. Peaks are formed from a list of truly (in the FDR
-        sense)
-        <strong>enriched</strong> bins for the analyzed biological condition by thresholding
-        the Q-value with a threshold <code>alpha</code> and merging close peaks using <code>gap</code> option to
-        broad ones.
-        This is equivalent to controlling FDR at level <code>alpha</code>.
-        If control is given it will be used with <code>fragment_size</code> to compute coverage for analysis.</p>
+    <b>TODO</b>
 </div>
