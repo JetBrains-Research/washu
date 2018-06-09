@@ -1,8 +1,5 @@
-import argparse
-
 # Hardcoded URLs with data
-from downstream.sessions.aging_session import format_track, search_in_url, print_tracks, HIST_TOOL_PATH_MAP, \
-    IGV_BROWSER, HEADER, RESOURCE_TEMPLATE, RESOURCE_FOOTER, TOOL_COLOR_MAP, FOOTER
+from downstream.sessions.aging_session import *
 
 ENCODE_BW_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
                  "/cd14encode/bigwigs"

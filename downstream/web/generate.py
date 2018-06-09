@@ -19,9 +19,12 @@ ENCODE_BB_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/agin
 LABELS_URL = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20" \
              "/labels/{}_labels.bed"
 
-BEDGZ_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/bedgz/{}"
-PEAKS_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/peaks/{}/{}"
-ZINBRA_MODELS_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq/Y20O20/zinbra"
+BEDGZ_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
+             "/Y20O20/bedgz/{}"
+PEAKS_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
+             "/Y20O20/peaks/{}/{}"
+ZINBRA_MODELS_PATH = "https://artyomovlab.wustl.edu/publications/supp_materials/aging/chipseq" \
+                     "/Y20O20/zinbra"
 
 GSM_HIST_MAP = {
     'H3K27ac': 'GSM1102782',
@@ -59,9 +62,10 @@ FOLDER = os.path.dirname(__file__)
 OUT_FOLDER = FOLDER + '/out'
 
 
-def generate_explore_data_page(hist, explore_data_page):
+def generate_explore_data_page(hist, page):
     explore_data_template = FOLDER + '/_explore_data.html'
-    print('Creating explore data page {} by template {}'.format(explore_data_page, explore_data_template))
+    print('Creating explore data page {} by template {}'.format(page,
+                                                                explore_data_template))
     with open(explore_data_template, 'r') as file:
         template_html = file.read()
 
@@ -79,23 +83,26 @@ def generate_explore_data_page(hist, explore_data_page):
     encode_peaks = []
     for tool_path in HIST_TOOL_PATH_MAP[hist]:
         encode_peaks += search_in_url(ENCODE_BB_PATH.format(hist, tool_path),
-                                      '<a href="([^"]*{}[^"]*.bb)">'.format(GSM_HIST_MAP[hist]))
+                                      '<a href="([^"]*{}[^"]*.bb)">'.format(
+                                          GSM_HIST_MAP[hist]))
 
         insensitive_hist = re.compile(re.escape(hist), re.IGNORECASE)
 
         tracks.extend(format_tracks(hist, y20o20_total_consensuses))
         for i in range(0, len(y20o20_bws)):
             tracks.extend(format_tracks(hist, [y20o20_bws[i]],
-                                        name_processor=lambda x: insensitive_hist.sub(hist, x.upper())))
+                                        name_processor=lambda x:
+                                            insensitive_hist.sub(hist, x.upper())))
             tracks.extend(format_tracks(hist, [y20o20_zinbra_peaks[i]],
                                         name_processor=lambda x: "ZINBRA " + x))
 
         tracks.extend(format_tracks(hist, encode_bws))
         tracks.extend(format_tracks(hist, encode_peaks,
-                                    name_processor=lambda x: ("MACS " if "broad" in x else "SICER ") + x))
+                                    name_processor=lambda x:
+                                        ("MACS " if "broad" in x else "SICER ") + x))
         tracks.append(format_track(hist, LABELS_URL.format(hist)))
 
-    with open(OUT_FOLDER + '/' + explore_data_page, 'w') as file:
+    with open(OUT_FOLDER + '/' + page, 'w') as file:
         file.write(template_html
                    .replace('@MODIFICATION@', hist)
                    .replace('//@TRACKS@', ',\n'.join(tracks)))
@@ -109,14 +116,18 @@ def format_track(hist, uri, name_processor=lambda x: x):
     return """{
     name: '@NAME@',
     bwgURI: '@URI@',
-    style: [{type: 'default', style: {glyph: 'HISTOGRAM', BGCOLOR: 'rgb(@RGB@)', HEIGHT: 30, id: 'style1'}}],
-    noDownsample: false}""". \
-        replace('@NAME@', name_processor(Path(uri).stem)).replace('@URI@', uri).replace('@RGB@', get_color(hist, uri))
+    style: [{
+        type: 'default', 
+        style: {glyph: 'HISTOGRAM', BGCOLOR: 'rgb(@RGB@)', HEIGHT: 30, id: 'style1'}
+    }],
+    noDownsample: false
+}""".replace('@NAME@', name_processor(Path(uri).stem))\
+        .replace('@URI@', uri).replace('@RGB@', get_color(hist, uri))
 
 
-def generate_download_data_page(download_chipseq_page):
+def generate_download_chipseq_page(page):
     download_chipseq_template = FOLDER + '/_download_chipseq.html'
-    print('Creating download data page {} by template {}'.format(download_chipseq_page, download_chipseq_template))
+    print('Creating download data page {} by template {}'.format(page, download_chipseq_template))
     with open(download_chipseq_template, 'r') as file:
         template_html = file.read()
 
@@ -144,7 +155,7 @@ def generate_download_data_page(download_chipseq_page):
             """</tr>
             </tbody>
         </table>"""
-    with open(OUT_FOLDER + '/' + download_chipseq_page, 'w') as file:
+    with open(OUT_FOLDER + '/' + page, 'w') as file:
         file.write(template_html.replace('@TABLE@', table))
 
 
@@ -174,9 +185,12 @@ def _cli():
             shutil.copy(file, OUT_FOLDER)
 
     print('Generate static pages')
-    generate_page('index.html', title='Multiomics dissection of healthy human aging', scripts='', content='_index.html')
-    generate_page('paper.html', title='Paper', scripts='', content='_paper.html')
-    generate_page('software.html', title='Software', scripts='', content='_software.html')
+    generate_page('index.html', title='Multiomics dissection of healthy human aging',
+                  scripts='', content='_index.html')
+    generate_page('paper.html',
+                  title='Paper', scripts='', content='_paper.html')
+    generate_page('software.html',
+                  title='Software', scripts='', content='_software.html')
 
     print('Creating explore data pages')
     for hist in GSM_HIST_MAP.keys():
@@ -186,13 +200,15 @@ def _cli():
         generate_page('{}.html'.format(hist).lower(),
                       title=hist,
                       scripts="""
-<script type="text/javascript" src="//www.biodalliance.org/release-0.13/dalliance-compiled.js"></script>""",
+<script type="text/javascript" 
+    src="//www.biodalliance.org/release-0.13/dalliance-compiled.js"></script>""",
                       content=content_page)
 
     print('Creating download chipseq page')
     content_page = '_download_chipseq.html'
-    generate_download_data_page(content_page)
-    generate_page('download_chipseq.html', title='Download ChIP-Seq', scripts='', content=content_page)
+    generate_download_chipseq_page(content_page)
+    generate_page('download_chipseq.html',
+                  title='Download ChIP-Seq', scripts='', content=content_page)
 
     print('Done')
 
