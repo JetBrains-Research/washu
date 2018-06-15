@@ -64,7 +64,7 @@ def error_plot(ind, parameters_path1, errors1, parameters_path2, errors2, names,
 
 
 def detect_tool(path):
-    return re.search('(zinbra|macs_broad|macs_narrow|sicer)', str(path),
+    return re.search('(span|macs_broad|macs_narrow|sicer)', str(path),
                      flags=re.IGNORECASE).group(0)
 
 

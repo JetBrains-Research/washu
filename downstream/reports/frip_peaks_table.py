@@ -15,18 +15,18 @@ def _cli():
     parser.add_argument("peaks", help="Peaks folder")
     args = parser.parse_args()
 
-    tool_outliers = {"H3K27ac": {"zinbra": [],  "macs_broad": [], "sicer": []},
-                     "H3K27me3": {"zinbra": ["OD10"],  "macs_broad": ["OD10"], "sicer": []},
-                     "H3K36me3": {"zinbra": ["OD18"],
+    tool_outliers = {"H3K27ac": {"span": [],  "macs_broad": [], "sicer": []},
+                     "H3K27me3": {"span": ["OD10"],  "macs_broad": ["OD10"], "sicer": []},
+                     "H3K36me3": {"span": ["OD18"],
                                   "macs_broad": ["OD18"],
                                   "sicer": []},
-                     "H3K4me3": {"zinbra": ["YD18", "YD5", "OD17"],
+                     "H3K4me3": {"span": ["YD18", "YD5", "OD17"],
                                  "macs_broad": ["YD18", "YD5", "OD17"],
                                  "sicer": []},
-                     "H3K4me1": {"zinbra": [],  "macs_broad": ["YD14", "OD7"], "sicer": []}}
+                     "H3K4me1": {"span": [],  "macs_broad": ["YD14", "OD7"], "sicer": []}}
 
     for hist_mod in ["H3K27ac", "H3K27me3", "H3K36me3", "H3K4me1", "H3K4me3"]:
-        for tool in ["zinbra", "macs_broad", "sicer"]:
+        for tool in ["span", "macs_broad", "sicer"]:
             print(hist_mod, tool)
             folder_path = Path(args.peaks + "/" + hist_mod + "/" + tool)
             rip_files = sorted([str(f) for f in folder_path.glob("*_rip.csv")])

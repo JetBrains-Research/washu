@@ -74,11 +74,11 @@ class ChangeCollector:
         shutil.copyfile(file, os.path.join(self.output, result_file_name))
         self.change_files_produced.append(result_file_name)
 
-    def process_zinbra(self, input):
+    def process_span(self, input):
         base_path = "/mnt/stripe/bio/experiments/configs/Y20O20"
-        zinbra_name = "zinbra_input" if input else "zinbra"
-        zinbra_base_path = "{}/chip-seq-diff/{}/{}".format(base_path, self.mark, zinbra_name)
-        pattern = os.path.join(zinbra_base_path, "diff_OD_YD_{}_zinbra*".format(self.mark))
+        span_name = "span_input" if input else "span"
+        span_base_path = "{}/chip-seq-diff/{}/{}".format(base_path, self.mark, span_name)
+        pattern = os.path.join(span_base_path, "diff_OD_YD_{}_span*".format(self.mark))
         for file in glob.glob(pattern):
             base_name = os.path.basename(file)
             if "cond" in base_name:
@@ -147,13 +147,13 @@ class ChangeCollector:
         self.change_counts.append(("chipdiff_{}".format(self.mark), size))
 
     def collect_difference(self):
-        self.process_diff_bind("diff_bind_zinbra")
-        self.process_diff_bind("diff_bind_cons_zinbra")
+        self.process_diff_bind("diff_bind_span")
+        self.process_diff_bind("diff_bind_cons_span")
 
         self.process_chip_diff()
 
-        self.process_zinbra(False)
-        self.process_zinbra(True)
+        self.process_span(False)
+        self.process_span(True)
 
         self.process_macs_bg_diff()
 

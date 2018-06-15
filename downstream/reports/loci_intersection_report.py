@@ -88,20 +88,20 @@ def _cli():
             # TODO: legacy peaks, cleanup required
             # default peaks
             golden_peaks_root = data_root / "experiments/aging/peak_calling"
-            zinbra_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
+            span_peaks_root = data_root / "experiments/configs/Y20O20{}/peaks".format(
                 "" if exclude_failed_tracks else "_full"
             )
             # tuned peaks
-            zinbra_peaks_root_tuned = data_root / "experiments/configs/Y20O20_full/benchmark_peaks"
+            span_peaks_root_tuned = data_root / "experiments/configs/Y20O20_full/benchmark_peaks"
             golden_peaks_root_tuned = data_root / "experiments/aging/peak_calling/benchmark_peaks"
 
             peaks_map = {
-                "zinbra": loi._collect_zinbra_peaks(zinbra_peaks_root),
+                "span": loi._collect_span_peaks(span_peaks_root),
                 "golden": loi._collect_golden_peaks(golden_peaks_root, exclude_failed_tracks),
-                "zinbra_tuned": loi._collect_zinbra_peaks(zinbra_peaks_root_tuned),
+                "span_tuned": loi._collect_span_peaks(span_peaks_root_tuned),
                 "golden_tuned": loi._collect_golden_peaks(golden_peaks_root_tuned, None)
             }
-            tools_for_stat_test = ["zinbra_tuned", "golden_tuned"]
+            tools_for_stat_test = ["span_tuned", "golden_tuned"]
     else:
         tool = "tool"
         peaks_map = {tool: {

@@ -99,13 +99,13 @@ def collect_peaks_in_folder(peaks_root):
                   key=donor_order_id)
 
 
-def _collect_zinbra_peaks(zinbra_peaks_root):
-    zinbra_peaks = {}
-    for folder in zinbra_peaks_root.iterdir():
+def _collect_span_peaks(span_peaks_root):
+    span_peaks = {}
+    for folder in span_peaks_root.iterdir():
         if folder.is_dir() and folder.name.startswith("H"):
-            zinbra_peaks[folder.name] = collect_peaks_in_folder(folder)
+            span_peaks[folder.name] = collect_peaks_in_folder(folder)
 
-    return zinbra_peaks
+    return span_peaks
 
 
 def _collect_golden_peaks(golden_peaks_root, exclude_outliers):

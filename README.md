@@ -4,7 +4,8 @@ Pipeline tests [![long tests](http://teamcity.jetbrains.com/app/rest/builds/buil
 
 Technical pipelines
 ===================
-Technical pipelines for ChIP-Seq processing on Portable Batch System (qsub).
+Technical pipelines for ChIP-Seq processing on Portable Batch System (qsub) and local machines.
+These pipelines were used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data downstream analysis.
 
 How do I launch the pipeline?
 --------------------------
@@ -54,8 +55,8 @@ Project
 
 * `/bed`            - BED files manipulations - intersection, ChromHMM enrichment, closes gene, etc.
 * `/docker`         - Docker configuration files with tools and test data. See Tests section.
-* `/downstream`     - Aging project downstream analysis
-* `/parallel`       - Scripts for parallel execution of PBS greed using `qsub` queue management
+* `/downstream`     - Scripts for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data downstream analysis.
+* `/parallel`       - Scripts for parallel execution of PBS greed using `qsub` queue management.
 * `/scripts`        - QC, Visualization, BAM conversions, Reads In Peaks, etc.
 * `/test`           - Tests
 
@@ -86,6 +87,12 @@ docker pull biolabs/washu
 
 Tests
 -----
+For testing purposes we prepared a dedicated Docker image with all the tools and sample data.
+Explore preconfigured Continuous Integration setup on [TeamCity](https://www.jetbrains.com/teamcity/?fromMenu):
+* [Pipeline tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_WashuPipelineTests&guest=1)   
+* [Other tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Washu&guest=1)
+
+Or launch them locally:
 ```bash
 # Tests
 docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
@@ -114,7 +121,7 @@ Tools used
 * [Samtools](http://samtools.sourceforge.net/)
 * [SICER](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/)
 * [Star](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
-* [ZINBRA](https://github.com/JetBrains-Research/zinbra)
+* [SPAN](http://artyomovlab.wustl.edu/aging/span.html)
 
 Data standards and pipelines
 --------------

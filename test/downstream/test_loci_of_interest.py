@@ -52,8 +52,8 @@ def test_collect_loci(tmp_path):
     (loci_root / "chipseq_diff_loci/H3K27ac/diff1.bed").touch()
     (loci_root / "chipseq_diff_loci/H3K27ac/diff2.bed").touch()
     for i, name in enumerate(["enhancers", "tfs", "regulatory", "repeats",
-                              "golden_median_consensus", "zinbra_median_consensus",
-                              "golden_consensus", "zinbra_consensus", 'else']):
+                              "golden_median_consensus", "span_median_consensus",
+                              "golden_consensus", "span_consensus", 'else']):
         folder = loci_root / name
         folder.mkdir()
         (folder / "boo.bed").touch()
@@ -64,32 +64,32 @@ def test_collect_loci(tmp_path):
     assert ['chipseq_diff_loci', 'chromhmm', 'else', 'enhancers',
             'golden_consensus', 'golden_median_consensus',
             'regulatory', 'repeats', 'tfs', 'top_level_paths',
-            'zinbra_consensus', 'zinbra_median_consensus'
+            'span_consensus', 'span_median_consensus'
             ] == sorted(str(k) for k in table)
     assert 2 == len(table['chipseq_diff_loci'])
     assert 2 == len(table['top_level_paths'])
-    assert 2 == len(table['zinbra_consensus'])
-    assert 2 == len(table['zinbra_median_consensus'])
+    assert 2 == len(table['span_consensus'])
+    assert 2 == len(table['span_median_consensus'])
     assert 5 == len(table['chromhmm'])
     assert 27 == sum(len(v) for v in table.values())
 
 
 @pytest.mark.parametrize("root,relative_path,selected,mod", [
-    # Zinbra
+    # SPAN
     ("peaks/H3K27ac", "YD_YD4_H3K27ac_hg19_1.0E-6_peaks.bed", True, "H3K27ac"),
     ("peaks/H3K27ac", "OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed", True, "H3K27ac"),
     ("peaks/H3K27ac", "OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed_rip.csv", False, "H3K27ac"),
-    ("peaks/H3K27ac", "H3K27ac_zinbra_ODS_weak_consensus.bed", False, "H3K27ac"),
-    ("peaks/H3K27ac", "H3K27ac_zinbra_weak_consensus.bed", False, "H3K27ac"),
-    ("peaks/H3K27ac", "H3K27ac_zinbra_weak_consensus.bed", False, "H3K27ac"),
+    ("peaks/H3K27ac", "H3K27ac_span_ODS_weak_consensus.bed", False, "H3K27ac"),
+    ("peaks/H3K27ac", "H3K27ac_span_weak_consensus.bed", False, "H3K27ac"),
+    ("peaks/H3K27ac", "H3K27ac_span_weak_consensus.bed", False, "H3K27ac"),
 ])
-def test_collect_zinbra_peaks(tmp_path, root, relative_path, selected, mod):
+def test_collect_span_peaks(tmp_path, root, relative_path, selected, mod):
     data_root = tmp_path
     file = data_root / root / relative_path
     file.parent.mkdir(parents=True)
     file.touch()
 
-    peaks = loi._collect_zinbra_peaks(data_root / "peaks")
+    peaks = loi._collect_span_peaks(data_root / "peaks")
     assert selected == (file in peaks[mod])
 
 
@@ -149,8 +149,8 @@ def test_collect_golden_peaks(tmp_path, root, relative_path, selected, mod, excl
     ("YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", True),
 
     ("OD_OD7_H3K27ac_hg19_1.0E-6_peaks.bed_rip.csv", False),
-    ("H3K27ac_zinbra_ODS_weak_consensus.bed", False),
-    ("H3K27ac_zinbra_weak_consensus.bed", False),
+    ("H3K27ac_span_ODS_weak_consensus.bed", False),
+    ("H3K27ac_span_weak_consensus.bed", False),
     ("YD8_k27ac_hg19_broad_peaks.broadPeak_rip.csv", False),
     ("YD21_k4me3_hg19_fdr_peaks.narrowPeak_rip.csv", False),
     ("YD21_k4me3_hg19_fdr_peaks.narrowPeak_frip.log", False),
@@ -200,8 +200,8 @@ def test_collect_peaks_in_folder_sorted(tmp_path):
     ("YD16_k36me3_hg19-W200-G1000-FDR1E-6-island.bed", ('YD', 16)),
     ("YD4.broadPeak", ('YD', 4)),
 
-    ("H3K27ac_zinbra_ODS_weak_consensus.bed", ('ODS', 'H3K27ac_zinbra_ODS_weak_consensus.bed')),
-    ("H3K27ac_zinbra_weak_consensus.bed", ('H3K27ac_zinbra_weak_consensus.bed', 0)),
+    ("H3K27ac_span_ODS_weak_consensus.bed", ('ODS', 'H3K27ac_span_ODS_weak_consensus.bed')),
+    ("H3K27ac_span_weak_consensus.bed", ('H3K27ac_span_weak_consensus.bed', 0)),
     ("H3K36me3_golden_weak_consensus.bed", ("H3K36me3_golden_weak_consensus.bed", 0)),
 ])
 def test_donor_order_id(tmp_path, fname, expected):

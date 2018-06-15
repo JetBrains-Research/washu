@@ -35,8 +35,8 @@ echo "Check downloaded files"
 if [ ! -f ~/picard.jar ]; then
     echo "ERROR: Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"
 fi
-if [ ! -f ~/zinbra.jar ]; then
-    echo "ERROR: Zinbra not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"
+if [ ! -f ~/span.jar ]; then
+    echo "ERROR: SPAN not found! Download SPAN: <http://artyomovlab.wustl.edu/aging/span.html>"
 fi
 
 echo "Prepare data"

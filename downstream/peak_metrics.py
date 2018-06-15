@@ -350,5 +350,5 @@ def detect_tool(path):
     if "-island.bed" in path:
         return "_sicer"
     if "_peaks.bed" in path:
-        return "_zinbra"
+        return "_span"
     return "_unknown"

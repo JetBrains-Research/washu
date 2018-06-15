@@ -16,7 +16,7 @@ from downstream.bed_metrics import plot_metric_heatmap, bed_metric_table, \
 
 
 def process_hist_mod(peaks_root, failed_tracks_df, threads, golden, pdf_printer):
-    assert golden, "Zinbra paths not supported yet"
+    assert golden, "SPAN paths not supported yet"
 
     all_peaks_root = peaks_root / "bed_all"
 

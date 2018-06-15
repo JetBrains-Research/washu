@@ -74,7 +74,7 @@ def _cli():
 
     peaks_paths = sorted(chain(folder_path.glob("*sicer*consensus*"),
                                folder_path.glob("*macs2*consensus*"),
-                               folder_path.glob("*zinbra*consensus*"),
+                               folder_path.glob("*span*consensus*"),
                                folder_path.glob("*broadPeak"), folder_path.glob("*-island.bed"),
                                folder_path.glob("*peaks.bed")),
                          key=loi.donor_order_id)

@@ -5,15 +5,15 @@
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util/util.sh
 
->&2 echo "Batch zinbra $@"
+>&2 echo "Batch SPAN $@"
 if [ $# -lt 5 ]; then
-    echo "Need >= 5 parameters! <ZINBRA_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q> [<OUTPUT_DIR> [<GAP>]]"
+    echo "Need >= 5 parameters! <SPAN_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q> [<OUTPUT_DIR> [<GAP>]]"
     exit 1
 fi
 
-ZINBRA_JAR_PATH=$1
-if [[ ! -f "${ZINBRA_JAR_PATH}" ]]; then
-    >&2 echo "ZINBRA not found! Download ZINBRA: <https://github.com/JetBrains-Research/zinbra>"; exit 1;
+SPAN_JAR_PATH=$1
+if [[ ! -f "${SPAN_JAR_PATH}" ]]; then
+    >&2 echo "SPAN not found! Download SPAN: <http://artyomovlab.wustl.edu/aging/span.html>"; exit 1;
 fi
 WORK_DIR=$2
 GENOME=$3
@@ -45,10 +45,10 @@ do :
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
-#PBS -N zinbra_${ID}
+#PBS -N span_${ID}
 #PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=64gb
 #PBS -j oe
-#PBS -o ${WORK_DIR}/${NAME}_zinbra_${GENOME}.log
+#PBS -o ${WORK_DIR}/${NAME}_span_${GENOME}.log
 
 # This is necessary because qsub default working dir is user home
 cd ${WORK_DIR}
@@ -60,14 +60,14 @@ export _JAVA_OPTIONS="-Xmx30g"
 
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
-    java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} -c ${INPUT} \
+    java -cp ${SPAN_JAR_PATH} org.jetbrains.bio.span.SpanCLA analyze -t ${FILE} -c ${INPUT} \
         --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --output ${ID}_peaks.bed \
         --workdir ${OUTPUT_DIR} \
         --threads=4 ${GAP}
 
 else
     echo "${FILE}: no control file"
-    java -cp ${ZINBRA_JAR_PATH} org.jetbrains.bio.zinbra.ZinbraCLA analyze -t ${FILE} \
+    java -cp ${SPAN_JAR_PATH} org.jetbrains.bio.span.SpanCLA analyze -t ${FILE} \
         --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --output ${ID}_peaks.bed \
         --workdir ${OUTPUT_DIR} \
         --threads=4 ${GAP}
@@ -81,4 +81,4 @@ done
 wait_complete ${TASKS[@]}
 check_logs
 
->&2 echo "Done. Batch zinbra $@"
+>&2 echo "Done. Batch SPAN $@"

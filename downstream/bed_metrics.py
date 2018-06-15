@@ -173,7 +173,7 @@ def color_annotator_outlier(failed_tracks_df, data_type):
 
 def label_converter_donor_and_tool(name):
     chunks = []
-    suffix_tool_map = {"Peak": "macs2", "island.bed": "sicer", "peaks.bed": "zinbra"}
+    suffix_tool_map = {"Peak": "macs2", "island.bed": "sicer", "peaks.bed": "span"}
     match = re.match("(?:^|.*_)((?:[yo]d|gsm)(?:s|\d+)).*", name, flags=re.IGNORECASE)
 
     if match:

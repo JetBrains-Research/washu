@@ -166,7 +166,7 @@ def bar_consensus(mono_paths_map, tcell_paths_map, mono_consensus_bed, tcell_con
 
 def label_converter_donor_and_tool(name):
     chunks = []
-    suffix_tool_map = {"Peak": "macs2", "island.bed": "sicer", "peaks.bed": "zinbra"}
+    suffix_tool_map = {"Peak": "macs2", "island.bed": "sicer", "peaks.bed": "span"}
     match = re.match("(?:^|.*_)((?:mn|tc)(?:s|\d+)).*", name, flags=re.IGNORECASE)
 
     if match:
@@ -301,7 +301,7 @@ def _cli():
 
     peaks_paths = sorted(chain(folder_path.glob("*sicer*consensus*"),
                                folder_path.glob("*macs2*consensus*"),
-                               folder_path.glob("*zinbra*consensus*"), folder_path.glob("*Peak"),
+                               folder_path.glob("*span*consensus*"), folder_path.glob("*Peak"),
                                folder_path.glob("*-island.bed"), folder_path.glob("*peaks.bed")),
                          key=loi.donor_order_id)
 

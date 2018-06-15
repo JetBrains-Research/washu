@@ -5,8 +5,11 @@ USER root
 # Prepare testdata
 COPY washu_test_data.tar.gz /root/
 
+# Update all the packages
+RUN apt-get update --fix-missing
+
 # Install conda
-RUN apt-get update --fix-missing && apt-get install -y curl bzip2
+RUN apt-get install -y curl bzip2
 RUN curl --location https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh --output ~/miniconda.sh && \
     /bin/bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh
@@ -74,11 +77,11 @@ RUN ln -s /bin/echo /usr/bin/module
 RUN cd ~ && curl --location https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar \
     --output picard.jar
 
-# Download ZINBRA
-RUN cd ~ && curl --location https://github.com/JetBrains-Research/zinbra/releases/download/v0.5.1/zinbra-0.5.1.jar \
-    --output zinbra.jar
-
 # Install phantom peak qual tools
 RUN cd ~ && curl --location https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/\
 phantompeakqualtools/ccQualityControl.v.1.1.tar.gz --output phantompeakqualtools.tar.gz \
     && tar xvf phantompeakqualtools.tar.gz
+
+# Download SPAN Peak Analyzer
+# TODO: Update with released version available to download from downloads.jetbrains.com
+RUN cd ~ && curl --location https://teamcity.jetbrains.com/repository/download/Epigenome_Span/.lastPinned/span-0.6.0.dev.3855.jar?guest=1 --output span.jar

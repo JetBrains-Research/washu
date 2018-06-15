@@ -51,9 +51,9 @@ from test.fixtures import test_data, tmp_dir
 # 290 300   330   350   370   390   420   440   460 470   490   520   540
 
 @pytest.mark.parametrize("folder,consensus_file,percent,count", [
-    ("tracks_for_consensus", "consensus/consensus_weak_zinbra_consensus.bed", False, 2),
-    ("tracks_for_consensus", "consensus/consensus_median_zinbra_consensus.bed", 50, False),
-    ("tracks_for_consensus", "consensus/consensus_strong_zinbra_consensus.bed", 100, False)
+    ("tracks_for_consensus", "consensus/consensus_weak_span_consensus.bed", False, 2),
+    ("tracks_for_consensus", "consensus/consensus_median_span_consensus.bed", 50, False),
+    ("tracks_for_consensus", "consensus/consensus_strong_span_consensus.bed", 100, False)
 ])
 def test_consensus(capfd, test_data, folder, consensus_file, percent, count):
     files = []
