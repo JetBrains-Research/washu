@@ -94,11 +94,14 @@ Explore preconfigured Continuous Integration setup on [TeamCity](https://www.jet
 
 Or launch them locally:
 ```bash
+# Change working directory
+cd <project_path>
+
 # Tests
-docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
+docker run -v $(pwd):/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
 
 # Pipeline test
-docker run -v <project_path>:/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
+docker run -v $(pwd):/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
 ```
 
 Tools used
