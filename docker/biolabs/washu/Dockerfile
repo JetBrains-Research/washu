@@ -82,6 +82,5 @@ RUN cd ~ && curl --location https://storage.googleapis.com/google-code-archive-d
 phantompeakqualtools/ccQualityControl.v.1.1.tar.gz --output phantompeakqualtools.tar.gz \
     && tar xvf phantompeakqualtools.tar.gz
 
-# Download SPAN Peak Analyzer
-# TODO: Update with released version available to download from downloads.jetbrains.com
-RUN cd ~ && curl --location https://teamcity.jetbrains.com/repository/download/Epigenome_Span/.lastPinned/span-0.6.0.dev.3855.jar?guest=1 --output span.jar
+# Download SPAN Peak Analyzer, see details: http://artyomovlab.wustl.edu/aging/span.html
+RUN cd ~ && curl --location https://download.jetbrains.com/biolabs/span/span-0.6.0.4075.jar --output span.jar
