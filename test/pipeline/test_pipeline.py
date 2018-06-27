@@ -90,6 +90,12 @@ def test_sicer():
     check_files("fastq_bams_sicer/*input*.bed", 2)
 
 
+def test_span():
+    check_files("fastq_bams_span/fit/*.span", 4)
+    check_files("fastq_bams_span/logs/*.log", 4)
+    check_files("fastq_bams_span/*_peaks.bed", 4)
+
+
 def test_reads2bam():
     bam = run([["bash", "/washu/scripts/reads2bam.sh",
                 "/washu/test/testdata/pileup/a_pileup.bed",

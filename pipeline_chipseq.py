@@ -48,6 +48,8 @@ PICARD_TOOLS = os.path.expanduser("~/picard.jar")
 print("PICARD_TOOLS:", PICARD_TOOLS)
 PHANTOMPEAKQUALTOOLS = os.path.expanduser("~/phantompeakqualtools")
 print("PHANTOMPEAKQUALTOOLS:", PHANTOMPEAKQUALTOOLS)
+SPAN = os.path.expanduser("~/span.jar")
+print("SPAN:", SPAN)
 
 ##################
 # Pipeline start #
@@ -128,3 +130,14 @@ if not os.path.exists(WORK_DIR + sicer_suffix):
                  ['*sicer.log', '*.bed', '*rip.csv'])
     # multiqc
     subprocess.run("multiqc " + WORK_DIR + sicer_suffix, shell=True)
+
+# Batch SPAN
+span_suffix = '_span'
+if not os.path.exists(WORK_DIR + span_suffix):
+    os.mkdir(WORK_DIR + span_suffix)
+    #  <SPAN_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q> [<OUTPUT_DIR> [<GAP>]]
+    run_bash("parallel/span.sh", SPAN, WORK_DIR, GENOME, CHROM_SIZES, "0.01",
+             WORK_DIR + span_suffix, 5)
+    move_forward(WORK_DIR, WORK_DIR + span_suffix, ['*_peaks.bed', '*span*.log'])
+    # multiqc
+    subprocess.run("multiqc " + WORK_DIR + span_suffix, shell=True)

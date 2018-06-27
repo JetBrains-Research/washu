@@ -23,11 +23,13 @@ OUTPUT_DIR=$6
 if [ ! -d "$OUTPUT_DIR" ]; then
     OUTPUT_DIR=$WORK_DIR
 fi
+GAP=$7
+if [ -z "$GAP" ]; then
+    GAP=5
+fi
 
-if [ $# -lt 7 ]; then
-    GAP=""
-else
-    GAP="--gap $7"
+if [ -z "JAVA_OPTIONS" ]; then
+    JAVA_OPTIONS="-Xmx4G"
 fi
 
 cd ${WORK_DIR}
@@ -39,14 +41,14 @@ do :
     echo "${FILE}: control file: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
-    ID=${NAME}_${GENOME}_${Q}
+    ID=${NAME}_${GENOME}_${Q}_${GAP}
 
     if [ ! -f ${ID}_peaks.bed ]; then
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N span_${ID}
-#PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=64gb
+#PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=8gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_span_${GENOME}.log
 
@@ -56,21 +58,23 @@ cd ${WORK_DIR}
 module load java
 # PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
 # There is insufficient memory for the Java Runtime Environment to continue.
-export _JAVA_OPTIONS="-Xmx30g"
+export _JAVA_OPTIONS="${JAVA_OPTIONS}"
 
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
-    java -cp ${SPAN_JAR_PATH} org.jetbrains.bio.span.SpanCLA analyze -t ${FILE} -c ${INPUT} \
-        --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --output ${ID}_peaks.bed \
+    java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} -c ${INPUT} --chrom.sizes ${CHROM_SIZES} \
+        --fdr ${Q} --gap ${GAP} \
+        --output ${ID}_peaks.bed \
         --workdir ${OUTPUT_DIR} \
-        --threads=4 ${GAP}
+        --threads=1
 
 else
     echo "${FILE}: no control file"
-    java -cp ${SPAN_JAR_PATH} org.jetbrains.bio.span.SpanCLA analyze -t ${FILE} \
-        --chrom.sizes ${CHROM_SIZES} --fdr ${Q} --output ${ID}_peaks.bed \
+    java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} --chrom.sizes ${CHROM_SIZES} \
+        --fdr ${Q} --gap ${GAP} \
+        --output ${ID}_peaks.bed \
         --workdir ${OUTPUT_DIR} \
-        --threads=4 ${GAP}
+        --threads=1
 fi
 SCRIPT
 

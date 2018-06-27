@@ -101,7 +101,7 @@ cd <project_path>
 docker run -v $(pwd):/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test.sh"
 
 # Pipeline test
-docker run -v $(pwd):/washu -t -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
+docker run -v $(pwd):/washu -t -m 2G -e JAVA_OPTIONS="-Xmx1G" -i biolabs/washu /bin/bash -c "source activate py3.5 && cd /washu && bash test_pipeline.sh"
 ```
 
 Tools used
