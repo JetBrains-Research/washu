@@ -63,8 +63,9 @@ def test_collect_loci(tmp_path):
     assert 12 == len(table)
     assert ['chipseq_diff_loci', 'chromhmm', 'else', 'enhancers',
             'golden_consensus', 'golden_median_consensus',
-            'regulatory', 'repeats', 'tfs', 'top_level_paths',
-            'span_consensus', 'span_median_consensus'
+            'regulatory', 'repeats',
+            'span_consensus', 'span_median_consensus',
+            'tfs', 'top_level_paths'
             ] == sorted(str(k) for k in table)
     assert 2 == len(table['chipseq_diff_loci'])
     assert 2 == len(table['top_level_paths'])
