@@ -18,14 +18,17 @@ parameters files for all histone modifications.
 def _cli():
     parser = argparse.ArgumentParser(description=help_data,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("folder", help="All histones folder")
+    parser.add_argument("peaks_summary", help="Peaks summary")
     parser.add_argument("output", help="Output pdf path")
     parser.add_argument("tools", nargs='*', help="Tools folders")
 
     args = parser.parse_args()
-    folder = Path(args.folder)
+    peaks_summary = args.peaks_summary
     pdf_path = args.output
     tools = args.tools
+
+    dfd = pd.read_csv(peaks_summary, sep='\t', comment='#')
+    dfd = dfd[['modification', 'tool', 'file']].loc[dfd['procedure'] == 'tuned']
 
     with PdfPages(pdf_path) as pdf:
         fig1 = plt.figure(figsize=(10, 15))
@@ -35,6 +38,7 @@ def _cli():
 
         for hist_index, hist_mod in enumerate(["H3K27ac", "H3K27me3", "H3K36me3", "H3K4me3",
                                                "H3K4me1"]):
+            max_n = 0
             current_tools1 = {}
             current_tools2 = {}
             colors = ['black', 'red', 'green', 'orange']
@@ -56,11 +60,17 @@ def _cli():
             ax2_2.axes.get_xaxis().set_visible(False)
 
             for tool_index, tool in enumerate(tools):
-                tool_path = folder / hist_mod / tool
-                if (tool_path / "parameters.csv").exists():
+                curr_dfd = dfd.loc[np.logical_and(dfd['modification'] == hist_mod,
+                                                  dfd['tool'] == tool)]
+                if len(curr_dfd) < 1:
+                    continue
+                tool_path = Path(curr_dfd['file'].iloc[0].rsplit('/', 1)[0])
+                tool_name = str(tool_path).rsplit('/', 1)[1]
+                parameters_path = tool_path / "{}_{}_parameters.csv".format(hist_mod, tool_name)
+                if parameters_path.exists():
                     donor_peaks_map = peaks_count_map(tool_path)
 
-                    parameters = pd.DataFrame.from_csv(path=str(tool_path / "parameters.csv"),
+                    parameters = pd.DataFrame.from_csv(path=str(parameters_path),
                                                        index_col=None, header=1, sep="\t")
                     parameters = parameters.drop_duplicates(['name', 'error'], keep='first')
                     n = len(parameters.index)
@@ -79,6 +89,7 @@ def _cli():
                         age, frip_df = pm.calc_frip(rip_files)
 
                         n = len(frip_df.index)
+                        max_n = max(max_n, n)
                         ind = np.arange(n)
 
                         names = sorted(frip_df.index, key=lambda name: (name[:2], int(name[2:])))
@@ -91,8 +102,9 @@ def _cli():
                         ax2_2.bar(ind, [donor_peaks_map[donor] for donor in names], 0.35,
                                   alpha=0.3, color=colors[tool_index])
 
-                current_tools1["Threshold"] = ax1_1.plot(ind, [threshold_map[hist_mod]] * len(ind),
-                                                         ':', color='blue')[0]
+            ind = np.arange(max_n)
+            current_tools1["Threshold"] = ax1_1.plot(ind, [threshold_map[hist_mod]] * len(ind),
+                                                     ':', color='blue')[0]
 
             for label in ax1_1.get_xmajorticklabels():
                 label.set_rotation(90)
