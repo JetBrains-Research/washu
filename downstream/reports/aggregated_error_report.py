@@ -8,10 +8,8 @@ import pandas as pd
 
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
-Script creates pdf report with total error and peaks count plots from selected tools tuning
+Script creates pdf report with total error, peaks count and frip plots from selected tools tuning
 parameters files for all histone modifications.
- 1) Total error plot
- 2) Peaks count bars
 """
 
 

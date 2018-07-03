@@ -9,11 +9,12 @@ import numpy as np
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
 Usage:
-    combined_peaks_analysis_report.py [input folder] [output folder] [first tool] [second tool]
+    combined_peaks_analysis_report.py [first peaks summary] [second peaks summary] [output folder] 
+    [first tool] [second tool]
 
 Script creates pdf reports with ChIP-seq peaks statistics:
  1) median peak consensus bar plot
- 2) Metric #1 heatmap
+ 2) overlap metric heatmap
 """
 
 
