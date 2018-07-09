@@ -9,7 +9,7 @@ import numpy as np
 __author__ = 'petr.tsurinov@jetbrains.com'
 help_data = """
 Usage:
-    combined_peaks_analysis_report.py [first peaks summary] [second peaks summary] [output folder] 
+    combined_peaks_analysis_report.py [first peaks summary] [second peaks summary] [output folder]
     [first tool] [second tool]
 
 Script creates pdf reports with ChIP-seq peaks statistics:
