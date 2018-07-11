@@ -59,14 +59,14 @@ run_bash("parallel/index_genome.sh", GENOME, INDEXES)
 # Batch QC
 run_bash("parallel/fastqc.sh", WORK_DIR)
 # multiqc
-subprocess.run("multiqc " + WORK_DIR, shell=True)
+subprocess.run("multiqc -f " + WORK_DIR, shell=True)
 
 # Batch Bowtie with trim 5 first base pairs
 run_bash("parallel/index_bowtie.sh", GENOME, INDEXES)
 run_bash("parallel/bowtie.sh", GENOME, INDEXES, "5", WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_bams", ["*.bam", "*bowtie*.log"])
 # multiqc
-subprocess.run("multiqc " + WORK_DIR + "_bams", shell=True)
+subprocess.run("multiqc -f " + WORK_DIR + "_bams", shell=True)
 
 WORK_DIR = WORK_DIR + "_bams"
 os.chdir(WORK_DIR)
@@ -139,5 +139,3 @@ if not os.path.exists(WORK_DIR + span_suffix):
     run_bash("parallel/span.sh", SPAN, WORK_DIR, GENOME, CHROM_SIZES, "0.01",
              WORK_DIR + span_suffix, 5)
     move_forward(WORK_DIR, WORK_DIR + span_suffix, ['*_peaks.bed', '*span*.log'])
-    # multiqc
-    subprocess.run("multiqc " + WORK_DIR + span_suffix, shell=True)
