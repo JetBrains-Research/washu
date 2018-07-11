@@ -54,7 +54,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
             PROCESSED="${PROCESSED} ${FILE_PAIRED}"
             NAME="${PREFIX}${SUFFIX}"
         else
-            NAME=${FILE%%.fast*}
+            NAME=${FILE%%.f*q*}
         fi
         NAME=${NAME##*/}
         ID=${NAME}_${GENOME}
