@@ -19,18 +19,16 @@ if [ ! -d "$FOLDER" ]; then
 fi
 cd ${FOLDER}
 
-# Check for chr22.fa because it is used in Docker test data, see /dockertestdata/README.md
-if [ ! -f "chr22.fa" ]; then
-    # Download only chromosomes sequences
-    rsync -avzP --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/chromosomes/ .
-    gunzip -f *.fa.gz
-    chmod a+r *
-fi
-
 echo "Check chrom.sizes file"
 if [ ! -f "${GENOME}.chrom.sizes" ]; then
+
+    echo "Download only chromosomes sequences"
+    rsync -avzP --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/chromosomes/ .
+    gunzip -f *.fa.gz
+
     echo "Downloading chrom.sizes file"
     wget -nc http://hgdownload.cse.ucsc.edu/goldenPath/${GENOME}/bigZips/${GENOME}.chrom.sizes
+
     chmod a+r *
 fi
 
