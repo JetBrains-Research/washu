@@ -19,7 +19,7 @@ if ([[ ! -f "$GENOME.1.ebwt" ]] && [[ ! -f "$GENOME.1.ebwtl" ]]); then
     run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N bowtie_indexes_${GENOME}
-#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=32gb
+#PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=64gb
 #PBS -j oe
 #PBS -o ${FOLDER}/${GENOME}_bowtie_indexes.log
 
