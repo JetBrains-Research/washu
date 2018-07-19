@@ -41,7 +41,7 @@ do :
     echo "${FILE}: control file: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
-    ID=${NAME}_${GENOME}_${Q}_${GAP}
+    ID=${NAME}_${Q}_${GAP}
 
     if [ ! -f ${ID}_peaks.bed ]; then
         # Submit task
