@@ -21,7 +21,7 @@ CHROM_SIZES=$4
 Q=$5
 OUTPUT_DIR=$6
 if [ ! -d "$OUTPUT_DIR" ]; then
-    OUTPUT_DIR=$WORK_DIR
+    OUTPUT_DIR=${WORK_DIR}
 fi
 GAP=$7
 if [ -z "$GAP" ]; then
@@ -65,16 +65,13 @@ if [ -f "${INPUT}" ]; then
     java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} -c ${INPUT} --chrom.sizes ${CHROM_SIZES} \
         --fdr ${Q} --gap ${GAP} \
         --output ${ID}_peaks.bed \
-        --workdir ${OUTPUT_DIR} \
-        --threads=1
-
+        --workdir ${OUTPUT_DIR}
 else
     echo "${FILE}: no control file"
     java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} --chrom.sizes ${CHROM_SIZES} \
         --fdr ${Q} --gap ${GAP} \
         --output ${ID}_peaks.bed \
-        --workdir ${OUTPUT_DIR} \
-        --threads=1
+        --workdir ${OUTPUT_DIR}
 fi
 SCRIPT
 
