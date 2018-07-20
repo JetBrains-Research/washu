@@ -29,7 +29,7 @@ if [ -z "$GAP" ]; then
 fi
 
 if [ -z "JAVA_OPTIONS" ]; then
-    JAVA_OPTIONS="-Xmx4G"
+    JAVA_OPTIONS="-Xmx8G"
 fi
 
 cd ${WORK_DIR}
@@ -48,7 +48,7 @@ do :
         run_parallel << SCRIPT
 #!/bin/sh
 #PBS -N span_${ID}
-#PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=8gb
+#PBS -l nodes=1:ppn=4,walltime=24:00:00,vmem=16gb
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${NAME}_span_${GENOME}.log
 
@@ -65,13 +65,15 @@ if [ -f "${INPUT}" ]; then
     java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} -c ${INPUT} --chrom.sizes ${CHROM_SIZES} \
         --fdr ${Q} --gap ${GAP} \
         --output ${ID}_peaks.bed \
-        --workdir ${OUTPUT_DIR}
+        --workdir ${OUTPUT_DIR} \
+        --threads 4
 else
     echo "${FILE}: no control file"
     java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} --chrom.sizes ${CHROM_SIZES} \
         --fdr ${Q} --gap ${GAP} \
         --output ${ID}_peaks.bed \
-        --workdir ${OUTPUT_DIR}
+        --workdir ${OUTPUT_DIR} \
+        --threads 4
 fi
 SCRIPT
 
