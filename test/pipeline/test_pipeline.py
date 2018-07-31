@@ -122,6 +122,7 @@ def test_signals():
     # Process single file
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
+          bams_path,
           "120",
           os.path.expanduser("/washu/test/testdata/signal/regions.bed"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
@@ -143,6 +144,7 @@ def test_signals():
     # Process folder
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
+          bams_path,
           "150",
           os.path.expanduser("/washu/test/testdata/signal"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
