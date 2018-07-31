@@ -38,7 +38,7 @@ if [[ ! -d "${TAGS_BW_LOGS}" ]]; then
 fi
 TASKS=()
 cd ${WORK_DIR}
-for BAM in $(find . -name '*.bam' | sed 's#\./##g' | grep -vE ".tr")
+for BAM in $(find ${BAMS_DIR} -name '*.bam' | sed 's#\./##g')
 do :
     NAME=${BAM%%.bam} # file name without extension
     RESULT=${WORK_DIR}/${FRAGMENT}/${NAME}.bw
