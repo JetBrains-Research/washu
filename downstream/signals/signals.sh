@@ -13,18 +13,23 @@ which bigWigAverageOverBed &>/dev/null || {
 source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch signals $@"
-if [ $# -lt 4 ]; then
-    echo "Need at least 4 parameters! <WORK_DIR_WITH_BAMS> <FRAGMENT> <FOLDER or REGIONS.BED> <CHROM.SIZES> [<PEAKS_FILE.BED>]"
+if [ $# -lt 5 ]; then
+    echo "Need at least 5 parameters! <WORK_DIR> <BAMS_DIR> <FRAGMENT> <FOLDER or REGIONS.BED> <CHROM.SIZES> [<PEAKS_FILE.BED>]"
     exit 1
 fi
 
 WORK_DIR=$(expand_path $1)
-FRAGMENT=$2
-CHROM_SIZES=$(expand_path $4)
-if [[ -f $5 ]]; then
-    PEAKS_FILE_BED=$(expand_path $5)
+BAMS_DIR=$(expand_path $2)
+FRAGMENT=$3
+REGIONS_ARG=$(expand_path $4)
+CHROM_SIZES=$(expand_path $5)
+if [[ -f $6 ]]; then
+    PEAKS_FILE_BED=$(expand_path $6)
 fi
 echo "WORK_DIR: $WORK_DIR"
+echo "BAMS_DIR: $BAMS_DIR"
+echo "FRAGMENT: $FRAGMENT"
+echo "REGIONS_ARG: $REGIONS_ARG"
 echo "CHROM_SIZES: $CHROM_SIZES"
 echo "PEAKS_FILE: $PEAKS_FILE_BED"
 
@@ -38,9 +43,10 @@ if [[ ! -d "${TAGS_BW_LOGS}" ]]; then
 fi
 TASKS=()
 cd ${WORK_DIR}
-for BAM in $(find ${BAMS_DIR} -name '*.bam' | sed 's#\./##g')
-do :
-    NAME=${BAM%%.bam} # file name without extension
+for BAM in $(find ${BAMS_DIR} -name '*_unique.bam')
+do
+    FILE_NAME=${BAM##*/}
+    NAME=${FILE_NAME%%.bam} # file name without extension
     RESULT=${WORK_DIR}/${FRAGMENT}/${NAME}.bw
     if [[ ! -f ${RESULT} ]]; then
         # Submit task
@@ -55,9 +61,9 @@ do :
 cd ${WORK_DIR}
 
 module load bedtools2
-bash ${WASHU_ROOT}/downstream/signals/bam2tagsbw.sh ${WORK_DIR}/${BAM} ${FRAGMENT} ${CHROM_SIZES} ${RESULT}
+bash ${WASHU_ROOT}/downstream/signals/bam2tagsbw.sh ${BAM} ${FRAGMENT} ${CHROM_SIZES} ${RESULT}
 SCRIPT
-        echo "FILE: ${WORK}/${BAM}; TASK: ${QSUB_ID}"
+        echo "FILE: ${FILE_NAME}; TASK: ${QSUB_ID}"
         TASKS+=("$QSUB_ID")
     fi
 done
@@ -183,7 +189,6 @@ fi
 ########################################################################################################################
 # Processing BED files
 ########################################################################################################################
-REGIONS_ARG=$(expand_path $3)
 if [[ -d ${REGIONS_ARG} ]]; then
     echo "Folder with BED files provided: ${REGIONS_ARG}"
     REGIONS=$(find ${REGIONS_ARG} -name '*.bed')
