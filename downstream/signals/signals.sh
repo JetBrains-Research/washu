@@ -100,14 +100,14 @@ process_coverage()
     do :
         NAME=${FILE%%.bw}
         NAMES+=("$NAME")
-        TSV=$TMPDIR/${ID}_${NAME}.tsv
+        TSV=$TMPDIR/${_ID}_${NAME}.tsv
         TSVS+=("$TSV")
-        LOG=${_LOGS_DIR}/${ID}_${NAME}_tsv.log
+        LOG=${_LOGS_DIR}/${_ID}_${NAME}_tsv.log
         LOGS+=("$LOG")
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
-#PBS -N ${ID}_${NAME}_tsv
+#PBS -N ${_ID}_${NAME}_tsv
 #PBS -l nodes=1:ppn=1,walltime=4:00:00,vmem=8gb
 #PBS -j oe
 #PBS -o ${LOG}
@@ -120,7 +120,7 @@ SCRIPT
     wait_complete ${TASKS[@]}
 
     # Master log
-    MASTER_LOG=${_LOGS_DIR}/${ID}_tsv.log
+    MASTER_LOG=${_LOGS_DIR}/${_ID}_tsv.log
     for I in $(seq 0 $((${#NAMES[@]} - 1))); do
         # Merge tsv result
         NAME=${NAMES[$I]}
