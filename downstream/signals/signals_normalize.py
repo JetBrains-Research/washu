@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Author: oleg.shpynov@jetbrains.com
-
+import sys
 import math
 import multiprocessing
 import tempfile
@@ -33,13 +33,16 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processes=7):
                      args=(data_path, sizes_path),
                      error_callback=error_callback)
 
-    if peaks_sizes_path and os.path.exists(peaks_sizes_path):
-        pool.apply_async(frip_normalization,
-                         args=(data_path, sizes_path, peaks_sizes_path),
-                         error_callback=error_callback)
-        pool.apply_async(diffbind_tmm_reads_effective_cpm,
-                         args=(data_path, peaks_sizes_path),
-                         error_callback=error_callback)
+    if peaks_sizes_path:
+        if not os.path.exists(peaks_sizes_path):
+            print("File not found:", peaks_sizes_path, file=sys.stderr)
+        else:
+            pool.apply_async(frip_normalization,
+                             args=(data_path, sizes_path, peaks_sizes_path),
+                             error_callback=error_callback)
+            pool.apply_async(diffbind_tmm_reads_effective_cpm,
+                             args=(data_path, peaks_sizes_path),
+                             error_callback=error_callback)
     pool.close()
     pool.join()
 
