@@ -48,7 +48,7 @@ def process(data_path, sizes_path, peaks_sizes_path, *, processes=7):
 
 
 def processing_chipseq(loaded):
-    return not [n for n in loaded['name'] if re.match('.*(meth|trans|mirna).*', n)]
+    return not any(re.match('.*(meth|trans|mirna).*', n) for n in loaded['name'])
 
 
 def raw_normalization(data_path):
