@@ -112,22 +112,17 @@ def save_signal(path, data, signal_type, msg):
     print('{} to {}'.format(msg, path))
 
 
-def quantile_normalize_using_target(x, target):
-    """Both `x` and `target` are numpy arrays of equal lengths."""
-    target_sorted = np.sort(target)
-    return target_sorted[x.argsort().argsort()]
-
-
 def process_quantile(output, data):
-    quantile_df = pd.DataFrame()
     # Normalize everything to the first track
     signal_columns = [c for c in data.columns if not is_input(c)]
+
     target_column = signal_columns[0]
-    target = data[target_column]
     print("Quantile normalization to", target_column)
-    quantile_df[target_column] = target
-    for c in signal_columns[1:]:
-        quantile_df[c] = quantile_normalize_using_target(data[c], target)
+    target = data[target_column]
+    target_sorted = np.sort(target)
+    ranks_df = np.argsort(np.argsort(data[signal_columns], axis=0), axis=0)
+    quantile_df = pd.DataFrame.from_dict({c: target_sorted[ranks_df[c]] for c in signal_columns})
+    quantile_df.index = data.index
     quantile_df.to_csv(output, sep='\t')
     print('{} to {}'.format('Saved QUANTILE', output))
 
