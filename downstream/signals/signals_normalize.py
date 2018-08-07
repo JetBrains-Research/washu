@@ -55,7 +55,8 @@ def raw_normalization(data_path):
     """Raw signal with Q scaling"""
     raw_path = re.sub('.tsv', '_raw.tsv', data_path)
     q_path = re.sub('.tsv', '_rawq.tsv', data_path)
-    if os.path.exists(raw_path) and os.path.exists(q_path):
+    q_no_ref_path = re.sub('.tsv', '_rawqnr.tsv', data_path)
+    if os.path.exists(raw_path) and os.path.exists(q_path) and os.path.exists(q_no_ref_path):
         return
 
     loaded = pd.read_csv(data_path, sep='\t',
@@ -73,6 +74,10 @@ def raw_normalization(data_path):
     print("Processing RAW Q normalization")
     process_quantile(q_path, raw_data)
     visualize_safe(q_path)
+
+    print("Processing RAW Q_NO_REF normalization")
+    process_quantile_no_ref(q_no_ref_path, raw_data)
+    visualize_safe(q_no_ref_path)
 
 
 def rpm_normalization(data_path, sizes_path):
@@ -120,11 +125,31 @@ def process_quantile(output, data):
     print("Quantile normalization to", target_column)
     target = data[target_column]
     target_sorted = np.sort(target)
-    ranks_df = np.argsort(np.argsort(data[signal_columns], axis=0), axis=0)
-    quantile_df = pd.DataFrame.from_dict({c: target_sorted[ranks_df[c]] for c in signal_columns})
+    signal_df = data[signal_columns]
+    ranks_df = signal_df.rank(method='first').astype(int)
+    quantile_df = pd.DataFrame.from_dict(
+        {c: target_sorted[ranks_df[c] - 1] for c in signal_columns}
+    )
     quantile_df.index = data.index
     quantile_df.to_csv(output, sep='\t')
     print('{} to {}'.format('Saved QUANTILE', output))
+
+
+def process_quantile_no_ref(output, data):
+    # To quantile normalize two or more distributions to each other, without a reference
+    # distribution, sort as before, then set to the average (usually, arithmetic mean) of
+    #  the distributions. So the highest value in all cases becomes the mean of the highest
+    # values, the second highest value becomes the mean of the second highest values, and so on.
+    #
+    # See https://en.wikipedia.org/wiki/Quantile_normalization
+    signal_columns = [c for c in data.columns if not is_input(c)]
+
+    signal_df = data[signal_columns]
+    ranks_mean = signal_df.stack().groupby(signal_df.rank(method='first').astype(int).stack())\
+        .mean()
+    quantile_df = signal_df.rank(method='min').astype(int).stack().map(ranks_mean).unstack()
+    quantile_df.to_csv(output, sep='\t')
+    print('Saved QUANTILE_NO_REF to {}'.format(output))
 
 
 def ma_normalization(data_path):
