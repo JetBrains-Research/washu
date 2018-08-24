@@ -518,7 +518,7 @@ def _cli():
 
 def load_or_build_metrics_table(a_paths, b_paths, df_path, **kw):
     if df_path.exists():
-        df = pd.DataFrame.from_csv(str(df_path))
+        df = pd.read_csv(str(df_path), index_col=0)
         print("[Skipped]: Already exists", str(df_path))
     else:
         print("Calculating metrics: ", str(df_path))
