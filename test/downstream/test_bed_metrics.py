@@ -8,12 +8,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 
-from test.fixtures import test_data, tmp_dir
+from test.fixtures import test_data, tmp_dir, tmp_path
 
 from downstream.bed_metrics import bed_metric_table, color_annotator_age, \
     plot_metric_heatmap, run_metric_jaccard, run_metric_intersection, \
     label_converter_donor_and_tool, color_annotator_chain, \
-    color_annotator_outlier, save_plot  # nopep8
+    color_annotator_outlier, save_plot, _cli_collect_files  # nopep8
 
 
 @pytest.mark.parametrize("jaccard,fname,swap_ab", [
@@ -386,3 +386,50 @@ def test_color_annotator_outlier(test_data, label, data_type, value):
     k, v = res[0]
     assert k == "outlier"
     assert value == v
+
+
+@pytest.mark.parametrize("paths_arg,files", [
+    (["a1"], ["a1"]),
+    (["a1,b2.bed"], ["a1", "b2.bed"]),
+    (["a1.bed,b2.bed,"], ["a1.bed", "b2.bed"]),
+    (["a1.bed,b2.bed", "c2.bed"], ["a1.bed", "b2.bed", "c2.bed"]),
+    (["a1.bed,b2.bed", ","], ["a1.bed", "b2.bed"])
+])
+def test_cli_collect_files(tmp_path, paths_arg, files):
+    actual_files = [p.name for p in _cli_collect_files(paths_arg, ["*.bed" for p in paths_arg])]
+    assert files == actual_files
+
+
+@pytest.mark.parametrize("paths_arg,ptn,files", [
+    (["a1"], ["*.bed"], ["a1"]),
+    (["a1,$FOO"], ["*.bed"],  ['a1', 'f2.bed', 'f1.bed']),
+    (["$FOO,a1"], ["*.bed"],  ['f2.bed', 'f1.bed', 'a1']),
+    (["$FOO,a1"], ["**/*.bed"],  ['f2.bed', 'f1.bed', 'fs2.bed', 'fs1.bed', 'a1']),
+    (["a1,$FOO"], ["*.txt"],  ['a1', 'f4.txt', 'f3.txt']),
+    (["$FOO"], ["*.txt"],  ['f4.txt', 'f3.txt']),
+    ([",$FOO,"], ["*.txt"],  ['f4.txt', 'f3.txt']),
+    (["a1,$FOO,"], ["*.xyz"],  ['a1']),
+    (["a1,$FOO,"], ["{*.bed,*.txt}"],  ['a1']),
+    (["a1,$FOO,"], ["*.[bed|txt]"],  ['a1']),
+    (["a1,$FOO,"], ["*.bed*"],  ['a1', 'f2.bed', 'f1.bed', 'f6.bed.bed4', 'f5.bed4']),
+    (["$FOO,", "$FOO"], ["*.txt", "*.bed"],  ['f3.txt', 'f4.txt', 'f1.bed', 'f2.bed']),
+])
+def test_cli_collect_files_folder(tmp_path, paths_arg, ptn, files):
+    foo = tmp_path / "foo"
+    foo.mkdir()
+    (foo / "f1.bed").touch()
+    (foo / "f2.bed").touch()
+    (foo / "f3.txt").touch()
+    (foo / "f4.txt").touch()
+    (foo / "f5.bed4").touch()
+    (foo / "f6.bed.bed4").touch()
+    foo_sub = foo / "sub"
+    foo_sub.mkdir()
+    (foo_sub / "fs1.bed").touch()
+    (foo_sub / "fs2.bed").touch()
+    (foo_sub / "fs3.txt").touch()
+    (foo_sub / "fs4.txt").touch()
+
+    paths_arg1 = [a.replace("$FOO", str(foo)) for a in paths_arg]
+    actual_files = [p.name for p in _cli_collect_files(paths_arg1, ptn)]
+    assert set(files) == set(actual_files)

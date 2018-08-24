@@ -148,6 +148,11 @@ def color_annotator_chain(*annotators):
     return inner
 
 
+COLOR_FAILED = "lightgray"
+COLOR_NOT_FAILED = "g"
+COLOR_UNKNOWN_FAILED_STATE = "white"
+
+
 def color_annotator_outlier(failed_tracks_df, data_type):
     outlier_mapping = failed_tracks_df.loc[:, data_type]
 
@@ -160,13 +165,13 @@ def color_annotator_outlier(failed_tracks_df, data_type):
                     value = outlier_mapping[ch]
                     if value == 0:
                         # ok
-                        return (("outlier", "g"),)
+                        return (("outlier", COLOR_NOT_FAILED),)
                     elif value == 1:
                         # outlier
-                        return (("outlier", "lightgray"),)
+                        return (("outlier", COLOR_FAILED),)
 
         # unknown
-        return (("outlier", "white"),)
+        return (("outlier", COLOR_UNKNOWN_FAILED_STATE),)
 
     return inner
 
@@ -296,6 +301,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
                         right=adjustments.get('right', 0.8),
                         top=adjustments.get('top', 0.8),
                         bottom=adjustments.get('bottom', 0.2))
+    # plt.tight_layout()
     if show_or_save_plot:
         save_plot(save_to)
     return g
@@ -343,6 +349,16 @@ def save_plot(save_to):
         raise ValueError("Unsupported value type: {}".format(type(save_to)))
 
 
+def _cli_collect_files(paths_arg: List[str], glob_patterns: List[str]) -> List:
+    assert len(paths_arg) == len(glob_patterns)
+
+    paths = []
+    for s, ptn in zip(paths_arg, glob_patterns):
+        paths.extend((Path(p), ptn) for p in s.split(','))
+
+    return list(chain(*((p, ) if not p.is_dir() else p.glob(ptn) for p, ptn in paths)))
+
+
 def _cli():
     parser = argparse.ArgumentParser(
         description="For given two loci paths sets build intersection heatmap pdf",
@@ -351,22 +367,42 @@ def _cli():
     parser.add_argument("-a", required=True, action='append', metavar="PATHS",
                         help="First set: comma separated list of files. Could be used multiple "
                              "times")
+    parser.add_argument('--a_pattern',  action='append', metavar="PATTERN",
+                        help="File search pattern if folder is passed in -a. E.g. '**/*.bed' or "
+                             "'*.bed'. Could be used multiple times but same number as -a option")
+    parser.add_argument("--a_labels", required=False, action='append', metavar="LABELS",
+                        help="Labels set: comma separated list of file labels in same order and "
+                             "same number as for -a option. By default file names are used. Could "
+                             "be used multiple times")
     parser.add_argument("-b", action='append', required=True, metavar="PATHS",
                         help="Second set: comma separated list of files. Could be used multiple "
                              "times")
+    parser.add_argument('--b_pattern',  action='append', metavar="PATTERN",
+                        help="File search pattern if folder is passed in -b. E.g. '**/*.bed' or "
+                             "'*.bed'. Could be used multiple times but same number as -b option")
+    parser.add_argument("--b_labels", required=False, action='append', metavar="LABELS",
+                        help="Labels set: comma separated list of file labels in same order and "
+                             "same number as for -b option. By default file names are used. Could "
+                             "be used multiple times")
     parser.add_argument('-o', '--out', default='result', metavar="PREFIX",
                         help="Output path prefix")
-
     parser.add_argument('--rowc', help="Rows clustering", action="store_true")
     parser.add_argument('--colc', help="Cols clustering", action="store_true")
     parser.add_argument('-p', '--threads', help="Threads number for parallel processing",
                         type=int, default=4)
+
+    # TODO: BedMetrics: support dataset *.yaml as failed tracks #67
     parser.add_argument('--failed_tracks', metavar="PATH",
-                        default="/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv",
-                        help="Failed tracks *.csv path")
+                        default=None,
+                        help="Failed tracks *.csv path. E.g.: "
+                             "./experiments/src/main/resources/datasets/Y20O20.failed_tracks.csv")
     parser.add_argument('--hist', help="Histone modification name (is used for failed tracks "
                                        "highlighting), e.g. H3K4me3")
+    parser.add_argument('--exclude_failed', help="Do not show failed tracks on heatmap",
+                        action="store_true")
     parser.add_argument('--age', help="Highlight donors age", action="store_true")
+    parser.add_argument('--no-cbar', help="Hide colors legend box",
+                        action="store_true")
     parser.add_argument('--jaccard', help="Use Jaccard metric instead intersection",
                         action="store_true")
     parser.add_argument('--size', help="Figure size: width and height separated by space",
@@ -375,24 +411,85 @@ def _cli():
 
     args = parser.parse_args()
 
-    a_paths = [Path(s.strip()) for s in chain(*(s.split(',') for s in args.a))]
-    b_paths = [Path(s.strip()) for s in chain(*(s.split(',') for s in args.b))]
+    if args.a_pattern:
+        a_pattern = args.a_pattern
+        assert len(a_pattern) == len(args.a),\
+            "--a_pattern should be specified for each -a option"
+    else:
+        a_pattern = ["*.bed" for args in args.a]
+
+    if args.b_pattern:
+        b_pattern = args.b_pattern
+        assert len(b_pattern) == len(args.b),\
+            "--b_pattern should be specified for each -b option"
+    else:
+        b_pattern = ["*.bed" for args in args.b]
+
+    a_paths = _cli_collect_files(args.a, a_pattern)
+    b_paths = _cli_collect_files(args.b, b_pattern)
+    a_labels = list(chain(*(s.split(',') for s in args.a_labels))) if args.a_labels else None
+    b_labels = list(chain(*(s.split(',') for s in args.b_labels))) if args.b_labels else None
+
+    if a_labels:
+        if len(a_labels) != len(a_paths):
+            parser.error(
+                "For '-a' option labels number ({}) and files number ({}) should be equal.".format(
+                    len(a_labels), len(a_paths)
+                )
+            )
+    if b_labels:
+        if len(b_labels) != len(b_paths):
+            parser.error(
+                "For '-b' option labels number ({}) and files number ({}) should be equal.".format(
+                    len(b_labels), len(b_paths)
+                )
+            )
+
+    # failed_tracks
+    hist_mod = args.hist
+
+    if args.failed_tracks:
+        if not Path(args.failed_tracks).exists():
+            parser.error("Predicates table doesn't exist: {}".format(args.failed_tracks))
+
+        if not args.hist:
+            parser.error("--hist is obligatory if failed tracks is specified")
+
+        failed_tracks_df = pd.read_csv(
+            args.failed_tracks, delimiter="\t", skiprows=1, index_col="donor"
+        )
+    else:
+        failed_tracks_df = None
+
+    # out
     prefix = args.out.strip()
+    Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+
     plot_path = prefix + ".pdf"
     df_path = Path(prefix + ".df")
 
     # Df
     df = load_or_build_metrics_table(a_paths, b_paths, df_path, jaccard=args.jaccard,
                                      threads=args.threads)
+    if a_labels:
+        df.index = a_labels
+    if b_labels:
+        df.columns = b_labels
 
     anns = []
     # age
     if args.age:
         anns.append(color_annotator_age)
-    # failed_tracks
-    hist_mod = args.hist
-    failed_tracks_df = pd.read_csv(args.failed_tracks, delimiter="\t", skiprows=1,
-                                   index_col="donor")
+
+    if args.exclude_failed:
+        if failed_tracks_df is None:
+            parser.error("Failed tracks table not specified or doesn't exist")
+
+        ann_fun = color_annotator_outlier(failed_tracks_df, hist_mod)
+        rows_filter = [ann_fun(label) != COLOR_FAILED for label in df.index]
+        cols_filter = [ann_fun(label) != COLOR_FAILED for label in df.columns]
+        df = df.loc[rows_filter, cols_filter]
+
     if hist_mod and failed_tracks_df is not None:
         if hist_mod in failed_tracks_df.columns:
             anns.append(color_annotator_outlier(failed_tracks_df, hist_mod))
@@ -400,11 +497,13 @@ def _cli():
 
     # Do plot:
     plot_metric_heatmap("IM: {}".format(df_path.name), df,
+                        cbar=not args.no_cbar,
                         save_to=plot_path,
                         row_cluster=args.rowc, col_cluster=args.colc,
                         row_color_annotator=annotator,
                         col_color_annotator=annotator,
                         figsize=args.size)
+    print("Plot saved to: {}".format(plot_path))
 
 
 def load_or_build_metrics_table(a_paths, b_paths, df_path, **kw):
