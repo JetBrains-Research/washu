@@ -496,11 +496,11 @@ def _cli():
             parser.error("Failed tracks table not specified or doesn't exist")
 
         ann_fun = color_annotator_outlier(failed_tracks_df, hist_mod)
-        rows_filter = [ann_fun(label) != COLOR_FAILED for label in df.index]
-        cols_filter = [ann_fun(label) != COLOR_FAILED for label in df.columns]
+        rows_filter = [ann_fun(label)[0][1] != COLOR_FAILED for label in df.index]
+        cols_filter = [ann_fun(label)[0][1] != COLOR_FAILED for label in df.columns]
         df = df.loc[rows_filter, cols_filter]
 
-    if hist_mod and failed_tracks_df is not None:
+    if not args.exclude_failed and hist_mod and failed_tracks_df is not None:
         if hist_mod in failed_tracks_df.columns:
             anns.append(color_annotator_outlier(failed_tracks_df, hist_mod))
     annotator = None if not anns else color_annotator_chain(*anns)
