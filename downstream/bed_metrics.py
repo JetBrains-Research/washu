@@ -374,9 +374,9 @@ def _cli():
                         help="Labels set: comma separated list of file labels in same order and "
                              "same number as for -a option. By default file names are used. Could "
                              "be used multiple times")
-    parser.add_argument("-b", action='append', required=True, metavar="PATHS",
+    parser.add_argument("-b", action='append', required=False, metavar="PATHS",
                         help="Second set: comma separated list of files. Could be used multiple "
-                             "times")
+                             "times. If not set considered same as -a")
     parser.add_argument('--b_pattern',  action='append', metavar="PATTERN",
                         help="File search pattern if folder is passed in -b. E.g. '**/*.bed' or "
                              "'*.bed'. Could be used multiple times but same number as -b option")
@@ -410,25 +410,35 @@ def _cli():
                         default=[14, 14])
 
     args = parser.parse_args()
+    a_paths = args.a
+    a_pattern = args.a_pattern
+    a_labels = args.a_labels
 
-    if args.a_pattern:
-        a_pattern = args.a_pattern
-        assert len(a_pattern) == len(args.a),\
-            "--a_pattern should be specified for each -a option"
+    b_paths = args.b
+    b_pattern = args.b_pattern
+    b_labels = args.b_labels
+
+    if b_paths is None:
+        b_paths = a_paths
+        b_pattern = b_pattern or a_pattern
+        b_labels = b_labels or a_labels
+
+    if a_pattern:
+        if len(a_pattern) != len(a_paths):
+            parser.error("--a_pattern should be specified for each -a option")
     else:
-        a_pattern = ["*.bed" for args in args.a]
+        a_pattern = ["*.bed" for args in a_paths]
 
-    if args.b_pattern:
-        b_pattern = args.b_pattern
-        assert len(b_pattern) == len(args.b),\
-            "--b_pattern should be specified for each -b option"
+    if b_pattern:
+        if len(b_pattern) != len(b_paths):
+            parser.error("--b_pattern should be specified for each -b option")
     else:
-        b_pattern = ["*.bed" for args in args.b]
+        b_pattern = ["*.bed" for args in b_paths]
 
-    a_paths = _cli_collect_files(args.a, a_pattern)
-    b_paths = _cli_collect_files(args.b, b_pattern)
-    a_labels = list(chain(*(s.split(',') for s in args.a_labels))) if args.a_labels else None
-    b_labels = list(chain(*(s.split(',') for s in args.b_labels))) if args.b_labels else None
+    a_paths = _cli_collect_files(a_paths, a_pattern)
+    b_paths = _cli_collect_files(b_paths, b_pattern)
+    a_labels = list(chain(*(s.split(',') for s in a_labels))) if a_labels else None
+    b_labels = list(chain(*(s.split(',') for s in b_labels))) if b_labels else None
 
     if a_labels:
         if len(a_labels) != len(a_paths):
