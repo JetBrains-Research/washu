@@ -74,7 +74,6 @@ Parallelism level on local machine can be configured via **WASHU_PARALLELISM** e
 Pipelines
 ---------
 * `pipeline_chipseq.py`         - Pipeline for batch ULI-ChIP-Seq processing, including QC, alignment, peak calling
-* `pipeline_utils.py`           - Pipeline for batch RNA-Seq data processing
 * `downstream`                  - Downstream analysis including differential ChIP-Seq analysis
 
 Docker
@@ -120,10 +119,8 @@ Tools used
 * [Phantompeakqualtools](https://github.com/kundajelab/phantompeakqualtools)
 * [Picardtools](https://github.com/broadinstitute/picard)
 * [RSeg](https://academic.oup.com/bioinformatics/article/27/6/870/236489/Identifying-dispersed-epigenomic-domains-from-ChIP)
-* [RSem](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-12-323)
 * [Samtools](http://samtools.sourceforge.net/)
 * [SICER](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/)
-* [Star](https://www.ncbi.nlm.nih.gov/pubmed/23104886)
 * [SPAN](http://artyomovlab.wustl.edu/aging/span.html)
 
 Data standards and pipelines
