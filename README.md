@@ -5,9 +5,9 @@ Pipeline tests [![long tests](http://teamcity.jetbrains.com/app/rest/builds/buil
 Technical pipelines
 ===================
 Technical pipelines for ChIP-Seq processing on Portable Batch System (qsub) and local machines.
-These pipelines were used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data downstream analysis.
+These pipelines were used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data analysis.
 
-How do I launch the pipeline?
+How do I launch the technical pipeline?
 --------------------------
 Follow these instructions to launch ChIP-Seq pipeline:
 * Configure environment, see **Requirements** section
@@ -50,6 +50,12 @@ curl --location https://storage.googleapis.com/google-code-archive-downloads/v2/
     --output ~/phantompeakqualtools.tar.gz 
 tar xvf ~/phantompeakqualtools.tar.gz
 ```
+* Download and extract [SPAN](https://artyomovlab.wustl.edu/aging/span.html):
+```bash
+curl --location https://download.jetbrains.com/biolabs/span/span-0.7.0.4254.jar \
+    --output ~/span.jar 
+```
+
 Project
 -------
 
