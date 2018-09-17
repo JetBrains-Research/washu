@@ -1,3 +1,8 @@
+"""This module generates Overlap and Jaccard metric reports for given bed files
+"""
+__author__ = 'Roman Chernyatchik'
+__email__ = 'roman.chernyatchik@jetbrains.com'
+
 import os
 import sys
 import re
@@ -354,7 +359,7 @@ def _cli_collect_files(paths_arg: List[str], glob_patterns: List[str]) -> List:
 
     paths = []
     for s, ptn in zip(paths_arg, glob_patterns):
-        paths.extend((Path(p), ptn) for p in s.split(','))
+        paths.extend((Path(p), ptn) for p in s.split(',') if p)
 
     return list(chain(*((p, ) if not p.is_dir() else p.glob(ptn) for p, ptn in paths)))
 
