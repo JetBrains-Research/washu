@@ -402,17 +402,17 @@ def test_cli_collect_files(tmp_path, paths_arg, files):
 
 @pytest.mark.parametrize("paths_arg,ptn,files", [
     (["a1"], ["*.bed"], ["a1"]),
-    (["a1,$FOO"], ["*.bed"],  ['a1', 'f2.bed', 'f1.bed']),
-    (["$FOO,a1"], ["*.bed"],  ['f2.bed', 'f1.bed', 'a1']),
-    (["$FOO,a1"], ["**/*.bed"],  ['f2.bed', 'f1.bed', 'fs2.bed', 'fs1.bed', 'a1']),
-    (["a1,$FOO"], ["*.txt"],  ['a1', 'f4.txt', 'f3.txt']),
-    (["$FOO"], ["*.txt"],  ['f4.txt', 'f3.txt']),
-    ([",$FOO,"], ["*.txt"],  ['f4.txt', 'f3.txt']),
-    (["a1,$FOO,"], ["*.xyz"],  ['a1']),
-    (["a1,$FOO,"], ["{*.bed,*.txt}"],  ['a1']),
-    (["a1,$FOO,"], ["*.[bed|txt]"],  ['a1']),
-    (["a1,$FOO,"], ["*.bed*"],  ['a1', 'f2.bed', 'f1.bed', 'f6.bed.bed4', 'f5.bed4']),
-    (["$FOO,", "$FOO"], ["*.txt", "*.bed"],  ['f3.txt', 'f4.txt', 'f1.bed', 'f2.bed']),
+    (["a1,$FOO"], ["*.bed"], ['a1', 'f2.bed', 'f1.bed']),
+    (["$FOO,a1"], ["*.bed"], ['f2.bed', 'f1.bed', 'a1']),
+    (["$FOO,a1"], ["**/*.bed"], ['f2.bed', 'f1.bed', 'fs2.bed', 'fs1.bed', 'a1']),
+    (["a1,$FOO"], ["*.txt"], ['a1', 'f4.txt', 'f3.txt']),
+    (["$FOO"], ["*.txt"], ['f4.txt', 'f3.txt']),
+    ([",$FOO,"], ["*.txt"], ['f4.txt', 'f3.txt']),
+    (["a1,$FOO,"], ["*.xyz"], ['a1']),
+    (["a1,$FOO,"], ["{*.bed,*.txt}"], ['a1']),
+    (["a1,$FOO,"], ["*.[bed|txt]"], ['a1']),
+    (["a1,$FOO,"], ["*.bed*"], ['a1', 'f2.bed', 'f1.bed', 'f6.bed.bed4', 'f5.bed4']),
+    (["$FOO,", "$FOO"], ["*.txt", "*.bed"], ['f3.txt', 'f4.txt', 'f1.bed', 'f2.bed']),
 ])
 def test_cli_collect_files_folder(tmp_path, paths_arg, ptn, files):
     foo = tmp_path / "foo"
