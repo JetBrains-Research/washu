@@ -5,11 +5,11 @@ This is just an image `ubuntu:latest` - Ubuntu LTS with
 * all the environment setup
 * test data from `/mnt/stripe/washu_test_data` 
 
-Test data
+Prepare Test data
 ---------
 ```bash
 # Create .tar.gz with test data
-tar -cvzf washu_test_data.tar.gz -C /mnt/stripe/ washu_test_data
+tar -cvzf washu_test_data.tar.gz -C /mnt/stripe/washu_test_data
 ```
 * `fastq` - fastq files (chr22)
 * `index` - indices for hg19 genome (chr22)
@@ -32,6 +32,9 @@ washu_test_data/
 
 Build
 -----
+Change directory to `$WASHU_ROOT/docker/biolabs/washu` and copy `washu_test_data.tar.gz` file
+ to current directory.
+
 ```bash
 docker build -t biolabs/washu .
 ```
