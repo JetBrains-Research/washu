@@ -432,4 +432,7 @@ def test_cli_collect_files_folder(tmp_path, paths_arg, ptn, files):
 
     paths_arg1 = [a.replace("$FOO", str(foo)) for a in paths_arg]
     actual_files = [p.name for p in _cli_collect_files(paths_arg1, ptn)]
+
+    print("tmp_path = {}".format(foo))
+    print("files = {}".format(", ".join(str(p) for p in foo.glob("**/*"))))
     assert set(files) == set(actual_files)
