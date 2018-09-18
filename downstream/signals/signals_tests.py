@@ -44,14 +44,14 @@ def stat_test(f, test_name, test, fdr):
     h0_rejects = h0_rejects[pvals_order]
 
     # Save results
-    results = re.sub('\.tsv', '_{}.tsv'.format(test_name), f)
+    results = re.sub(r'\.tsv', '_{}.tsv'.format(test_name), f)
     df[['chr', 'start', 'end', 'yd_mean', 'od_mean', 'logfc', 'pval', 'pval_adj']] \
         .to_csv(results, sep='\t', index=None, header=True)
     print('Saved test results to', results)
 
     # Save significant results
     if sum(h0_rejects) > 0:
-        results_fdr = re.sub('\.tsv', '_{}_diff_fdr_{}.bed'.format(test_name, fdr), f)
+        results_fdr = re.sub(r'\.tsv', '_{}_diff_fdr_{}.bed'.format(test_name, fdr), f)
         df.loc[h0_rejects][['chr', 'start', 'end']] \
             .to_csv(results_fdr, sep='\t', index=None, header=True)
         print('Saved {} significant results at FDR={} to {}'.format(

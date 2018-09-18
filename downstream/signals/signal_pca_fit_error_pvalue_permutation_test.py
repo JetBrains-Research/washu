@@ -49,8 +49,8 @@ def _multiple_random_split_error(donors, x_r, simulations, actual_error,
                 was_aborted = True
                 break
             elif verbose:
-                print("###", len(res), pvalue, pvalue * len(res), ":", (simulations + 1) *
-                      opt_by_pvalue_cutoff - 1)
+                print("###", len(res), pvalue, pvalue * len(res), ":",
+                      (simulations + 1) * opt_by_pvalue_cutoff - 1)
 
         return (res, was_aborted)
 
@@ -112,7 +112,7 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
                                           (donors, x_r, e - s, actual_error, None, verbose))
                          for s, e in chunks]
                 rnd_results = list(
-                    chain(*(task.get(timeout=3600*timeout_hours)[0] for task in tasks))
+                    chain(*(task.get(timeout=3600 * timeout_hours)[0] for task in tasks))
                 )
 
         # serialize:
@@ -183,7 +183,7 @@ def _cli():
     parser.add_argument('-p', '--threads', help="Threads number for parallel processing",
                         type=int, default=4)
     parser.add_argument('-n', help="Simulations number to calculated pvalue", type=int,
-                        default=100*1000)
+                        default=100 * 1000)
 
     parser.add_argument('--opt_max_pvalues',
                         help="Optimize permutation test so as to stop permutation test if pvalue "
@@ -262,10 +262,10 @@ def process(paths: List[Path], output_path: str, seed: int, simulations: int, th
                                       (p, simulations, 1, pval_cutoff),
                                       dict(plot=plot_simulations, verbose=verbose))
                      for p in paths]
-            results = list(task.get(timeout=3600*timeout_hours) for task in tasks)
+            results = list(task.get(timeout=3600 * timeout_hours) for task in tasks)
     else:
         # parallelize by simulations
-        progress_step = n_paths // (100/5)  # every 5%
+        progress_step = n_paths // (100 / 5)  # every 5%
         for i, path in enumerate(paths, 1):
             if verbose:
                 print("[{} / {}] Process: {}".format(i, n_paths, path))

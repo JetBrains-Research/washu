@@ -40,4 +40,5 @@ def donor(c):
 
 
 def regions_extension(c):
-    return re.match('.*(?:(?:broad|narrow)Peak|_peaks(?:_\d+)?\.bed|island(?:_\d+)?\.bed)$', str(c))
+    return re.match(r'.*(?:(?:broad|narrow)Peak|_peaks(?:_\d+)?\.bed|island(?:_\d+)?\.bed)$',
+                    str(c))

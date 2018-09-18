@@ -310,7 +310,7 @@ def metapeaks(filesmap):
                 if p in line:
                     try:
                         args[p] = int(line[len(p):])
-                    except:
+                    except:  # nopep8
                         pass
         if len(filesmap) == 2:
             showvenn2(*names, *[args[x] for x in venn_patterns])

@@ -580,10 +580,10 @@ def manhattan_plot(pvalues_df, col_name, title, correction,
     n = pvalues_df.shape[0]
 
     ax = plt.subplot()
-    ax.plot(range(n), 1/pvalues_df[col_name], marker=".", ls="")
+    ax.plot(range(n), 1 / pvalues_df[col_name], marker=".", ls="")
     # ax.plot(range(n), 1/pvalues_df["pvalue"], marker=".", ls="")
     # ax.axhline(y=-np.log10(0.05), xmin=0, xmax=n, color="r", linestyle='dotted')
-    ax.axhline(y=1/0.05, xmin=0, xmax=n, color="r", linestyle='dotted')
+    ax.axhline(y=1 / 0.05, xmin=0, xmax=n, color="r", linestyle='dotted')
     ax.set_ylabel("{} pvalues (-log(p) scale )".format(correction))
     ax.set_yscale("log")
     ax.set_title("{} ({})".format(title, correction))

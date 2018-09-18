@@ -66,7 +66,7 @@ def _cli():
     rip_files = sorted([str(f) for f in folder_path.glob("*_rip.csv")])
 
     anns = [bm.color_annotator_age]
-    hist_mod = re.match(".*(h3k\d{1,2}(?:me\d|ac)).*", str(folder_path),
+    hist_mod = re.match(r".*(h3k\d{1,2}(?:me\d|ac)).*", str(folder_path),
                         flags=re.IGNORECASE).group(1)
     if hist_mod in failed_tracks_df.columns:
         anns.append(bm.color_annotator_outlier(failed_tracks_df, hist_mod))

@@ -153,8 +153,8 @@ def bar_consensus(mono_paths_map, tcell_paths_map, mono_consensus_bed, tcell_con
                  bottom=[mono_tcell_int_bed.count() + max(result_columns[2])] * n,
                  color='orange')
     p4 = plt.bar(ind, result_columns[4], width,
-                 bottom=[mono_tcell_int_bed.count() + max(result_columns[2]) +
-                         max(result_columns[3])] * n,
+                 bottom=[mono_tcell_int_bed.count() + max(result_columns[2]) + max(
+                     result_columns[3])] * n,
                  color='black')
     plt.ylabel('Peaks count')
     plt.xticks(ind, result_columns[0], rotation=90, fontsize=fontsize)
@@ -167,7 +167,7 @@ def bar_consensus(mono_paths_map, tcell_paths_map, mono_consensus_bed, tcell_con
 def label_converter_donor_and_tool(name):
     chunks = []
     suffix_tool_map = {"Peak": "macs2", "island.bed": "sicer", "peaks.bed": "span"}
-    match = re.match("(?:^|.*_)((?:mn|tc)(?:s|\d+)).*", name, flags=re.IGNORECASE)
+    match = re.match(r"(?:^|.*_)((?:mn|tc)(?:s|\d+)).*", name, flags=re.IGNORECASE)
 
     if match:
         chunks.append(match.group(1))

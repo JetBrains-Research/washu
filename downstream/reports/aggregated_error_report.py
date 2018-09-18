@@ -127,7 +127,7 @@ def peaks_count_map(path):
     peaks_count = {}
 
     for peak_path in peaks_paths:
-        match = re.match(".*([yo]d\d+).*", str(peak_path), flags=re.IGNORECASE)
+        match = re.match(r".*([yo]d\d+).*", str(peak_path), flags=re.IGNORECASE)
         if match:
             peaks_count[match.group(1)] = Bed(str(peak_path)).count()
     return peaks_count

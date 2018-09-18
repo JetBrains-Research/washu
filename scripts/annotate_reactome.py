@@ -1,3 +1,6 @@
+__author__ = 'Roman Chernyatchik'
+__email__ = 'roman.chernyatchik@jetbrains.com'
+
 import argparse
 import requests
 import contextlib
@@ -71,7 +74,7 @@ def _web_fetch_title(reactome_id):
 
 
 def extract_reactome_id(s):
-    match = re.match(".*R-HSA-(\d+).*", str(s), flags=re.IGNORECASE)
+    match = re.match(r".*R-HSA-(\d+).*", str(s), flags=re.IGNORECASE)
     if match:
         reactome_id = "R-HSA-{}".format(match.group(1))
     else:

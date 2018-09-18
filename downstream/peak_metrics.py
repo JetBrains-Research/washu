@@ -67,11 +67,11 @@ def bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed
     width = 0.35
     p1 = plt.bar(ind, result_columns[1], width, color='green')
     p2 = plt.bar(ind, result_columns[2], width, bottom=[yd_od_int_bed.count()] * n, color='blue')
-    p3 = plt.bar(ind, result_columns[3], width, bottom=[yd_od_int_bed.count() +
-                                                        max(result_columns[2])] * n, color='orange')
-    p4 = plt.bar(ind, result_columns[4], width, bottom=[yd_od_int_bed.count() +
-                                                        max(result_columns[2]) +
-                                                        max(result_columns[3])] * n, color='black')
+    p3 = plt.bar(ind, result_columns[3], width,
+                 bottom=[yd_od_int_bed.count() + max(result_columns[2])] * n, color='orange')
+    p4 = plt.bar(ind, result_columns[4], width,
+                 bottom=[yd_od_int_bed.count() + max(result_columns[2]) +
+                         max(result_columns[3])] * n, color='black')
     plt.ylabel('Peaks count')
     plt.xticks(ind, result_columns[0], rotation=90, fontsize=fontsize)
     plt.legend((p1[0], p2[0], p3[0], p4[0]),
