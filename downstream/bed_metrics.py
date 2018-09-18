@@ -259,8 +259,7 @@ def plot_metric_heatmap(title, df, *, figsize=(14, 14),
             assert len({len(colors) for col, colors in data.items()}) == 1, \
                 "All color list should be equal size:\n{}\n{}".format(
                     items,
-                    {col: len(colors) for col, colors in data.items()}
-                )
+                    {col: len(colors) for col, colors in data.items()})
 
             df = pd.DataFrame.from_dict(data)
             df.index = items
@@ -372,7 +371,7 @@ def _cli():
     parser.add_argument("-a", required=True, action='append', metavar="PATHS",
                         help="First set: comma separated list of files. Could be used multiple "
                              "times")
-    parser.add_argument('--a_pattern',  action='append', metavar="PATTERN",
+    parser.add_argument('--a_pattern', action='append', metavar="PATTERN",
                         help="File search pattern if folder is passed in -a. E.g. '**/*.bed' or "
                              "'*.bed'. Could be used multiple times but same number as -a option")
     parser.add_argument("--a_labels", required=False, action='append', metavar="LABELS",
@@ -382,7 +381,7 @@ def _cli():
     parser.add_argument("-b", action='append', required=False, metavar="PATHS",
                         help="Second set: comma separated list of files. Could be used multiple "
                              "times. If not set considered same as -a")
-    parser.add_argument('--b_pattern',  action='append', metavar="PATTERN",
+    parser.add_argument('--b_pattern', action='append', metavar="PATTERN",
                         help="File search pattern if folder is passed in -b. E.g. '**/*.bed' or "
                              "'*.bed'. Could be used multiple times but same number as -b option")
     parser.add_argument("--b_labels", required=False, action='append', metavar="LABELS",
