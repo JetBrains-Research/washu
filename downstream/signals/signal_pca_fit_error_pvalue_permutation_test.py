@@ -1,5 +1,7 @@
+__author__ = 'Roman Chernyatchik'
+__email__ = 'roman.chernyatchik@jetbrains.com'
+
 import argparse
-import re
 from multiprocessing import Pool
 from typing import List
 from itertools import chain
@@ -121,7 +123,7 @@ def _process(path: Path, simulations: int, threads: int, opt_by_pvalue_cutoff=No
             )
 
     else:
-        rnd_results = pd.DataFrame.from_csv(str(rnd_results_path), index_col=None).error.tolist()
+        rnd_results = pd.read_csv(str(rnd_results_path), index_col=None).error.tolist()
         assert len(rnd_results) == simulations,\
             "Expected {} simulations, but was {} in: {}".format(simulations, len(rnd_results),
                                                                 rnd_results_path)

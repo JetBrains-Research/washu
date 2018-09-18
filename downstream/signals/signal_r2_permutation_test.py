@@ -1,5 +1,7 @@
+__author__ = 'Roman Chernyatchik'
+__email__ = 'roman.chernyatchik@jetbrains.com'
+
 import argparse
-import re
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -97,7 +99,7 @@ def _process(path: Path, simulations: int, seed: int, threads: int, plot=True) -
             index=None
         )
     else:
-        r2_list = pd.DataFrame.from_csv(str(r2_list_path), index_col=None).r2.tolist()
+        r2_list = pd.read_csv(str(r2_list_path), index_col=None).r2.tolist()
         assert len(r2_list) == simulations,\
             "Expected {} simulations, but was {} in: {}".format(simulations, len(r2_list),
                                                                 r2_list_path)
