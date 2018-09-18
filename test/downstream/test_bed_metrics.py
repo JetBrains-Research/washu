@@ -33,7 +33,7 @@ def test_bed_metric_table(test_data, jaccard, fname, swap_ab):
     df = bed_metric_table(a_paths if not swap_ab else b_paths,
                           b_paths if not swap_ab else a_paths,
                           jaccard=jaccard)
-    expected = pd.DataFrame.from_csv(test_data("metrics/{}".format(fname)))
+    expected = pd.read_csv(test_data("metrics/{}".format(fname)), index_col=0)
 
     assert str(expected) == str(df)
 
@@ -141,7 +141,7 @@ def assert_image(expected_path, actual_path):
 
 
 def test_plot_metric_heatmap(tmp_dir, test_data):
-    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
+    df = pd.read_csv(test_data("metrics/metric1.csv"), index_col=0)
 
     result = tmp_dir + "foo.png"
     plot_metric_heatmap("My title", df, save_to=result)
@@ -156,7 +156,7 @@ def test_plot_metric_heatmap(tmp_dir, test_data):
     ("img1_l-cr.png", True, True),
 ])
 def test_plot_metric_heatmap_label_fun(tmp_dir, test_data, fname, col, row):
-    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
+    df = pd.read_csv(test_data("metrics/metric1.csv"), index_col=0)
 
     expected = test_data("metrics/" + fname)
     result = tmp_dir + "/foo.png"
@@ -179,7 +179,7 @@ def test_plot_metric_heatmap_label_fun(tmp_dir, test_data, fname, col, row):
     ("img1b.png", dict(bottom=0.5)),
 ])
 def test_plot_metric_heatmap_label_fun(tmp_dir, test_data, fname, adjustments):
-    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
+    df = pd.read_csv(test_data("metrics/metric1.csv"), index_col=0)
 
     expected = test_data("metrics/" + fname)
     result = tmp_dir + "/foo.png"
@@ -204,7 +204,7 @@ def test_plot_metric_heatmap_label_fun(tmp_dir, test_data, fname, adjustments):
     ("empty.csv", "empty.png", True, True),
 ])
 def test_plot_metric_heatmap_col_fun(tmp_dir, test_data, fdf, fname, col, row):
-    df = pd.DataFrame.from_csv(test_data("metrics/" + fdf))
+    df = pd.read_csv(test_data("metrics/" + fdf), index_col=0)
     if len(df) > 0:
         df.columns = ["ODS", "boo", "YDS", "YD20"]
         df.index = ["OD1", "foo", "boo_YD1"]
@@ -228,7 +228,7 @@ def test_plot_metric_heatmap_col_fun(tmp_dir, test_data, fdf, fname, col, row):
     ("metric1.csv", "img_multi_c_c-r.png", True, True),
 ])
 def test_plot_multiple_col_fun(tmp_dir, test_data, fdf, fname, col, row):
-    df = pd.DataFrame.from_csv(test_data("metrics/" + fdf))
+    df = pd.read_csv(test_data("metrics/" + fdf), index_col=0)
 
     expected = test_data("metrics/" + fname)
     result = "{}/{}".format(tmp_dir, fname)
@@ -251,7 +251,7 @@ def test_plot_multiple_col_fun(tmp_dir, test_data, fdf, fname, col, row):
 
 
 def test_plot_ann_custom_width(tmp_dir, test_data):
-    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
+    df = pd.read_csv(test_data("metrics/metric1.csv"), index_col=0)
 
     expected = test_data("metrics/img_anns_custom_width.png")
     result = "{}/{}".format(tmp_dir, "img_anns_custom_width.png")
@@ -274,7 +274,7 @@ def test_plot_ann_custom_width(tmp_dir, test_data):
 
 
 def test_plot_ann_custom_ticks(tmp_dir, test_data):
-    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
+    df = pd.read_csv(test_data("metrics/metric1.csv"), index_col=0)
 
     expected = test_data("metrics/img_anns_custom_tics.png")
     result = "{}/{}".format(tmp_dir, "img_anns_custom_tics.png")
@@ -315,7 +315,7 @@ def test_plot_ann_custom_ticks(tmp_dir, test_data):
 
 
 def test_plot_cluster_metric_heatmap(tmp_dir, test_data):
-    df = pd.DataFrame.from_csv(test_data("metrics/metric1.csv"))
+    df = pd.read_csv(test_data("metrics/metric1.csv"), index_col=0)
 
     result = tmp_dir + "foo.png"
     plot_metric_heatmap("My title", df, save_to=result, col_cluster=True, row_cluster=True)

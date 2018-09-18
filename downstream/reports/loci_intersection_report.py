@@ -1,3 +1,8 @@
+"""Script creates pdf report for overlap metric of loci of interest at peak calling results
+"""
+__author__ = 'Roman Chernyatchik'
+__email__ = 'roman.chernyatchik@jetbrains.com'
+
 import argparse
 import datetime
 import sys
@@ -10,6 +15,8 @@ import pandas as pd
 from scipy.stats import mannwhitneyu
 from statsmodels.stats.multitest import multipletests
 
+
+#TODO: use /mnt/stripe/bio/experiments/configs/Y20O20/benchmark/Y20O20_peaks_summary.tsv
 
 def _cli():
     data_root = Path("/mnt/stripe/bio")
@@ -37,19 +44,20 @@ def _cli():
                         help="Do not calc stats tests")
     parser.add_argument('--allpws', action="store_true",
                         help="Stat tests on all pathways")
+
     parser.add_argument('--tuned', action="store_true",
                         help="Use tuned peaks")
-    parser.add_argument('--tool',
-                        help="Process peaks only for these peak caller tool folder")
-    parser.add_argument('--failed_tracks', metavar="PATH",
-                        default="/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv",
-                        help="Failed tracks *.csv path")
-    parser.add_argument('--peaks', metavar="PATH",
-                        help="Custom peaks folder to use instead of predefined peaks list")
+    # parser.add_argument('--tool',
+    #                     help="Process peaks only for these peak caller tool folder")
+    # parser.add_argument('--failed_tracks', metavar="PATH",
+    #                     default="/mnt/stripe/bio/experiments/aging/Y20O20.failed_tracks.csv",
+    #                     help="Failed tracks *.csv path")
+    # parser.add_argument('--peaks', metavar="PATH",
+    #                     help="Custom peaks folder to use instead of predefined peaks list")
     args = parser.parse_args()
 
     threads = args.threads
-    failed_tracks_df_path = args.failed_tracks
+    # failed_tracks_df_path = args.failed_tracks
     exclude_failed_tracks = not args.all
     results_dir = Path(args.out)
     results_dir.mkdir(parents=True, exist_ok=True)
@@ -57,12 +65,15 @@ def _cli():
     all_pathways = args.allpws
     skip_plots = args.skip_plots
     skip_stats = args.skip_stats
-    custom_tool = args.tool
+    # custom_tool = args.tool
+
     ########################################################################
 
     loci_dict = loi.collect_loci(loci_root)
 
-    if not args.peaks:
+    # peaks = args.peaks
+
+    if not peaks:
         if args.tuned:
             peaks_map = defaultdict(dict)
             bench_root = data_root / "experiments/configs/benchmark/benchmark"
@@ -105,7 +116,7 @@ def _cli():
     else:
         tool = "tool"
         peaks_map = {tool: {
-            "histmod": loi.collect_peaks_in_folder(Path(args.peaks))
+            "histmod": loi.collect_peaks_in_folder(Path(peaks))
         }}
         tools_for_stat_test = [tool]
 
@@ -170,7 +181,7 @@ def _cli():
 
         # ########## For loci #############################################################
         # If custom peaks folder, skip plots, calc only stat test
-        if not args.peaks:
+        if not peaks:
             loci = sorted({k for k in loci_dict if "pathways" not in k})
             for i, lt_a in enumerate(loci):
                 for j, lt_b in enumerate(loci):
