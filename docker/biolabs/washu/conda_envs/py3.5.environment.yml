@@ -9,9 +9,8 @@ dependencies:
   - seaborn=0.8
   - matplotlib=2.1.0
   - matplotlib-venn=0.11.5
-  - pep8=1.7.1
+  - pycodestyle=2.4.0
   - pytest=3.5.1
-  - pytest-pep8=1.0.6
   - lxml=4.2.1
   - pathlib=1.0.1
   - requests=2.18.4

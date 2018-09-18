@@ -32,12 +32,12 @@ RUN conda env create -q --name sratoolkit --file /root/conda_envs/sratoolkit.env
 RUN conda env create -q --name py2.7 --file /root/conda_envs/py2.7.environment.yml
 RUN ln -sf /opt/conda/envs/py2.7/bin/macs2 /usr/local/bin/macs2
 # SICER is python2 library, force it!
-RUN sed -i 's#python#/opt/conda/envs/py2.7/bin/python#g' /opt/conda/envs/py2.7/share/sicer-1.1-2/SICER.sh
-RUN ln -sf /opt/conda/envs/py2.7/share/sicer-1.1-2/SICER.sh /usr/local/bin/SICER.sh
+RUN sed -i 's#python#/opt/conda/envs/py2.7/bin/python#g' /opt/conda/envs/py2.7/share/sicer-1.1-3/SICER.sh
+RUN ln -sf /opt/conda/envs/py2.7/share/sicer-1.1-3/SICER.sh /usr/local/bin/SICER.sh
 
 # Python 3.5 environment with all the bioinformatics and python packages
 RUN conda env create -q --name py3.5 --file /root/conda_envs/py3.5.environment.yml
-RUN source activate py3.5 && pip install teamcity-messages && source deactivate
+RUN source activate py3.5 && pip install teamcity-messages pytest-codestyle==1.3.0 && source deactivate
 
 # Bio utils available in path
 RUN conda env create -q --name bio --file /root/conda_envs/bio.environment.yml
@@ -83,4 +83,4 @@ phantompeakqualtools/ccQualityControl.v.1.1.tar.gz --output phantompeakqualtools
     && tar xvf phantompeakqualtools.tar.gz
 
 # Download SPAN Peak Analyzer, see details: http://artyomovlab.wustl.edu/aging/span.html
-RUN cd ~ && curl --location https://download.jetbrains.com/biolabs/span/span-0.6.0.4075.jar --output span.jar
+RUN cd ~ && curl --location https://download.jetbrains.com/biolabs/span/span-0.7.0.4254.jar --output span.jar

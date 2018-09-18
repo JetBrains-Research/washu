@@ -14,4 +14,4 @@ export PYTHONPATH="$WASHU_ROOT:$PYTHONPATH"
 #############
 python -m pytest test/*.py
 python -m pytest test/downstream/*.py
-python -m pytest --pep8 -m pep8
+python -m pytest --codestyle -m codestyle
