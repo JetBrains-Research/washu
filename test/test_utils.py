@@ -163,6 +163,8 @@ Exception ValueError: 'cannot resize this array: it does not own its data' in ..
     ("geo/symlink", "geo/tmp"),
     ("geo/symlink/..", "geo"),
     ("geo/../geo/symlink/doo/file.txt", "geo/tmp/doo/file.txt"),
+    ("/folder_not_exist/boo/doo.txt", "/folder_not_exist/boo/doo.txt"),
+    ("folder_not_exist/boo/doo.txt", "folder_not_exist/boo/doo.txt"),
 ])
 def test_expand_path(tmp_dir, capfd, path, expected):
     os.makedirs(os.path.join(tmp_dir, "geo/tmp/doo"))
@@ -176,7 +178,10 @@ def test_expand_path(tmp_dir, capfd, path, expected):
         "bash -c 'source {}; echo $(expand_path \"{}\")'".format(util_sh, path),
         shell=True, check=True)
     out, _err = capfd.readouterr()
-    assert out == os.path.join(tmp_dir, expected) + "\n"
+    if expected.startswith("/"):
+        assert out == expected + "\n"
+    else:
+        assert out == os.path.join(tmp_dir, expected) + "\n"
 
 
 @pytest.mark.parametrize("path,expected,home", [

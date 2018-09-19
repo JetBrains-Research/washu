@@ -121,8 +121,6 @@ clean_job_tmp_dir() {
 function expand_path() {
     # expand ".." and "." including trailing case
     # based on https://stackoverflow.com/questions/3915040/bash-fish-command-to-print-absolute-path-to-a-file
-    TARGET_FILE="$(pwd)/$1"
-
     if [ -d "$1" ]; then
         # dir
         TARGET_FILE="$(cd "$1"; pwd)"
@@ -131,26 +129,35 @@ function expand_path() {
         if [[ $1 == */* ]]; then
             TARGET_FILE="$(cd "${1%/*}"; pwd)/${1##*/}"
         fi
+    elif [[ $1 == /* ]]; then
+        TARGET_FILE=$1
+    else
+        TARGET_FILE="$(pwd)/$1"
     fi
 
     # resolve symlinks:
     # replacement for `readlink -f path` which isn't available in MacOS
     # http://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
-    cd "$(dirname ${TARGET_FILE})"
-    TARGET_FILE=`basename ${TARGET_FILE}`
+    PARENT_DIR=$(dirname ${TARGET_FILE})
+    if [ ! -d ${PARENT_DIR} ]; then
+        echo "${TARGET_FILE}"
+    else
+        cd "$PARENT_DIR"
+        TARGET_FILE=`basename ${TARGET_FILE}`
 
-    # Iterate down a (possible) chain of symlinks
-    while [ -L "$TARGET_FILE" ]
-    do
-        TARGET_FILE="$(readlink ${TARGET_FILE})"
-        cd "$(dirname ${TARGET_FILE})"
-        TARGET_FILE="$(basename ${TARGET_FILE})"
-    done
+        # Iterate down a (possible) chain of symlinks
+        while [ -L "$TARGET_FILE" ]
+        do
+            TARGET_FILE="$(readlink ${TARGET_FILE})"
+            cd "$(dirname ${TARGET_FILE})"
+            TARGET_FILE="$(basename ${TARGET_FILE})"
+        done
 
-    # Compute the canonicalized name by finding the physical path
-    # for the directory we're in and appending the target file.
-    PHYS_DIR="$(pwd -P)"
-    echo "${PHYS_DIR}/${TARGET_FILE}"
+        # Compute the canonicalized name by finding the physical path
+        # for the directory we're in and appending the target file.
+        PHYS_DIR="$(pwd -P)"
+        echo "${PHYS_DIR}/${TARGET_FILE}"
+    fi
 }
 
 
