@@ -1,3 +1,6 @@
+__author__ = 'Roman Chernyatchik'
+__email__ = 'roman.chernyatchik@jetbrains.com'
+
 import pytest
 
 from test.fixtures import test_data, tmp_path

@@ -1,3 +1,6 @@
+__author__ = 'Roman Chernyatchik'
+__email__ = 'roman.chernyatchik@jetbrains.com'
+
 import os
 import pytest
 from pathlib import Path
