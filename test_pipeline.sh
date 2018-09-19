@@ -68,3 +68,4 @@ mkdir -p /washu/out
 cp -r ~/fastq* /washu/out
 cp -r ~/index* /washu/out
 cp -r ~/signals* /washu/out
+cp -r ~/pipeline_std* /washu/out

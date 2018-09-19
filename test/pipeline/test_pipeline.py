@@ -19,8 +19,13 @@ def setup_module(module):
         return
 
     # Launch pipeline
+    stdout = open(os.path.expanduser("~/pipeline_stdout.txt"), "wb")
+    stderr = open(os.path.expanduser("~/pipeline_stderr.txt"), "wb")
     call(["python", "/washu/pipeline_chipseq.py",
-          os.path.expanduser("~/fastq"), os.path.expanduser("~/index"), "hg19"])
+          os.path.expanduser("~/fastq"), os.path.expanduser("~/index"), "hg19"],
+         stdout=stdout, stderr=stderr)
+    stdout.close()
+    stderr.close()
 
     # Touch marker file
     open("pipeline_finished.txt", "a")
