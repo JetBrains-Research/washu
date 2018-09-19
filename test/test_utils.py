@@ -165,6 +165,7 @@ Exception ValueError: 'cannot resize this array: it does not own its data' in ..
     ("geo/../geo/symlink/doo/file.txt", "geo/tmp/doo/file.txt"),
     ("/folder_not_exist/boo/doo.txt", "/folder_not_exist/boo/doo.txt"),
     ("folder_not_exist/boo/doo.txt", "folder_not_exist/boo/doo.txt"),
+    ("file_not_exists.bam", "file_not_exists.bam"),
 ])
 def test_expand_path(tmp_dir, capfd, path, expected):
     os.makedirs(os.path.join(tmp_dir, "geo/tmp/doo"))
@@ -175,7 +176,9 @@ def test_expand_path(tmp_dir, capfd, path, expected):
     path = os.path.join(tmp_dir, path)
     util_sh = os.path.join(PROJECT_ROOT_PATH, "parallel/util/util.sh")
     subprocess.run(
-        "bash -c 'source {}; echo $(expand_path \"{}\")'".format(util_sh, path),
+        "bash -c 'source {}; cd \"{}\"; echo $(expand_path \"{}\")'".format(
+            util_sh, tmp_dir, path
+        ),
         shell=True, check=True)
     out, _err = capfd.readouterr()
     if expected.startswith("/"):

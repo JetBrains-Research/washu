@@ -119,6 +119,14 @@ clean_job_tmp_dir() {
 
 # Convert path to absolute path and expand all symlinks
 function expand_path() {
+    # Default case:
+    if [[ $1 == /* ]]; then
+        TARGET_FILE=$1
+    else
+        TARGET_FILE="$(pwd)/$1"
+    fi
+
+    # If file or directory exists: expand it
     # expand ".." and "." including trailing case
     # based on https://stackoverflow.com/questions/3915040/bash-fish-command-to-print-absolute-path-to-a-file
     if [ -d "$1" ]; then
@@ -129,10 +137,6 @@ function expand_path() {
         if [[ $1 == */* ]]; then
             TARGET_FILE="$(cd "${1%/*}"; pwd)/${1##*/}"
         fi
-    elif [[ $1 == /* ]]; then
-        TARGET_FILE=$1
-    else
-        TARGET_FILE="$(pwd)/$1"
     fi
 
     # resolve symlinks:
