@@ -16,7 +16,7 @@ from scipy.stats import mannwhitneyu
 from statsmodels.stats.multitest import multipletests
 
 
-#TODO: use /mnt/stripe/bio/experiments/configs/Y20O20/benchmark/Y20O20_peaks_summary.tsv
+# TODO: use /mnt/stripe/bio/experiments/configs/Y20O20/benchmark/Y20O20_peaks_summary.tsv
 
 def _cli():
     data_root = Path("/mnt/stripe/bio")
