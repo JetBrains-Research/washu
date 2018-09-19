@@ -116,8 +116,7 @@ def test_reads2bam():
 def test_signals():
     # Create signals folder
     signals_path = os.path.expanduser("~/signals/H3K4me3")
-    if not os.path.exists(signals_path):
-        os.makedirs(signals_path)
+    os.makedirs(signals_path, exist_ok=True)
 
     # Create symbolic links for BAMs
     # $bams_path/*.bam -> $signals_path/*.bam
@@ -127,6 +126,7 @@ def test_signals():
 
     # Process single file
     tags_bw_path = prepare_tags_bw(signals_path, 120)
+    os.makedirs(tags_bw_path, exist_ok=True)
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
           tags_bw_path,
