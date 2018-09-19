@@ -1,6 +1,9 @@
 #!/usr/bin/env python
-# Author: oleg.shpynov@jetbrains.com
-import sys
+"""Calculates different signal normalization metrics for given signal
+"""
+__authors__ = 'Oleg Shpynov, Roman Chernyatchik'
+__emails__ = 'oleg.shpynov@jetbrains.com, roman.chernyatchik@jetbrains.com'
+
 import math
 import multiprocessing
 import tempfile
@@ -62,10 +65,12 @@ def raw_normalization(data_path):
     loaded = pd.read_csv(data_path, sep='\t',
                          names=('chr', 'start', 'end', 'coverage', 'mean0', 'mean', 'name'))
     print('Processing RAW signal')
-    raw_data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
-                              columns='name',
-                              values='coverage' if processing_chipseq(loaded) else 'mean',
-                              fill_value=0)
+    raw_data = pd.pivot_table(
+        loaded, index=['chr', 'start', 'end'],
+        columns='name',
+        values='coverage' if processing_chipseq(loaded) else 'mean',
+        fill_value=0
+    )
 
     raw_data.to_csv(raw_path, sep='\t')
     print('Saved RAW signal to {}'.format(raw_path))
@@ -168,18 +173,19 @@ def ma_normalization(data_path):
     print('Processing MA normalization')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
-    not_input_columns = [c for c in data.columns if not is_input(c)]
+    signal_columns = [c for c in data.columns if not is_input(c)]
 
-    mean = data[not_input_columns].values.mean(axis=1)
+    mean = data[signal_columns].values.mean(axis=1)
 
     ma_df = pd.DataFrame()
-    for column in not_input_columns:
-        values = data[column].copy()
+    for col in signal_columns:
+        values = data[col].copy()
 
         indexes = np.logical_and(values > 0, mean > 0).values
         x = values[indexes].values
         y = mean[indexes]
 
+        # TODO: log2
         log_x = np.log(x)
         log_y = np.log(y)
 
@@ -195,7 +201,7 @@ def ma_normalization(data_path):
 
         values[indexes] = x_new
 
-        ma_df[column] = values
+        ma_df[col] = values
 
     ma_df.to_csv(manm_path, sep='\t')
     print('{} to {}'.format('Saved MA normalized', manm_path))
@@ -407,7 +413,7 @@ def error_callback(e):
     print(e, file=sys.stderr)
 
 
-def main():
+def _cli():
     argv = sys.argv
     opts, args = getopt.getopt(argv[1:], "h", ["help"])
     if len(args) < 2:
@@ -430,4 +436,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    _cli()

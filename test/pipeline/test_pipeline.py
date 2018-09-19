@@ -115,14 +115,16 @@ def test_signals():
         os.makedirs(signals_path)
 
     # Create symbolic links for BAMs
+    # $bams_path/*.bam -> $signals_path/*.bam
     bams_path = os.path.expanduser("~/fastq_bams")
-    for r in glob.glob("{}/*.bam".format(bams_path)):
-        call(["bash", "-c", "ln -sf {} {}/".format(r, signals_path)])
+    for p in glob.glob("{}/*.bam".format(bams_path)):
+        call(["bash", "-c", "ln -sf {} {}/".format(p, signals_path)])
 
     # Process single file
+    tags_bw_path = prepare_tags_bw(signals_path, 120)
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
-          bams_path,
+          tags_bw_path,
           "120",
           os.path.expanduser("/washu/test/testdata/signal/regions.bed"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
@@ -137,33 +139,46 @@ def test_signals():
     check_files(signals_path + "/120/regions/*_signal.log", 1)
     check_files(signals_path + "/120/regions/regions.tsv", 1)
     check_files(signals_path + "/120/regions/regions_raw.tsv", 1)
-    check_files(signals_path + "/120/regions/*.tsv", 8)
-    check_files(signals_path + "/120/regions/*.png", 7)
-    check_files(signals_path + "/120/regions/*_pca_fit_error.csv", 7)
+    check_files(signals_path + "/120/regions/*.tsv", 9)
+    check_files(signals_path + "/120/regions/*.png", 8)
+    check_files(signals_path + "/120/regions/*_pca_fit_error.csv", 8)
 
     # Process folder
+    tags_bw_path = prepare_tags_bw(signals_path, 150)
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
-          bams_path,
+          tags_bw_path,
           "150",
           os.path.expanduser("/washu/test/testdata/signal"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
           os.path.expanduser("/washu/test/testdata/bed/peaks.bed")])
 
     # And check
-    check_files(signals_path + "/150/a/a1/a1*.tsv", 8)
-    check_files(signals_path + "/150/a/a2/a2*.tsv", 8)
-    check_files(signals_path + "/150/b/c/c/c*.tsv", 8)
-    check_files(signals_path + "/150/regions/regions*.tsv", 8)
+    check_files(signals_path + "/150/a/a1/a1*.tsv", 9)
+    check_files(signals_path + "/150/a/a2/a2*.tsv", 9)
+    check_files(signals_path + "/150/b/c/c/c*.tsv", 9)
+    check_files(signals_path + "/150/regions/regions*.tsv", 9)
 
     # Create and check report
     report_path = os.path.expanduser("~/signals/report.tsv")
-    with open(report_path, 'w') as r:
+    with open(report_path, 'w') as p:
         call(["bash", "/washu/downstream/signals/signals_report.sh",
-              os.path.expanduser("~/signals")], stdout=r)
+              os.path.expanduser("~/signals")], stdout=p)
     check_files(report_path, 1)
     lines = {line.rstrip('\n') for line in open(report_path)}
     assert 'H3K4me3\t150\tb/c/c\tfripm_1kbp\t0' in lines
     assert 'H3K4me3\t150\ta/a1\trawq\t0' in lines
     assert 'H3K4me3\t120\tregions\traw\t1' in lines
-    assert len(lines) == 36
+    assert len(lines) == 41
+
+
+def prepare_tags_bw(signals_path, fragment_size):
+    tags_bw_path = signals_path + "/" + str(fragment_size)
+    call([
+        "bash", "/washu/downstream/signals/bam2tagsbw_batch.sh",
+        str(tags_bw_path),
+        str(fragment_size),
+        os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
+        signals_path
+    ])
+    return tags_bw_path
