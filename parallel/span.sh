@@ -64,14 +64,14 @@ if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
     java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} -c ${INPUT} --chrom.sizes ${CHROM_SIZES} \
         --fdr ${Q} --gap ${GAP} \
-        --output ${ID}_peaks.bed \
+        --peaks ${ID}_peaks.bed \
         --workdir ${OUTPUT_DIR} \
         --threads 4
 else
     echo "${FILE}: no control file"
     java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} --chrom.sizes ${CHROM_SIZES} \
         --fdr ${Q} --gap ${GAP} \
-        --output ${ID}_peaks.bed \
+        --peaks ${ID}_peaks.bed \
         --workdir ${OUTPUT_DIR} \
         --threads 4
 fi
