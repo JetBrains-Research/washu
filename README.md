@@ -82,14 +82,6 @@ Pipelines
 * `pipeline_chipseq.py`         - Pipeline for batch ULI-ChIP-Seq processing, including QC, alignment, peak calling
 * `downstream`                  - Downstream analysis including differential ChIP-Seq analysis
 
-Docker
-------
-Fetch Docker images `biolabs/washu` with all the necessary data and tools for pipeline and tests.
-
-```bash
-docker pull biolabs/washu
-```
-
 Tests
 -----
 For testing purposes we prepared a dedicated Docker image with all the tools and sample data.
@@ -97,7 +89,12 @@ Explore preconfigured Continuous Integration setup on [TeamCity](https://www.jet
 * [Pipeline tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_WashuPipelineTests&guest=1)   
 * [Other tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Washu&guest=1)
 
-Or launch them locally:
+Fetch latest Docker image `biolabs/washu` with all the necessary tools for pipeline and test data.
+```bash
+docker pull biolabs/washu
+```
+
+And launch them locally:
 ```bash
 # Change working directory
 cd <project_path>
