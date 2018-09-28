@@ -18,7 +18,7 @@ from bed.bedtrace import intersect, Bed, metapeaks, union, consensus  # nopep8
 from downstream.bed_metrics import save_plot  # nopep8
 
 
-def venn_consensus(od_consensus_bed, yd_consensus_bed, percent, save_to=None):
+def venn_consensus(od_consensus_bed, yd_consensus_bed, percent, save_to=None, title_prefix=""):
     """
     Plots venn diagram for consensus of selected scale:
 
@@ -26,15 +26,17 @@ def venn_consensus(od_consensus_bed, yd_consensus_bed, percent, save_to=None):
     :param yd_consensus_bed: YD bed with yd group consensus
     :param percent: percent of tracks count needed for consensus
     :param save_to: Object for plots saving
+    :param title_prefix: plot title prefix
     """
     plt.figure()
-    plt.title("Required consensus: %.2f%%" % percent)
+    plt.title("%s Required consensus: %.2f%%" % (title_prefix, percent))
     metapeaks({'Young donors': yd_consensus_bed, 'Old donors': od_consensus_bed})
     save_plot(save_to)
 
 
 def bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed, yd_od_int_bed,
-                  threads_num, save_to=None, figsize=(10, 10), fontsize=6):
+                  threads_num, save_to=None, figsize=(10, 10), fontsize=6, percent=0,
+                  title_prefix=""):
     """
     Plots venn diagram and bar plot for consensus of selected scale:
 
@@ -43,10 +45,13 @@ def bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed
     :param od_consensus_bed: OD bed with od group consensus
     :param yd_consensus_bed: YD bed with yd group consensus
     :param yd_od_int_bed: BED with intersection of od and yd groups consensuses
-    :param figsize: Plot figure size
-    :param save_to: Object for plots saving
-    :param fontsize: Size of xlabels on plot
     :param threads_num: Threads number for parallel execution
+    :param save_to: Object for plots saving
+    :param figsize: Plot figure size
+    :param fontsize: Size of xlabels on plot
+    :param percent: percent of tracks count needed for consensus
+    :param title_prefix: plot title prefix
+
     """
     pool = multiprocessing.Pool(processes=threads_num)
     n = len(yd_paths_map) + len(od_paths_map)
@@ -64,6 +69,8 @@ def bar_consensus(od_paths_map, yd_paths_map, od_consensus_bed, yd_consensus_bed
     result_columns = list(zip(*result))
 
     plt.figure(figsize=figsize)
+    if percent != 0:
+        plt.title("%s Required consensus: %.2f%%" % (title_prefix, percent))
     width = 0.35
     p1 = plt.bar(ind, result_columns[1], width, color='green')
     p2 = plt.bar(ind, result_columns[2], width, bottom=[yd_od_int_bed.count()] * n, color='blue')
