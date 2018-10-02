@@ -34,7 +34,7 @@ args = parser.parse_args()
 #################
 # Configuration #
 #################
-WORK_DIR = args.path_to_directory
+WORK_DIR = args.path_to_directory.rstrip('/')
 GENOME = args.genome
 INDEXES = os.path.join(args.path_to_indexes, GENOME)
 CHROM_SIZES = os.path.join(INDEXES, GENOME + ".chrom.sizes")
