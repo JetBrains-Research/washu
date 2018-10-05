@@ -83,4 +83,4 @@ phantompeakqualtools/ccQualityControl.v.1.1.tar.gz --output phantompeakqualtools
     && tar xvf phantompeakqualtools.tar.gz
 
 # Download SPAN Peak Analyzer, see details: http://artyomovlab.wustl.edu/aging/span.html
-RUN cd ~ && curl --location https://download.jetbrains.com/biolabs/span/span-0.7.0.4254.jar --output span.jar
+RUN cd ~ && curl --location https://download.jetbrains.com/biolabs/span/span-0.7.1.4272.jar --output span.jar
