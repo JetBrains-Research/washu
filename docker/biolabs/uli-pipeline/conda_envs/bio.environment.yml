@@ -1,0 +1,13 @@
+name: bio
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - rseg=0.4.9
+  - samtools=1.7
+  - multiqc=0.9
+  - star=2.6.0b
+  - ucsc-bedclip=357
+  - ucsc-bedgraphtobigwig=357
+  - ucsc-bigwigaverageoverbed=357
