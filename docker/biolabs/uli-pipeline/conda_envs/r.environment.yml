@@ -1,0 +1,8 @@
+name: r
+channels:
+- r
+- defaults
+dependencies:
+- readline=6.2
+- r-devtools=1.13.2
+- r=3.4.1

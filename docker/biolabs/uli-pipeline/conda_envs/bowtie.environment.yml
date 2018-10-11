@@ -1,0 +1,6 @@
+name: bowtie
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - bowtie=1.2.0
