@@ -50,7 +50,7 @@ Launch pipeline
 ----------
 
 Note the location of your working directory and of the cloned `washu` repository.
-Run `sudo docker run -v <washu>:/washu -v <working_directory>:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh"`.
+Run ``sudo docker run -v <washu>:/washu -v <working_directory>:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh"``.
 You might need to provide your password for the `sudo` command. The pipeline should take from several hours to several days depending on the available computing capabilities and the amount of data.
 
 ```bash
