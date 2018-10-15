@@ -5,8 +5,10 @@ which SICER.sh &>/dev/null || {
     echo "SICER not found! Download SICER: <http://home.gwu.edu/~wpeng/Software.htm>"
     echo "Please refer to README for installation instructions, modify scripts, i.e."
     echo "sed -i 's#/home/data/SICER1.1#<YOUR_INSTALLATION_FOLDER>#g' SICER.sh"
+    echo "sed -i 's#/home/data/SICER1.1#<YOUR_INSTALLATION_FOLDER>#g' SICER-rb.sh"
     echo "SICER is python2 library, force it!"
     echo "sed -i 's#python#python2#g' SICER.sh"
+    echo "sed -i 's#python#python2#g' SICER-rb.sh"
     exit 1
 }
 
@@ -60,10 +62,6 @@ do :
         FILE_BED=${NAME}.bed # It is used for results naming
         INPUT=$(python ${WASHU_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
         echo "${FILE} input: ${INPUT}"
-        if [ ! -f "${INPUT}" ]; then
-            echo "SICER requires control"
-            continue
-        fi
         INPUT_BED=${INPUT/.bam/.bed}
 
         # Submit task
@@ -91,21 +89,33 @@ module load bedtools2
 PILEUP_BED=\$(pileup ${WORK_DIR}/${FILE})
 ln -s \${PILEUP_BED} \${SICER_FOLDER}/${FILE_BED}
 
-echo "${FILE}: control file found: ${INPUT}"
-INPUT_PILEUP_BED=\$(pileup ${WORK_DIR}/${INPUT})
-ln -sf \${INPUT_PILEUP_BED} \${SICER_FOLDER}/${INPUT_BED}
+if [ -f "${INPUT}" ]; then
+    echo "${FILE}: control file found: ${INPUT}"
+    INPUT_PILEUP_BED=\$(pileup ${WORK_DIR}/${INPUT})
+    ln -sf \${INPUT_PILEUP_BED} \${SICER_FOLDER}/${INPUT_BED}
+fi
 
 cd \${SICER_FOLDER}
-# Usage: SICER.sh [InputDir] [bed file] [control file] [OutputDir] [Species]
-#   [redundancy threshold] [window size (bp)] [fragment size] [effective genome fraction] [gap size (bp)] [FDR]
+# Usage:
+# SICER.sh    ["InputDir"] ["bed file"] ["control file"] ["OutputDir"] ["Species"] ["redundancy threshold"] \
+#   ["window size (bp)"] ["fragment size"] ["effective genome fraction"] ["gap size (bp)"] ["FDR"]
+# SICER-rb.sh ["InputDir"] ["bed file"]                  ["OutputDir"] ["species"] ["redundancy threshold"] \
+#   ["window size (bp)"] ["fragment size"] ["effective genome fraction"] ["gap size (bp)"] ["E-value"]
+#
 # Defaults:
 #   redundancy threshold    = 1
 #   window size (bp)        = 200
 #   fragment size           = 150
 #   gap size (bp)           = 600
-echo "SICER.sh \${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} \${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}"
 
-SICER.sh \${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} \${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
+if [ -f "${INPUT}" ]; then
+    SICER.sh    \${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} \${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} \
+        ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
+else
+    echo "${FILE}: no control file"
+    SICER-rb.sh \${SICER_FOLDER} ${FILE_BED}              \${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} \
+        ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
+fi
 
 # SICER generates lots of output, ignore it: resulting BED only.
 # See https://github.com/JetBrains-Research/washu/issues/27
