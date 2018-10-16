@@ -6,13 +6,11 @@ This is just an image `ubuntu:latest` - Ubuntu LTS with all the environment setu
 Build Docker image
 ---------
 
-With `washu` repository cloned, navigate to `<washu>/docker/biolabs/uli-pipeline` and run `sudo docker build -t biolabls/uli-pipeline .`.
-You might need to provide your password for the `sudo` command.
+With `washu` repository cloned, navigate to `<washu>/docker/biolabs/uli-pipeline` and run `docker build -t biolabls/uli-pipeline .`.
 
 ```bash
 user:~/washu$ cd ./docker/biolabs/uli-pipeline
-user:~/washu/docker/biolabs/uli-pipeline$ sudo docker build -t biolabls/uli-pipeline .
-[sudo] password for user:
+user:~/washu/docker/biolabs/uli-pipeline$ docker build -t biolabls/uli-pipeline .
 ```
 
 Building the image will take some time.
@@ -50,10 +48,9 @@ Launch pipeline
 ----------
 
 Note the location of your working directory and of the cloned `washu` repository.
-Run ``sudo docker run -v <washu>:/washu -v <working_directory>:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh"``.
-You might need to provide your password for the `sudo` command. The pipeline should take from several hours to several days depending on the available computing capabilities and the amount of data.
+Run ``docker run -v <washu>:/washu -v <working_directory>:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh"``.
+The pipeline should take from several hours to several days depending on the available computing capabilities and the amount of data.
 
 ```bash
-sudo docker run -v /home/user/washu:/washu -v /home/user/work:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh"
-[sudo] password for user:
+docker run -v /home/user/washu:/washu -v /home/user/work:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh"
 ```
