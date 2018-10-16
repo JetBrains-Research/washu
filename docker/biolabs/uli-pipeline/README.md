@@ -9,8 +9,8 @@ Build Docker image
 With `washu` repository cloned, navigate to `<washu>/docker/biolabs/uli-pipeline` and run `docker build -t biolabls/uli-pipeline .`.
 
 ```bash
-user:~/washu$ cd ./docker/biolabs/uli-pipeline
-user:~/washu/docker/biolabs/uli-pipeline$ docker build -t biolabs/uli-pipeline .
+<washu>$ cd ./docker/biolabs/uli-pipeline
+<washu>/docker/biolabs/uli-pipeline$ docker build -t biolabs/uli-pipeline .
 ```
 
 Building the image will take some time.
@@ -26,22 +26,22 @@ Choose a working directory.
 Make subdirectories named `fastq` and `indexes`.
 
 ```bash
-user:~/work$ mkdir fastq indexes
+<working_directory>$ mkdir fastq indexes
 ```
 
 Place your FASTQ files in `fastq` subdirectory.
 * If you have input files, rename them so that their name contains `input`.
 
 ```bash
-user:~/work/fastq$ mv SRR1234567890.fastq SRR1234567890_input.fastq
+<working_directory>/fastq$ mv SRR1234567890.fastq SRR1234567890_input.fastq
 ```
 
 If you have prebuilt bowtie indexes for your genome build, place them in `indexes/<build>`.
 * If you don't have the indexes, they will be generated automatically.
 
 ```bash
-user:~/work/indexes$ mkdir mm9
-user:~/work/indexes$ cp ~/bowtie/mm9* ./mm9/
+<working_directory>/indexes$ mkdir mm9
+<working_directory>/indexes$ cp ~/bowtie/mm9* ./mm9/
 ```
 
 Launch pipeline
@@ -52,12 +52,12 @@ Note the location of your working directory and of the cloned `washu` repository
 
 Run the following command:
 ```bash
-docker run -v <washu>:/washu -v <working_directory>:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh <genome build>"
+docker run -v <washu>:/washu -v <working_directory>:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh <genome_build>"
 ```
 
 The pipeline should take from several hours to several days depending on the available computing capabilities and the amount of data.
 
 Example:
 ```bash
-user:~/work$ docker run -v /home/user/washu:/washu -v /home/user/work:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh mm9"
+$ docker run -v /home/user/washu:/washu -v /home/user/work:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh mm9"
 ```
