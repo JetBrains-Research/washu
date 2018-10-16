@@ -10,7 +10,7 @@ With `washu` repository cloned, navigate to `<washu>/docker/biolabs/uli-pipeline
 
 ```bash
 user:~/washu$ cd ./docker/biolabs/uli-pipeline
-user:~/washu/docker/biolabs/uli-pipeline$ docker build -t biolabls/uli-pipeline .
+user:~/washu/docker/biolabs/uli-pipeline$ docker build -t biolabs/uli-pipeline .
 ```
 
 Building the image will take some time.
