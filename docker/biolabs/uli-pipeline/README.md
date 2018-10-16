@@ -59,5 +59,5 @@ The pipeline should take from several hours to several days depending on the ava
 
 Example:
 ```bash
-$ docker run -v /home/user/washu:/washu -v /home/user/work:/data -e WASHU_ROOT=/washu -e GENOME_BUILD=mm9 -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh mm9"
+$ docker run -v /home/user/washu:/washu -v /home/user/work:/data -e WASHU_ROOT=/washu -e GENOME_BUILD=mm9 -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline"
 ```
