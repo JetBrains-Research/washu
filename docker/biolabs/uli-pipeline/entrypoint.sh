@@ -11,4 +11,4 @@ useradd --shell /bin/bash -u $USER_ID -o -c "" -m user
 cp -r /root/* /home/user/
 export HOME=/home/user
 
-exec /usr/local/bin/gosu user "$@"
+exec /usr/local/bin/gosu user bash -c "/$WASHU_ROOT/docker/biolabs/uli-pipeline/pipeline_chipseq.sh"
