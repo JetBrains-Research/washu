@@ -6,4 +6,4 @@ export -f module
 
 source activate py3.5
 
-python $WASHU_ROOT/pipeline_chipseq.py $@
+python $WASHU_ROOT/pipeline_chipseq.py /data/fastq /data/indexes $@
