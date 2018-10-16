@@ -48,14 +48,16 @@ Launch pipeline
 ----------
 
 Note the location of your working directory and of the cloned `washu` repository.
-Run
+* The working directory is the parent directory of `fastq` and `indexes` subfolders.
 
+Run the following command:
 ```bash
 docker run -v <washu>:/washu -v <working_directory>:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh"
 ```
 
 The pipeline should take from several hours to several days depending on the available computing capabilities and the amount of data.
 
+Example:
 ```bash
 user:~/work$ docker run -v /home/user/washu:/washu -v /home/user/work:/data -e WASHU_ROOT=/washu -e LOCAL_USER_ID=`id -u $USER` -it biolabs/uli-pipeline /bin/bash -c "bash /washu/pipeline_chipseq.sh"
 ```
