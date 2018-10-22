@@ -44,28 +44,16 @@ for WORK_DIR in ${WORK_DIRS}; do :
             continue
         fi
 
+
         # Assumption: the only difference between paired-end read files is _1 and _2 / _R1 and _R2
         FILE_PAIRED=""
         if $(echo "${FILE}"  | fgrep -q "_1"); then
-            PREFIX=${FILE%%_1.*}
-            SUFFIX=${FILE##*_1}
-            FILE_PAIRED="${PREFIX}_2${SUFFIX}"
+            FILE_PAIRED=$(echo "${FILE}" | sed 's#_1#_2#g')
+            NAME=$(echo ${FILE} | sed 's#_1##g' | sed -r 's#^.*/##g' | sed -r 's#\.f.*q$##g')
         elif $(echo "${FILE}"  | fgrep -q "_R1"); then
-            PREFIX=${FILE%%_R1.*}
-            SUFFIX=${FILE##*_R1}
-            FILE_PAIRED="${PREFIX}_R2${SUFFIX}"
+            FILE_PAIRED=$(echo "${FILE}" | sed 's#_R1#_R2#g')
+            NAME=$(echo ${FILE} | sed 's#_R1##g' | sed -r 's#^.*/##g'| sed -r 's#\.f.*q$##g')
         fi
-
-        # Setup correct name
-        if [ -f "${FILE_PAIRED}" ]; then
-            echo "PAIRED END reads detected: $FILE and $FILE_PAIRED"
-            # Mark it as already processed
-            PROCESSED+=("${FILE_PAIRED}")
-            NAME="${PREFIX}${SUFFIX}"
-        else
-            NAME=${FILE%%.f*q}
-        fi
-        NAME="${NAME##*/}" # if relative path - trim folders
         ID=${NAME}_${GENOME}
         BAM_NAME="${ID}.bam"
 
