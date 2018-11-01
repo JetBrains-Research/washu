@@ -16,6 +16,13 @@ INDEXES=$2
 TRIM5=$3
 WORK_DIRS=${@:4}
 
+# Configure TRIM_ARGS to avoid bowtie segfault in 0 case
+if [[ ${TRIM5} -gt 0 ]]; then
+    TRIM_ARGS="--trim5 ${TRIM5}"
+else
+    TRIM_ARGS=""
+fi
+
 TASKS=()
 PROCESSED=()
 
@@ -88,9 +95,9 @@ cd ${WORK_DIR}
 # --strata           hits in sub-optimal strata aren't reported (requires --best)
 
 if [ -f "${FILE_PAIRED}" ]; then
-    bowtie -p 4 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
+    bowtie -p 4 -St -m 1 -v 3 ${TRIM_ARGS} --best --strata ${INDEX_ARG} ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
 else
-    bowtie -p 4 -St -m 1 -v 3 --trim5 ${TRIM5} --best --strata ${INDEX_ARG} ${GENOME} ${FILE} ${ID}.sam
+    bowtie -p 4 -St -m 1 -v 3 ${TRIM_ARGS} --best --strata ${INDEX_ARG} ${GENOME} ${FILE} ${ID}.sam
 fi
 samtools view -bS ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort ${ID}_not_sorted.bam -o ${BAM_NAME}

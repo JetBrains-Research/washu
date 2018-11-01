@@ -16,6 +16,13 @@ INDEXES=$2
 TRIM5=$3
 WORK_DIRS=${@:4}
 
+# Configure TRIM_ARGS to avoid bowtie segfault in 0 case
+if [[ ${TRIM5} -gt 0 ]]; then
+    TRIM_ARGS="--trim5 ${TRIM5}"
+else
+    TRIM_ARGS=""
+fi
+
 TASKS=()
 PROCESSED=()
 
@@ -87,9 +94,9 @@ cd ${WORK_DIR}
 # --sensitive            -D 15 -R 2 -N 0 -L 22 -i S,1,1.15 (default)
 
 if [ -f "${FILE_PAIRED}" ]; then
-    bowtie2 -p 4 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED}
+    bowtie2 -p 4 ${TRIM_ARGS} -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED}
 else
-    bowtie2 -p 4 --trim5 ${TRIM5} -S ${ID}.sam -x ${GENOME} -U ${FILE}
+    bowtie2 -p 4 ${TRIM_ARGS} -S ${ID}.sam -x ${GENOME} -U ${FILE}
 fi
 samtools view -bS -q 10 ${ID}.sam -o ${ID}_not_sorted.bam
 samtools sort -@ 4 ${ID}_not_sorted.bam -o ${BAM_NAME}
