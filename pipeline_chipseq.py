@@ -125,7 +125,7 @@ if not os.path.exists(WORK_DIR + rseg_suffix):
 sicer_suffix = '_sicer'
 if not os.path.exists(WORK_DIR + sicer_suffix):
     # <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)] # nopep8
-    run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, "0.01", "200", "150", "0")
+    run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, "0.01", "200", "150", "600")
     move_forward(WORK_DIR, WORK_DIR + sicer_suffix,
                  ['*sicer.log', '*.bed', '*rip.csv'])
     # multiqc
