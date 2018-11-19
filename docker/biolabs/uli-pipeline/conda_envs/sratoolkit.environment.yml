@@ -1,0 +1,6 @@
+name: sratoolkit
+channels:
+- bioconda
+- defaults
+dependencies:
+- sra-tools=2.8.2

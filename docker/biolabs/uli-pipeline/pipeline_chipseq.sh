@@ -6,4 +6,6 @@ export -f module
 
 source activate py3.5
 
-python $WASHU_ROOT/pipeline_chipseq.py $@
+mkdir -p "/data/indexes"
+
+python $WASHU_ROOT/pipeline_chipseq.py /data/fastq /data/indexes $GENOME_BUILD

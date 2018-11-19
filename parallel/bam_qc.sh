@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # author oleg.shpynov@jetbrains.com
 
-which bedtools &>/dev/null || { echo "ERROR: bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
-which samtools &>/dev/null || { echo "ERROR: samtools not found! Download samtools: <http://www.htslib.org/doc/samtools.html>"; exit 1; }
+# which bedtools &>/dev/null || { echo "ERROR: bedtools not found! Download bedTools: <http://code.google.com/p/bedtools/>"; exit 1; }
+# which samtools &>/dev/null || { echo "ERROR: samtools not found! Download samtools: <http://www.htslib.org/doc/samtools.html>"; exit 1; }
 >&2 echo "bam_qc: $@"
 
 # Check configuration
