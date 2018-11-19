@@ -17,7 +17,7 @@ which SICER.sh &>/dev/null || {
 source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch sicer $@"
-if [ $# -lt 4 ]; then
+if [[ $# -lt 4 ]]; then
     echo "Need at least 4 parameters! <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)]"
     exit 1
 fi
@@ -28,18 +28,18 @@ CHROM_SIZES=$3
 FDR=$4
 
 WINDOW_SIZE=200
-if [ $# -ge 5 ]; then WINDOW_SIZE=$5 ; fi
+if [[ $# -ge 5 ]]; then WINDOW_SIZE=$5 ; fi
 
 FRAGMENT_SIZE=150
-if [ $# -ge 6 ]; then FRAGMENT_SIZE=$6 ; fi
+if [[ $# -ge 6 ]]; then FRAGMENT_SIZE=$6 ; fi
 
 GAP_SIZE=600
-if [ $# -ge 7 ]; then GAP_SIZE=$7 ; fi
+if [[ $# -ge 7 ]]; then GAP_SIZE=$7 ; fi
 
 EFFECTIVE_GENOME_FRACTION=$(python ${WASHU_ROOT}/scripts/util.py effective_genome_fraction ${GENOME} ${CHROM_SIZES})
 echo "EFFECTIVE_GENOME_FRACTION: ${EFFECTIVE_GENOME_FRACTION}"
 
-if [ -z "${EFFECTIVE_GENOME_FRACTION}" ]; then
+if [[ -z "${EFFECTIVE_GENOME_FRACTION}" ]]; then
     echo "EFFECTIVE_GENOME_FRACTION is not determined"
     exit 1
 fi
@@ -58,7 +58,7 @@ do :
     # Check if file already processed
     # Naming example: OD_OD10_H3K27me3-W200-G0-FDR0.01-island.bed
     ISLAND_BED="${NAME}-W${WINDOW_SIZE}-G${GAP_SIZE}-FDR${FDR}-island.bed"
-    if [ ! -f "${ISLAND_BED}" ]; then
+    if [[ ! -f "${ISLAND_BED}" ]]; then
         FILE_BED=${NAME}.bed # It is used for results naming
         INPUT=$(python ${WASHU_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
         echo "${FILE} input: ${INPUT}"
@@ -108,11 +108,10 @@ cd \${SICER_FOLDER}
 #   fragment size           = 150
 #   gap size (bp)           = 600
 
-if [ -f "${INPUT}" ]; then
+if [ -f \${SICER_FOLDER}/${INPUT_BED} ]; then
     SICER.sh    \${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} \${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} \
         ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
 else
-    echo "${FILE}: no control file"
     SICER-rb.sh \${SICER_FOLDER} ${FILE_BED}              \${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} \
         ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
 fi
