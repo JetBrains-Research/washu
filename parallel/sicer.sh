@@ -118,7 +118,8 @@ fi
 
 # SICER generates lots of output, ignore it: resulting BED only.
 # See https://github.com/JetBrains-Research/washu/issues/27
-mv \${SICER_OUT_FOLDER}/*island*.bed ${WORK_DIR}
+mv \${SICER_OUT_FOLDER}/*island.bed ${WORK_DIR}
+mv \${SICER_OUT_FOLDER}/*.scoreisland ${WORK_DIR}
 
 # Cleanup everything else
 rm -r \${SICER_FOLDER}
