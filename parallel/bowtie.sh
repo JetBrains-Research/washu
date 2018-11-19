@@ -60,6 +60,8 @@ for WORK_DIR in ${WORK_DIRS}; do :
         elif $(echo "${FILE}"  | fgrep -q "_R1"); then
             FILE_PAIRED=$(echo "${FILE}" | sed 's#_R1#_R2#g')
             NAME=$(echo ${FILE} | sed 's#_R1##g' | sed -r 's#^.*/##g'| sed -r 's#\.f.*q$##g')
+        else
+            NAME=$(echo ${FILE} | sed -r 's#\.f.*q$##g')
         fi
 
         # Check FILE_PAIRED
