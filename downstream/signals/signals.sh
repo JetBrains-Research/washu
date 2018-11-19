@@ -14,12 +14,12 @@ source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch signals $@"
 if [ $# -lt 5 ]; then
-    echo "Need at least 5 parameters! <WORK_DIR> <TAGS_BW> <FRAGMENT> <FOLDER or REGIONS.BED> <CHROM.SIZES> [<PEAKS_FILE.BED>]"
+    echo "Need at least 5 parameters! <WORK_DIR> <BAMS_DIRS> <FRAGMENT> <FOLDER or REGIONS.BED> <CHROM.SIZES> [<PEAKS_FILE.BED>]"
     exit 1
 fi
 
 WORK_DIR=$(expand_path $1)
-TAGS_BW=$(expand_path $2)
+BAMS_DIRS=$(expand_path $2)
 FRAGMENT=$3
 REGIONS_ARG=$(expand_path $4)
 CHROM_SIZES=$(expand_path $5)
@@ -27,26 +27,60 @@ if [[ -f $6 ]]; then
     PEAKS_FILE_BED=$(expand_path $6)
 fi
 echo "WORK_DIR: $WORK_DIR"
-echo "TAGS_BW: $TAGS_BW"
+echo "BAMS_DIRS: $BAMS_DIRS"
 echo "FRAGMENT: $FRAGMENT"
 echo "REGIONS_ARG: $REGIONS_ARG"
 echo "CHROM_SIZES: $CHROM_SIZES"
 echo "PEAKS_FILE: $PEAKS_FILE_BED"
+
+########################################################################################################################
+# Prepare BW files
+########################################################################################################################
+echo "Prepare tags BW in ${WORK_DIR}/${FRAGMENT}"
+TAGS_BW_LOGS="${WORK_DIR}/${FRAGMENT}/tags_bw_logs"
+if [[ ! -d "${TAGS_BW_LOGS}" ]]; then
+    mkdir -p ${TAGS_BW_LOGS}
+fi
+TASKS=()
+cd ${WORK_DIR}
+for BAMS_DIR in $(echo ${BAMS_DIRS} | tr ";" "\n")
+do
+    for BAM in $(find ${BAMS_DIR} -name '*_unique.bam')
+    do
+        FILE_NAME=${BAM##*/}
+        NAME=${FILE_NAME%%.bam} # file name without extension
+        RESULT=${WORK_DIR}/${FRAGMENT}/${NAME}.bw
+        if [[ ! -f ${RESULT} ]]; then
+            # Submit task
+            run_parallel << SCRIPT
+    #!/bin/sh
+    #PBS -N tags_bw_${NAME}_${FRAGMENT}.bw
+    #PBS -l nodes=1:ppn=1,walltime=24:00:00,vmem=16gb
+    #PBS -j oe
+    #PBS -o ${TAGS_BW_LOGS}/${NAME}_${FRAGMENT}.log
+
+    # This is necessary because qsub default working dir is user home
+    cd ${WORK_DIR}
+
+    module load bedtools2
+    bash ${WASHU_ROOT}/downstream/signals/bam2tagsbw.sh ${BAM} ${FRAGMENT} ${CHROM_SIZES} ${RESULT}
+    SCRIPT
+            echo "FILE: ${FILE_NAME}; TASK: ${QSUB_ID}"
+            TASKS+=("$QSUB_ID")
+        fi
+    done
+done
+wait_complete ${TASKS[@]}
+cd ${TAGS_BW_LOGS}
+check_logs
 
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p $TMPDIR
 
 # Work in dedicated folder now
 WORK_DIR_FRAGMENT=${WORK_DIR}/${FRAGMENT}
-mkdir -p ${WORK_DIR_FRAGMENT}
 cd ${WORK_DIR_FRAGMENT}
 
-tag_file_2_donor_name() {
-    FILE=$1
-    NAME=${FILE##*/}
-    echo ${NAME%%_tags.bw}
-}
-TAGS_BW_FILES=$(find ${TAGS_BW} -name '*.bw' | sed 's#\./##g' | sort)
 ########################################################################################################################
 # Function to process all the summary coverages for given file
 ########################################################################################################################
@@ -65,9 +99,9 @@ process_coverage()
     TSVS=()
     LOGS=()
     cd ${WORK_DIR_FRAGMENT}
-    for FILE in ${TAGS_BW_FILES}
+    for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
     do :
-        NAME=$(tag_file_2_donor_name ${FILE})
+        NAME=${FILE%%.bw}
         NAMES+=("$NAME")
         TSV=$TMPDIR/${_ID}_${NAME}.tsv
         TSVS+=("$TSV")
@@ -122,13 +156,14 @@ if [[ ! -f ${LIBRARIES_SIZES} ]]; then
 
     process_coverage ${TMPDIR}/chrom.sizes.bed4 "chrom.sizes" ${TMPDIR}/chrom.sizes.tsv ${TMPDIR}
 
-    for FILE in ${TAGS_BW_FILES}
+    for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
     do :
-        NAME=$(tag_file_2_donor_name ${FILE})
+        NAME=${FILE%%.bw}
         SIZE=$(cat ${TMPDIR}/chrom.sizes.tsv | grep ${NAME} | awk 'BEGIN{S=0} {S+=$4} END{print(S)}')
         echo "${NAME}"$'\t'"${SIZE}" >> ${LIBRARIES_SIZES}
     done
 fi
+
 
 ########################################################################################################################
 # Processing Peaks files
@@ -142,9 +177,9 @@ if [[ -f ${PEAKS_FILE_BED} ]]; then
 
         process_coverage ${TMPDIR}/peaks.sizes.bed4 "peaks.sizes" ${TMPDIR}/peaks.sizes.tsv ${WORK_DIR_FRAGMENT}
 
-        for FILE in ${TAGS_BW_FILES}
+        for FILE in $(find . -name '*.bw' | sed 's#\./##g' | sort)
         do :
-            NAME=$(tag_file_2_donor_name ${FILE})
+            NAME=${FILE%%.bw}
             SIZE=$(cat ${TMPDIR}/peaks.sizes.tsv | grep ${NAME} | awk 'BEGIN{S=0} {S+=$4} END{print(S)}')
             echo "${NAME}"$'\t'"${SIZE}" >> ${LIBRARIES_PEAKS_SIZES}
         done
