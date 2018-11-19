@@ -34,6 +34,7 @@ RUN ln -sf /opt/conda/envs/py2.7/bin/macs2 /usr/local/bin/macs2
 # SICER is python2 library, force it!
 RUN sed -i 's#python#/opt/conda/envs/py2.7/bin/python#g' /opt/conda/envs/py2.7/share/sicer-1.1-3/SICER.sh
 RUN ln -sf /opt/conda/envs/py2.7/share/sicer-1.1-3/SICER.sh /usr/local/bin/SICER.sh
+RUN ln -sf /opt/conda/envs/py2.7/share/sicer-1.1-3/SICER-rb.sh /usr/local/bin/SICER-rb.sh
 
 # Python 3.5 environment with all the bioinformatics and python packages
 RUN conda env create -q --name py3.5 --file /root/conda_envs/py3.5.environment.yml
