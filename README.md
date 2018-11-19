@@ -18,6 +18,9 @@ Follow these instructions to launch ChIP-Seq pipeline:
 python pipeline_chipseq.py <FASTQ_FOLDER> <INDEXES> <genome>
 ```
 
+If you don't want to bother with setting up dependencies, you can build and use a Docker image for the pipeline.
+Just follow the instructions in [ULI-ChIP-seq Docker pipeline readme](./docker/biolabs/uli-pipeline).
+
 Requirements
 ------------
 * Ensure you have Python 3 installed as default interpreter
