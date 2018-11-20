@@ -129,7 +129,7 @@ def test_signals():
     os.makedirs(tags_bw_path, exist_ok=True)
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
-          tags_bw_path,
+          # tags_bw_path,
           "120",
           os.path.expanduser("/washu/test/testdata/signal/regions.bed"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
@@ -152,7 +152,7 @@ def test_signals():
     tags_bw_path = prepare_tags_bw(signals_path, 150)
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
-          tags_bw_path,
+          # tags_bw_path,
           "150",
           os.path.expanduser("/washu/test/testdata/signal"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
