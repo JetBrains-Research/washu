@@ -125,8 +125,8 @@ def test_signals():
         call(["bash", "-c", "ln -sf {} {}/".format(p, signals_path)])
 
     # Process single file
-    tags_bw_path = prepare_tags_bw(signals_path, 120)
-    os.makedirs(tags_bw_path, exist_ok=True)
+    # tags_bw_path = prepare_tags_bw(signals_path, 120)
+    # os.makedirs(tags_bw_path, exist_ok=True)
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
           # tags_bw_path,
@@ -149,7 +149,7 @@ def test_signals():
     check_files(signals_path + "/120/regions/*_pca_fit_error.csv", 8)
 
     # Process folder
-    tags_bw_path = prepare_tags_bw(signals_path, 150)
+    # tags_bw_path = prepare_tags_bw(signals_path, 150)
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
           # tags_bw_path,
