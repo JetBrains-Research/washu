@@ -127,7 +127,8 @@ if not os.path.exists(WORK_DIR + sicer_suffix):
     # <work_dir> <genome> <chrom.sizes> <FDR> [window size (bp)] [fragment size] [gap size (bp)] # nopep8
     run_bash("parallel/sicer.sh", WORK_DIR, GENOME, CHROM_SIZES, "0.01", "200", "150", "600")
     move_forward(WORK_DIR, WORK_DIR + sicer_suffix,
-                 ['*sicer.log', '*-W*-G*-islands-summary-FDR*', '*-W*-G*-E*.scoreisland', '*rip.csv'])
+                 ['*sicer.log', '*-W*-G*-islands-summary-FDR*',
+                  '*-W*-G*-E*.scoreisland', '*rip.csv'])
     # multiqc
     subprocess.run("multiqc " + WORK_DIR + sicer_suffix, shell=True)
 
