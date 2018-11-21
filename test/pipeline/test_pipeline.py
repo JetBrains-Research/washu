@@ -90,10 +90,13 @@ def test_rseg():
 
 def test_sicer():
     check_files("fastq_bams/pileup/*pileup.bed", 6)
-    check_files("fastq_bams_sicer/*island.bed", 4)
     check_files("fastq_bams_sicer/*summary*", 4)
-    check_files("fastq_bams_sicer/*-1-removed.bed", 2)
-    check_files("fastq_bams_sicer/*input*.bed", 4)
+    check_files("fastq_bams_sicer/*scoreisland*", 0)
+    # leaving these tests commented for now, see issue #27 for details
+    # check_files("fastq_bams_sicer/*island.bed", 4)
+    # check_files("fastq_bams_sicer/*-1-removed.bed", 2)
+    # check_files("fastq_bams_sicer/*input*.bed", 4)
+    # check_files("fastq_bams_sicer/*input*.bed", 2)
 
 
 def test_span():
@@ -126,11 +129,8 @@ def test_signals():
         call(["bash", "-c", "ln -sf {} {}/".format(p, signals_path)])
 
     # Process single file
-    # tags_bw_path = prepare_tags_bw(signals_path, 120)
-    # os.makedirs(tags_bw_path, exist_ok=True)
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
-          # tags_bw_path,
           "120",
           os.path.expanduser("/washu/test/testdata/signal/regions.bed"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
@@ -150,10 +150,8 @@ def test_signals():
     check_files(signals_path + "/120/regions/*_pca_fit_error.csv", 8)
 
     # Process folder
-    # tags_bw_path = prepare_tags_bw(signals_path, 150)
     call(["bash", "/washu/downstream/signals/signals.sh",
           signals_path,
-          # tags_bw_path,
           "150",
           os.path.expanduser("/washu/test/testdata/signal"),
           os.path.expanduser("~/index/hg19/hg19.chrom.sizes"),
