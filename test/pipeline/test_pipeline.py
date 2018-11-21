@@ -90,8 +90,9 @@ def test_rseg():
 
 def test_sicer():
     check_files("fastq_bams/pileup/*pileup.bed", 6)
-    check_files("fastq_bams_sicer/*summary*", 4)
-    check_files("fastq_bams_sicer/*scoreisland*", 0)
+    check_files("fastq_bams_sicer/*summary-FDR*", 4)
+    check_files("fastq_bams_sicer/*summary", 0)
+    check_files("fastq_bams_sicer/*.scoreisland", 0)
     # leaving these tests commented for now, see issue #75 for details
     # check_files("fastq_bams_sicer/*island.bed", 4)
     # check_files("fastq_bams_sicer/*-1-removed.bed", 2)
