@@ -5,7 +5,7 @@ which macs2 &>/dev/null || { echo "ERROR: MACS2 not found! Download MACS2: <http
 
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch macs2 $@"
 if [ $# -lt 5 ]; then
@@ -50,7 +50,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}_macs2.log
 
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 # This is necessary because qsub default working dir is user home

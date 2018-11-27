@@ -3,7 +3,7 @@
 
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch remove_duplicates $@"
 if [ $# -lt 1 ]; then
@@ -51,7 +51,7 @@ module load java
 # PROBLEM: vmem is much bigger, however we face with the problem with bigger values:
 # There is insufficient memory for the Java Runtime Environment to continue.
 export _JAVA_OPTIONS="${JVM_MEM}"
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 java -Djava.io.tmpdir="\${TMPDIR}" -jar ${PICARD_TOOLS_JAR} MarkDuplicates REMOVE_DUPLICATES=true INPUT=${FILE} OUTPUT=${UNIQUE_BAM} M=${METRICS}

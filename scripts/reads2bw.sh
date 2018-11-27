@@ -13,7 +13,7 @@ which bedtools &>/dev/null || {
 
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "bam2bw $@"
 if [ $# -lt 2 ]; then

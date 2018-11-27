@@ -6,7 +6,7 @@ which rsem-calculate-expression &>/dev/null || { echo "RSEM not found! Download 
 
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch rsem $@"
 if [ $# -lt 2 ]; then

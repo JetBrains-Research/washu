@@ -6,7 +6,7 @@ which macs2 &>/dev/null || { echo "ERROR: macs2 not found! Install macs2: <https
 
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
@@ -172,7 +172,7 @@ SCRIPT
 cd ${MANORM}
 
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo \"/tmp\")
 
 # Sort inplace

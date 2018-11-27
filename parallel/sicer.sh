@@ -14,7 +14,7 @@ which SICER.sh &>/dev/null || {
 
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch sicer $@"
 if [[ $# -lt 4 ]]; then
@@ -72,7 +72,7 @@ do :
 #PBS -j oe
 #PBS -o ${WORK_DIR}/${ID}_sicer.log
 
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 SICER_FOLDER=\${TMPDIR}/${ID}

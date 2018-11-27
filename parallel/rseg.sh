@@ -5,7 +5,7 @@ which rseg &>/dev/null || { echo "ERROR: rseg not found! Download rseg: <http://
 
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch rseg $@"
 if [ $# -lt 3 ]; then
@@ -69,7 +69,7 @@ cd ${WORK_DIR}
 # See sort instructions at http://smithlabresearch.org/wp-content/uploads/rseg_manual_v0.4.4.pdf
 export LC_ALL=C
 
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 
 bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${TMP_FOLDER}/${FILE_BED}

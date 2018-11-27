@@ -5,7 +5,7 @@ which bedtools &>/dev/null || { echo "ERROR: bedtools not found! Download bedToo
 
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 
 ################################################################################
 # Configuration start ##########################################################

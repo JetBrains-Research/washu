@@ -2,7 +2,7 @@
 # author oleg.shpynov@jetbrains.com
 
 # Check configuration
-source ${WASHU_ROOT}/parallel/util/util.sh
+source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "index-bowtie $@"
 if [ $# -lt 2 ]; then
