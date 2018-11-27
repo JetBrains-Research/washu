@@ -223,13 +223,17 @@ def frip_normalization(data_path, sizes_path, peaks_sizes_path):
     sizes = pd.read_csv(sizes_path, sep='\t', names=('name', 'size'), index_col='name')
     data = pd.pivot_table(loaded, index=['chr', 'start', 'end'],
                           columns='name', values='coverage', fill_value=0)
+    # Here we assume that we have single input for everything
+    input_columns = [c for c in data.columns if is_input(c)]
+    if len(input_columns) != 1:
+        print('Cannot process FRIP normalization, input columns:', len(input_columns))
+    input_column = input_columns[0]
+    not_input_columns = [c for c in data.columns if not is_input(c)]
+
     peaks_sizes = pd.read_csv(peaks_sizes_path, sep='\t', names=('name', 'tags_in_peaks'),
                               index_col='name')
     counts = pd.merge(sizes, peaks_sizes, left_index=True, right_index=True)
 
-    # Here we assume that we have single input for everything
-    input_column = [c for c in data.columns if is_input(c)][0]
-    not_input_columns = [c for c in data.columns if not is_input(c)]
     counts['input_tags'] = counts.loc[input_column, 'size']
     counts['input_tags_in_peaks'] = counts.loc[input_column, 'tags_in_peaks']
 
@@ -395,9 +399,14 @@ def diffbind_scores_minus(data, sizes, pairs):
 
     scores = pd.DataFrame()
     for condition, control in pairs:
-        scale = sizes.loc[condition]['size'] / sizes.loc[control]['size']
-        scores[condition] = [score(z[0], z[1], scale)
-                             for z in zip(data[condition], data[control])]
+        # Ignore missing input case
+        if control:
+            scale = sizes.loc[condition]['size'] / sizes.loc[control]['size']
+            scores[condition] = [score(z[0], z[1], scale)
+                                 for z in zip(data[condition], data[control])]
+        else:
+            print('ERROR: Missing input in diffbind scores')
+            scores[condition] = data[condition]
     scores.index = data.index
     return scores
 
