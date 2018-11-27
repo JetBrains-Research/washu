@@ -5,8 +5,8 @@
 which bedtools &>/dev/null || { echo "ERROR: bedtools not found!"; exit 1; }
 >&2 echo "rip.sh: $@"
 
-if [ $# -lt 2 ]; then
-    echo "Need 2 parameters! <bam> <peaks>"
+if [[ $# -lt 2 ]]; then
+    echo "Need 2 parameters! <reads> <peaks>"
     exit 1
 fi
 
@@ -31,27 +31,20 @@ source ${WASHU_ROOT}/parallel/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
 
-if (echo $READS | grep -q ".*\\.bam$"); then
-
-READS_PREFIX=${READS%%.bam}
-PILEUP_BED=$(pileup ${READS})
-
-elif (echo $READS | grep -q ".*\\.bed$"); then
-
-READS_PREFIX=${READS%%.bed}
-PILEUP_BED=$READS
-
-elif (echo $READS | grep -q ".*\\.bed.gz$"); then
-
-READS_PREFIX=${READS%%.bed.gz}
-PILEUP_BED=${READS%%.gz}
-
-if [ ! -e ${PILEUP_BED} ]; then
-gunzip -c $READS > ${PILEUP_BED}
-fi;
-
-else echo "Unrecognized format of $READS, expected .bam, .bed or .bed.gz"; exit 1;
-
+if (echo ${READS} | grep -q ".*\\.bam$"); then
+    READS_PREFIX=${READS%%.bam}
+    PILEUP_BED=$(pileup ${READS})
+elif (echo ${READS} | grep -q ".*\\.bed$"); then
+    READS_PREFIX=${READS%%.bed}
+    PILEUP_BED=${READS}
+elif (echo ${READS} | grep -q ".*\\.bed.gz$"); then
+    READS_PREFIX=${READS%%.bed.gz}
+    PILEUP_BED=${READS%%.gz}
+    if [[ ! -e ${PILEUP_BED} ]]; then
+        gunzip -c ${READS} > ${PILEUP_BED}
+    fi;
+else
+    echo "Unrecognized format of $READS, expected .bam, .bed or .bed.gz"; exit 1;
 fi;
 
 echo "PILEUP_BED: ${PILEUP_BED}"
@@ -72,7 +65,7 @@ bedtools intersect -a ${PILEUP_BED} -b ${PEAKS_FILE} -c -f 0.20 > ${INTERSECT_TM
 
 # _pileup.bed can have different number of columns
 COLS=$(cat ${PILEUP_BED} | head -n 1 | awk '{ print NF }')
-RIP=$(awk -v COLS=$COLS '{sum += $(COLS+1)} END {print sum}' ${INTERSECT_TMP})
+RIP=$(awk -v COLS=${COLS} '{sum += $(COLS+1)} END {print sum}' ${INTERSECT_TMP})
 echo "RIP: $RIP"
 
 echo "file,peaks_file,reads,peaks,length,rip" > ${RIP_FILE}
