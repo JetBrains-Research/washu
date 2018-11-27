@@ -139,4 +139,4 @@ if not os.path.exists(WORK_DIR + span_suffix):
     #  <SPAN_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q> [<OUTPUT_DIR> [<GAP>]]
     run_bash("parallel/span.sh", SPAN, WORK_DIR, GENOME, CHROM_SIZES, "0.01",
              WORK_DIR + span_suffix, 5)
-    move_forward(WORK_DIR, WORK_DIR + span_suffix, ['*_peaks.bed', '*span*.log'])
+    move_forward(WORK_DIR, WORK_DIR + span_suffix, ['*.peak', '*span*.log'])
