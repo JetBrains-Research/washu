@@ -32,14 +32,17 @@ which bedClip &>/dev/null || { echo "ERROR: bedClip not found"; exit 1; }
 which bigWigAverageOverBed &>/dev/null || { echo "ERROR: bigWigAverageOverBed not found"; exit 1; }
 
 echo "Check downloaded files"
-if [ ! -f ~/picard.jar ]; then
-    echo "ERROR: Picard tools not found! Download Picard: <http://broadinstitute.github.io/picard/>"
+if [[ ! -f ~/picard.jar ]]; then
+    echo "ERROR: Picard tools not found! Download: <http://broadinstitute.github.io/picard/>"
 fi
-if [ ! -f ~/span.jar ]; then
-    echo "ERROR: SPAN not found! Download SPAN: <http://artyomovlab.wustl.edu/aging/span.html>"
+if [[ ! -d ~/phantompeakqualtools ]]; then
+    echo "ERROR: Phantompeakqualtools not found! Download: <https://github.com/kundajelab/phantompeakqualtools>"
+fi
+if [[ ! -f ~/span.jar ]]; then
+    echo "ERROR: SPAN not found! Download: <http://artyomovlab.wustl.edu/aging/span.html>"
 fi
 
-echo "Prepare data"
+echo "Extract test data"
 if [[ ! -d ~/washu_test_data ]]; then
     tar -xf ~/washu_test_data.tar.gz --directory ~
 fi
@@ -61,7 +64,7 @@ module load bedtools2
 module load samtools
 module load fastqc
 module load java
-python -m pytest test/pipeline/*.py
+python -m pytest test/pipeline/test_pipeline_chipseq.py
 
 echo "Copy results to /out"
 mkdir -p /washu/out
