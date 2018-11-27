@@ -21,12 +21,14 @@ CHROM_SIZES=$2
 source ${WASHU_ROOT}/parallel/util/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
+BW_FILE=${BDG_FILE/.bdg/.bw}
 
+echo "Converting ${BDG_FILE} -> ${BW_FILE}"
 # Remove coordinates outside chromosome sizes
 bedtools slop -i ${BDG_FILE} -g ${CHROM_SIZES} -b 0 | bedClip stdin ${CHROM_SIZES} ${BDG_FILE}.clip
 # Fix problem with not sorted clip file
 LC_COLLATE=C sort -k1,1 -k2,2n -T ${TMPDIR} ${BDG_FILE}.clip > ${BDG_FILE}.sort.clip
-bedGraphToBigWig ${BDG_FILE}.sort.clip ${CHROM_SIZES} ${BDG_FILE/.bdg/.bw}
+bedGraphToBigWig ${BDG_FILE}.sort.clip ${CHROM_SIZES} ${BW_FILE}
 
 # Cleanup
 rm -f ${BDG_FILE}*.clip

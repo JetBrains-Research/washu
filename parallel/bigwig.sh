@@ -7,11 +7,17 @@ source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "Batch bigwig $@"
 if [ $# -lt 2 ]; then
-    echo "Need at least 2 parameters! <CHROM_SIZES> <WORK_DIR> [<WORK_DIR>]*"
+    echo "Need at least 2 parameters! <CHROM_SIZES> [<genes.gtf>] <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
 CHROM_SIZES=$1
-WORK_DIRS=${@:2}
+if [[ -f $2 && $(echo $2 | grep -n '.*\.gtf$') ]]; then
+    GENES_GTF=$2
+    WORK_DIRS=${@:3}
+else
+    GENES_GFT=""
+    WORK_DIRS=${@:2}
+fi
 
 TASKS=()
 for WORK_DIR in ${WORK_DIRS}; do
@@ -34,7 +40,7 @@ for WORK_DIR in ${WORK_DIRS}; do
 cd ${WORK_DIR}
 
 module load bedtools2
-bash ${WASHU_ROOT}/scripts/reads2bw.sh ${FILE} ${CHROM_SIZES}
+bash ${WASHU_ROOT}/scripts/reads2bw.sh ${FILE} ${CHROM_SIZES} ${GENES_GTF}
 SCRIPT
             echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
             TASKS+=("$QSUB_ID")

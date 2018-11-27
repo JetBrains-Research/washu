@@ -32,7 +32,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         mkdir -p "${RESULTS_DIR}"
     fi
 
-    for FILE in $(find . -regextype posix-extended -regex '.*\.f.*q(\.gz)?')
+    for FILE in $(find . -name '*.f*q' | sed 's#\./##g' | sort)
     do :
         FILE_NAME=${FILE##*/}
         NAME=${FILE_NAME%%.fast*} # file name without extension

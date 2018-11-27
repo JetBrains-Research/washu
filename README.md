@@ -1,11 +1,11 @@
 License [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 Tests [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_Washu)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Washu&guest=1)
-Pipeline tests [![long tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_WashuPipelineTests)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_WashuPipelineTests&guest=1)  
+ChIP-Seq Pipeline tests [![long tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_WashuPipelineTests)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_WashuPipelineTests&guest=1)  
 
 Technical pipelines
 ===================
-Technical pipelines for ChIP-Seq processing on Portable Batch System (qsub) and local machines.
-These pipelines were used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data analysis.
+Technical pipelines for ChIP-Seq and RNA-Seq processing on Portable Batch System (`qsub`) or local machines.
+ChIP-Seq pipeline were used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data analysis.
 
 How do I launch the technical pipeline?
 --------------------------
@@ -36,7 +36,8 @@ export WASHU_PARALLELISM=8
 * Install required tools using [Conda](https://conda.io/docs/)
 ```bash
 conda install --channel bioconda samtools bedtools bowtie bowtie2 fastqc multiqc sra-tools macs2 sicer \
-    star rseg ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed
+    ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed \
+    star rseg 
 ```
 For more details see `docker/biolabs/washu/Dockerfile`.
  * Download [Picard tools](https://github.com/broadinstitute/picard):
@@ -62,31 +63,26 @@ Project
 * `/bed`            - BED files manipulations - intersection, ChromHMM enrichment, closes gene, etc.
 * `/docker`         - Docker configuration files with tools and test data. See Tests section.
 * `/downstream`     - Scripts for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data downstream analysis.
-* `/parallel`       - Scripts for parallel execution of PBS greed using `qsub` queue management.
+* `/parallel`       - Scripts for parallel execution of Portable Batch System (`qsub`) or on local machine.
 * `/scripts`        - QC, Visualization, BAM conversions, Reads In Peaks, etc.
-* `/test`           - Tests
+* `/test`           - Tests for pipelines.
 
 Batch processing
 ---------------- 
-All the scripts from `/parallel` are suitable to work with Portable Batch System and on single machine.
-* `fastqc.sh`   - Quality control for raw-reads using [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) 
-and [MultiQC](http://multiqc.info/) for aggregated report  
-* `bowtie.sh`   - [Bowtie](http://bowtie-bio.sourceforge.net/index.shtml) alignment of all the read files in a folder.
-* `rseg.sh`     - Peak calling using [RSeg](https://academic.oup.com/bioinformatics/article/27/6/870/236489/Identifying-dispersed-epigenomic-domains-from-ChIP) algorithm
-* `sicer.sh`    - Broad histone marks peak calling using [SICER](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/) algorithm
-
+All the scripts from `/parallel` are suitable to work with Portable Batch System and on local machine.
 Parallelism level on local machine can be configured via **WASHU_PARALLELISM** environment variable.
  
 Pipelines
 ---------
-* `pipeline_chipseq.py`         - Pipeline for batch ULI-ChIP-Seq processing, including QC, alignment, peak calling
-* `downstream`                  - Downstream analysis including differential ChIP-Seq analysis
+* `pipeline_chipseq.py` - Pipeline for batch ChIP-Seq processing, including QC, alignment, peak calling
+* `pipeline_tf.py`      - Pipeline for batch Transcription Factor ChIP-Seq processing
+* `pipeline_rnaseq.py`  - Pipeline for batch RNA-Seq processing, including QC, alignment, quantification
 
 Tests
 -----
 For testing purposes we prepared a dedicated Docker image with all the tools and sample data.
 Explore preconfigured Continuous Integration setup on [TeamCity](https://www.jetbrains.com/teamcity/?fromMenu):
-* [Pipeline tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_WashuPipelineTests&guest=1)   
+* [ChIP-Seq Pipeline tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_WashuPipelineTests&guest=1)   
 * [Other tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Washu&guest=1)
 
 Fetch latest Docker image `biolabs/washu` with all the necessary tools for pipeline and test data.
@@ -94,7 +90,7 @@ Fetch latest Docker image `biolabs/washu` with all the necessary tools for pipel
 docker pull biolabs/washu
 ```
 
-And launch them locally:
+Or launch them locally:
 ```bash
 # Change working directory
 cd <project_path>
@@ -126,6 +122,9 @@ Tools used
 * [SICER](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/)
 * [SPAN](http://artyomovlab.wustl.edu/aging/span.html)
 
+* [STAR](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3530905/)
+* [RSEM](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-12-323)
+
 Data standards and pipelines
 --------------
 * ENCODE data [standards](https://www.encodeproject.org/data-standards/)
@@ -134,6 +133,6 @@ Data standards and pipelines
 
 Useful links
 ------------
-* Washington University in Saint Louis Maxim Artyomov LAB [homepage](https://artyomovlab.wustl.edu) 
+* Washington University in Saint Louis Maxim Artyomov LAB [homepage](https://artyomovlab.wustl.edu/site/) 
 * JetBrains Research BioLabs [homepage](https://research.jetbrains.org/groups/biolabs)
 * Review on ChIP-Seq, ATAC-Seq and DNAse-Seq processing in latex [format](https://github.com/olegs/bioinformatics)

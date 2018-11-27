@@ -17,14 +17,14 @@ source ${WASHU_ROOT}/parallel/util/util.sh
 
 >&2 echo "bam2bw $@"
 if [ $# -lt 2 ]; then
-    echo "Need at least 2 parameters! <READS> <chrom.sizes> [<OUTPUT.bw>]"
+    echo "Need at least 2 parameters! <READS> <chrom.sizes> [<genes.gtf>]"
     echo "READS: bam, bed, bed.gz"
     exit 1
 fi
 
 INPUT=$1
 CHROM_SIZES=$2
-RESULT=$3
+GTF_FILE=$3
 
 if [ ! -f "${CHROM_SIZES}" ]; then
   echo "File not found: ${CHROM_SIZES}"
@@ -33,15 +33,19 @@ fi
 
 # Convert reads to BAM is required
 BAM=$(bash "${WASHU_ROOT}/scripts/reads2bam.sh" ${INPUT} ${CHROM_SIZES})
+# Get correct bedGraph file name
+BDG_FILE=$(echo ${BAM} | sed -r 's#\.(bam|bed|bed\.gz)$#.bdg#g')
 
-# Covert bam to bdg
-if [[ ! -z  ${RESULT} ]]; then
-    BDG_FILE=${RESULT/.bw/.bdg}
+echo "Converting ${BAM} -> ${BDG_FILE}"
+if [[ -f  ${GTF_FILE} ]]; then
+    echo "GTF file found, processing paired-end exome alignment"
+    bedtools genomecov -ibam ${BAM} -split -bg -g ${CHROM_SIZES} > ${BDG_FILE}
 else
-    BDG_FILE=${BAM/.bam/.bdg}
+    bedtools genomecov -ibam ${BAM} -bg -g ${CHROM_SIZES} > ${BDG_FILE}
 fi
 
-bedtools genomecov -ibam $BAM -bg -g ${CHROM_SIZES} > ${BDG_FILE}
+# Covert bedGraph to BigWig
 bash "${WASHU_ROOT}/scripts/bdg2bw.sh" ${BDG_FILE} ${CHROM_SIZES}
+
 # Cleanup
 rm ${BDG_FILE}
