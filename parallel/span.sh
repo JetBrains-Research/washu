@@ -6,7 +6,7 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch SPAN $@"
-if [ $# -lt 5 ]; then
+if [[ $# -lt 5 ]]; then
     echo "Need >= 5 parameters! <SPAN_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q> [<OUTPUT_DIR> [<GAP>]]"
     exit 1
 fi
@@ -20,15 +20,15 @@ GENOME=$3
 CHROM_SIZES=$4
 Q=$5
 OUTPUT_DIR=$6
-if [ ! -d "$OUTPUT_DIR" ]; then
+if [[ ! -d "$OUTPUT_DIR" ]]; then
     OUTPUT_DIR=${WORK_DIR}
 fi
 GAP=$7
-if [ -z "$GAP" ]; then
+if [[ -z "$GAP" ]]; then
     GAP=5
 fi
 
-if [ -z "JAVA_OPTIONS" ]; then
+if [[ -z "JAVA_OPTIONS" ]]; then
     JAVA_OPTIONS="-Xmx8G"
 fi
 
@@ -43,7 +43,7 @@ do :
     NAME=${FILE%%.bam} # file name without extension
     ID=${NAME}_${Q}_${GAP}
 
-    if [ ! -f ${ID}_peaks.bed ]; then
+    if [[ ! -f ${ID}.peak ]]; then
         # Submit task
         run_parallel << SCRIPT
 #!/bin/sh
@@ -64,14 +64,14 @@ if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
     java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} -c ${INPUT} --chrom.sizes ${CHROM_SIZES} \
         --fdr ${Q} --gap ${GAP} \
-        --peaks ${ID}_peaks.bed \
+        --peaks ${ID}.peak \
         --workdir ${OUTPUT_DIR} \
         --threads 4
 else
     echo "${FILE}: no control file"
     java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} --chrom.sizes ${CHROM_SIZES} \
         --fdr ${Q} --gap ${GAP} \
-        --peaks ${ID}_peaks.bed \
+        --peaks ${ID}.peak \
         --workdir ${OUTPUT_DIR} \
         --threads 4
 fi

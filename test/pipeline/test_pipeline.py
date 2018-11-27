@@ -103,7 +103,7 @@ def test_sicer():
 def test_span():
     check_files("fastq_bams_span/fit/*.span", 4)
     check_files("fastq_bams_span/logs/*.log", 4)
-    check_files("fastq_bams_span/*_peaks.bed", 4)
+    check_files("fastq_bams_span/*.peak", 4)
 
 
 def test_reads2bam():
