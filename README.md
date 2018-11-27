@@ -35,7 +35,7 @@ export WASHU_PARALLELISM=8
 
 * Install required tools using [Conda](https://conda.io/docs/)
 ```bash
-conda install --channel bioconda samtools bedtools bowtie bowtie2 fastqc sra-tools macs2 sicer \
+conda install --channel bioconda samtools bedtools bowtie bowtie2 fastqc multiqc sra-tools macs2 sicer \
     star rseg ucsc-bedgraphtobigwig ucsc-bedclip ucsc-bigwigaverageoverbed
 ```
 For more details see `docker/biolabs/washu/Dockerfile`.
@@ -52,7 +52,7 @@ tar xvf ~/phantompeakqualtools.tar.gz
 ```
 * Download and extract [SPAN](https://artyomovlab.wustl.edu/aging/span.html):
 ```bash
-curl --location https://download.jetbrains.com/biolabs/span/span-0.7.0.4254.jar \
+curl --location https://download.jetbrains.com/biolabs/span/span-0.8.0.4533.jar \
     --output ~/span.jar 
 ```
 
@@ -134,6 +134,6 @@ Data standards and pipelines
 
 Useful links
 ------------
-* Washington University in Saint Louis Maxim Artyomov LAB [homepage](https://artyomovlab.wustl.edu/site/) 
+* Washington University in Saint Louis Maxim Artyomov LAB [homepage](https://artyomovlab.wustl.edu) 
 * JetBrains Research BioLabs [homepage](https://research.jetbrains.org/groups/biolabs)
 * Review on ChIP-Seq, ATAC-Seq and DNAse-Seq processing in latex [format](https://github.com/olegs/bioinformatics)
