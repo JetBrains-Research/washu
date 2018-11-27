@@ -32,14 +32,17 @@ export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/
 mkdir -p "${TMPDIR}"
 
 if (echo ${READS} | grep -q ".*\\.bam$"); then
-    READS_PREFIX=${READS%%.bam}
     PILEUP_BED=$(pileup ${READS})
 elif (echo ${READS} | grep -q ".*\\.bed$"); then
-    READS_PREFIX=${READS%%.bed}
     PILEUP_BED=${READS}
 elif (echo ${READS} | grep -q ".*\\.bed.gz$"); then
-    READS_PREFIX=${READS%%.bed.gz}
-    PILEUP_BED=${READS%%.gz}
+    PILEUP_DIR=$(dirname $(expand_path ${READS}))/pileup
+    if [[ ! -d ${PILEUP_DIR} ]]; then
+        >&2 echo "Create pileup dir ${PILEUP_DIR}"
+        mkdir -p ${PILEUP_DIR}
+    fi
+    NAME=$(basename ${READS%%.gz})
+    PILEUP_BED=${PILEUP_DIR}/${NAME}
     if [[ ! -e ${PILEUP_BED} ]]; then
         gunzip -c ${READS} > ${PILEUP_BED}
     fi;
