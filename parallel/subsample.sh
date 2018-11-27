@@ -6,7 +6,7 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch subsample $@"
-if [ $# -lt 2 ]; then
+if [[ $# -lt 2 ]]; then
     echo "Need 2 parameters! <WORK_DIR> <READS>"
     exit 1
 fi

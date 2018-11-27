@@ -14,7 +14,7 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch fastqc $@"
-if [ $# -lt 1 ]; then
+if [[ $# -lt 1 ]]; then
     echo "Need at least one parameter! <WORK_DIR>"
     exit 1
 fi
@@ -25,7 +25,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
     cd ${WORK_DIR}
     WORK_DIR_NAME=${WORK_DIR##*/}
     RESULTS_DIR="${WORK_DIR}/fastqc"
-    if [ -d "${RESULTS_DIR}" ]; then
+    if [[ -d "${RESULTS_DIR}" ]]; then
         echo "   [Skipped] ${RESULTS_DIR} was already processed"
         continue
     else

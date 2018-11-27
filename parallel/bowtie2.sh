@@ -6,7 +6,7 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch bowtie2 $@"
-if [ $# -lt 4 ]; then
+if [[ $# -lt 4 ]]; then
     echo "Need at least 4 parameters! <GENOME> <INDEXES> <TRIM5> <WORK_DIR> [<WORK_DIR>]"
     exit 1
 fi
@@ -55,7 +55,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         fi
 
         # Check FILE_PAIRED
-        if [ -f "${FILE_PAIRED}" ]; then
+        if [[ -f "${FILE_PAIRED}" ]]; then
             echo "PAIRED END reads detected: $FILE and $FILE_PAIRED"
             # Mark it as already processed
             PROCESSED+=("${FILE_PAIRED}")
@@ -64,7 +64,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         ID=${NAME}_${GENOME}
         BAM_NAME="${ID}.bam"
 
-        if [ -f "${BAM_NAME}" ]; then
+        if [[ -f "${BAM_NAME}" ]]; then
             echo "   [Skipped] ${WORK_DIR}/${BAM_NAME} already exists."
             continue
         fi
@@ -103,7 +103,7 @@ cd ${WORK_DIR}
 # -5/--trim5 <int>   trim <int> bases from 5'/left end of reads (0)
 # --sensitive            -D 15 -R 2 -N 0 -L 22 -i S,1,1.15 (default)
 
-if [ -f "${FILE_PAIRED}" ]; then
+if [[ -f "${FILE_PAIRED}" ]]; then
     bowtie2 -p 4 ${TRIM_ARGS} -S ${ID}.sam -x ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED}
 else
     bowtie2 -p 4 ${TRIM_ARGS} -S ${ID}.sam -x ${GENOME} -U ${FILE}
@@ -115,7 +115,7 @@ samtools sort -@ 4 ${ID}_not_sorted.bam -o ${BAM_NAME}
 rm ${ID}.sam ${ID}_not_sorted.bam
 
 SCRIPT
-        if [ -f "${FILE_PAIRED}" ]; then
+        if [[ -f "${FILE_PAIRED}" ]]; then
             echo "FILE: ${WORK_DIR_NAME}/${FILE} PAIRED ${FILE_PAIRED}; TASK: ${QSUB_ID}"
         else
             echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"

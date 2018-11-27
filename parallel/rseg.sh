@@ -8,7 +8,7 @@ which rseg &>/dev/null || { echo "ERROR: rseg not found! Download rseg: <http://
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch rseg $@"
-if [ $# -lt 3 ]; then
+if [[ $# -lt 3 ]]; then
     echo "Need 3 parameters! <work_dir> <genome> <chrom.sizes>"
     exit 1
 fi
@@ -74,13 +74,13 @@ export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo 
 
 bedtools bamtobed -i ${FILE} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${TMP_FOLDER}/${FILE_BED}
 
-if [ -f "${INPUT}" ]; then
+if [[ -f "${INPUT}" ]]; then
     # Use tmp files to reduced async problems with same input parallel processing
     echo "${FILE}: control file found: ${INPUT}"
     if [ ! -f ${INPUT_BED} ]; then
         bedtools bamtobed -i ${INPUT} | sort -k1,1 -k3,3n -k2,2n -k6,6 -T \${TMPDIR} > ${TMP_FOLDER}/${INPUT_BED}
         # Check that we are the first in async calls, not 100% safe
-        if [ ! -f ${INPUT_BED} ]; then
+        if [[ ! -f ${INPUT_BED} ]]; then
             cp ${TMP_FOLDER}/${INPUT_BED} ${WORK_DIR}
         fi
     fi

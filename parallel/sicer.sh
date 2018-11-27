@@ -89,7 +89,7 @@ module load bedtools2
 PILEUP_BED=\$(pileup ${WORK_DIR}/${FILE})
 ln -s \${PILEUP_BED} \${SICER_FOLDER}/${FILE_BED}
 
-if [ -f "${INPUT}" ]; then
+if [[ -f "${INPUT}" ]]; then
     echo "${FILE}: control file found: ${INPUT}"
     INPUT_PILEUP_BED=\$(pileup ${WORK_DIR}/${INPUT})
     ln -sf \${INPUT_PILEUP_BED} \${SICER_FOLDER}/${INPUT_BED}
@@ -108,7 +108,7 @@ cd \${SICER_FOLDER}
 #   fragment size           = 150
 #   gap size (bp)           = 600
 
-if [ -f \${SICER_FOLDER}/${INPUT_BED} ]; then
+if [[ -f \${SICER_FOLDER}/${INPUT_BED} ]]; then
     SICER.sh    \${SICER_FOLDER} ${FILE_BED} ${INPUT_BED} \${SICER_OUT_FOLDER} ${GENOME} 1 ${WINDOW_SIZE} \
         ${FRAGMENT_SIZE} ${EFFECTIVE_GENOME_FRACTION} ${GAP_SIZE} ${FDR}
 else

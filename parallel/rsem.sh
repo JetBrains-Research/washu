@@ -9,7 +9,7 @@ which rsem-calculate-expression &>/dev/null || { echo "RSEM not found! Download 
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch rsem $@"
-if [ $# -lt 2 ]; then
+if [[ $# -lt 2 ]]; then
     echo "Need 2 parameter! <WORK_DIR> <STAR_REF>"
     exit 1
 fi

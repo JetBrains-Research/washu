@@ -6,12 +6,12 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch remove_duplicates $@"
-if [ $# -lt 1 ]; then
+if [[ $# -lt 1 ]]; then
     echo "Need at least 2 parameters! <PICARD_TOOLS_JAR> <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
 
-if [ -n $IS_TEST ]; then
+if [[ -n ${IS_TEST} ]]; then
     export JVM_MEM="-Xmx1g"
 else
     export JVM_MEM="-Xmx12g"

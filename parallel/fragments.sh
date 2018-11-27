@@ -6,7 +6,7 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch fragments $@"
-if [ $# -lt 1 ]; then
+if [[ $# -lt 1 ]]; then
     echo "Need at least 1 parameter! <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
@@ -34,7 +34,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
 module load samtools
 
 cd ${WORK_DIR}
-samtools view -f66 $FILE | cut -f 9 | sed 's/^-//' > ${NAME}_metrics.txt
+samtools view -f66 ${FILE} | cut -f 9 | sed 's/^-//' > ${NAME}_metrics.txt
 
 module unload samtools # unload samtools, because it conflicts with R at the moment
 module load R

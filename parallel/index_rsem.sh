@@ -8,7 +8,7 @@ which rsem-prepare-reference &>/dev/null || { echo "RSEM not found! Download RSE
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "index-rsem $@"
-if [ $# -lt 2 ]; then
+if [[ $# -lt 2 ]]; then
     echo "Need 2 parameters! <GENOME> <FOLDER>"
     exit 1
 fi
@@ -17,14 +17,14 @@ FOLDER=$2
 
 RSEM_INDEX_FOLDER="${FOLDER}/rsem"
 echo "RSEM index folder: ${RSEM_INDEX_FOLDER}"
-if [ -d "${RSEM_INDEX_FOLDER}" ]; then
+if [[ -d "${RSEM_INDEX_FOLDER}" ]]; then
     echo "Indexes already exist at ${RSEM_INDEX_FOLDER}"
     exit 0
 fi
 
 STAR_INDEX_FOLDER="${FOLDER}/star"
 echo "STAR index folder: ${STAR_INDEX_FOLDER}"
-if [ ! -d "${STAR_INDEX_FOLDER}" ]; then
+if [[ ! -d "${STAR_INDEX_FOLDER}" ]]; then
     echo "STAR Indexes not found ${STAR_INDEX_FOLDER}"
     exit 1
 fi

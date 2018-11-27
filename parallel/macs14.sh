@@ -8,7 +8,7 @@ which macs14 &>/dev/null || { echo "ERROR: MACS14 not found! Download MACS14: <h
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch macs14 $@"
-if [ $# -lt 3 ]; then
+if [[ $# -lt 3 ]]; then
     echo "Need 3 parameters! <work_dir> <genome> <p>"
     exit 1
 fi
@@ -42,7 +42,7 @@ do :
 cd ${WORK_DIR}
 module load bedtools2
 
-if [ -f "${INPUT}" ]; then
+if [[ -f "${INPUT}" ]]; then
     echo "${FILE}: control file found: ${INPUT}"
     macs14 -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} -p ${P}
 else

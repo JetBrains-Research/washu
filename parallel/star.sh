@@ -42,13 +42,13 @@ do :
     ID=${NAME}_${GENOME}
 
     # Check correct paired name
-    if [ -f "${FILE_PAIRED}" ]; then
+    if [[ -f "${FILE_PAIRED}" ]]; then
         echo "PAIRED END reads detected: $FILE and $FILE_PAIRED"
         # Mark it as already processed
         PROCESSED+=("${FILE_PAIRED}")
     fi
 
-    if [ -f "${ID}.bam" ]; then
+    if [[ -f "${ID}.bam" ]]; then
         echo "   [Skipped] ${WORK_DIR}/${ID}.bam already exists."
         continue
     fi
@@ -70,7 +70,7 @@ STAR_FOLDER=\${TMPDIR}/${NAME}
 mkdir -p \${STAR_FOLDER}
 
 ln -sf ${WORK_DIR}/${FILE} \${STAR_FOLDER}/${FILE}
-if [ -f "${FILE_PAIRED}" ]; then
+if [[ -f "${FILE_PAIRED}" ]]; then
     ln -sf ${WORK_DIR}/${FILE_PAIRED} \${STAR_FOLDER}/${FILE_PAIRED}
 fi
 
@@ -78,7 +78,7 @@ cd \${STAR_FOLDER}
 
 # LoadAndKeep option allows to save lots of time on genome loading
 # this command also will generate a transcriptomic BAM file which can be used for RSEM or other similar tools
-if [ -f "${FILE_PAIRED}" ]; then
+if [[ -f "${FILE_PAIRED}" ]]; then
     STAR --genomeDir ${REF} --genomeLoad LoadAndKeep \
         --readFilesIn ${FILE} ${FILE_PAIRED} --runThreadN 8 \
         --outFilterMultimapNmax 15 --outFilterMismatchNmax 6  --outSAMstrandField All \

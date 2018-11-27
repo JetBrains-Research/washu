@@ -8,7 +8,7 @@ which macs2 &>/dev/null || { echo "ERROR: MACS2 not found! Download MACS2: <http
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch macs2 $@"
-if [ $# -lt 5 ]; then
+if [[ $# -lt 5 ]]; then
     echo "Need 5 parameters! <genome> <chrom.sizes> <suffix> <params_str> <work_dir> [<work_dir>]*"
     echo "if <chrom.sizes> file not specified (NONE), no signal will be created"
     exit 1
@@ -20,7 +20,7 @@ SUFFIX=$3
 PARAMS=$4
 WORK_DIRS=${@:5}
 
-if [ ! -f ${CHROM_SIZES} ]; then
+if [[ ! -f ${CHROM_SIZES} ]]; then
     echo "chrom.sizes file not specified, no signal"
 fi
 
@@ -63,7 +63,7 @@ if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
     macs2 callpeak --tempdir \${TMPDIR} -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
 
-    if [ -f "${CHROM_SIZES}" ]; then
+    if [[ -f "${CHROM_SIZES}" ]]; then
         echo "Create fold enrichment signal track for ${FILE} and ${INPUT}"
         macs2 bdgcmp -t ${ID}_treat_pileup.bdg -c ${ID}_control_lambda.bdg -o ${NAME}_signal.bdg -m FE
         bash ${WASHU_ROOT}/scripts/bdg2bw.sh ${NAME}_signal.bdg ${CHROM_SIZES}

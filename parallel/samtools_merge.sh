@@ -13,7 +13,7 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch samtools-merge $@"
-if [ $# -lt 1 ]; then
+if [[ $# -lt 1 ]]; then
     echo "Need at least one parameter! <GENOME> <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
@@ -27,14 +27,14 @@ for WORK_DIR in ${WORK_DIRS}; do
     WORK_DIR_NAME=${WORK_DIR##*/}
 
     BAM_FILES=$(find . -name '*.bam' | sort)
-    if [ -z "$BAM_FILES" ]; then
+    if [[ -z "$BAM_FILES" ]]; then
         # No files found
         exit -1
     else
         MERGED_FILE="${WORK_DIR_NAME}_${GENOME}.bam"
 
         N_BAM_FILES=$(echo "${BAM_FILES}" | wc -l);
-        if [ "$N_BAM_FILES" -eq "1" ]; then
+        if [[ "$N_BAM_FILES" -eq "1" ]]; then
             # rename file if only one bam
             echo "rename ${FILE} -> ${MERGED_FILE}"
             for FILE in ${BAM_FILES}; do

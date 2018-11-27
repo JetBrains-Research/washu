@@ -8,7 +8,7 @@ which STAR &>/dev/null || { echo "STAR not found! Download STAR: <https://github
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "index-star $@"
-if [ $# -lt 2 ]; then
+if [[ $# -lt 2 ]]; then
     echo "Need 2 parameters! <GENOME> <FOLDER>"
     exit 1
 fi
@@ -17,7 +17,7 @@ FOLDER=$2
 
 STAR_INDEX_FOLDER="${FOLDER}/star"
 echo "STAR index folder: ${STAR_INDEX_FOLDER}"
-if [ -f "${STAR_INDEX_FOLDER}/SAindex" ]; then
+if [[ -f "${STAR_INDEX_FOLDER}/SAindex" ]]; then
     echo "Indexes already exist at ${STAR_INDEX_FOLDER}"
     exit 0
 fi
@@ -27,15 +27,15 @@ GFT_FILE="${STAR_INDEX_FOLDER}"/${GENOME}.gtf
 mkdir -p "${STAR_INDEX_FOLDER}"
 cd "${STAR_INDEX_FOLDER}"
 GTF_URL=""
-if [ ${GENOME} = "mm9" ]; then
+if [[ ${GENOME} = "mm9" ]]; then
     GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/release-67/gtf/mus_musculus/Mus_musculus.NCBIM37.67.gtf.gz"
-elif [ ${GENOME} = "mm10" ]; then
+elif [[ ${GENOME} = "mm10" ]]; then
     GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/release-87/gtf/mus_musculus/Mus_musculus.GRCm38.87.gtf.gz"
-elif [ ${GENOME} = "hg18" ]; then
+elif [[ ${GENOME} = "hg18" ]]; then
     GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/release-54/gtf/homo_sapiens/Homo_sapiens.NCBI36.54.gtf.gz"
-elif [ ${GENOME} = "hg19" ]; then
+elif [[ ${GENOME} = "hg19" ]]; then
     GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/grch37/release-87/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.gtf.gz"
-elif [ ${GENOME} = "hg38" ]; then
+elif [[ ${GENOME} = "hg38" ]]; then
     GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/release-89/gtf/homo_sapiens/Homo_sapiens.GRCh38.89.gtf.gz"
 else
     echo "Unknown genome ${GENOME} build, failed to download GTF file"
@@ -48,21 +48,18 @@ DOWNLOADED_GTF=$(ls ${STAR_INDEX_FOLDER}/*.gtf)
 
 # Add chr prefix if necessary
 CHR_PREFIX=$(head -n 10 ${DOWNLOADED_GTF} | grep '^chr')
-if [ -z "${CHR_PREFIX}" ]; then
+if [[ -z "${CHR_PREFIX}" ]]; then
     grep '^#!ge' ${DOWNLOADED_GTF} > ${GFT_FILE}
     grep -v '^#!ge' ${DOWNLOADED_GTF} | awk '{printf("chr%s\n", $0)}' >> ${GFT_FILE}
 else
     cp ${DOWNLOADED_GTF} ${GFT_FILE}
 fi
+
 echo "GTF_FILE = ${GFT_FILE}"
-
-
-
-if [ ! -f "${GFT_FILE}" ]; then
+if [[ ! -f "${GFT_FILE}" ]]; then
     echo "Failed to find GTF file for ${GENOME} in ${STAR_INDEX_FOLDER}"
     exit 1;
 fi
-
 
 cd ${FOLDER}
 run_parallel << SCRIPT

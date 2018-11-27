@@ -6,7 +6,7 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch bigwig $@"
-if [ $# -lt 2 ]; then
+if [[ $# -lt 2 ]]; then
     echo "Need at least 2 parameters! <CHROM_SIZES> [<genes.gtf>] <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi

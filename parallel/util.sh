@@ -27,7 +27,7 @@ if which qsub &>/dev/null; then
             echo -n "TASK: $TASK"
             # The task id is actually the first numbers in the string
             TASK_ID=$(echo ${TASK} | sed -e "s/\([0-9]*\).*/\1/")
-            if [ ! -z "$TASK_ID" ]; then
+            if [[ ! -z "$TASK_ID" ]]; then
                 while qstat ${TASK_ID} &> /dev/null; do
                     echo -n "."
                     sleep 100
@@ -38,7 +38,7 @@ if which qsub &>/dev/null; then
         echo "Done. Waiting for tasks"
     }
 else
-    if [ -z $WASHU_PARALLELISM ]; then
+    if [[ -z $WASHU_PARALLELISM ]]; then
         WASHU_PARALLELISM=8
     fi
     >&2 echo "Local tasks WASHU_PARALLELISM=$WASHU_PARALLELISM"
@@ -68,7 +68,7 @@ else
     run_parallel()
     {
         # Wait until less then $WASHU_PARALLELISM tasks running
-        while [ $(jobs | wc -l) -ge $WASHU_PARALLELISM ] ; do sleep 1 ; done
+        while [[ $(jobs | wc -l) -ge $WASHU_PARALLELISM ]] ; do sleep 1 ; done
 
         # LOAD args to $CMD
         CMD=""
@@ -93,7 +93,7 @@ check_logs()
     ERRORS=$(find . -name "*.log" | xargs grep -i -E "error|exception|No such file or directory" |\
         grep -v -E "ValueError|WARNING" | grep -v -E "Error in runmean")
 
-    if [ ! -z "$ERRORS" ]; then
+    if [[ ! -z "$ERRORS" ]]; then
         echo "ERRORS found"
         echo "$ERRORS"
         exit 1
@@ -101,7 +101,7 @@ check_logs()
 }
 
 job_tmp_dir() {
-    if [ -z "${PBS_JOBID}" ]; then
+    if [[ -z "${PBS_JOBID}" ]]; then
       TMP_DIR=~/tmp/job$$/;
     else
       TMP_DIR="/tmp/$PBS_JOBID/";
@@ -112,7 +112,7 @@ job_tmp_dir() {
 }
 
 clean_job_tmp_dir() {
-    if [ -z "${PBS_JOBID}" ]; then
+    if [[ -z "${PBS_JOBID}" ]]; then
       rm -rf "$(job_tmp_dir)"
     fi
 }
@@ -129,10 +129,10 @@ function expand_path() {
     # If file or directory exists: expand it
     # expand ".." and "." including trailing case
     # based on https://stackoverflow.com/questions/3915040/bash-fish-command-to-print-absolute-path-to-a-file
-    if [ -d "$1" ]; then
+    if [[ -d "$1" ]]; then
         # dir
         TARGET_FILE="$(cd "$1"; pwd)"
-    elif [ -f "$1" ]; then
+    elif [[ -f "$1" ]]; then
         # file
         if [[ $1 == */* ]]; then
             TARGET_FILE="$(cd "${1%/*}"; pwd)/${1##*/}"
@@ -143,14 +143,14 @@ function expand_path() {
     # replacement for `readlink -f path` which isn't available in MacOS
     # http://stackoverflow.com/questions/1055671/how-can-i-get-the-behavior-of-gnus-readlink-f-on-a-mac
     PARENT_DIR=$(dirname ${TARGET_FILE})
-    if [ ! -d ${PARENT_DIR} ]; then
+    if [[ ! -d ${PARENT_DIR} ]]; then
         echo "${TARGET_FILE}"
     else
         cd "$PARENT_DIR"
         TARGET_FILE=`basename ${TARGET_FILE}`
 
         # Iterate down a (possible) chain of symlinks
-        while [ -L "$TARGET_FILE" ]
+        while [[ -L "$TARGET_FILE" ]]
         do
             TARGET_FILE="$(readlink ${TARGET_FILE})"
             cd "$(dirname ${TARGET_FILE})"
@@ -167,7 +167,7 @@ function expand_path() {
 
 # Computes and returns pileup file for given BAM file
 function pileup(){
-    if [ ! $# -eq 1 ]; then
+    if [[ ! $# -eq 1 ]]; then
         echo "Need 1 argument! <bam_file>"
         exit 1
     fi
@@ -186,7 +186,7 @@ function pileup(){
         >&2 echo "Calculate ${BAM} pileup file in tmp file: ${PILEUP_TMP}"
         bedtools bamtobed -i ${BAM} > ${PILEUP_TMP}
         # Check that we are the first in async calls, not 100% safe
-        if [ ! -f ${RESULT} ]; then
+        if [[ ! -f ${RESULT} ]]; then
             mv ${PILEUP_TMP} ${RESULT}
         else
             >&2 echo "Ignore result, file has been already calculated: ${RESULT}"

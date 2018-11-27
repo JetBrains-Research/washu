@@ -18,7 +18,7 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch fastq-dump $@"
-if [ $# -lt 1 ]; then
+if [[ $# -lt 1 ]]; then
     echo "Need at least one parameter! <WORK_DIR> [<WORK_DIR>]*"
     exit 1
 fi
@@ -39,9 +39,9 @@ for WORK_DIR in ${WORK_DIRS}; do :
         FILE_NAME_WO_EXT=${FILE_NAME%.sra}
 
         FASTQ_FILE_PREFIX="${OUTDIR}/${FILE_NAME_WO_EXT}"
-        if [ -f "${FASTQ_FILE_PREFIX}.fastq" ] ||
-         ( [ -f "${FASTQ_FILE_PREFIX}_1.fastq" ] &&
-         [ -f "${FASTQ_FILE_PREFIX}_2.fastq" ]); then
+        if [[ -f "${FASTQ_FILE_PREFIX}.fastq" ]] ||
+         ( [[ -f "${FASTQ_FILE_PREFIX}_1.fastq" ]] &&
+         [[ -f "${FASTQ_FILE_PREFIX}_2.fastq" ]]); then
             echo "   [Skipped] $FILE_NAME was already processed"
             continue
         fi
@@ -61,10 +61,10 @@ module load sratoolkit
 cd ${WORK_DIR}
 
 NLINES=\$(fastq-dump --maxSpotId 1 --split-spot --stdout ${FILE} 2>/dev/null | wc -l)
-if [ \$NLINES -eq 4 ]; then
+if [[ \$NLINES -eq 4 ]]; then
     echo "${FILE}: SE reads"
     SPLIT_FILES_OPTION=""
-elif [ \$NLINES -eq 8 ]; then
+elif [[ \$NLINES -eq 8 ]]; then
     echo "${FILE}: PE reads"
     SPLIT_FILES_OPTION=" --split-files"
 else

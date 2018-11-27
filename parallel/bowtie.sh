@@ -6,7 +6,7 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch bowtie $@"
-if [ $# -lt 4 ]; then
+if [[ $# -lt 4 ]]; then
     echo "Need 4 parameters! <GENOME> <INDEXES> <TRIM5> <WORK_DIR> [<WORK_DIR>]"
     exit 1
 fi
@@ -32,12 +32,12 @@ for WORK_DIR in ${WORK_DIRS}; do :
 
     # Fails with large indexes, create soft link to indexes in working directory as a workaround
     # export BOWTIE_INDEXES=${INDEXES}
-    if [ ! -d "${WORK_DIR}/indexes" ]; then
+    if [[ ! -d "${WORK_DIR}/indexes" ]]; then
         ln -s ${INDEXES} ${WORK_DIR}/indexes
     fi
 
     # Bowtie fails with large indexes, explicitly set
-    if [ -f indexes/${GENOME}.1.ebwtl ]; then
+    if [[ -f indexes/${GENOME}.1.ebwtl ]]; then
         INDEX_ARG="--large-index"
     else
         INDEX_ARG=""
@@ -65,7 +65,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         fi
 
         # Check FILE_PAIRED
-        if [ -f "${FILE_PAIRED}" ]; then
+        if [[ -f "${FILE_PAIRED}" ]]; then
             echo "PAIRED END reads detected: $FILE and $FILE_PAIRED"
             # Mark it as already processed
             PROCESSED+=("${FILE_PAIRED}")
@@ -74,7 +74,7 @@ for WORK_DIR in ${WORK_DIRS}; do :
         ID=${NAME}_${GENOME}
         BAM_NAME="${ID}.bam"
 
-        if [ -f "${BAM_NAME}" ]; then
+        if [[ -f "${BAM_NAME}" ]]; then
             echo "   [Skipped] ${WORK_DIR}/${BAM_NAME} already exists."
             continue
         fi
@@ -104,7 +104,7 @@ cd ${WORK_DIR}
 # --best             hits guaranteed best stratum; ties broken by quality
 # --strata           hits in sub-optimal strata aren't reported (requires --best)
 
-if [ -f "${FILE_PAIRED}" ]; then
+if [[ -f "${FILE_PAIRED}" ]]; then
     bowtie -p 4 -St -m 1 -v 3 ${TRIM_ARGS} --best --strata ${INDEX_ARG} ${GENOME} -1 ${FILE} -2 ${FILE_PAIRED} ${ID}.sam
 else
     bowtie -p 4 -St -m 1 -v 3 ${TRIM_ARGS} --best --strata ${INDEX_ARG} ${GENOME} ${FILE} ${ID}.sam
@@ -116,7 +116,7 @@ samtools sort ${ID}_not_sorted.bam -o ${BAM_NAME}
 rm ${ID}.sam ${ID}_not_sorted.bam
 
 SCRIPT
-        if [ -f "${FILE_PAIRED}" ]; then
+        if [[ -f "${FILE_PAIRED}" ]]; then
             echo "FILE: ${WORK_DIR_NAME}/${FILE} PAIRED ${FILE_PAIRED}; TASK: ${QSUB_ID}"
         else
             echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
@@ -129,7 +129,7 @@ check_logs
 
 # Cleanup indexes soft link
 for WORK_DIR in ${WORK_DIRS}; do :
-    if [ -d "${WORK_DIR}/indexes" ]; then
+    if [[ -d "${WORK_DIR}/indexes" ]]; then
         rm ${WORK_DIR}/indexes
     fi
 done

@@ -10,7 +10,7 @@ which samtools &>/dev/null || { echo "ERROR: samtools not found! Download samtoo
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch bam_qc $@"
-if [ $# -lt 2 ]; then
+if [[ $# -lt 2 ]]; then
     echo "Need 2 parameters! <phantompeakqualtools> <work_dir> [<work_dir>]*"
     exit 1
 fi
