@@ -7,7 +7,7 @@ Technical pipelines
 Technical pipelines for ChIP-Seq and RNA-Seq processing on Portable Batch System (`qsub`) or local machines.
 ChIP-Seq pipeline were used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data analysis.
 
-How do I launch the technical pipeline?
+How do I launch the ChIP-Seq pipeline?
 --------------------------
 Follow these instructions to launch ChIP-Seq pipeline:
 * Configure environment, see **Requirements** section
@@ -104,26 +104,25 @@ docker run -v $(pwd):/washu -t -m 2G -e JAVA_OPTIONS="-Xmx1G" -i biolabs/washu /
 
 Tools used
 ---------- 
-* [Bedtools](https://bedtools.readthedocs.io/en/latest/)
-* [Bowtie](http://bowtie-bio.sourceforge.net/index.shtml)
-* [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml)
-* [ChIPDiff](https://academic.oup.com/bioinformatics/article/24/20/2344/258202/An-HMM-approach-to-genome-wide-identification-of) 
-* [Deeptools](http://deeptools.readthedocs.io/en/latest/content/installation.html)
-* [DiffBind](http://www.nature.com/nature/journal/v481/n7381/full/nature10730.html) 
-* [DiffReps](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0065598)
-* [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) 
-* [MACS2](https://github.com/taoliu/MACS)
-* [MANorm](https://www.ncbi.nlm.nih.gov/pubmed/22424423)
-* [MultiQC](http://multiqc.info/)
-* [Phantompeakqualtools](https://github.com/kundajelab/phantompeakqualtools)
-* [Picardtools](https://github.com/broadinstitute/picard)
-* [RSeg](https://academic.oup.com/bioinformatics/article/27/6/870/236489/Identifying-dispersed-epigenomic-domains-from-ChIP)
-* [Samtools](http://samtools.sourceforge.net/)
-* [SICER](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/)
-* [SPAN](http://artyomovlab.wustl.edu/aging/span.html)
+[Bedtools](https://bedtools.readthedocs.io/en/latest/), 
+[Bowtie](http://bowtie-bio.sourceforge.net/index.shtml), 
+[Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml), 
+[ChIPDiff](https://academic.oup.com/bioinformatics/article/24/20/2344/258202/An-HMM-approach-to-genome-wide-identification-of),
+[DiffBind](http://www.nature.com/nature/journal/v481/n7381/full/nature10730.html), 
+[DiffReps](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0065598),
+[FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/),
+[MACS2](https://github.com/taoliu/MACS),
+[MANorm](https://www.ncbi.nlm.nih.gov/pubmed/22424423),
+[MultiQC](http://multiqc.info/),
+[Phantompeakqualtools](https://github.com/kundajelab/phantompeakqualtools),
+[Picardtools](https://github.com/broadinstitute/picard),
+[RSeg](https://academic.oup.com/bioinformatics/article/27/6/870/236489/Identifying-dispersed-epigenomic-domains-from-ChIP),
+[Samtools](http://samtools.sourceforge.net/),
+[SICER](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/),
+[SPAN](http://artyomovlab.wustl.edu/aging/span.html)
 
-* [STAR](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3530905/)
-* [RSEM](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-12-323)
+[STAR](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3530905/), 
+[RSEM](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-12-323)
 
 Data standards and pipelines
 --------------
