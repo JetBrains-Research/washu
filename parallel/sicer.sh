@@ -44,9 +44,6 @@ if [[ -z "${EFFECTIVE_GENOME_FRACTION}" ]]; then
     exit 1
 fi
 
-export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
-mkdir -p ${TMPDIR}
-
 cd ${WORK_DIR}
 
 TASKS=()
@@ -74,11 +71,9 @@ do :
 
 source ${WASHU_ROOT}/parallel/util.sh
 
-export TMPDIR=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
-SICER_FOLDER=\${TMPDIR}/${ID}
+# Create working folder
+SICER_FOLDER=\$(type job_tmp_dir &>/dev/null && echo "\$(job_tmp_dir)" || echo "/tmp")
 SICER_OUT_FOLDER=\${SICER_FOLDER}/out
-# Create folders
-mkdir -p \${SICER_FOLDER}
 mkdir -p \${SICER_OUT_FOLDER}
 
 # This is necessary because qsub default working dir is user home
