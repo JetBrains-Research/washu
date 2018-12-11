@@ -57,8 +57,8 @@ do :
 
     # Check if file already processed
     # Naming example: OD_OD10_H3K27me3-W200-G0-FDR0.01-island.bed
-    ISLAND_BED="${NAME}-W${WINDOW_SIZE}-G${GAP_SIZE}-FDR${FDR}-island.bed"
-    if [[ ! -f "${ISLAND_BED}" ]]; then
+    PEAKS_FILE=$(find . -name "${NAME}-W${WINDOW_SIZE}-G${GAP_SIZE}-FDR${FDR}*island*")
+    if [[ -z "${PEAKS_FILE}" ]]; then
         FILE_BED=${NAME}.bed # It is used for results naming
         INPUT=$(python ${WASHU_ROOT}/scripts/util.py find_input ${WORK_DIR}/${FILE})
         echo "${FILE} input: ${INPUT}"
