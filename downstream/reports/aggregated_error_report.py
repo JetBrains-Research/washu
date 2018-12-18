@@ -68,10 +68,8 @@ def _cli():
                 if parameters_path.exists():
                     donor_peaks_map = peaks_count_map(tool_path)
 
-                    parameters = pd.read_csv(
-                        path=str(parameters_path),
-                        index_col=None, header=1, sep="\t"
-                    )
+                    parameters = pd.read_csv(str(parameters_path), index_col=None, header=1,
+                                             sep="\t")
                     parameters = parameters.drop_duplicates(['name', 'error'], keep='first')
                     n = len(parameters.index)
                     ind = np.arange(n)
