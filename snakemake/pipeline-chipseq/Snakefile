@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+from glob import glob;
+import os;
+
+def fa_files(wildcards):
+    return ','.join(glob("{}/*.fa".format(config.fa_dir)))
+
+
+rule index_bowtie:
+    input: directory(os.path.join(config["work_dir"], "fa"))
+    output: directory(os.path.join(config["work_dir"], "indexes"))
+    params:
+        files_list=lambda wildcards, input: ','.join(glob("{}/*.fa".format(input))),
+        target=lambda wildcards, output: os.path.join(str(output), config["genome"])
+    shell: 'mkdir -p {output} && '
+           'bowtie-build {params.files_list} {params.target}'
+
+
+rule download_chrom_sizes:
+    output: os.path.join(config["work_dir"], "fa", "{}.chrom.sizes".format(config["genome"]))
+    shell: 'wget -nc http://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/bigZips/{config[genome]}.chrom.sizes'
+
+
+rule download_fa:
+    output: directory(os.path.join(config["work_dir"], "fa"))
+    shell: 'rsync -avzP --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/chromosomes/ {output} && '
+           'gunzip -f {output}/*.fa.gz'
+
