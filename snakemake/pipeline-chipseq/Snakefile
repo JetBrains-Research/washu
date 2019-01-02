@@ -3,8 +3,30 @@
 from glob import glob;
 import os;
 
-def fa_files(wildcards):
-    return ','.join(glob("{}/*.fa".format(config.fa_dir)))
+
+def fastq_files(wildcards):
+    return glob(os.path.join(config["fastq_dir"], "*.f*q"))
+
+
+def fastq_names(wildcards):
+    return [os.path.splitext(os.path.basename(fastq_file))[0] for fastq_file in fastq_files(wildcards)]
+
+
+def expect_files(wildcards, directory, extension):
+    return [os.path.join(directory, "{}.{}".format(filename, extension)) for filename in fastq_names(wildcards)]
+
+
+rule all:
+    input: lambda wildcards: expect_files(wildcards, os.path.join(config["work_dir"], "fastqc"), "html")
+    shell: 'echo {input}'
+
+
+rule fastqc:
+    input: os.path.join(config["fastq_dir"], "{sample}.fastq")
+    output: os.path.join(config["work_dir"], "fastqc", "{sample}.html")
+    params:
+        output_dir=lambda wildcards, output: os.path.dirname(str(output))
+    shell: 'fastqc --outdir "{params.output_dir}" "{input}"'
 
 
 rule index_bowtie:
