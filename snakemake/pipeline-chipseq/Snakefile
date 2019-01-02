@@ -16,14 +16,27 @@ def expect_files(wildcards, directory, extension):
     return [os.path.join(directory, "{}.{}".format(filename, extension)) for filename in fastq_names(wildcards)]
 
 
+fastqc_dir = os.path.join(config["work_dir"], "fastqc")
+
+
+def fastqc_files(wildcards):
+    return expect_files(wildcards, fastqc_dir, "html")
+
+
 rule all:
-    input: lambda wildcards: expect_files(wildcards, os.path.join(config["work_dir"], "fastqc"), "html")
+    input: os.path.join(config["work_dir"], "multiqc_report.html")
     shell: 'echo {input}'
+
+
+rule multiqc:
+    input: fastqc_files
+    output: os.path.join(config["work_dir"], "multiqc_report.html")
+    shell: 'multiqc -o "{config.work_dir}" "{fastqc_dir}"'
 
 
 rule fastqc:
     input: os.path.join(config["fastq_dir"], "{sample}.fastq")
-    output: os.path.join(config["work_dir"], "fastqc", "{sample}.html")
+    output: os.path.join(fastqc_dir, "{sample}.html")
     params:
         output_dir=lambda wildcards, output: os.path.dirname(str(output))
     shell: 'fastqc --outdir "{params.output_dir}" "{input}"'

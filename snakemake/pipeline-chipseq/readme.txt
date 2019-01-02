@@ -5,4 +5,4 @@ or
 $ conda env update --name pipeline-chipseq --file environment.yaml
 
 $ conda activate pipeline-chipseq
-$ snakemake --config work_dir=<work dir> genome=<genome build>
+$ snakemake --config work_dir=<work dir> genome=<genome build> fastq_dir=<fastq dir>
