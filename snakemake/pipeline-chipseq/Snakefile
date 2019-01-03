@@ -12,31 +12,76 @@ def fastq_names(wildcards):
     return [os.path.splitext(os.path.basename(fastq_file))[0] for fastq_file in fastq_files(wildcards)]
 
 
-def expect_files(wildcards, directory, extension):
-    return [os.path.join(directory, "{}.{}".format(filename, extension)) for filename in fastq_names(wildcards)]
+def fastq_common_names_paired(wildcards):
+    basenames = {os.path.splitext(fastq_file)[0] for fastq_file in fastq_files(wildcards)}
+    paired_candidates = [basename[:-2] for basename in basenames if basename[-2:] == "_1"]
+    return [os.path.basename(common_name) for common_name in paired_candidates if common_name + "_2" in basenames]
 
+
+def fastq_names_single(wildcards):
+    common_names = fastq_common_names_paired(wildcards)
+    return [fastq_name for fastq_name in fastq_names(wildcards) if fastq_name[-2:] not in ["_1", "_2"] or fastq_name[:-2] not in common_names]
+
+
+def fastq_aligned_names(wildcards):
+    return fastq_common_names_paired(wildcards) + fastq_names_single(wildcards)
+
+
+def expect_files(wildcards, directory, extension, suffix=""):
+    return [os.path.join(directory, "{}{}.{}".format(filename, suffix, extension)) for filename in fastq_names(wildcards)]
+
+
+def expect_aligned_files(wildcards, directory, extension):
+    return [os.path.join(directory, "{}.{}".format(filename, extension)) for filename in fastq_aligned_names(wildcards)]
 
 fastqc_dir = os.path.join(config["work_dir"], "fastqc")
 
 
 def fastqc_files(wildcards):
-    return expect_files(wildcards, fastqc_dir, "html")
+    return expect_files(wildcards, fastqc_dir, "html", "_fastqc")
+
+
+workdir: config["work_dir"]
 
 
 rule all:
-    input: os.path.join(config["work_dir"], "multiqc_report.html")
+    input:
+        multiqc=os.path.join(config["work_dir"], "multiqc_report.html"),
+        bams=lambda wildcards: expect_aligned_files(wildcards, os.path.join(config["work_dir"], "bams"), "bam")
     shell: 'echo {input}'
+
+
+rule align_paired_sam:
+    input:
+        first=os.path.join(config["fastq_dir"], "{sample}_1.fastq"),
+        second=os.path.join(config["fastq_dir"], "{sample}_2.fastq"),
+        indexes=directory(os.path.join(config["work_dir"], "indexes"))
+    output: temp(os.path.join(config["work_dir"], "bams", "{sample}.sam"))
+    threads: 4
+    shell: 'bowtie -p {threads} -St -m 1 -v 3 --trim5 5 --best --strata {config[genome]} -1 {input.first} -2 {input.second} {output}'
+
+
+rule sam_to_unsorted_bam:
+    input: os.path.join(config["work_dir"], "bams", "{sample}.sam")
+    output: temp(os.path.join(config["work_dir"], "bams", "{sample}_not_sorted.bam"))
+    shell: 'samtools view -bS {input} -o {output}'
+
+
+rule sort_bam:
+    input: os.path.join(config["work_dir"], "bams", "{sample}_not_sorted.bam")
+    output: os.path.join(config["work_dir"], "bams", "{sample, (?:(?!_not_sorted$).)*}.bam")
+    shell: 'samtools sort {input} -o {output}'
 
 
 rule multiqc:
     input: fastqc_files
     output: os.path.join(config["work_dir"], "multiqc_report.html")
-    shell: 'multiqc -o "{config.work_dir}" "{fastqc_dir}"'
+    shell: 'multiqc -o "{config[work_dir]}" "{fastqc_dir}"'
 
 
 rule fastqc:
     input: os.path.join(config["fastq_dir"], "{sample}.fastq")
-    output: os.path.join(fastqc_dir, "{sample}.html")
+    output: os.path.join(fastqc_dir, "{sample}_fastqc.html")
     params:
         output_dir=lambda wildcards, output: os.path.dirname(str(output))
     shell: 'fastqc --outdir "{params.output_dir}" "{input}"'
