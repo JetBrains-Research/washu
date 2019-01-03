@@ -51,6 +51,15 @@ rule all:
     shell: 'echo {input}'
 
 
+rule align_single_sam:
+    input:
+        fastq=os.path.join(config["fastq_dir"], "{sample}.fastq"),
+        indexes=directory(os.path.join(config["work_dir"], "indexes"))
+    output: temp(os.path.join(config["work_dir"], "bams", "{sample}.sam"))
+    threads: 4
+    shell: 'bowtie -p {threads} -St -m 1 -v 3 --trim5 5 --best --strata {config[genome]} {input.fastq} {output}'
+
+
 rule align_paired_sam:
     input:
         first=os.path.join(config["fastq_dir"], "{sample}_1.fastq"),
