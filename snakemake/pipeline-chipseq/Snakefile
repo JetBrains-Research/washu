@@ -50,7 +50,9 @@ rule all:
     input:
         multiqc=os.path.join(config["work_dir"], "multiqc_report.html"),
         multiqc_bams=os.path.join(bams_dir, "multiqc_report.html"),
-        bws=lambda wildcards: expect_aligned_files(wildcards, bws_dir, "bw")
+        bws=lambda wildcards: expect_aligned_files(wildcards, bws_dir, "bw"),
+        bam_qc=lambda wildcards: expect_aligned_files(wildcards, "bam/qc", "phantom.tsv"),
+        bam_qc_pbc=lambda wildcards: expect_aligned_files(wildcards, "bam/qc", "pbc_nrf.tsv")
     shell: 'echo {input}'
 
 
@@ -163,3 +165,55 @@ rule index_bowtie:
         target=lambda wildcards, output: os.path.join(str(output), config["genome"])
     shell: 'mkdir -p {output} && '
            'bowtie-build {params.files_list} {params.target}'
+
+
+rule download_phantompeakqualtools:
+    output: directory("bin/phantompeakqualtools")
+    params:
+        targz="bin/phantompeakqualtools.tar.gz"
+    shell: 'curl --location '
+           'https://storage.googleapis.com/google-code-archive-downloads/v2/'
+           'code.google.com/phantompeakqualtools/ccQualityControl.v.1.1.tar.gz '
+           '--output {params.targz} && '
+           'tar xvf {params.targz}'
+
+
+rule bam_qc_phantom:
+    input:
+        ppqt_dir=rules.download_phantompeakqualtools.output,
+        bam="bams/{sample}.bam"
+    output: "bam/qc/{sample}.phantom.tsv"
+    params:
+        run_spp=lambda wildcards, input: os.path.join(str(input.ppqt_dir), "run_spp.R")
+    shell: 'Rscript {params.run_spp} -c={input.bam} -savp -out={output}'
+
+
+rule bam_to_pileup:
+    input: "bams/{sample}.bam"
+    output: temp("bams/pileup/{sample}.bed")
+    shell: 'bedtools bamtobed -i {input} > {output}'
+
+
+rule bam_qc_pbc_nrf:
+    input: rules.bam_to_pileup.output
+    output: "bam/qc/{sample}.pbc_nrf.tsv"
+    shadow: "minimal"
+    params:
+        tmp_dir="tmp"
+    shell: """
+(T=$'\\t'
+>&2 echo "TotalReadPairs${{T}}DistinctReadPairs${{T}}OneReadPair${{T}}TwoReadPairs${{T}}\
+NRF=Distinct/Total${{T}}PBC1=OnePair/Distinct${{T}}PBC2=OnePair/TwoPair"
+
+cat {input} | \
+    sort -k1,1 -k3,3n -k2,2n -k6,6 -T {params.tmp_dir} | \
+    awk -v OFS='\t' '{{print $1,$2,$3,$6}}' | uniq -c | \
+    awk 'BEGIN{{mt=0;m0=0;m1=0;m2=0}}
+    ($1==1){{m1=m1+1}} ($1==2){{m2=m2+1}} {{m0=m0+1}} {{mt=mt+$1}}
+    END{{
+        if (mt!=0){{m0_t=m0/mt}} else {{m0_t=-1.0}};
+        if (m0!=0){{m1_0=m1/m0}} else {{m1_0=-1.0}};
+        if (m2!=0){{m1_2=m1/m2}} else {{m1_2=-1.0}};
+        printf "%d\\t%d\\t%d\\t%d\\t%f\\t%f\\t%f\\n",mt,m0,m1,m2,m0_t,m1_0,m1_2;
+    }}) > {output}'
+"""
