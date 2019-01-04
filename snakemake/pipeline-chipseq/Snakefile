@@ -51,8 +51,9 @@ rule all:
         multiqc=os.path.join(config["work_dir"], "multiqc_report.html"),
         multiqc_bams=os.path.join(bams_dir, "multiqc_report.html"),
         bws=lambda wildcards: expect_aligned_files(wildcards, bws_dir, "bw"),
-        bam_qc=lambda wildcards: expect_aligned_files(wildcards, "bam/qc", "phantom.tsv"),
-        bam_qc_pbc=lambda wildcards: expect_aligned_files(wildcards, "bam/qc", "pbc_nrf.tsv")
+        bam_qc=lambda wildcards: expect_aligned_files(wildcards, "bams/qc", "phantom.tsv"),
+        bam_qc_pbc=lambda wildcards: expect_aligned_files(wildcards, "bams/qc", "pbc_nrf.tsv"),
+        bams_unique=expand("bams_unique/{sample}_unique.bam", sample=fastq_aligned_names(None))
     shell: 'echo {input}'
 
 
@@ -219,3 +220,27 @@ cat {input} | \
         printf "%d\\t%d\\t%d\\t%d\\t%f\\t%f\\t%f\\n",mt,m0,m1,m2,m0_t,m1_0,m1_2;
     }}') > {output}
 """
+
+
+rule download_picard:
+    output: "bin/picard.jar"
+    shell: 'curl --location https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar '
+           '--output {output}'
+
+
+rule bam_unique:
+    input:
+        bam="bams/{sample}.bam",
+        picard=rules.download_picard.output
+    output:
+        bam="bams_unique/{sample}_unique.bam",
+        metrics="bams_unique/{sample}_metrics.txt",
+        log="{sample}_picard.log"
+    params:
+        tmp_dir="tmp"
+    shadow: "minimal"
+    shell: 'mkdir -p tmp && '
+           'export _JAVA_OPTIONS="-Xmx1g" && '
+           'java -Djava.io.tmpdir="{params.tmp_dir}" -jar {input.picard} '
+           'MarkDuplicates REMOVE_DUPLICATES=true INPUT={input.bam} OUTPUT={output.bam} M={output.metrics} && '
+           'cat *.log > {output.log}'
