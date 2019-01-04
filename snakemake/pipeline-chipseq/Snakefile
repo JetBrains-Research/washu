@@ -79,7 +79,7 @@ rule clip_sort:
     shadow: "minimal"
     params:
         tmp_dir="tmp"
-    shell: 'mkdir -p {tmp_dir} && '
+    shell: 'mkdir -p {params.tmp_dir} && '
            'LC_COLLATE=C sort -k1,1 -k2,2n -T {params.tmp_dir} {input} > {output}'
 
 
