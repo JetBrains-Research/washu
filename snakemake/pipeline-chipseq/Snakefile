@@ -202,6 +202,7 @@ rule bam_qc_pbc_nrf:
     params:
         tmp_dir="tmp"
     shell: """
+mkdir -p {params.tmp_dir} &&
 (T=$'\\t'
 >&2 echo "TotalReadPairs${{T}}DistinctReadPairs${{T}}OneReadPair${{T}}TwoReadPairs${{T}}\
 NRF=Distinct/Total${{T}}PBC1=OnePair/Distinct${{T}}PBC2=OnePair/TwoPair"
