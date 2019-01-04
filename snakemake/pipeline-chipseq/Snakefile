@@ -35,6 +35,7 @@ def expect_aligned_files(wildcards, directory, extension):
     return [os.path.join(directory, "{}.{}".format(filename, extension)) for filename in fastq_aligned_names(wildcards)]
 
 fastqc_dir = os.path.join(config["work_dir"], "fastqc")
+bams_dir = os.path.join(config["work_dir"], "bams")
 
 
 def fastqc_files(wildcards):
@@ -47,15 +48,25 @@ workdir: config["work_dir"]
 rule all:
     input:
         multiqc=os.path.join(config["work_dir"], "multiqc_report.html"),
-        bams=lambda wildcards: expect_aligned_files(wildcards, os.path.join(config["work_dir"], "bams"), "bam")
+        multiqc_bams=os.path.join(bams_dir, "multiqc_report.html")
     shell: 'echo {input}'
+
+
+rule multiqc_bams:
+    input: lambda wildcards: expect_aligned_files(wildcards, bams_dir, "bam")
+    output: os.path.join(bams_dir, "multiqc_report.html")
+#    params:
+#        output_dir=lambda wildcards, output: os.path.dirname(str(output))
+#    shell: 'multiqc "{params.output_dir}"'
+# uncomment when the logic is fixed
+    shell: 'touch {output}'
 
 
 rule align_single_sam:
     input:
         fastq=os.path.join(config["fastq_dir"], "{sample}.fastq"),
         indexes=directory(os.path.join(config["work_dir"], "indexes"))
-    output: temp(os.path.join(config["work_dir"], "bams", "{sample}.sam"))
+    output: temp(os.path.join(bams_dir, "{sample}.sam"))
     threads: 4
     shell: 'bowtie -p {threads} -St -m 1 -v 3 --trim5 5 --best --strata {config[genome]} {input.fastq} {output}'
 
@@ -65,20 +76,20 @@ rule align_paired_sam:
         first=os.path.join(config["fastq_dir"], "{sample}_1.fastq"),
         second=os.path.join(config["fastq_dir"], "{sample}_2.fastq"),
         indexes=directory(os.path.join(config["work_dir"], "indexes"))
-    output: temp(os.path.join(config["work_dir"], "bams", "{sample}.sam"))
+    output: temp(os.path.join(bams_dir, "{sample}.sam"))
     threads: 4
     shell: 'bowtie -p {threads} -St -m 1 -v 3 --trim5 5 --best --strata {config[genome]} -1 {input.first} -2 {input.second} {output}'
 
 
 rule sam_to_unsorted_bam:
-    input: os.path.join(config["work_dir"], "bams", "{sample}.sam")
-    output: temp(os.path.join(config["work_dir"], "bams", "{sample}_not_sorted.bam"))
+    input: os.path.join(bams_dir, "{sample}.sam")
+    output: temp(os.path.join(bams_dir, "{sample}_not_sorted.bam"))
     shell: 'samtools view -bS {input} -o {output}'
 
 
 rule sort_bam:
-    input: os.path.join(config["work_dir"], "bams", "{sample}_not_sorted.bam")
-    output: os.path.join(config["work_dir"], "bams", "{sample, (?:(?!_not_sorted$).)*}.bam")
+    input: os.path.join(bams_dir, "{sample}_not_sorted.bam")
+    output: os.path.join(bams_dir, "{sample, (?:(?!_not_sorted$).)*}.bam")
     shell: 'samtools sort {input} -o {output}'
 
 
