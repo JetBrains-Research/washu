@@ -7,3 +7,10 @@ dependencies:
   - bowtie2=2.3.4.3
   - fastqc=0.11.8
   - multiqc=1.6
+  - bedtools=2.26.0
+  - rseg=0.4.9
+  - samtools=1.7
+  - star=2.6.0b
+  - ucsc-bedclip=357
+  - ucsc-bedgraphtobigwig=357
+  - ucsc-bigwigaverageoverbed=357

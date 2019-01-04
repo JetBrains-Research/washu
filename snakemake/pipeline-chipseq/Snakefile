@@ -36,6 +36,7 @@ def expect_aligned_files(wildcards, directory, extension):
 
 fastqc_dir = os.path.join(config["work_dir"], "fastqc")
 bams_dir = os.path.join(config["work_dir"], "bams")
+bws_dir = os.path.join(config["work_dir"], "bws")
 
 
 def fastqc_files(wildcards):
@@ -48,8 +49,54 @@ workdir: config["work_dir"]
 rule all:
     input:
         multiqc=os.path.join(config["work_dir"], "multiqc_report.html"),
-        multiqc_bams=os.path.join(bams_dir, "multiqc_report.html")
+        multiqc_bams=os.path.join(bams_dir, "multiqc_report.html"),
+        bws=lambda wildcards: expect_aligned_files(wildcards, bws_dir, "bw")
     shell: 'echo {input}'
+
+
+rule download_chrom_sizes:
+    output: "{}.chrom.sizes".format(config["genome"])
+    shell: 'wget -nc -O {output} http://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/bigZips/{config[genome]}.chrom.sizes'
+
+
+rule download_fa:
+    output: directory(os.path.join(config["work_dir"], "fa"))
+    shell: 'rsync -avzP --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/chromosomes/ {output} && '
+           'gunzip -f {output}/*.fa.gz'
+
+
+rule clip_to_bw:
+    input:
+        clip=os.path.join(bws_dir, "{sample}_sorted.clip"),
+        cs=rules.download_chrom_sizes.output
+    output: os.path.join(bws_dir, "{sample}.bw")
+    shell: 'bedGraphToBigWig {input.clip} {input.cs} {output}'
+
+
+rule clip_sort:
+    input: os.path.join(bws_dir, "{sample}.clip")
+    output: temp(os.path.join(bws_dir, "{sample}_sorted.clip"))
+    shadow: "minimal"
+    params:
+        tmp_dir="tmp"
+    shell: 'mkdir -p {tmp_dir} && '
+           'LC_COLLATE=C sort -k1,1 -k2,2n -T {params.tmp_dir} {input} > {output}'
+
+
+rule bdg_to_clip:
+    input:
+        bdg=os.path.join(bws_dir, "{sample}.bdg"),
+        cs=rules.download_chrom_sizes.output
+    output: temp(os.path.join(bws_dir, "{sample}.clip"))
+    shell: 'bedtools slop -i {input.bdg} -g {input.cs} -b 0 | bedClip stdin {input.cs} {output}'
+
+
+rule bam_to_bdg:
+    input:
+        bam=os.path.join(bams_dir, "{sample}.bam"),
+        cs=rules.download_chrom_sizes.output
+    output: temp(os.path.join(bws_dir, "{sample}.bdg"))
+    shell: 'bedtools genomecov -ibam {input.bam} -bg -g {input.cs} > {output}'
 
 
 rule multiqc_bams:
@@ -78,7 +125,8 @@ rule align_paired_sam:
         indexes=directory(os.path.join(config["work_dir"], "indexes"))
     output: temp(os.path.join(bams_dir, "{sample}.sam"))
     threads: 4
-    shell: 'bowtie -p {threads} -St -m 1 -v 3 --trim5 5 --best --strata {config[genome]} -1 {input.first} -2 {input.second} {output}'
+    shell: 'bowtie -p {threads} -St -m 1 -v 3 --trim5 5 --best --strata {config[genome]} '
+           '-1 {input.first} -2 {input.second} {output}'
 
 
 rule sam_to_unsorted_bam:
@@ -115,15 +163,3 @@ rule index_bowtie:
         target=lambda wildcards, output: os.path.join(str(output), config["genome"])
     shell: 'mkdir -p {output} && '
            'bowtie-build {params.files_list} {params.target}'
-
-
-rule download_chrom_sizes:
-    output: os.path.join(config["work_dir"], "fa", "{}.chrom.sizes".format(config["genome"]))
-    shell: 'wget -nc http://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/bigZips/{config[genome]}.chrom.sizes'
-
-
-rule download_fa:
-    output: directory(os.path.join(config["work_dir"], "fa"))
-    shell: 'rsync -avzP --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/chromosomes/ {output} && '
-           'gunzip -f {output}/*.fa.gz'
-
