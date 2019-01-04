@@ -170,8 +170,9 @@ rule index_bowtie:
 rule download_phantompeakqualtools:
     output: directory("bin/phantompeakqualtools")
     params:
-        targz="bin/phantompeakqualtools.tar.gz"
-    shell: 'curl --location '
+        targz="phantompeakqualtools.tar.gz"
+    shell: 'cd bin && '
+           'curl --location '
            'https://storage.googleapis.com/google-code-archive-downloads/v2/'
            'code.google.com/phantompeakqualtools/ccQualityControl.v.1.1.tar.gz '
            '--output {params.targz} && '
