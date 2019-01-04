@@ -183,7 +183,7 @@ rule bam_qc_phantom:
     input:
         ppqt_dir=rules.download_phantompeakqualtools.output,
         bam="bams/{sample}.bam"
-    output: "bam/qc/{sample}.phantom.tsv"
+    output: "bams/qc/{sample}.phantom.tsv"
     params:
         run_spp=lambda wildcards, input: os.path.join(str(input.ppqt_dir), "run_spp.R")
     shell: 'Rscript {params.run_spp} -c={input.bam} -savp -out={output}'
@@ -197,7 +197,7 @@ rule bam_to_pileup:
 
 rule bam_qc_pbc_nrf:
     input: rules.bam_to_pileup.output
-    output: "bam/qc/{sample}.pbc_nrf.tsv"
+    output: "bams/qc/{sample}.pbc_nrf.tsv"
     shadow: "minimal"
     params:
         tmp_dir="tmp"
