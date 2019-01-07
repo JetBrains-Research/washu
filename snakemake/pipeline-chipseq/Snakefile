@@ -224,7 +224,7 @@ cat {input} | \
 
 rule download_picard:
     output: "bin/picard.jar"
-    shell: 'curl --location https://github.com/broadinstitute/picard/releases/download/2.10.7/picard.jar '
+    shell: 'curl --location https://github.com/broadinstitute/picard/releases/download/2.18.22/picard.jar '
            '--output {output}'
 
 
