@@ -14,4 +14,3 @@ dependencies:
   - ucsc-bedclip=357
   - ucsc-bedgraphtobigwig=357
   - ucsc-bigwigaverageoverbed=357
-  - macs2=2.1.1.20160309
