@@ -47,6 +47,15 @@ def with_log(cmd):
     return "({cmd}) &> {{log}}".format(cmd=cmd)
 
 
+def macs_species(genome):
+    'Convert genome to macs2 species encoding'
+    if re.match('^hg[0-9]+$', genome):
+        return 'hs'
+    elif re.match('^mm[0-9]+$', genome):
+        return 'mm'
+    raise Exception('Unknown species {}'.format(genome))
+
+
 workdir: config["work_dir"]
 
 
@@ -57,7 +66,8 @@ rule all:
         bws=lambda wildcards: expect_aligned_files(wildcards, bws_dir, "bw"),
         bam_qc=lambda wildcards: expect_aligned_files(wildcards, "bams/qc", "phantom.tsv"),
         bam_qc_pbc=lambda wildcards: expect_aligned_files(wildcards, "bams/qc", "pbc_nrf.tsv"),
-        bams_unique=expand("bams_unique/{sample}_unique.bam", sample=fastq_aligned_names(None))
+        bams_unique=expand("bams_unique/{sample}_unique.bam", sample=fastq_aligned_names(None)),
+        macs2_peaks=expand("macs2_broad_0.1/{sample}_broad_0.1_peaks.broadPeak", sample=fastq_aligned_names(None))
     shell: 'echo {input}'
 
 
@@ -248,4 +258,21 @@ rule bam_unique:
 mkdir -p {params.tmp_dir};
 java -Djava.io.tmpdir="{params.tmp_dir}" -Xmx2g -XX:ParallelGCThreads={params.gct_threads} -jar {input.picard}
 MarkDuplicates REMOVE_DUPLICATES=true INPUT={input.bam} OUTPUT={output.bam} M={output.metrics}
+""")
+
+
+rule call_peaks_macs2_broad:
+    input: "bams/{sample}.bam"
+    params:
+        tmp_dir="tmp",
+        id="{sample}_broad_0.1",
+        species=macs_species(config["genome"])
+    output: "macs2_broad_0.1/{sample}_broad_0.1_peaks.broadPeak"
+    shadow: "minimal"
+    log: "macs2_broad_0.1/{sample}_broad_0.1_macs2.log"
+    shell: with_log("""
+mkdir -p macs2_broad_0.1;
+cd macs2_broad_0.1;
+mkdir -p {params.tmp_dir};
+macs2 callpeak --tempdir {params.tmp_dir} -t {input} -f BAM -g {params.species} -n {params.id} --broad --broad-cutoff 0.1
 """)
