@@ -43,6 +43,10 @@ def fastqc_files(wildcards):
     return expect_files(wildcards, fastqc_dir, "html", "_fastqc")
 
 
+def with_log(cmd):
+    return "({cmd}) &> {{log}}".format(cmd=cmd)
+
+
 workdir: config["work_dir"]
 
 
@@ -234,13 +238,14 @@ rule bam_unique:
         picard=rules.download_picard.output
     output:
         bam="bams_unique/{sample}_unique.bam",
-        metrics="bams_unique/{sample}_metrics.txt",
-        log="{sample}_picard.log"
+        metrics="bams_unique/{sample}_metrics.txt"
+    threads: 4
     params:
-        tmp_dir="tmp"
+        tmp_dir="tmp", gct_threads=lambda wildcards, threads: threads - 1
+    log: "bams_unique/{sample}_picard.log"
     shadow: "minimal"
-    shell: 'mkdir -p tmp && '
-           'export _JAVA_OPTIONS="-Xmx1g" && '
-           'java -Djava.io.tmpdir="{params.tmp_dir}" -jar {input.picard} '
-           'MarkDuplicates REMOVE_DUPLICATES=true INPUT={input.bam} OUTPUT={output.bam} M={output.metrics} && '
-           'cat *.log > {output.log}'
+    shell: with_log("""
+mkdir -p {params.tmp_dir};
+java -Djava.io.tmpdir="{params.tmp_dir}" -Xmx2g -XX:ParallelGCThreads={params.gct_threads} -jar {input.picard}
+MarkDuplicates REMOVE_DUPLICATES=true INPUT={input.bam} OUTPUT={output.bam} M={output.metrics}
+""")
