@@ -277,5 +277,5 @@ mkdir -p {params.tmp_dir};
 set +u;
 source activate macs2;
 set -u;
-macs2 callpeak --tempdir {params.tmp_dir} -t {input} -f BAM -g {params.species} -n {params.id} --broad --broad-cutoff 0.1
+macs2 callpeak --tempdir {params.tmp_dir} -t ../{input} -f BAM -g {params.species} -n {params.id} --broad --broad-cutoff 0.1
 """)
