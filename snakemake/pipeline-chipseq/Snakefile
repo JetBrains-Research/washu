@@ -56,6 +56,25 @@ def macs_species(genome):
     raise Exception('Unknown species {}'.format(genome))
 
 
+def effective_genome_fraction(genome, chrom_sizes_path):
+    """From MACS2 documentation:
+    The default hs 2.7e9 is recommended for UCSC human hg18 assembly.
+    Here are all precompiled parameters for effective genome size:
+    hs: 2.7e9
+    mm: 1.87e9
+    ce: 9e7
+    dm: 1.2e8"""
+    with open(chrom_sizes_path, 'r') as chrom_sizes:
+        chrom_length = sum([int(line.split('\t')[1]) for line in chrom_sizes if 'chr_' not in line])
+    if genome.startswith('mm'):
+        size = 1.87e9
+    elif genome.startswith('hg'):
+        size = 2.7e9
+    else:
+        raise Exception('Unknown species {}'.format(genome))
+    return size / chrom_length
+
+
 workdir: config["work_dir"]
 
 
@@ -69,6 +88,7 @@ rule all:
         bams_unique=expand("bams_unique/{sample}_unique.bam", sample=fastq_aligned_names(None)),
         macs2_broad_peaks=expand("macs2_broad_0.1/{sample}_broad_0.1_peaks.broadPeak", sample=fastq_aligned_names(None)),
         macs2_peaks=expand("macs2_q0.05/{sample}_q0.05_peaks.narrowPeak", sample=fastq_aligned_names(None)),
+        sicer_peaks=expand("sicer/{sample}-W200-G600-E100.scoreisland", sample=fastq_aligned_names(None))
     shell: 'echo {input}'
 
 
@@ -299,4 +319,24 @@ set +u;
 source activate macs2;
 set -u;
 macs2 callpeak --tempdir {params.tmp_dir} -t ../{input} -f BAM -g {params.species} -n {params.id} -q 0.05
+    """)
+
+
+rule call_peaks_sicer:
+    input:
+        bed="bams/pileup/{sample}.bed",
+        chrom_sizes=rules.download_chrom_sizes.output
+    output: "sicer/{sample}-W200-G600-E100.scoreisland"
+    params:
+        input_dir=lambda wildcards, input: os.path.dirname(str(input.bed)),
+        output_dir=lambda wildcards, output: os.path.dirname(str(output)),
+        effective_genome_fraction=effective_genome_fraction(config["genome"], str(rules.download_chrom_sizes.output))
+    shadow: "minimal"
+    log: "sicer/{sample}_sicer.log"
+    shell: with_log("""
+set +u;
+source activate macs2;
+set -u;
+SICER-rb.sh {params.input_dir} {input.bed} {params.output_dir} {config[genome]} 1 200 \
+150 {params.effective_genome_fraction} 600 100
     """)
