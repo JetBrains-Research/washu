@@ -67,7 +67,8 @@ rule all:
         bam_qc=lambda wildcards: expect_aligned_files(wildcards, "bams/qc", "phantom.tsv"),
         bam_qc_pbc=lambda wildcards: expect_aligned_files(wildcards, "bams/qc", "pbc_nrf.tsv"),
         bams_unique=expand("bams_unique/{sample}_unique.bam", sample=fastq_aligned_names(None)),
-        macs2_peaks=expand("macs2_broad_0.1/{sample}_broad_0.1_peaks.broadPeak", sample=fastq_aligned_names(None))
+        macs2_broad_peaks=expand("macs2_broad_0.1/{sample}_broad_0.1_peaks.broadPeak", sample=fastq_aligned_names(None)),
+        macs2_peaks=expand("macs2_q0.05/{sample}_q0.05_peaks.narrowPeak", sample=fastq_aligned_names(None)),
     shell: 'echo {input}'
 
 
@@ -279,3 +280,23 @@ source activate macs2;
 set -u;
 macs2 callpeak --tempdir {params.tmp_dir} -t ../{input} -f BAM -g {params.species} -n {params.id} --broad --broad-cutoff 0.1
 """)
+
+
+rule call_peaks_macs2:
+    input: "bams/{sample}.bam"
+    params:
+        tmp_dir="tmp",
+        id="{sample}_q0.05",
+        species=macs_species(config["genome"])
+    output: "macs2_q0.05/{sample}_q0.05_peaks.narrowPeak"
+    shadow: "minimal"
+    log: "macs2_q0.05/{sample}_q0.05_macs2.log"
+    shell: with_log("""
+mkdir -p macs2_q0.05;
+cd macs2_q0.05;
+mkdir -p {params.tmp_dir};
+set +u;
+source activate macs2;
+set -u;
+macs2 callpeak --tempdir {params.tmp_dir} -t ../{input} -f BAM -g {params.species} -n {params.id} -q 0.05
+    """)
