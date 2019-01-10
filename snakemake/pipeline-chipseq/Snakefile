@@ -329,8 +329,8 @@ rule call_peaks_sicer:
     output: "sicer/{sample}-W200-G600-E100.scoreisland"
     params:
         input_dir=lambda wildcards, input: os.path.dirname(str(input.bed)),
+        input_name=lambda wildcards, input: os.path.basename(str(input.bed)),
         output_dir=lambda wildcards, output: os.path.dirname(str(output)),
-        input_name=lambda wildcards, input: os.path.basename(str(input)),
         effective_genome_fraction=effective_genome_fraction(config["genome"], str(rules.download_chrom_sizes.output))
     shadow: "minimal"
     log: "sicer/{sample}_sicer.log"
