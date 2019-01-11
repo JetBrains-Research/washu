@@ -136,7 +136,7 @@ rule bam_to_bdg:
 rule multiqc_bams:
     input: lambda wildcards: expect_aligned_files(wildcards, "bams", "log")
     output: "bams/multiqc_report.html"
-    shell: 'multiqc bams'
+    shell: 'multiqc -f bams'
 
 
 rule align_single_sam:
@@ -177,7 +177,7 @@ rule sort_bam:
 rule multiqc:
     input: lambda wildcards: expect_files(wildcards, "fastqc", "html", "_fastqc")
     output: "multiqc_report.html"
-    shell: 'multiqc -o . fastqc'
+    shell: 'multiqc -fo . fastqc'
 
 
 rule fastqc:
@@ -321,6 +321,7 @@ rule call_peaks_sicer:
         chrom_sizes=rules.download_chrom_sizes.output
     output: "sicer/{sample}-W200-G600-E100.scoreisland"
     params:
+        input_filename=lambda wildcards, input: os.path.basename(str(input.bed)),
         effective_genome_fraction=effective_genome_fraction(config["genome"], str(rules.download_chrom_sizes.output))
     shadow: "minimal"
     log: "sicer/{sample}_sicer.log"
@@ -328,6 +329,6 @@ rule call_peaks_sicer:
 set +u;
 source activate macs2;
 set -u;
-SICER-rb.sh bams/pileup {sample}.bed sicer {config[genome]} 1 200 \
+SICER-rb.sh bams/pileup {params.input_filename} sicer {config[genome]} 1 200 \
 150 {params.effective_genome_fraction} 600 100
     """)
