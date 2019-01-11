@@ -43,8 +43,11 @@ def fastqc_files(wildcards):
     return expect_files(wildcards, fastqc_dir, "html", "_fastqc")
 
 
-def with_log(cmd):
-    return "({cmd}) &> {{log}}".format(cmd=cmd)
+def with_log(cmd, append=False):
+    if append:
+        return "({cmd}) &>> {{log}}".format(cmd=cmd)
+    else:
+        return "({cmd}) &> {{log}}".format(cmd=cmd)
 
 
 def macs_species(genome):
@@ -138,13 +141,11 @@ rule bam_to_bdg:
 
 
 rule multiqc_bams:
-    input: lambda wildcards: expect_aligned_files(wildcards, bams_dir, "bam")
-    output: os.path.join(bams_dir, "multiqc_report.html")
-#    params:
-#        output_dir=lambda wildcards, output: os.path.dirname(str(output))
-#    shell: 'multiqc "{params.output_dir}"'
-# uncomment when the logic is fixed
-    shell: 'touch {output}'
+    input: lambda wildcards: expect_aligned_files(wildcards, "bams", "log")
+    output: "bams/multiqc_report.html"
+    params:
+        output_dir="bams"
+    shell: 'multiqc "{params.output_dir}"'
 
 
 rule align_single_sam:
@@ -153,6 +154,7 @@ rule align_single_sam:
         indexes=directory(os.path.join(config["work_dir"], "indexes"))
     output: temp(os.path.join(bams_dir, "{sample}.sam"))
     threads: 4
+    log: "bams/{sample}.log"
     shell: 'bowtie -p {threads} -St -m 1 -v 3 --trim5 5 --best --strata {config[genome]} {input.fastq} {output}'
 
 
@@ -163,20 +165,24 @@ rule align_paired_sam:
         indexes=directory(os.path.join(config["work_dir"], "indexes"))
     output: temp(os.path.join(bams_dir, "{sample}.sam"))
     threads: 4
-    shell: 'bowtie -p {threads} -St -m 1 -v 3 --trim5 5 --best --strata {config[genome]} '
-           '-1 {input.first} -2 {input.second} {output}'
+    log: "bams/{sample}.log"
+    shell: with_log("""
+bowtie -p {threads} -St -m 1 -v 3 --trim5 5 --best --strata {config[genome]} -1 {input.first} -2 {input.second} {output}
+""")
 
 
 rule sam_to_unsorted_bam:
     input: os.path.join(bams_dir, "{sample}.sam")
     output: temp(os.path.join(bams_dir, "{sample}_not_sorted.bam"))
-    shell: 'samtools view -bS {input} -o {output}'
+    log: "bams/{sample}.log"
+    shell: with_log('samtools view -bS {input} -o {output}', append=True)
 
 
 rule sort_bam:
     input: os.path.join(bams_dir, "{sample}_not_sorted.bam")
     output: os.path.join(bams_dir, "{sample, (?:(?!_not_sorted$).)*}.bam")
-    shell: 'samtools sort {input} -o {output}'
+    log: "bams/{sample}.log"
+    shell: with_log('samtools sort {input} -o {output}', append=True)
 
 
 rule multiqc:
