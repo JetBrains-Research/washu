@@ -90,12 +90,14 @@ rule all:
 
 rule download_chrom_sizes:
     output: "{}.chrom.sizes".format(config["genome"])
-    shell: 'wget -nc -O {output} http://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/bigZips/{config[genome]}.chrom.sizes'
+    shell: 'wget -nc -O {output} '
+           'http://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/bigZips/{config[genome]}.chrom.sizes'
 
 
 rule download_fa:
     output: directory("fa")
-    shell: 'rsync -avzP --exclude="*.txt" rsync://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/chromosomes/ {output} && '
+    shell: 'rsync -avz --partial --exclude="*.txt" '
+           'rsync://hgdownload.cse.ucsc.edu/goldenPath/{config[genome]}/chromosomes/ {output} && '
            'gunzip -f {output}/*.fa.gz'
 
 
