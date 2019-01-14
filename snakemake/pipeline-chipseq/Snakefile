@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-
-from glob import glob;
-import os;
+import re
+from glob import glob
+import os
 
 
 def fastq_files(wildcards):
@@ -175,6 +175,7 @@ rule sort_bam:
     output: "bams/{sample, (?:(?!_not_sorted$).)*}.bam"
     shell: 'samtools sort {input} -o {output}'
 
+sam_to_unsorted_bam > sort_bam
 
 rule multiqc:
     input: lambda wildcards: expect_files(wildcards, "fastqc", "html", "_fastqc")
@@ -217,7 +218,7 @@ rule bam_qc_phantom:
     output: "bams/qc/{sample}.phantom.tsv"
     params:
         run_spp=lambda wildcards, input: os.path.join(str(input.ppqt_dir), "run_spp.R")
-    shell: 'Rscript {params.run_spp} -c={input.bam} -savp -out={output}'
+    shell: 'Rscript {params.run_spp} -c={input.bam} -savp -out={output} -rf'
 
 
 rule bam_to_pileup:
