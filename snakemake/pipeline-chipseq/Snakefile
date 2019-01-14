@@ -175,7 +175,6 @@ rule sort_bam:
     output: "bams/{sample, (?:(?!_not_sorted$).)*}.bam"
     shell: 'samtools sort {input} -o {output}'
 
-sam_to_unsorted_bam > sort_bam
 
 rule multiqc:
     input: lambda wildcards: expect_files(wildcards, "fastqc", "html", "_fastqc")
