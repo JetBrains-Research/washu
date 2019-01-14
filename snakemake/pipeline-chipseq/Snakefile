@@ -138,7 +138,7 @@ rule bam_to_bdg:
 rule multiqc_bams:
     input: lambda wildcards: expect_aligned_files(wildcards, "bams", "log")
     output: "bams/multiqc_report.html"
-    shell: 'multiqc -f bams'
+    shell: 'multiqc -fo bams bams'
 
 
 rule align_single_sam:
