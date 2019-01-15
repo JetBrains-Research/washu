@@ -272,8 +272,9 @@ rule bam_unique:
     shadow: "minimal"
     shell: with_log("""
 mkdir -p {params.tmp_dir};
-java -Djava.io.tmpdir="{params.tmp_dir}" -Xmx2g -XX:ParallelGCThreads={params.gct_threads} -jar {input.picard}
-MarkDuplicates REMOVE_DUPLICATES=true INPUT={input.bam} OUTPUT={output.bam} M={output.metrics}
+java -Djava.io.tmpdir="{params.tmp_dir}" -Xmx2g -XX:ParallelGCThreads={params.gct_threads} \
+-jar {input.picard} MarkDuplicates REMOVE_DUPLICATES=true \
+INPUT={input.bam} OUTPUT={output.bam} M={output.metrics}
     """)
 
 
