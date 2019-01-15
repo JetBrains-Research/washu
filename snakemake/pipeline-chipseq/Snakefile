@@ -353,5 +353,5 @@ rule call_peaks_span:
     threads: 4
     log: "span/logs/{sample}_0.01_5.log"
     shell: 'java -Xmx8G -jar {input.span} analyze -t {input.bam} --chrom.sizes {input.chrom_sizes} '
-           '--fdr 0.01 --gap 5 --peaks {wildcards.sample}_0.01_5.peak '
+           '--fdr 0.01 --gap 5 --peaks {output} '
            '--workdir span --threads {threads}'
