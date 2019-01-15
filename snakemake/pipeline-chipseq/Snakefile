@@ -84,7 +84,8 @@ rule all:
         bams_unique=expand("bams_unique/{sample}_unique.bam", sample=fastq_aligned_names(None)),
         macs2_broad_peaks=expand("macs2_broad_0.1/{sample}_broad_0.1_peaks.broadPeak", sample=fastq_aligned_names(None)),
         macs2_peaks=expand("macs2_q0.05/{sample}_q0.05_peaks.narrowPeak", sample=fastq_aligned_names(None)),
-        sicer_peaks=expand("sicer/{sample}-W200-G600-E100.scoreisland", sample=fastq_aligned_names(None))
+        sicer_peaks=expand("sicer/{sample}-W200-G600-E100.scoreisland", sample=fastq_aligned_names(None)),
+        span_peaks=expand("span/{sample}_0.01_5.peak", sample=fastq_aligned_names(None))
     shell: 'echo {input}'
 
 
@@ -335,3 +336,22 @@ set -u;
 SICER-rb.sh bams/pileup {params.input_filename} sicer {config[genome]} 1 200 \
 150 {params.effective_genome_fraction} 600 100
     """)
+
+
+rule download_span:
+    output: "bin/span.jar"
+    shell: 'curl --location https://download.jetbrains.com/biolabs/span/span-0.9.1.4601.jar '
+           '--output {output}'
+
+
+rule call_peaks_span:
+    input:
+        span=rules.download_span.output,
+        chrom_sizes=rules.download_chrom_sizes.output,
+        bam="bams/{sample}.bam"
+    output: "span/{sample}_0.01_5.peak"
+    threads: 4
+    log: "span/logs/{sample}_0.01_5.log"
+    shell: 'java -Xmx8G -jar {input.span} analyze -t {input.bam} --chrom.sizes {input.chrom_sizes} '
+           '--fdr 0.01 --gap 5 --peaks {wildcards.sample}_0.01_5.peak '
+           '--workdir span --threads {threads}'
