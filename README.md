@@ -99,7 +99,7 @@ Or launch them locally:
 cd <project_path>
 
 # General tests
-docker run -v $(pwd):/washu -t -i biolabs/washu /bin/bash -c 
+docker run -v $(pwd):/washu -t -i biolabs/washu /bin/bash -c \
     "source activate py3.5 && cd /washu && bash test.sh"
 
 # ChIP-Seq Pipeline tests
