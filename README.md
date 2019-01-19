@@ -2,20 +2,35 @@ License [![license](https://img.shields.io/github/license/mashape/apistatus.svg)
 Tests [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_Washu)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Washu&guest=1)
 ChIP-Seq Pipeline tests [![long tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Epigenome_Tools_WashuPipelineTests)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_WashuPipelineTests&guest=1)  
 
-Technical pipelines
-===================
-Technical pipelines for ChIP-Seq and RNA-Seq processing on Portable Batch System (`qsub`) or local machines.
-ChIP-Seq pipeline were used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data analysis.
+Pipelines
+=========
+Scalable and reproducible technical pipelines for ChIP-Seq and RNA-Seq processing on Portable Batch System (`qsub`) or local machines.\
+ChIP-Seq pipeline was used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data analysis.
+
+* `pipeline_chipseq.py` - Pipeline for batch ChIP-Seq processing, including QC, alignment, peak calling
+* `pipeline_tf.py`      - Pipeline for batch Transcription Factor ChIP-Seq processing
+* `pipeline_rnaseq.py`  - Pipeline for batch RNA-Seq processing, including QC, alignment, quantification
 
 How do I launch the ChIP-Seq pipeline?
---------------------------
+--------------------------------------
 Follow these instructions to launch ChIP-Seq pipeline:
 * Configure environment, see **Requirements** section
 * Place all the `.fastq` files to a single `<FASTQ_FOLDER>`
 * Create `<INDEXES>` folder to store all the indexes required
 * Launch the pipeline with desired `<genome>`, e.g. `mm9` or `hg19` 
 ```bash
-python pipeline_chipseq.py <FASTQ_FOLDER> <INDEXES> <genome>
+python3 pipeline_chipseq.py <FASTQ_FOLDER> <INDEXES> <genome>
+```
+
+How do I launch the RNA-Seq pipeline?
+-------------------------------------
+Follow these instructions to launch RNA-Seq pipeline:
+* Configure environment, see **Requirements** section
+* Place all the `.fastq` files to a single `<FASTQ_FOLDER>`
+* Create `<INDEXES>` folder to store all the indexes required
+* Launch the pipeline with desired `<genome>`, e.g. `mm9` or `hg19` 
+```bash
+python3 pipeline_rnaseq.py <FASTQ_FOLDER> <INDEXES> <genome>
 ```
 
 Requirements
@@ -53,35 +68,23 @@ tar xvf ~/phantompeakqualtools.tar.gz
 ```
 * Download and extract [SPAN](https://artyomovlab.wustl.edu/aging/span.html):
 ```bash
-curl --location https://download.jetbrains.com/biolabs/span/span-0.8.0.4533.jar \
+curl --location https://download.jetbrains.com/biolabs/span/span-0.9.2.4618.jar \
     --output ~/span.jar 
 ```
 
-Project
--------
-
+Project structure
+-----------------
 * `/bed`            - BED files manipulations - intersection, ChromHMM enrichment, closes gene, etc.
 * `/docker`         - Docker configuration files with tools and test data. See Tests section.
 * `/downstream`     - Scripts for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data downstream analysis.
-* `/parallel`       - Scripts for parallel execution of Portable Batch System (`qsub`) or on local machine.
+* `/parallel`       - Scripts for parallel execution of Portable Batch System (`qsub`) or on local machine. Parallelism level on local machine can be configured via **WASHU_PARALLELISM** environment variable. 
 * `/scripts`        - QC, Visualization, BAM conversions, Reads In Peaks, etc.
 * `/test`           - Tests for pipelines.
 
-Batch processing
----------------- 
-All the scripts from `/parallel` are suitable to work with Portable Batch System and on local machine.
-Parallelism level on local machine can be configured via **WASHU_PARALLELISM** environment variable.
- 
-Pipelines
----------
-* `pipeline_chipseq.py` - Pipeline for batch ChIP-Seq processing, including QC, alignment, peak calling
-* `pipeline_tf.py`      - Pipeline for batch Transcription Factor ChIP-Seq processing
-* `pipeline_rnaseq.py`  - Pipeline for batch RNA-Seq processing, including QC, alignment, quantification
-
 Tests
 -----
-For testing purposes we prepared a dedicated Docker image with all the tools and sample data.
-Explore preconfigured Continuous Integration setup on [TeamCity](https://www.jetbrains.com/teamcity/?fromMenu):
+For testing purposes we prepared a dedicated Docker image with all the tools and sample data.\
+Explore preconfigured Continuous Integration configurations on [TeamCity](https://www.jetbrains.com/teamcity/?fromMenu):\
 * [ChIP-Seq Pipeline tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_WashuPipelineTests&guest=1)   
 * [Other tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Washu&guest=1)
 
@@ -95,7 +98,7 @@ Or launch them locally:
 # Change working directory
 cd <project_path>
 
-# Tests
+# General tests
 docker run -v $(pwd):/washu -t -i biolabs/washu /bin/bash -c 
     "source activate py3.5 && cd /washu && bash test.sh"
 
@@ -134,6 +137,6 @@ Data standards and pipelines
 
 Useful links
 ------------
-* Washington University in Saint Louis Maxim Artyomov LAB [homepage](https://artyomovlab.wustl.edu/site/) 
 * JetBrains Research BioLabs [homepage](https://research.jetbrains.org/groups/biolabs)
+* Washington University in Saint Louis Maxim Artyomov LAB [homepage](https://artyomovlab.wustl.edu/site/)
 * Review on ChIP-Seq, ATAC-Seq and DNAse-Seq processing in latex [format](https://github.com/olegs/bioinformatics)
