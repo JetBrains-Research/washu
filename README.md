@@ -107,6 +107,7 @@ docker run -v $(pwd):/washu -t -i biolabs/washu /bin/bash -c \
 docker run -v $(pwd):/washu -t -m 2G -e JAVA_OPTIONS="-Xmx1G" -i biolabs/washu /bin/bash -c \
     "source activate py3.5 && cd /washu && bash test_pipeline_chipseq.sh"
 ```
+Explore the results of ChIP-Seq pipeline in `out` folder after executing these tests. 
 
 Tools used
 ---------- 
