@@ -88,7 +88,7 @@ Parallelism level on local machine can be configured via **WASHU_PARALLELISM** e
 Tests
 -----
 For testing purposes we prepared a dedicated Docker image with all the tools and sample data.\
-Explore preconfigured Continuous Integration configurations on [TeamCity](https://www.jetbrains.com/teamcity/?fromMenu):\
+Explore preconfigured Continuous Integration configurations on [TeamCity](https://www.jetbrains.com/teamcity/?fromMenu):
 * [ChIP-Seq Pipeline tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_WashuPipelineTests&guest=1)   
 * [Other tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Washu&guest=1)
 
