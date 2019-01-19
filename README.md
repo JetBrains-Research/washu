@@ -6,7 +6,7 @@ Pipelines
 =========
 Scalable and reproducible technical pipelines for ChIP-Seq and RNA-Seq processing.\
 Parallel execution is supported with zero configuration on Portable Batch System (`qsub`) and local machines.\
-Reproducibility is guaranteed by testing all the steps in Docker environment using Continuous Integration.
+Reproducibility is guaranteed by automated testing of all the steps in Docker using Continuous Integration.
 
 ChIP-Seq pipeline was used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data analysis.
 
@@ -87,17 +87,15 @@ Parallelism level on local machine can be configured via **WASHU_PARALLELISM** e
 
 Tests
 -----
-For testing purposes we prepared a dedicated Docker image with all the tools and sample data.\
 Explore preconfigured Continuous Integration configurations on [TeamCity](https://www.jetbrains.com/teamcity/?fromMenu):
 * [ChIP-Seq Pipeline tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_WashuPipelineTests&guest=1)   
 * [Other tests](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Epigenome_Tools_Washu&guest=1)
 
-Fetch latest Docker image `biolabs/washu` with all the necessary tools for pipeline and test data.
+Fetch Docker image `biolabs/washu` with all the necessary tools for pipeline and test data.
 ```bash
 docker pull biolabs/washu
 ```
-
-Or launch them locally:
+Launch tests.
 ```bash
 # Change working directory
 cd <project_path>
