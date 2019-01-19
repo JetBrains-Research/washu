@@ -4,7 +4,10 @@ ChIP-Seq Pipeline tests [![long tests](http://teamcity.jetbrains.com/app/rest/bu
 
 Pipelines
 =========
-Scalable and reproducible technical pipelines for ChIP-Seq and RNA-Seq processing on Portable Batch System (`qsub`) or local machines.\
+Scalable and reproducible technical pipelines for ChIP-Seq and RNA-Seq processing.\
+Parallel execution is supported with zero configuration on Portable Batch System (`qsub`) and local machines.\
+Reproducibility is guaranteed by testing all the steps in Docker environment using Continuous Integration.
+
 ChIP-Seq pipeline was used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data analysis.
 
 * `pipeline_chipseq.py` - Pipeline for batch ChIP-Seq processing, including QC, alignment, peak calling
