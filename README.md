@@ -66,7 +66,7 @@ curl --location https://storage.googleapis.com/google-code-archive-downloads/v2/
     --output ~/phantompeakqualtools.tar.gz 
 tar xvf ~/phantompeakqualtools.tar.gz
 ```
-* Download and extract [SPAN](https://artyomovlab.wustl.edu/aging/span.html):
+* Download [SPAN](https://artyomovlab.wustl.edu/aging/span.html):
 ```bash
 curl --location https://download.jetbrains.com/biolabs/span/span-0.9.2.4618.jar \
     --output ~/span.jar 
