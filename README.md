@@ -77,7 +77,8 @@ Project structure
 * `/bed`            - BED files manipulations - intersection, ChromHMM enrichment, closes gene, etc.
 * `/docker`         - Docker configuration files with tools and test data. See Tests section.
 * `/downstream`     - Scripts for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data downstream analysis.
-* `/parallel`       - Scripts for parallel execution of Portable Batch System (`qsub`) or on local machine. Parallelism level on local machine can be configured via **WASHU_PARALLELISM** environment variable. 
+* `/parallel`       - Scripts for parallel execution of Portable Batch System (`qsub`) or on local machine. \
+Parallelism level on local machine can be configured via **WASHU_PARALLELISM** environment variable. 
 * `/scripts`        - QC, Visualization, BAM conversions, Reads In Peaks, etc.
 * `/test`           - Tests for pipelines.
 
