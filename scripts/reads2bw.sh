@@ -16,7 +16,7 @@ which bedtools &>/dev/null || {
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "bam2bw $@"
-if [ $# -lt 2 ]; then
+if [[ $# -lt 2 ]]; then
     echo "Need at least 2 parameters! <READS> <chrom.sizes> [<genes.gtf>]"
     echo "READS: bam, bed, bed.gz"
     exit 1
@@ -26,7 +26,7 @@ INPUT=$1
 CHROM_SIZES=$2
 GTF_FILE=$3
 
-if [ ! -f "${CHROM_SIZES}" ]; then
+if [[ ! -f "${CHROM_SIZES}" ]]; then
   echo "File not found: ${CHROM_SIZES}"
   exit 1
 fi
