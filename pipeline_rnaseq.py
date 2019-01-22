@@ -41,7 +41,7 @@ os.chdir(WORK_DIR)
 run_bash("parallel/bigwig.sh", CHROM_SIZES,
          os.path.join(INDEXES, 'star', GENOME + ".gtf"), WORK_DIR)
 move_forward(WORK_DIR, WORK_DIR + "_bws",
-             ["*.bw", "*.bw.log", "*.bdg"])
+             ["*.bw", "*bw.log", "*.bdg"])
 
 # Batch RSEM
 run_bash("parallel/index_rsem.sh", GENOME, INDEXES)
