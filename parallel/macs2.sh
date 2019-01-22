@@ -61,7 +61,7 @@ module load bedtools2
 echo "Macs2 TMPDIR: \${TMPDIR}"
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
-    macs2 callpeak --tempdir \${TMPDIR} -t ${FILE} -c ${INPUT} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
+    macs2 callpeak --tempdir \${TMPDIR} -t ${FILE} -c ${INPUT} -g ${SPECIES} -n ${ID} ${PARAMS}
 
     if [[ -f "${CHROM_SIZES}" ]]; then
         echo "Create fold enrichment signal track for ${FILE} and ${INPUT}"
@@ -70,7 +70,7 @@ if [ -f "${INPUT}" ]; then
     fi
 else
     echo "${FILE}: no control file"
-    macs2 callpeak --tempdir \${TMPDIR} -t ${FILE} -f BAM -g ${SPECIES} -n ${ID} ${PARAMS}
+    macs2 callpeak --tempdir \${TMPDIR} -t ${FILE} -g ${SPECIES} -n ${ID} ${PARAMS}
 fi
 SCRIPT
 
