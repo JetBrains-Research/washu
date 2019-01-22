@@ -47,4 +47,4 @@ move_forward(WORK_DIR, WORK_DIR + "_bws",
 run_bash("parallel/index_rsem.sh", GENOME, INDEXES)
 run_bash("parallel/rsem.sh", WORK_DIR, os.path.join(INDEXES, 'rsem', GENOME))
 move_forward(WORK_DIR, WORK_DIR + "_rsem",
-             ["*.results", "*.stat", "*rsem*"])
+             ["*.results", "*.stat", "*rsem*", "genome_*.tsv", "transcriptome_*.tsv"])
