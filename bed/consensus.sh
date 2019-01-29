@@ -50,9 +50,9 @@ set -- "${POSITIONAL[@]}"
 if [ "${HELP}" == "YES" ] || [ ${PERCENT} -lt 0 ] || [ ${COUNT} -lt 0 ]
     ([ ${PERCENT} -le 0 ] && [ ${COUNT} -le 0 ]) ||
     ([ ${PERCENT} -gt 0 ] && [ ${COUNT} -gt 0 ]); then
-  echo "Calculate consensus for peaks in selected folder"
+  echo "Calculate consensus for peaks from selected files"
   echo ""
-  echo "Usage: consensus.sh [OPTIONS] folder_path"
+  echo "Usage: consensus.sh [OPTIONS] files"
   echo ""
   echo "Options:"
   echo "  -p number       Consensus percent should be taken as number (cannot be used with -c)"
