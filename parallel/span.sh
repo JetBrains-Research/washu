@@ -7,7 +7,7 @@ source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch SPAN $@"
 if [[ $# -lt 5 ]]; then
-    echo "Need >= 5 parameters! <SPAN_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q> [<OUTPUT_DIR> [<GAP>]]"
+    echo "Need >= 5 parameters! <SPAN_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> [<BIN> <Q> <GAP> <OUTPUT_DIR>]"
     exit 1
 fi
 
@@ -18,14 +18,21 @@ fi
 WORK_DIR=$2
 GENOME=$3
 CHROM_SIZES=$4
-Q=$5
-OUTPUT_DIR=$6
-if [[ ! -d "$OUTPUT_DIR" ]]; then
-    OUTPUT_DIR=${WORK_DIR}
+BIN=$5
+if [[ -z "$BIN" ]]; then
+    BIN=200
+fi
+Q=$6
+if [[ -z "$Q" ]]; then
+    Q=0.1
 fi
 GAP=$7
 if [[ -z "$GAP" ]]; then
     GAP=5
+fi
+OUTPUT_DIR=$8
+if [[ ! -d "$OUTPUT_DIR" ]]; then
+    OUTPUT_DIR=${WORK_DIR}
 fi
 
 if [[ -z "JAVA_OPTIONS" ]]; then
@@ -41,7 +48,7 @@ do :
     echo "${FILE}: control file: ${INPUT}"
 
     NAME=${FILE%%.bam} # file name without extension
-    ID=${NAME}_${Q}_${GAP}
+    ID=${NAME}_${BIN}_${Q}_${GAP}
 
     if [[ ! -f ${ID}.peak ]]; then
         # Submit task
@@ -63,14 +70,14 @@ export _JAVA_OPTIONS="${JAVA_OPTIONS}"
 if [ -f "${INPUT}" ]; then
     echo "${FILE}: control file found: ${INPUT}"
     java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} -c ${INPUT} --chrom.sizes ${CHROM_SIZES} \
-        --fdr ${Q} --gap ${GAP} \
+        --bin ${BIN} --fdr ${Q} --gap ${GAP} \
         --peaks ${ID}.peak \
         --workdir ${OUTPUT_DIR} \
         --threads 4
 else
     echo "${FILE}: no control file"
     java -jar ${SPAN_JAR_PATH} analyze -t ${FILE} --chrom.sizes ${CHROM_SIZES} \
-        --fdr ${Q} --gap ${GAP} \
+        --bin ${BIN} --fdr ${Q} --gap ${GAP} \
         --peaks ${ID}.peak \
         --workdir ${OUTPUT_DIR} \
         --threads 4

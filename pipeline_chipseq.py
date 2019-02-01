@@ -136,7 +136,7 @@ if not os.path.exists(WORK_DIR + sicer_suffix):
 span_suffix = '_span'
 if not os.path.exists(WORK_DIR + span_suffix):
     os.mkdir(WORK_DIR + span_suffix)
-    #  <SPAN_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> <Q> [<OUTPUT_DIR> [<GAP>]]
-    run_bash("parallel/span.sh", SPAN, WORK_DIR, GENOME, CHROM_SIZES, "0.01",
-             WORK_DIR + span_suffix, 5)
+    #  <SPAN_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> [<BIN> <Q> <GAP> <OUTPUT_DIR>]
+    run_bash("parallel/span.sh", SPAN, WORK_DIR, GENOME, CHROM_SIZES,
+             "200", "0.1", "5", WORK_DIR + span_suffix)
     move_forward(WORK_DIR, WORK_DIR + span_suffix, ['*.peak', '*span*.log'])
