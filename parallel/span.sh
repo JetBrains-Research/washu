@@ -6,8 +6,8 @@
 source ${WASHU_ROOT}/parallel/util.sh
 
 >&2 echo "Batch SPAN $@"
-if [[ $# -lt 5 ]]; then
-    echo "Need >= 5 parameters! <SPAN_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> [<BIN> <Q> <GAP> <OUTPUT_DIR>]"
+if [[ $# -lt 4 ]]; then
+    echo "Need >= 4 parameters! <SPAN_JAR_PATH> <WORK_DIR> <GENOME> <CHROM_SIZES> [<BIN> <Q> <GAP> <OUTPUT_DIR>]"
     exit 1
 fi
 
