@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 from glob import glob
+from snakemake.utils import format
 
 
 def fastq_files():
@@ -55,7 +56,7 @@ rule trim_adapters:
         r2_unpaired="trimmed/{sample}_2_unpaired.fastq.gz"
     params:
         trimmer=["TRAILING:3", "SLIDINGWINDOW:4:15", "MINLEN:25",
-                 "ILLUMINACLIP:{input.adapters}:2:30:10:1:true"],
+                 format("ILLUMINACLIP:{input.adapters}:2:30:10:1:true")],
         extra="-phred33"
     log: "logs/trimmomatic/{sample}.log"
     wrapper: "0.31.1/bio/trimmomatic/pe"
