@@ -68,8 +68,8 @@ rule bowtie2:
     log:
         "logs/bowtie2/{sample}.log"
     params:
-        index="index/genome",  # prefix of reference genome index (built with bowtie2-build)
-        extra=""  # optional parameters
+        index=config["indexes"],
+        extra=""
     threads: 8
     wrapper:
         "0.31.1/bio/bowtie2/align"
