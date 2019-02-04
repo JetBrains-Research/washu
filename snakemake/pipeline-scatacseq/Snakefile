@@ -37,7 +37,6 @@ rule fastqc:
     output:
         html="qc/fastqc/{sample}.html",
         zip="qc/fastqc/{sample}.zip"
-    params: ""
     log:
         "logs/fastqc/{sample}.log"
     wrapper:
@@ -56,13 +55,28 @@ rule trim_adapters:
     params:
         trimmer=["TRAILING:3", "SLIDINGWINDOW:4:15", "MINLEN:25",
                  "ILLUMINACLIP:adapter/NextSeq500.fa:2:30:10:1:true"],
-        extra="-phred33"
+        extra="-phred33 -threads 1"
     log: "logs/trimmomatic/{sample}.log"
     wrapper: "0.31.1/bio/trimmomatic/pe"
+
+
+rule bowtie2:
+    input:
+        sample=["trimmed/{sample}_1.fastq.gz", "trimmed/{sample}_2.fastq.gz"]
+    output:
+        "mapped/{sample}.bam"
+    log:
+        "logs/bowtie2/{sample}.log"
+    params:
+        index="index/genome",  # prefix of reference genome index (built with bowtie2-build)
+        extra=""  # optional parameters
+    threads: 8
+    wrapper:
+        "0.31.1/bio/bowtie2/align"
 
 
 rule all:
     input:
         expand("trimmed/{sample}.fastq.gz", sample=fastq_names()),
         expand("qc/fastqc/{sample}.html", sample=fastq_names())
-    shell: 'echo {input}'
+    shell: 'echo "{input}"'
