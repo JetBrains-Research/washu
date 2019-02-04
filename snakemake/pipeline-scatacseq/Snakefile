@@ -47,8 +47,7 @@ rule fastqc:
 rule trim_adapters:
     input:
         r1=os.path.join(config["fastq_dir"], "{sample}_1.fastq"),
-        r2=os.path.join(config["fastq_dir"], "{sample}_2.fastq"),
-        adapters="adapters/NextSeq500.fa"
+        r2=os.path.join(config["fastq_dir"], "{sample}_2.fastq")
     output:
         r1="trimmed/{sample}_1.fastq.gz",
         r2="trimmed/{sample}_2.fastq.gz",
@@ -56,7 +55,7 @@ rule trim_adapters:
         r2_unpaired="trimmed/{sample}_2_unpaired.fastq.gz"
     params:
         trimmer=["TRAILING:3", "SLIDINGWINDOW:4:15", "MINLEN:25",
-                 format("ILLUMINACLIP:{input.adapters}:2:30:10:1:true")],
+                 "ILLUMINACLIP:adapter/NextSeq500.fa:2:30:10:1:true"],
         extra="-phred33"
     log: "logs/trimmomatic/{sample}.log"
     wrapper: "0.31.1/bio/trimmomatic/pe"
