@@ -32,7 +32,7 @@ workdir: config["work_dir"]
 
 rule fastqc:
     input:
-        "{config[fastq_dir]}/{sample}.fastq"
+        os.path.join(config["fastq_dir"], "{sample}.fastq")
     output:
         html="qc/fastqc/{sample}.html",
         zip="qc/fastqc/{sample}.zip"
@@ -45,8 +45,8 @@ rule fastqc:
 
 rule trim_adapters:
     input:
-        r1="{config[fastq_dir]}/{sample}_1.fastq",
-        r2="{config[fastq_dir]}/{sample}_2.fastq",
+        r1=os.path.join(config["fastq_dir"], "{sample}_1.fastq"),
+        r2=os.path.join(config["fastq_dir"], "{sample}_2.fastq"),
         adapters="adapters/NextSeq500.fa"
     output:
         r1="trimmed/{sample}_1.fastq.gz",
