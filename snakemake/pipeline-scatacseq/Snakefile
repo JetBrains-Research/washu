@@ -69,7 +69,7 @@ rule bowtie2:
         "logs/bowtie2/{sample}.log"
     params:
         index=config["indexes"],
-        extra=""
+        extra="-X 2000 --dovetail"
     threads: 8
     wrapper:
         "0.31.1/bio/bowtie2/align"
@@ -77,6 +77,6 @@ rule bowtie2:
 
 rule all:
     input:
-        expand("trimmed/{sample}.fastq.gz", sample=fastq_names()),
+        expand("mapped/{sample}.bam", sample=fastq_aligned_names()),
         expand("qc/fastqc/{sample}.html", sample=fastq_names())
     shell: 'echo "{input}"'
