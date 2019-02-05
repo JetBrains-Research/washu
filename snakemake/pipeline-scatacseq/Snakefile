@@ -35,10 +35,8 @@ rule fastqc:
     output:
         html="qc/fastqc/{sample}_fastqc.html",
         zip="qc/fastqc/{sample}_fastqc.zip"
-    log:
-        "logs/fastqc/{sample}.log"
-    wrapper:
-        "0.31.1/bio/fastqc"
+    log: "logs/fastqc/{sample}.log"
+    wrapper: "0.31.1/bio/fastqc"
 
 
 rule multiqc_fastq:
@@ -70,10 +68,8 @@ rule fastqc_trimmed:
     output:
         html="qc/fastqc_trimmed/{sample}_fastqc.html",
         zip="qc/fastqc_trimmed/{sample}_fastqc.zip"
-    log:
-        "logs/fastqc_trimmed/{sample}.log"
-    wrapper:
-        "0.31.1/bio/fastqc"
+    log: "logs/fastqc_trimmed/{sample}.log"
+    wrapper: "0.31.1/bio/fastqc"
 
 
 rule multiqc_fastq_trimmed:
@@ -86,16 +82,13 @@ rule multiqc_fastq_trimmed:
 rule bowtie2:
     input:
         sample=["trimmed/{sample}_1.fastq.gz", "trimmed/{sample}_2.fastq.gz"]
-    output:
-        "mapped/{sample}.bam"
-    log:
-        "logs/bowtie2/{sample}.log"
+    output: "mapped/{sample}.bam"
+    log: "logs/bowtie2/{sample}.log"
     params:
         index=config["indexes"],
         extra="-X 2000 --dovetail"
     threads: 8
-    wrapper:
-        "0.31.1/bio/bowtie2/align"
+    wrapper: "0.31.1/bio/bowtie2/align"
 
 
 rule multiqc_bowtie2:
@@ -105,9 +98,17 @@ rule multiqc_bowtie2:
     wrapper: "0.31.1/bio/multiqc"
 
 
+rule samtools_filter:
+    input: "mapped/{sample}.bam"
+    output: "filtered/{sample}.bam"
+    params: "-bhF 4 -f2 -q30"
+    wrapper: "0.31.1/bio/samtools/view"
+
+
 rule all:
     input:
         "multiqc/bowtie2/multiqc.html",
         "multiqc/fastqc/multiqc.html",
-        "multiqc/fastqc_trimmed/multiqc.html"
+        "multiqc/fastqc_trimmed/multiqc.html",
+        expand("filtered/{sample}.bam", sample=fastq_aligned_names())
     shell: 'echo "{input}"'
