@@ -106,5 +106,8 @@ rule multiqc_bowtie2:
 
 
 rule all:
-    input: "multiqc/bowtie2/multiqc.html", "multiqc/fastqc/multiqc.html"
+    input:
+        "multiqc/bowtie2/multiqc.html",
+        "multiqc/fastqc/multiqc.html",
+        "multiqc/fastqc_trimmed/multiqc.html"
     shell: 'echo "{input}"'
