@@ -118,7 +118,7 @@ rule remove_blacklist:
         bam="filtered/{sample}.bam",
         blacklist=rules.download_blacklist.output
     output: "blacklisted/{sample}.bam"
-    shell: 'intersectBed -v -abam {input} -b {blacklist} > {output}'
+    shell: 'intersectBed -v -abam {input.bam} -b {input.blacklist} > {output}'
 
 
 rule sort_bams:
