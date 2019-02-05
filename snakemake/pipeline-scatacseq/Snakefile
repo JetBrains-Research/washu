@@ -129,7 +129,7 @@ rule sort_bams:
 
 
 rule remove_duplicates:
-    input: "blacklisted/{sample}.bam"
+    input: "sorted/{sample}.bam"
     output:
         bam="deduplicated/{sample}.bam",
         metrics="qc/picard/{sample}.txt"
