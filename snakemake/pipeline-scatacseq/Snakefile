@@ -65,6 +65,24 @@ rule trim_adapters:
     wrapper: "0.31.1/bio/trimmomatic/pe"
 
 
+rule fastqc_trimmed:
+    input: "trimmed/{sample}.fastq.gz"
+    output:
+        html="qc/fastqc_trimmed/{sample}_fastqc.html",
+        zip="qc/fastqc_trimmed/{sample}_fastqc.zip"
+    log:
+        "logs/fastqc_trimmed/{sample}.log"
+    wrapper:
+        "0.31.1/bio/fastqc"
+
+
+rule multiqc_fastq_trimmed:
+    input: expand("qc/fastqc_trimmed/{sample}_fastqc.zip", sample=fastq_names())
+    output: "multiqc/fastqc_trimmed/multiqc.html"
+    log: "multiqc/fastqc_trimmed/multiqc.log"
+    wrapper: "0.31.1/bio/multiqc"
+
+
 rule bowtie2:
     input:
         sample=["trimmed/{sample}_1.fastq.gz", "trimmed/{sample}_2.fastq.gz"]
