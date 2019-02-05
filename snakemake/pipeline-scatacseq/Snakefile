@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import re
 from glob import glob
 
 
@@ -25,6 +26,14 @@ def fastq_names_single():
 
 def fastq_aligned_names():
     return fastq_common_names_paired() + fastq_names_single()
+
+
+def cell_names_dict():
+    cell_names = {re.sub('^GSM[0-9]+_', '', fastq_aligned_name) for fastq_aligned_name in fastq_aligned_names()}
+    return {cell_name: [fastq_aligned_name for fastq_aligned_name in fastq_aligned_names()
+                        if re.match('^GSM[0-9]+_{cell_name}$'.format(cell_name=cell_name),
+                                    fastq_aligned_name)]
+            for cell_name in cell_names}
 
 
 workdir: config["work_dir"]
@@ -178,6 +187,20 @@ rule bam_stats_multiqc:
     output: "multiqc/samtools_stats/multiqc.html"
     log: "multiqc/samtools_stats/multiqc.log"
     wrapper: "0.31.1/bio/multiqc"
+
+
+rule merge_cells:
+    input: lambda wildcards: expand("cleaned/{sample}.bam", sample=cell_names_dict()[wildcards.cell_name])
+    output: "cleaned_cells/{cell_name}.bam"
+    threads: 4
+    wrapper: "0.31.1/bio/samtools/merge"
+
+
+rule merge_all:
+    input: expand("cleaned/{sample}.bam", sample=fastq_aligned_names())
+    output: "cleaned_all/pooled.bam"
+    threads: 8
+    wrapper: "0.31.1/bio/samtools/merge"
 
 
 rule all:
