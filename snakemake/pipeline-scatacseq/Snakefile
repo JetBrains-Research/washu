@@ -159,7 +159,7 @@ rule bam_stats:
 
 
 rule bam_stats_multiqc:
-    input: expand("qc/samtools_stats/{sample}__samtools_stats.txt", sample=fastq_aligned_names())
+    input: expand("qc/samtools_stats/{sample}_samtools_stats.txt", sample=fastq_aligned_names())
     output: "multiqc/samtools_stats/multiqc.html"
     log: "multiqc/samtools_stats/multiqc.log"
     wrapper: "0.31.1/bio/multiqc"
