@@ -105,10 +105,70 @@ rule samtools_filter:
     wrapper: "0.31.1/bio/samtools/view"
 
 
+rule download_blacklist:
+    output: "blacklist/wgEncodeDacMapabilityConsensusExcludable.bed"
+    shell: 'wget -O - '
+           'http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/'
+           'wgEncodeMapability/wgEncodeDacMapabilityConsensusExcludable.bed.gz'
+           ' | gunzip -c > {output}'
+
+
+rule remove_blacklist:
+    input:
+        bam="filtered/{sample}.bam",
+        blacklist=rules.download_blacklist.output
+    output: "blacklisted/{sample}.bam"
+    shell: 'intersectBed -v -abam {input} -b {blacklist} > {output}'
+
+
+rule sort_bams:
+    input: "blacklisted/{sample}.bam"
+    output: "sorted/{sample}.bam"
+    threads: 4
+    wrapper: '0.31.1/bio/samtools/sort'
+
+
+rule remove_duplicates:
+    input: "blacklisted/{sample}.bam"
+    output:
+        bam="deduplicated/{sample}.bam",
+        metrics="qc/picard/{sample}.txt"
+    log: "deduplicated/{sample}.log"
+    params: "REMOVE_DUPLICATES=True"
+    wrapper: "0.31.1/bio/picard/markduplicates"
+
+
+rule clean_bams:
+    input: "deduplicated/{sample}.bam"
+    output: "cleaned/{sample}.bam"
+    params: "-b chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 "
+            "chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX"
+    wrapper: "0.31.1/bio/samtools/view"
+
+
+rule index_bams:
+    input: "cleaned/{sample}.bam"
+    output: "cleaned/{sample}.bam.bai"
+    wrapper: "0.31.1/bio/samtools/index"
+
+
+rule bam_stats:
+    input: "cleaned/{sample}.bam"
+    output: "qc/samtools_stats/{sample}_samtools_stats.txt"
+    wrapper: "0.31.1/bio/samtools/stats"
+
+
+rule bam_stats_multiqc:
+    input: expand("qc/samtools_stats/{sample}__samtools_stats.txt", sample=fastq_aligned_names())
+    output: "multiqc/samtools_stats/multiqc.html"
+    log: "multiqc/samtools_stats/multiqc.log"
+    wrapper: "0.31.1/bio/multiqc"
+
+
 rule all:
     input:
         "multiqc/bowtie2/multiqc.html",
         "multiqc/fastqc/multiqc.html",
         "multiqc/fastqc_trimmed/multiqc.html",
-        expand("filtered/{sample}.bam", sample=fastq_aligned_names())
+        "multiqc/samtools_stats/multiqc.html"
     shell: 'echo "{input}"'
