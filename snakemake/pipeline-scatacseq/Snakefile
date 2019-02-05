@@ -33,8 +33,8 @@ workdir: config["work_dir"]
 rule fastqc:
     input: os.path.join(config["fastq_dir"], "{sample}.fastq")
     output:
-        html="qc/fastqc/{sample}.html",
-        zip="qc/fastqc/{sample}.zip"
+        html="qc/fastqc/{sample}_fastqc.html",
+        zip="qc/fastqc/{sample}_fastqc.zip"
     log:
         "logs/fastqc/{sample}.log"
     wrapper:
@@ -42,7 +42,7 @@ rule fastqc:
 
 
 rule multiqc_fastq:
-    input: expand("qc/fastqc/{sample}.html", sample=fastq_names())
+    input: expand("qc/fastqc/{sample}_fastqc.zip", sample=fastq_names())
     output: "multiqc/fastqc/multiqc.html"
     log: "multiqc/fastqc/multiqc.log"
     wrapper: "0.31.1/bio/multiqc"
