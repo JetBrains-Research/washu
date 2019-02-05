@@ -208,5 +208,7 @@ rule all:
         "multiqc/bowtie2/multiqc.html",
         "multiqc/fastqc/multiqc.html",
         "multiqc/fastqc_trimmed/multiqc.html",
-        "multiqc/samtools_stats/multiqc.html"
+        "multiqc/samtools_stats/multiqc.html",
+        expand("cleaned_cells/{cell_name}.bam", cell_name=cell_names_dict().keys()),
+        "cleaned_all/pooled.bam"
     shell: 'echo "{input}"'
