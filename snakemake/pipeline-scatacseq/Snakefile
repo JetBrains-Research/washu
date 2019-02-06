@@ -203,12 +203,32 @@ rule merge_all:
     wrapper: "0.31.1/bio/samtools/merge"
 
 
+rule call_peaks_macs2_cell:
+    input: "cleaned_cells/{cell_name}.bam"
+    output: "cleaned_cell_peaks/macs2/{cell_name}_peaks.narrowPeak"
+    params:
+        outdir=lambda wildcards, output: os.path.dirname(output)
+    conda: "environment2.yaml"
+    shell: 'macs2 callpeak -t {input} --outdir {params.outdir} -n {wildcards.cell_name} '
+           '-p 0.0001 -g hs -f BAMPE --nomodel --nolambda -B --keep-dup all --call-summits'
+
+
+rule call_peaks_macs2_all:
+    input: "cleaned_all/pooled.bam"
+    output: "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak"
+    params:
+        outdir=lambda wildcards, output: os.path.dirname(output)
+    conda: "environment2.yaml"
+    shell: 'macs2 callpeak -t {input} --outdir {params.outdir} -n pooled '
+           '-p 0.0001 -g hs -f BAMPE --nomodel --nolambda -B --keep-dup all --call-summits'
+
+
 rule all:
     input:
         "multiqc/bowtie2/multiqc.html",
         "multiqc/fastqc/multiqc.html",
         "multiqc/fastqc_trimmed/multiqc.html",
         "multiqc/samtools_stats/multiqc.html",
-        expand("cleaned_cells/{cell_name}.bam", cell_name=cell_names_dict().keys()),
-        "cleaned_all/pooled.bam"
+        expand("cleaned_cell_peaks/macs2/{cell_name}_peaks.narrowPeak", cell_name=cell_names_dict().keys()),
+        "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak"
     shell: 'echo "{input}"'
