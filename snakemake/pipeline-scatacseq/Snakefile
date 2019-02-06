@@ -207,7 +207,7 @@ rule call_peaks_macs2_cell:
     input: "cleaned_cells/{cell_name}.bam"
     output: "cleaned_cell_peaks/macs2/{cell_name}_peaks.narrowPeak"
     params:
-        outdir=lambda wildcards, output: os.path.dirname(output)
+        outdir=lambda wildcards, output: os.path.dirname(str(output))
     conda: "environment2.yaml"
     shell: 'macs2 callpeak -t {input} --outdir {params.outdir} -n {wildcards.cell_name} '
            '-p 0.0001 -g hs -f BAMPE --nomodel --nolambda -B --keep-dup all --call-summits'
@@ -217,7 +217,7 @@ rule call_peaks_macs2_all:
     input: "cleaned_all/pooled.bam"
     output: "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak"
     params:
-        outdir=lambda wildcards, output: os.path.dirname(output)
+        outdir=lambda wildcards, output: os.path.dirname(str(output))
     conda: "environment2.yaml"
     shell: 'macs2 callpeak -t {input} --outdir {params.outdir} -n pooled '
            '-p 0.0001 -g hs -f BAMPE --nomodel --nolambda -B --keep-dup all --call-summits'
