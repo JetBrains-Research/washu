@@ -205,7 +205,9 @@ rule merge_all:
 
 rule call_peaks_macs2_cell:
     input: "cleaned_cells/{cell_name}.bam"
-    output: "cleaned_cell_peaks/macs2/{cell_name}_peaks.narrowPeak"
+    output:
+        "cleaned_cell_peaks/macs2/{cell_name}_peaks.narrowPeak",
+        "cleaned_cell_peaks/macs2/{cell_name}_summits.bed"
     params:
         outdir=lambda wildcards, output: os.path.dirname(str(output))
     conda: "environment2.yaml"
@@ -215,12 +217,52 @@ rule call_peaks_macs2_cell:
 
 rule call_peaks_macs2_all:
     input: "cleaned_all/pooled.bam"
-    output: "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak"
+    output:
+        "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak",
+        "cleaned_all_peaks/macs2/pooled_summits.bed"
     params:
         outdir=lambda wildcards, output: os.path.dirname(str(output))
     conda: "environment2.yaml"
     shell: 'macs2 callpeak -t {input} --outdir {params.outdir} -n pooled '
            '-p 0.0001 -g hs -f BAMPE --nomodel --nolambda -B --keep-dup all --call-summits'
+
+
+rule download_span:
+    output: "bin/span-0.9.2.jar"
+    shell: 'wget -O {output} https://download.jetbrains.com/biolabs/span/span-0.9.2.4618.jar'
+
+
+rule download_chrom_sizes:
+    output: "hg19.chrom.sizes"
+    shell: 'wget -O {output} http://hgdownload.cse.ucsc.edu/goldenPath/hg19/bigZips/hg19.chrom.sizes'
+
+
+rule call_peaks_span_cell:
+    input:
+        bam="cleaned_cells/{cell_name}.bam",
+        span=rules.download_span.output,
+        chrom_sizes=rules.download_chrom_sizes.output
+    output: "cleaned_cell_peaks/span/{cell_name}_{bin, [0-9]+}.span"
+    params:
+        outdir=lambda wildcards, output: os.path.dirname(str(output))
+    threads: 8
+    shell: 'java -Xmx2G -jar {input.span} -t {input.bam} --workdir {outdir} --bin {wildcards.bin} '
+           '--cs {input.chrom_sizes} --threads {threads}; '
+           'cp {params.outdir}/fit/{cell_name}_{wildcards.bin}#*.span {output}'
+
+
+rule call_peaks_span_all:
+    input:
+        bam="cleaned_all/pooled.bam",
+        span=rules.download_span.output,
+        chrom_sizes=rules.download_chrom_sizes.output
+    output: "cleaned_all_peaks/span/pooled_{bin, [0-9]+}.span"
+    params:
+        outdir=lambda wildcards, output: os.path.dirname(str(output))
+    threads: 8
+    shell: 'java -Xmx2G -jar {input.span} -t {input.bam} --workdir {outdir} --bin {wildcards.bin} '
+           '--cs {input.chrom_sizes} --threads {threads}; '
+           'cp {params.outdir}/fit/pooled_{wildcards.bin}#*.span {output}'
 
 
 rule all:
@@ -230,5 +272,7 @@ rule all:
         "multiqc/fastqc_trimmed/multiqc.html",
         "multiqc/samtools_stats/multiqc.html",
         expand("cleaned_cell_peaks/macs2/{cell_name}_peaks.narrowPeak", cell_name=cell_names_dict().keys()),
-        "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak"
+        "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak",
+        expand("cleaned_cell_peaks/span/{cell_name}_{bin}.span", cell_name=cell_names_dict().keys(), bin=[50, 100]),
+        expand("cleaned_all_peaks/span/pooled_{bin}.span", bin=[50, 100])
     shell: 'echo "{input}"'
