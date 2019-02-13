@@ -205,6 +205,19 @@ rule merge_all:
     wrapper: "0.31.1/bio/samtools/merge"
 
 
+rule sort_cleaned_bams_cells:
+    input: "cleaned_cells/{cell_name}.bam"
+    output: "cleaned_cells_sorted/{cell_name}.bam"
+    threads: 4
+    wrapper: '0.31.1/bio/samtools/sort'
+
+rule sort_cleaned_bams_all:
+    input: "cleaned_all/pooled.bam"
+    output: "cleaned_all_sorted/pooled.bam"
+    threads: 4
+    wrapper: '0.31.1/bio/samtools/sort'
+
+
 rule call_peaks_macs2_cell:
     input: "cleaned_cells/{cell_name}.bam"
     output:
@@ -277,6 +290,6 @@ rule all:
         "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak",
         expand("cleaned_cell_peaks/span/{cell_name}_{bin}.span", cell_name=cell_names_dict().keys(), bin=[100]),
         expand("cleaned_all_peaks/span/pooled_{bin}.span", bin=[100]),
-        expand("cleaned_cells/bw/{cell_name}.bw", cell_name=cell_names_dict().keys()),
-        "cleaned_all/bw/pooled.bw"
+        expand("cleaned_cells_sorted/bw/{cell_name}.bw", cell_name=cell_names_dict().keys()),
+        "cleaned_all_sorted/bw/pooled.bw"
     shell: 'echo "{input}"'
