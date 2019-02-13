@@ -275,8 +275,8 @@ rule all:
         "multiqc/samtools_stats/multiqc.html",
         expand("cleaned_cell_peaks/macs2/{cell_name}_peaks.narrowPeak", cell_name=cell_names_dict().keys()),
         "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak",
-        expand("cleaned_cell_peaks/span/{cell_name}_{bin}.span", cell_name=cell_names_dict().keys(), bin=[50, 100]),
-        expand("cleaned_all_peaks/span/pooled_{bin}.span", bin=[50, 100]),
+        expand("cleaned_cell_peaks/span/{cell_name}_{bin}.span", cell_name=cell_names_dict().keys(), bin=[100]),
+        expand("cleaned_all_peaks/span/pooled_{bin}.span", bin=[100]),
         expand("cleaned_cells/bw/{cell_name}.bw", cell_name=cell_names_dict().keys()),
         "cleaned_all/bw/pooled.bw"
     shell: 'echo "{input}"'
