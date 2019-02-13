@@ -250,7 +250,7 @@ rule call_peaks_span_cell:
     threads: 8
     shell: 'java -Xmx4G -jar {input.span} analyze -t {input.bam} --workdir {params.outdir} '
            '--bin {wildcards.bin} --cs {input.chrom_sizes} --threads {threads}; '
-           'cp {params.outdir}/fit/{cell_name}_{wildcards.bin}#*.span {output}'
+           'cp {params.outdir}/fit/{wildcards.cell_name}_{wildcards.bin}#*.span {output}'
 
 
 rule call_peaks_span_all:
