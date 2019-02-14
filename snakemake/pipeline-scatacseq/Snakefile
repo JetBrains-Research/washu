@@ -218,13 +218,25 @@ rule sort_cleaned_bams_all:
     wrapper: '0.31.1/bio/samtools/sort'
 
 
+rule call_peaks_macs2:
+    input: "cleaned/{sample}.bam"
+    output:
+        "cleaned_peaks/macs2/{p}/{sample}_peaks.narrowPeak",
+        "cleaned_peaks/macs2/{p}/{sample}_summits.bed"
+    params:
+        outdir=lambda wildcards, output: os.path.dirname(str(output[0]))
+    conda: "environment2.yaml"
+    shell: 'macs2 callpeak -t {input} --outdir {params.outdir} -n {wildcards.sample} '
+           '-p {wildcards.p} -g hs -f BAMPE --nomodel --nolambda -B --keep-dup all --call-summits'
+
+
 rule call_peaks_macs2_cell:
     input: "cleaned_cells/{cell_name}.bam"
     output:
         "cleaned_cell_peaks/macs2/{cell_name}_peaks.narrowPeak",
         "cleaned_cell_peaks/macs2/{cell_name}_summits.bed"
     params:
-        outdir=lambda wildcards, output: os.path.dirname(str(output))
+        outdir=lambda wildcards, output: os.path.dirname(str(output[0]))
     conda: "environment2.yaml"
     shell: 'macs2 callpeak -t {input} --outdir {params.outdir} -n {wildcards.cell_name} '
            '-p 0.0001 -g hs -f BAMPE --nomodel --nolambda -B --keep-dup all --call-summits'
@@ -236,7 +248,7 @@ rule call_peaks_macs2_all:
         "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak",
         "cleaned_all_peaks/macs2/pooled_summits.bed"
     params:
-        outdir=lambda wildcards, output: os.path.dirname(str(output))
+        outdir=lambda wildcards, output: os.path.dirname(str(output[0]))
     conda: "environment2.yaml"
     shell: 'macs2 callpeak -t {input} --outdir {params.outdir} -n pooled '
            '-p 0.0001 -g hs -f BAMPE --nomodel --nolambda -B --keep-dup all --call-summits'
@@ -291,5 +303,8 @@ rule all:
         expand("cleaned_cell_peaks/span/{cell_name}_{bin}.span", cell_name=cell_names_dict().keys(), bin=[100]),
         expand("cleaned_all_peaks/span/pooled_{bin}.span", bin=[100]),
         expand("cleaned_cells_sorted/bw/{cell_name}.bw", cell_name=cell_names_dict().keys()),
-        "cleaned_all_sorted/bw/pooled.bw"
+        "cleaned_all_sorted/bw/pooled.bw",
+        expand("cleaned_peaks/macs2/{p}/{sample}_peaks.narrowPeak",
+               sample=fastq_aligned_names(),
+               p=["0.0001", "0.001"])
     shell: 'echo "{input}"'
