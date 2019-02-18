@@ -4,7 +4,6 @@ import re
 from glob import glob
 
 include: "bam2bw.smk"
-include: "filter_g.smk"
 
 
 def fastq_files():
@@ -37,6 +36,9 @@ def cell_names_dict():
                         if re.match('^GSM[0-9]+_{cell_name}$'.format(cell_name=cell_name),
                                     fastq_aligned_name)]
             for cell_name in cell_names}
+
+
+include: "filter_g.smk"
 
 
 workdir: config["work_dir"]

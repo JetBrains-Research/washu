@@ -72,7 +72,7 @@ rule filter_failed_fastq_bowtie2:
     wrapper: "0.31.1/bio/bowtie2/align"
 
 
-rule multiqc_bowtie2:
+rule filter_failed_fastq_multiqc_bowtie2:
     input: expand("logs/bowtie2_filtered/{sample}.log", sample=fastq_aligned_names())
     output: "multiqc/bowtie2_filtered/multiqc.html"
     log: "multiqc/bowtie2_filtered/multiqc.log"
