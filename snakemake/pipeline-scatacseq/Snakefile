@@ -4,6 +4,7 @@ import re
 from glob import glob
 
 include: "bam2bw.smk"
+include: "filter_g.smk"
 
 
 def fastq_files():
