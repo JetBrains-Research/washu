@@ -31,7 +31,7 @@ def filter_g_content(input1, input2, output1, output2, threshold=0.9):
                     while True:
                         entry1 = read_fastq_entry(i1)
                         entry2 = read_fastq_entry(i2)
-                        if "" in entry1 or "" in entry2:
+                        if b"" in entry1 or b"" in entry2:
                             break
                         if g_content(entry1) < threshold and g_content(entry2) < threshold:
                             write_fastq_entry(o1, entry1)
