@@ -19,7 +19,8 @@ def g_content(fastq_entry):
     for c in sequence:
         if c == "G":
             count += 1
-    return count * 1.0 / len(sequence)
+    # sequence strings are reported with trailing \n, hence -1
+    return count * 1.0 / (len(sequence) - 1)
 
 
 def filter_g_content(input1, input2, output1, output2, threshold=0.9):
@@ -30,7 +31,7 @@ def filter_g_content(input1, input2, output1, output2, threshold=0.9):
                     while True:
                         entry1 = read_fastq_entry(i1)
                         entry2 = read_fastq_entry(i2)
-                        if entry1[3] == "" or entry2[3] == "":
+                        if entry1[1] == "" or entry2[1] == "":
                             break
                         if g_content(entry1) < threshold and g_content(entry2) < threshold:
                             write_fastq_entry(o1, entry1)
