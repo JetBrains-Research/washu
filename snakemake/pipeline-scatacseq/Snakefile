@@ -296,8 +296,10 @@ rule call_peaks_span_all:
 rule all:
     input:
         "multiqc/bowtie2/multiqc.html",
+        "multiqc/bowtie2_filtered/multiqc.html",
         "multiqc/fastqc/multiqc.html",
         "multiqc/fastqc_trimmed/multiqc.html",
+        "multiqc/fastqc_filtered/multiqc.html",
         "multiqc/samtools_stats/multiqc.html",
         expand("cleaned_cell_peaks/macs2/{cell_name}_peaks.narrowPeak", cell_name=cell_names_dict().keys()),
         "cleaned_all_peaks/macs2/pooled_peaks.narrowPeak",
