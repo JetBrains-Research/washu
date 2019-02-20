@@ -4,13 +4,13 @@ import gzip
 def read_fastq_entry(file):
     res = []
     for i in range(0, 4):
-        res.append(file.readline().encode('utf-8'))
+        res.append(file.readline().decode('utf-8'))
     return res
 
 
 def write_fastq_entry(file, entry):
     for line in entry:
-        file.write(line.decode('utf-8'))
+        file.write(line.encode('utf-8'))
 
 
 def g_content(fastq_entry):
