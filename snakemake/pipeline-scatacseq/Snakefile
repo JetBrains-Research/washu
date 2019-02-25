@@ -274,11 +274,12 @@ rule call_peaks_span:
         chrom_sizes=rules.download_chrom_sizes.output
     output: "cleaned_peaks/span/{sample}_{bin, [0-9]+}.span"
     params:
-        outdir=lambda wildcards, output: os.path.dirname(str(output))
+        outdir=lambda wildcards, output: os.path.dirname(str(output)),
+        gsm=lambda wildcards: re.compile(r"(GSM[0-9]*)[^0-9]").match(wildcards.sample).group(1)
     threads: 8
     shell: 'java -Xmx8G -jar {input.span} analyze -t {input.bam} --workdir {params.outdir} '
            '--bin {wildcards.bin} --cs {input.chrom_sizes} --threads {threads}; '
-           'cp {params.outdir}/fit/{wildcards.sample}_{wildcards.bin}#*.span {output}'
+           'cp {params.outdir}/fit/{params.gsm}_{wildcards.bin}#*.span {output}'
 
 
 rule call_peaks_span_cell:
