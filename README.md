@@ -1,6 +1,6 @@
 License [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
-Tests [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Biolabs_WashU)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Biolabs_WashU_Tests&guest=1)
-ChIPSeq Pipeline Tests [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Biolabs_WashU)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Biolabs_WashU_Pipeline_Tests&guest=1)
+Tests [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Biolabs_WashU_Tests)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Biolabs_WashU_Tests&guest=1)
+ChIPSeq Pipeline Tests [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Biolabs_WashU_Pipeline_Tests)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Biolabs_WashU_Pipeline_Tests&guest=1)
 
 Pipelines
 =========
