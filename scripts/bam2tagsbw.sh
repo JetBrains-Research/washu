@@ -2,7 +2,7 @@
 # author: oleg.shpynov@jetbrains.com
 
 >&2 echo "bam2tagsbw $@"
-if [ $# -lt 4 ]; then
+if [[ $# -lt 4 ]]; then
     echo "Need at least 4 parameters! <BAM> <FRAGMENT> <CHROM_SIZES> <RESULT.bw>"
     exit 1
 fi

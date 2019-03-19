@@ -10,7 +10,7 @@ which bedtools &>/dev/null || {
    }
 
 >&2 echo "bam2tags $@"
-if [ $# -lt 2 ]; then
+if [[ $# -lt 2 ]]; then
     echo "Need 2 parameters! <BAM> <FRAGMENT>"
     exit 1
 fi
