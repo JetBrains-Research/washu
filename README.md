@@ -8,7 +8,7 @@ Scalable and reproducible technical pipelines for ChIP-Seq and RNA-Seq processin
 Parallel execution is supported with zero configuration on Portable Batch System (`qsub`) and local machines.\
 Reproducibility is guaranteed by automated testing of all the steps in Docker using Continuous Integration.
 
-ChIP-Seq pipeline was used for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data analysis.
+ChIP-Seq pipeline was used for [Epigenetic changes in aging human monocytes](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data analysis.
 
 * `pipeline_chipseq.py` - Pipeline for batch ChIP-Seq processing, including QC, alignment, peak calling
 * `pipeline_tf.py`      - Pipeline for batch Transcription Factor ChIP-Seq processing
@@ -71,7 +71,7 @@ tar xvf ~/phantompeakqualtools.tar.gz
 ```
 * Download [SPAN](https://artyomovlab.wustl.edu/aging/span.html):
 ```bash
-curl --location https://download.jetbrains.com/biolabs/span/span-0.9.2.4618.jar \
+curl --location https://download.jetbrains.com/biolabs/span/span-0.11.0.4882.jar \
     --output ~/span.jar 
 ```
 
@@ -79,7 +79,6 @@ Project structure
 -----------------
 * `/bed`            - BED files manipulations - intersection, ChromHMM enrichment, closes gene, etc.
 * `/docker`         - Docker configuration files with tools and test data. See Tests section.
-* `/downstream`     - Scripts for [Multiomics dissection of healthy human aging project](http://artyomovlab.wustl.edu/aging/index.html) ChIP-Seq data downstream analysis.
 * `/parallel`       - Scripts for parallel execution of Portable Batch System (`qsub`) or on local machine. \
 Parallelism level on local machine can be configured via **WASHU_PARALLELISM** environment variable. 
 * `/scripts`        - QC, Visualization, BAM conversions, Reads In Peaks, etc.
@@ -115,9 +114,6 @@ Tools used
 [Bedtools](https://bedtools.readthedocs.io/en/latest/), 
 [Bowtie](http://bowtie-bio.sourceforge.net/index.shtml), 
 [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/index.shtml), 
-[ChIPDiff](https://academic.oup.com/bioinformatics/article/24/20/2344/258202/An-HMM-approach-to-genome-wide-identification-of),
-[DiffBind](http://www.nature.com/nature/journal/v481/n7381/full/nature10730.html), 
-[DiffReps](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0065598),
 [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/),
 [MACS2](https://github.com/taoliu/MACS),
 [MANorm](https://www.ncbi.nlm.nih.gov/pubmed/22424423),

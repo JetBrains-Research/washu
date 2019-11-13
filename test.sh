@@ -13,5 +13,4 @@ export PYTHONPATH="$WASHU_ROOT:$PYTHONPATH"
 # Fast tests#
 #############
 python -m pytest test/*.py
-python -m pytest test/downstream/*.py
 python -m pytest --codestyle -m codestyle
