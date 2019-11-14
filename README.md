@@ -1,11 +1,12 @@
-Disclaimer
-==========
-This pipeline implies `qsub` and pure `bash` cpu level parallelism.\
-Please have a look at the updated [snakemake](https://snakemake.readthedocs.io/en/stable/#)-based pipeline version at: [https://github.com/JetBrains-Research/chipseq-smk-pipeline](https://github.com/JetBrains-Research/chipseq-smk-pipeline)
-
 License [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
 Tests [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Biolabs_WashU_Tests)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Biolabs_WashU_Tests&guest=1)
 ChIPSeq Pipeline Tests [![tests](http://teamcity.jetbrains.com/app/rest/builds/buildType:(id:Biolabs_WashU_Pipeline_Tests)/statusIcon.svg)](http://teamcity.jetbrains.com/viewType.html?buildTypeId=Biolabs_WashU_Pipeline_Tests&guest=1)
+
+Disclaimer
+==========
+These pipelines use `qsub` and pure `bash` cpu level parallelism.\
+Please have a look at the updated [snakemake](https://snakemake.readthedocs.io/en/stable/#) pipeline [chipseq-smk-pipeline](https://github.com/JetBrains-Research/chipseq-smk-pipeline).
+
 
 Pipelines
 =========
