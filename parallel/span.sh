@@ -13,7 +13,7 @@ fi
 
 SPAN_JAR_PATH=$1
 if [[ ! -f "${SPAN_JAR_PATH}" ]]; then
-    >&2 echo "SPAN not found! Download SPAN: <http://artyomovlab.wustl.edu/aging/span.html>"; exit 1;
+    >&2 echo "SPAN not found! Download SPAN: <https://research.jetbrains.org/groups/biolabs/tools/span-peak-analyzer>"; exit 1;
 fi
 WORK_DIR=$2
 GENOME=$3

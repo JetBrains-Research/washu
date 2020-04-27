@@ -39,7 +39,7 @@ if [[ ! -d ~/phantompeakqualtools ]]; then
     echo "ERROR: Phantompeakqualtools not found! Download: <https://github.com/kundajelab/phantompeakqualtools>"
 fi
 if [[ ! -f ~/span.jar ]]; then
-    echo "ERROR: SPAN not found! Download: <http://artyomovlab.wustl.edu/aging/span.html>"
+    echo "ERROR: SPAN not found! Download: <https://research.jetbrains.org/groups/biolabs/tools/span-peak-analyzer>"
 fi
 
 echo "Extract test data"
