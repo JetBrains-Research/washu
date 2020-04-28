@@ -9,7 +9,7 @@ which bedClip &>/dev/null || { echo "ERROR: bedClip not found! Download: <http:/
 # end of checking
  
 if [ $# -lt 2 ]; then
-    echo "Need 2 parameters! <bedgraph> <chrom info>"
+    echo "Need 2 parameters! <bedgraph> <chrom info> [output]"
     exit 1
 fi
  
