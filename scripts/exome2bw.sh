@@ -37,7 +37,8 @@ BAM=$(bash "${WASHU_ROOT}/scripts/reads2bam.sh" ${INPUT} ${CHROM_SIZES})
 BDG_FILE=$(echo ${BAM} | sed -r 's#\.(bam|bed|bed\.gz)$#.bdg#g')
 
 echo "Converting ${BAM} -> ${BDG_FILE}"
-bedtools genomecov -ibam ${BAM} -bg -g ${CHROM_SIZES} > ${BDG_FILE}
+echo "Processing paired-end exome alignment"
+bedtools genomecov -ibam ${BAM} -split -bg -g ${CHROM_SIZES} > ${BDG_FILE}
 
 # Covert bedGraph to BigWig
 bash "${WASHU_ROOT}/scripts/bdg2bw.sh" ${BDG_FILE} ${CHROM_SIZES} ${BW_FILE}

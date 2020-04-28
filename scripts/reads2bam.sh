@@ -74,4 +74,5 @@ esac
 # Cleanup
 type clean_job_tmp_dir &>/dev/null && clean_job_tmp_dir
 
+# Result
 echo ${BAM}
