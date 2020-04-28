@@ -15,13 +15,16 @@ fi
  
 BDG_FILE=$1
 CHROM_SIZES=$2
+BW_FILE=$3
 
 # Check configuration
 [[ ! -z ${WASHU_ROOT} ]] || { echo "ERROR: WASHU_ROOT not configured"; exit 1; }
 source ${WASHU_ROOT}/parallel/util.sh
 export TMPDIR=$(type job_tmp_dir &>/dev/null && echo "$(job_tmp_dir)" || echo "/tmp")
 mkdir -p "${TMPDIR}"
-BW_FILE=${BDG_FILE/.bdg/.bw}
+if [ -z "$BW_FILE" ]; then
+  BW_FILE=${BDG_FILE/.bdg/.bw}
+fi
 
 echo "Converting ${BDG_FILE} -> ${BW_FILE}"
 # Remove coordinates outside chromosome sizes
