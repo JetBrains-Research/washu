@@ -81,14 +81,14 @@ cd \${STAR_FOLDER}
 if [[ -f "${FILE_PAIRED}" ]]; then
     STAR --genomeDir ${REF} --genomeLoad LoadAndKeep \
         --readFilesIn ${FILE} ${FILE_PAIRED} --runThreadN 8 \
-        --outFilterMultimapNmax 15 --outFilterMismatchNmax 6  --outSAMstrandField All \
+        --outFilterMultimapNmax 15 --outFilterMismatchNmax 6 \
         --outSAMtype BAM SortedByCoordinate --limitBAMsortRAM 30000000000 \
         --outFileNamePrefix "${ID}_" \
         --quantMode TranscriptomeSAM
 else
     STAR --genomeDir ${REF} --genomeLoad LoadAndKeep \
         --readFilesIn ${FILE} --runThreadN 8 \
-        --outFilterMultimapNmax 15 --outFilterMismatchNmax 6  --outSAMstrandField All \
+        --outFilterMultimapNmax 15 --outFilterMismatchNmax 6 \
         --outSAMtype BAM SortedByCoordinate --limitBAMsortRAM 30000000000 \
         --outFileNamePrefix "${ID}_" \
         --quantMode TranscriptomeSAM
