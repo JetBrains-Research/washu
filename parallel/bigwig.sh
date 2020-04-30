@@ -15,7 +15,7 @@ if [[ -f $2 && $(echo $2 | grep -n '.*\.gtf$') ]]; then
     GENES_GTF=$2
     WORK_DIRS=${@:3}
 else
-    GENES_GFT=""
+    GENES_GTF=""
     WORK_DIRS=${@:2}
 fi
 
@@ -40,7 +40,7 @@ for WORK_DIR in ${WORK_DIRS}; do
 cd ${WORK_DIR}
 
 module load bedtools2
-if [[ -f ${GENES_GFT} ]];
+if [[ -f ${GENES_GTF} ]];
   bash ${WASHU_ROOT}/scripts/exome2bw.sh ${FILE} ${CHROM_SIZES} ${NAME}.bw
 else
   bash ${WASHU_ROOT}/scripts/reads2bw.sh ${FILE} ${CHROM_SIZES} ${NAME}.bw
