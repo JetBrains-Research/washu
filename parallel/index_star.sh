@@ -30,13 +30,13 @@ GTF_URL=""
 if [[ ${GENOME} = "mm9" ]]; then
     GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/release-67/gtf/mus_musculus/Mus_musculus.NCBIM37.67.gtf.gz"
 elif [[ ${GENOME} = "mm10" ]]; then
-    GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/release-87/gtf/mus_musculus/Mus_musculus.GRCm38.87.gtf.gz"
+    GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/release-97/gtf/mus_musculus/Mus_musculus.GRCm38.97.gtf.gz"
 elif [[ ${GENOME} = "hg18" ]]; then
     GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/release-54/gtf/homo_sapiens/Homo_sapiens.NCBI36.54.gtf.gz"
 elif [[ ${GENOME} = "hg19" ]]; then
     GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/grch37/release-87/gtf/homo_sapiens/Homo_sapiens.GRCh37.87.gtf.gz"
 elif [[ ${GENOME} = "hg38" ]]; then
-    GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/release-89/gtf/homo_sapiens/Homo_sapiens.GRCh38.89.gtf.gz"
+    GTF_URL="ftp://anonymous@ftp.ensembl.org/pub/release-97/gtf/homo_sapiens/Homo_sapiens.GRCh38.97.gtf.gz"
 else
     echo "Unknown genome ${GENOME} build, failed to download GTF file"
     exit 1
