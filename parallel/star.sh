@@ -77,7 +77,7 @@ fi
 cd \${STAR_FOLDER}
 
 # LoadAndKeep option allows to save lots of time on genome loading
-# this command also will generate a transcriptomic BAM file which can be used for RSEM or other similar tools
+# this command also will generate a transcripts BAM file which can be used for RSEM or other similar tools
 if [[ -f "${FILE_PAIRED}" ]]; then
     STAR --genomeDir ${REF} --genomeLoad LoadAndKeep \
         --readFilesIn ${FILE} ${FILE_PAIRED} --runThreadN 8 \
