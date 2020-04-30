@@ -40,10 +40,10 @@ for WORK_DIR in ${WORK_DIRS}; do
 cd ${WORK_DIR}
 
 module load bedtools2
-if [[ -f ${GENES_GTF} ]];
-  bash ${WASHU_ROOT}/scripts/exome2bw.sh ${FILE} ${CHROM_SIZES} ${NAME}.bw
+if [[ -f ${GENES_GTF} ]]; then
+    bash ${WASHU_ROOT}/scripts/exome2bw.sh ${FILE} ${CHROM_SIZES} ${NAME}.bw
 else
-  bash ${WASHU_ROOT}/scripts/reads2bw.sh ${FILE} ${CHROM_SIZES} ${NAME}.bw
+    bash ${WASHU_ROOT}/scripts/reads2bw.sh ${FILE} ${CHROM_SIZES} ${NAME}.bw
 fi
 SCRIPT
             echo "FILE: ${WORK_DIR_NAME}/${FILE}; TASK: ${QSUB_ID}"
