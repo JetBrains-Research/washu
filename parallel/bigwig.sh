@@ -11,7 +11,7 @@ if [[ $# -lt 2 ]]; then
     exit 1
 fi
 CHROM_SIZES=$1
-if [[ -f $2 && $(echo $2 | grep -n '.*\.gtf$') ]]; then
+if [[ -f $2 && $(echo $2 | grep -e '.*\.gtf$') ]]; then
     GENES_GTF=$2
     WORK_DIRS=${@:3}
 else
