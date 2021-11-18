@@ -46,12 +46,12 @@ for WORK_DIR in ${WORK_DIRS}; do :
         FILE_PAIRED=""
         if $(echo "${FILE}"  | fgrep -q "_1"); then
             FILE_PAIRED=$(echo "${FILE}" | sed 's#_1#_2#g')
-            NAME=$(echo ${FILE} | sed 's#_1##g' | sed -r 's#^.*/##g' | sed -r 's#\.f.*q$##g')
-        elif $(echo "${FILE}"  | fgrep -q "_R1"); then
+            NAME=$(echo $(basename ${FILE%%.f*q}) | sed 's#_1##g')
+        elif $(echo "${FILE}" | fgrep -q "_R1"); then
             FILE_PAIRED=$(echo "${FILE}" | sed 's#_R1#_R2#g')
-            NAME=$(echo ${FILE} | sed 's#_R1##g' | sed -r 's#^.*/##g'| sed -r 's#\.f.*q$##g')
+            NAME=$(echo $(basename ${FILE%%.f*q}) | sed 's#_R1##g')
         else
-            NAME=$(echo ${FILE} | sed -r 's#\.f.*q$##g')
+            NAME=$(basename ${FILE%%.f*q})
         fi
 
         # Check FILE_PAIRED
