@@ -78,7 +78,7 @@ tar xvf ~/phantompeakqualtools.tar.gz
 ```
 * Download [SPAN](https://research.jetbrains.org/groups/biolabs/tools/span-peak-analyzer):
 ```bash
-curl --location https://download.jetbrains.com/biolabs/span/span-0.12.0.5096.jar \
+curl --location https://download.jetbrains.com/biolabs/span/span-1.1.5628.jar \
     --output ~/span.jar 
 ```
 
