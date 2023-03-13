@@ -76,7 +76,7 @@ curl --location https://storage.googleapis.com/google-code-archive-downloads/v2/
     --output ~/phantompeakqualtools.tar.gz 
 tar xvf ~/phantompeakqualtools.tar.gz
 ```
-* Download [SPAN](https://research.jetbrains.org/groups/biolabs/tools/span-peak-analyzer):
+* Download [SPAN](https://github.com/JetBrains-Research/span):
 ```bash
 curl --location https://download.jetbrains.com/biolabs/span/span-1.1.5628.jar \
     --output ~/span.jar 
@@ -130,7 +130,7 @@ Tools used
 [RSeg](https://academic.oup.com/bioinformatics/article/27/6/870/236489/Identifying-dispersed-epigenomic-domains-from-ChIP),
 [Samtools](http://samtools.sourceforge.net/),
 [SICER](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2732366/),
-[SPAN](https://research.jetbrains.org/groups/biolabs/tools/span-peak-analyzer)
+[SPAN](https://github.com/JetBrains-Research/span)
 
 [STAR](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3530905/), 
 [RSEM](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-12-323)
